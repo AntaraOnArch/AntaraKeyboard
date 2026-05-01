@@ -5,9 +5,13 @@ import android.content.SharedPreferences
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.defaultKeyboardLayout
-import com.google.gson.Gson
+import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
+import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultNumericLayout
+import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
+import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
+import com.google.gson.Gson
 
 object KeyboardPrefs {
 
@@ -29,6 +33,10 @@ object KeyboardPrefs {
     private const val ENTER_BG = "enter_bg"
     private const val ENTER_ICON = "enter_icon"
     private const val KEY_ROW_COUNT = "row_count"
+    private const val KEY_EDGE_MODE = "edge_mode"
+    private const val KEY_EDGE_MODE_3 = "edge_mode_3"
+    private const val KEY_EDGE_MODE_4 = "edge_mode_4"
+    private const val KEY_EDGE_MODE_5 = "edge_mode_5"
 
 
     private val gson = Gson()
@@ -80,29 +88,67 @@ object KeyboardPrefs {
     fun clearRowCount(context: Context) {
         prefs(context).edit().remove(KEY_ROW_COUNT).apply()
     }
+    private fun defaultAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        return when (rowCount) {
+            3 -> defaultThreeRowKeyboardLayoutQwertz
+            4 -> defaultFourRowKeyboardLayout
+            else -> defaultKeyboardLayout
+        }
+    }
 
+    private fun defaultNumericLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        return when (rowCount) {
+            3 -> defaultThreeRowNumericLayout
+            4 -> defaultFourRowNumericLayout
+            else -> defaultNumericLayout
+        }
+    }
     fun saveLayout(context: Context, layout: KeyboardConfig) {
         val json = gson.toJson(layout)
         prefs(context).edit().putString(KEY_LAYOUT_JSON, json).apply()
     }
 
     fun loadLayout(context: Context): KeyboardConfig {
+        val rowCount = getRowCount(context)
+        val fallback = defaultAlphabetLayoutForRowCount(rowCount)
+
         val json = prefs(context).getString(KEY_LAYOUT_JSON, null)
         return if (!json.isNullOrBlank()) {
             runCatching {
                 gson.fromJson(json, KeyboardConfig::class.java)
             }.getOrElse {
-                defaultKeyboardLayout
+                fallback
             }
         } else {
-            defaultKeyboardLayout
+            fallback
         }
     }
 
     fun clearLayout(context: Context) {
         prefs(context).edit().remove(KEY_LAYOUT_JSON).apply()
     }
+    /*edge mode*/
+    fun edgeKeyForRowCount(rowCount: Int): String {
+        return when (rowCount) {
+            3 -> KEY_EDGE_MODE_3
+            4 -> KEY_EDGE_MODE_4
+            else -> KEY_EDGE_MODE_5
+        }
+    }
 
+    fun getEdgeModeKey(context: Context): String {
+        val rowCount = getRowCount(context)
+        return edgeKeyForRowCount(rowCount)
+    }
+
+    fun setEdgeModeKey(context: Context, key: String) {
+        prefs(context).edit().putString(KEY_EDGE_MODE, key).apply()
+    }
+
+    fun getSavedEdgeModeKey(context: Context): String {
+        return prefs(context).getString(KEY_EDGE_MODE, getEdgeModeKey(context))
+            ?: getEdgeModeKey(context)
+    }
     /* ───────── NUMERIC LAYOUT ───────── */
 
     fun saveNumericLayout(context: Context, config: KeyboardConfig) {
@@ -112,14 +158,17 @@ object KeyboardPrefs {
     }
 
     fun loadNumericLayout(context: Context): KeyboardConfig {
+        val rowCount = getRowCount(context)
+        val fallback = defaultNumericLayoutForRowCount(rowCount)
+
         val json = prefs(context).getString(KEY_NUMERIC_LAYOUT_JSON, null)
         return if (json.isNullOrBlank()) {
-            defaultNumericLayout
+            fallback
         } else {
             runCatching {
                 gson.fromJson(json, KeyboardConfig::class.java)
             }.getOrElse {
-                defaultNumericLayout
+                fallback
             }
         }
     }

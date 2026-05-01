@@ -5,6 +5,21 @@ import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.RowConfig
 import com.example.antarakeyboard.model.addLongPress
 
+private fun KeyboardConfig.addCommonSymbolLongPress() {
+    listOf("\"", ",", ":", ";").forEach { ch ->
+        addLongPress(".", ch)
+    }
+
+    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
+        addLongPress("?", ch)
+    }
+}
+
+/* =========================
+   ALPHABET - 5 ROWS
+   26 letters + 2 spaces + . + ? + 123 + ↵ = 32
+   ========================= */
+
 val defaultKeyboardLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
@@ -25,12 +40,12 @@ val defaultKeyboardLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 3) side . space f h space ? side
+        // 3) . space f h space ?
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("."), KeyConfig(" "),
-                KeyConfig("f"), KeyConfig("h"), KeyConfig(" "),
-                KeyConfig("?"), KeyConfig("⌫")
+                KeyConfig("."), KeyConfig(" "),
+                KeyConfig("f"), KeyConfig("h"),
+                KeyConfig(" "), KeyConfig("?")
             )
         ),
 
@@ -51,60 +66,62 @@ val defaultKeyboardLayout: KeyboardConfig = KeyboardConfig(
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
+
+/* =========================
+   ALPHABET - 4 ROWS
+   26 letters + 2 spaces + . + ? + 123 + ↵ = 32
+   8 + 8 + 8 + 8
+   ========================= */
 
 val defaultFourRowKeyboardLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
     rows = mutableListOf(
-        // 1) w e t z i o
+        // 1) q w e r t z u i
         RowConfig(
             mutableListOf(
-                KeyConfig("w"), KeyConfig("e"), KeyConfig("t"),
-                KeyConfig("z"), KeyConfig("i"), KeyConfig("o")
+                KeyConfig("q"), KeyConfig("w"), KeyConfig("e"), KeyConfig("r"),
+                KeyConfig("t"), KeyConfig("z"), KeyConfig("u"), KeyConfig("i")
             )
         ),
 
-        // 2) q a r g u l p
+        // 2) o p a s d f g h
         RowConfig(
             mutableListOf(
-                KeyConfig("q"), KeyConfig("a"), KeyConfig("r"),
-                KeyConfig("g"), KeyConfig("u"), KeyConfig("l"), KeyConfig("p")
+                KeyConfig("o"), KeyConfig("p"), KeyConfig("a"), KeyConfig("s"),
+                KeyConfig("d"), KeyConfig("f"), KeyConfig("g"), KeyConfig("h")
             )
         ),
 
-        // 3) y s d n m j k
+        // 3) j k l y x . ? space
         RowConfig(
             mutableListOf(
-                KeyConfig("y"), KeyConfig("s"), KeyConfig("d"),
-                KeyConfig("n"), KeyConfig("m"), KeyConfig("j"), KeyConfig("k")
+                KeyConfig("j"), KeyConfig("k"), KeyConfig("l"),
+                KeyConfig("y"), KeyConfig("x"),
+                KeyConfig("."), KeyConfig("?"), KeyConfig(" ")
             )
         ),
 
-        // 4) ⇧ . f h ? ⌫ 123 ↵
+        // 4) c v b n m space 123 ↵
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("."), KeyConfig("f"), KeyConfig("h"),
-                KeyConfig("?"), KeyConfig("⌫"), KeyConfig("123"), KeyConfig("↵")
+                KeyConfig("c"), KeyConfig("v"), KeyConfig("b"),
+                KeyConfig("n"), KeyConfig("m"),
+                KeyConfig(" "), KeyConfig("123"), KeyConfig("↵")
             )
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
+
+/* =========================
+   ALPHABET - 3 ROWS
+   26 letters + 2 spaces + . + ? + 123 + ↵ + 😊 = 33
+   11 + 11 + 11
+   ========================= */
 
 val defaultThreeRowKeyboardLayoutQwertz: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
@@ -114,45 +131,41 @@ val defaultThreeRowKeyboardLayoutQwertz: KeyboardConfig = KeyboardConfig(
         RowConfig(
             mutableListOf(
                 KeyConfig("q"), KeyConfig("w"), KeyConfig("e"), KeyConfig("r"), KeyConfig("t"),
-                KeyConfig("z"), KeyConfig("u"), KeyConfig("i"), KeyConfig("o"), KeyConfig("p")
+                KeyConfig("z"), KeyConfig("u"), KeyConfig("i"), KeyConfig("o"), KeyConfig("p"), KeyConfig(".")
             )
         ),
 
-        // 2) a s d f g h j k l .
+        // 2) a s d f g h j k l m
         RowConfig(
             mutableListOf(
                 KeyConfig("a"), KeyConfig("s"), KeyConfig("d"), KeyConfig("f"), KeyConfig("g"),
-                KeyConfig("h"), KeyConfig("j"), KeyConfig("k"), KeyConfig("l"), KeyConfig(".")
+                KeyConfig("h"), KeyConfig("j"), KeyConfig("k"), KeyConfig("l"), KeyConfig("m"), KeyConfig("?")
             )
         ),
 
-        // 3) ⇧ y x c v b n m ? 123 ↵ ⌫
+        // 3) y x c v b n . space ? space 😊 123 ↵
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("y"), KeyConfig("x"), KeyConfig("c"),
-                KeyConfig("v"), KeyConfig("b"), KeyConfig("n"), KeyConfig("m"),
-                KeyConfig("?"), KeyConfig("123"), KeyConfig("↵"), KeyConfig("⌫")
+                KeyConfig("y"), KeyConfig("x"), KeyConfig("c"),
+                KeyConfig("v"), KeyConfig("b"), KeyConfig(" "),
+                KeyConfig(" "), KeyConfig("n"),
+                KeyConfig("😊"), KeyConfig("123"), KeyConfig("↵")
             )
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
 
-// =========================
-// NUMERIC (5 rows)
-// =========================
+/* =========================
+   NUMERIC - 5 ROWS
+   bez ⇧ i ⌫ u glavnim redovima
+   ========================= */
+
 val defaultNumericLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
     rows = mutableListOf(
-
         // 1) ~ 1 2 3 4 <
         RowConfig(
             mutableListOf(
@@ -169,12 +182,12 @@ val defaultNumericLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 3) side . space 8 9 space ? side
+        // 3) . space 8 9 space ?
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("."), KeyConfig(" "),
-                KeyConfig("8"), KeyConfig("9"), KeyConfig(" "),
-                KeyConfig("?"), KeyConfig("⌫")
+                KeyConfig("."), KeyConfig(" "),
+                KeyConfig("8"), KeyConfig("9"),
+                KeyConfig(" "), KeyConfig("?")
             )
         ),
 
@@ -195,71 +208,61 @@ val defaultNumericLayout: KeyboardConfig = KeyboardConfig(
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
 
-// =========================
-// NUMERIC (4 rows)
-// =========================
+/* =========================
+   NUMERIC - 4 ROWS
+   ========================= */
+
 val defaultFourRowNumericLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
     rows = mutableListOf(
-
-        // 1) ~ 1 2 3 4 <
+        // 1) 1 2 3 4 5 6 7 8
         RowConfig(
             mutableListOf(
-                KeyConfig("~"), KeyConfig("1"), KeyConfig("2"),
-                KeyConfig("3"), KeyConfig("4"), KeyConfig("<")
+                KeyConfig("1"), KeyConfig("2"), KeyConfig("3"), KeyConfig("4"),
+                KeyConfig("5"), KeyConfig("6"), KeyConfig("7"), KeyConfig("8")
             )
         ),
 
-        // 2) € + 5 6 7 ( )
+        // 2) 9 0 + - * / ( )
         RowConfig(
             mutableListOf(
-                KeyConfig("€"), KeyConfig("+"), KeyConfig("5"),
-                KeyConfig("6"), KeyConfig("7"), KeyConfig("("), KeyConfig(")")
+                KeyConfig("9"), KeyConfig("0"), KeyConfig("+"), KeyConfig("-"),
+                KeyConfig("*"), KeyConfig("/"), KeyConfig("("), KeyConfig(")")
             )
         ),
 
-        // 3) > - _ 0 * / !
+        // 3) € % @ # & _ . ?
         RowConfig(
             mutableListOf(
-                KeyConfig(">"), KeyConfig("-"), KeyConfig("_"),
-                KeyConfig("0"), KeyConfig("*"), KeyConfig("/"), KeyConfig("!")
+                KeyConfig("€"), KeyConfig("%"), KeyConfig("@"), KeyConfig("#"),
+                KeyConfig("&"), KeyConfig("_"), KeyConfig("."), KeyConfig("?")
             )
         ),
 
-        // 4) ⇧ . 8 9 ? ⌫ abc ↵
+        // 4) ~ < > ! space space abc ↵
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("."), KeyConfig("8"), KeyConfig("9"),
-                KeyConfig("?"), KeyConfig("⌫"), KeyConfig("abc"), KeyConfig("↵")
+                KeyConfig("~"), KeyConfig("<"), KeyConfig(">"), KeyConfig("!"),
+                KeyConfig(" "), KeyConfig(" "), KeyConfig("abc"), KeyConfig("↵")
             )
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
 
-// =========================
-// NUMERIC (3 rows)
-// =========================
+/* =========================
+   NUMERIC - 3 ROWS
+   ========================= */
+
 val defaultThreeRowNumericLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
     rows = mutableListOf(
-
         // 1) 1 2 3 4 5 6 7 8 9 0
         RowConfig(
             mutableListOf(
@@ -268,33 +271,32 @@ val defaultThreeRowNumericLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 2) ~ + - * / = ( ) . ?
+        // 2) + - * / = ( ) . ? €
         RowConfig(
             mutableListOf(
-                KeyConfig("~"), KeyConfig("+"), KeyConfig("-"), KeyConfig("*"), KeyConfig("/"),
-                KeyConfig("="), KeyConfig("("), KeyConfig(")"), KeyConfig("."), KeyConfig("?")
+                KeyConfig("+"), KeyConfig("-"), KeyConfig("*"), KeyConfig("/"), KeyConfig("="),
+                KeyConfig("("), KeyConfig(")"), KeyConfig("."), KeyConfig("?"), KeyConfig("€")
             )
         ),
 
-        // 3) ⇧ € % @ # & _ ! abc ↵ ⌫
+        // 3) % @ # & _ ! ~ space space abc ↵
         RowConfig(
             mutableListOf(
-                KeyConfig("⇧"), KeyConfig("€"), KeyConfig("%"), KeyConfig("@"),
-                KeyConfig("#"), KeyConfig("&"), KeyConfig("_"), KeyConfig("!"),
-                KeyConfig("abc"), KeyConfig("↵"), KeyConfig("⌫")
+                KeyConfig("%"), KeyConfig("@"), KeyConfig("#"), KeyConfig("&"),
+                KeyConfig("_"), KeyConfig("!"), KeyConfig("~"),
+                KeyConfig(" "), KeyConfig(" "),
+                KeyConfig("abc"), KeyConfig("↵")
             )
         )
     )
 ).also { cfg ->
-    listOf("\"", ",", ":", ";").forEach { ch ->
-        cfg.addLongPress(".", ch)
-    }
-    listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch ->
-        cfg.addLongPress("?", ch)
-    }
+    cfg.addCommonSymbolLongPress()
 }
 
-// velika slova
+/* =========================
+   UPPERCASE HELPERS
+   ========================= */
+
 private fun KeyboardConfig.toUppercaseLetters(): KeyboardConfig {
     fun up(k: KeyConfig): KeyConfig {
         val lbl = k.label
@@ -319,18 +321,15 @@ private fun KeyboardConfig.toUppercaseLetters(): KeyboardConfig {
 
 val defaultKeyboardLayoutUpper: KeyboardConfig =
     defaultKeyboardLayout.toUppercaseLetters().also { cfg ->
-        listOf("\"", ",", ":", ";").forEach { ch -> cfg.addLongPress(".", ch) }
-        listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch -> cfg.addLongPress("?", ch) }
+        cfg.addCommonSymbolLongPress()
     }
 
 val defaultFourRowKeyboardLayoutUpper: KeyboardConfig =
     defaultFourRowKeyboardLayout.toUppercaseLetters().also { cfg ->
-        listOf("\"", ",", ":", ";").forEach { ch -> cfg.addLongPress(".", ch) }
-        listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch -> cfg.addLongPress("?", ch) }
+        cfg.addCommonSymbolLongPress()
     }
 
 val defaultThreeRowKeyboardLayoutQwertzUpper: KeyboardConfig =
     defaultThreeRowKeyboardLayoutQwertz.toUppercaseLetters().also { cfg ->
-        listOf("\"", ",", ":", ";").forEach { ch -> cfg.addLongPress(".", ch) }
-        listOf("!", "(", ")", "{", "}", "[", "]").forEach { ch -> cfg.addLongPress("?", ch) }
+        cfg.addCommonSymbolLongPress()
     }

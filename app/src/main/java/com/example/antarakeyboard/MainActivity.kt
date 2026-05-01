@@ -1,40 +1,51 @@
 package com.example.antarakeyboard
 
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipDescription
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Gravity
+import android.view.DragEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.*
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.FrameLayout
+import android.widget.GridLayout
+import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.ScrollView
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.antarakeyboard.data.EdgePos
-import com.example.antarakeyboard.data.KeyboardPrefs
-import com.example.antarakeyboard.model.KeyShape
-import com.example.antarakeyboard.ui.ShapePreviewView
-import com.example.antarakeyboard.ui.LongPressKeyPickerDialog
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
+import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
-import com.example.antarakeyboard.SpecialChars
-import android.content.ClipData
-import android.content.ClipDescription
-import android.view.DragEvent
-import com.example.antarakeyboard.ui.LayoutEditorBinder
-import com.example.antarakeyboard.ui.defaultNumericLayout
+import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
+import com.example.antarakeyboard.ui.LayoutEditorBinder
 import com.example.antarakeyboard.ui.LongPressEditorBinder
-import com.example.antarakeyboard.ui.defaultKeyboardLayout
+import com.example.antarakeyboard.ui.LongPressKeyPickerDialog
+import com.example.antarakeyboard.ui.ShapePreviewView
+import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
+import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
+import com.example.antarakeyboard.ui.defaultKeyboardLayout
+import com.example.antarakeyboard.ui.defaultNumericLayout
 import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
-
+import com.example.antarakeyboard.R
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var preview: ShapePreviewView
     private lateinit var hex: RadioButton
     private lateinit var tri: RadioButton
@@ -46,9 +57,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var radio4Rows: RadioButton
     private lateinit var radio5Rows: RadioButton
     private lateinit var rowCountGroup: RadioGroup
-
-    // --- Edge key UI ---
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +71,6 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Theme button
         val themeBtn: Button = findViewById(R.id.btnThemeToggle)
 
         fun applyThemeButtonText(isDarkMode: Boolean) {
@@ -91,7 +98,6 @@ class MainActivity : AppCompatActivity() {
             applyThemeButtonText(newMode)
         }
 
-        // Main buttons
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
         val btnSetLayout: Button = findViewById(R.id.btnSetLayout)
@@ -119,7 +125,6 @@ class MainActivity : AppCompatActivity() {
             showEnterColorDialog()
         }
 
-        // Preview + shape
         preview = findViewById(R.id.preview)
 
         hex = findViewById(R.id.hexBtn)
@@ -150,19 +155,13 @@ class MainActivity : AppCompatActivity() {
             if (checked) applyShape(KeyShape.CUBE)
         }
 
-        //rows
         rowCountGroup = findViewById(R.id.rowCountGroup)
         radio3Rows = findViewById(R.id.radio3Rows)
         radio4Rows = findViewById(R.id.radio4Rows)
         radio5Rows = findViewById(R.id.radio5Rows)
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
-        when (savedRowCount) {
-            3 -> radio3Rows.isChecked = true
-            4 -> radio4Rows.isChecked = true
-            5 -> radio5Rows.isChecked = true
-            else -> radio3Rows.isChecked = true
-        }
+        setCheckedForRowCount(savedRowCount)
 
         rowCountGroup.setOnCheckedChangeListener { _, checkedId ->
             val rowCount = when (checkedId) {
@@ -172,42 +171,26 @@ class MainActivity : AppCompatActivity() {
                 else -> 3
             }
 
-            KeyboardPrefs.setRowCount(this, rowCount)
+            saveDefaultsForRowCount(rowCount)
 
             Toast.makeText(this, "Broj redova: $rowCount", Toast.LENGTH_SHORT).show()
         }
 
-        radio3Rows.setOnCheckedChangeListener { _, checked ->
-            if (checked) KeyboardPrefs.setRowCount(this, 3)
-        }
-
-        radio4Rows.setOnCheckedChangeListener { _, checked ->
-            if (checked) KeyboardPrefs.setRowCount(this, 4)
-        }
-
-        radio5Rows.setOnCheckedChangeListener { _, checked ->
-            if (checked) KeyboardPrefs.setRowCount(this, 5)
-        }
-
-        // Long press bind
         bindLPButton.setOnClickListener {
             openLongPressEditorDialog()
         }
 
-        // Reset
         resetLayoutButton.setOnClickListener {
             KeyboardPrefs.clearHorizontalCenterLayout(this)
             KeyboardPrefs.saveHorizontalCenterLayout(this, defaultHorizontalCenterLayout)
 
-            // obriši spremljene layoutove
             KeyboardPrefs.clearLayout(this)
             KeyboardPrefs.clearNumericLayout(this)
             KeyboardPrefs.clearRowCount(this)
 
-            // vrati default layout (3 reda)
+            KeyboardPrefs.setRowCount(this, 3)
             KeyboardPrefs.saveLayout(this, defaultThreeRowKeyboardLayoutQwertz)
             KeyboardPrefs.saveNumericLayout(this, defaultThreeRowNumericLayout)
-            KeyboardPrefs.setRowCount(this, 3)
 
             KeyboardPrefs.setShape(this, KeyShape.HEX)
 
@@ -218,158 +201,72 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
             KeyboardPrefs.setEnterColors(this, specialFill, specialText)
 
-            EdgeSlotsStorage.reset(this)
+            resetSideButtonsForRowCount(3)
 
             preview.shape = KeyShape.HEX
             setCheckedForShape(KeyShape.HEX)
-            radio3Rows.isChecked = true
             setCheckedForRowCount(3)
 
             Toast.makeText(this, "Sve postavke resetirane", Toast.LENGTH_SHORT).show()
         }
     }
-    private fun showEdgeSlotsDialog() {
 
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(20), dp(20), dp(12))
+    private fun activeAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        return when (rowCount) {
+            3 -> defaultThreeRowKeyboardLayoutQwertz
+            4 -> defaultFourRowKeyboardLayout
+            else -> defaultKeyboardLayout
         }
-
-        val grid = GridLayout(this).apply {
-            rowCount = 3
-            columnCount = 2
-        }
-
-        val slots = EdgeSlotsStorage.load(this).toMutableList()
-
-        fun fixedSideForIndex(i: Int): EdgePos.Side =
-            if (i % 2 == 0) EdgePos.Side.LEFT else EdgePos.Side.RIGHT
-
-        fun fixSlotPosition(i: Int, s: EdgeSlot): EdgeSlot =
-            s.copy(index = i, side = fixedSideForIndex(i))
-
-
-        fun buildGrid() {
-            grid.removeAllViews()
-
-            fun startDragCompat(v: View, fromIndex: Int) {
-                val data = ClipData.newPlainText("fromIndex", fromIndex.toString())
-                val shadow = View.DragShadowBuilder(v)
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    v.startDragAndDrop(data, shadow, null, 0)
-                } else {
-                    @Suppress("DEPRECATION")
-                    v.startDrag(data, shadow, null, 0)
-                }
-            }
-
-            fun parseFromIndex(e: DragEvent): Int? {
-                val item = e.clipData?.getItemAt(0)?.text?.toString() ?: return null
-                return item.toIntOrNull()
-            }
-
-            slots.forEachIndexed { index, slot ->
-                val btn = Button(this).apply {
-                    text = slot.label
-                    isAllCaps = false
-                    setPadding(dp(8), dp(12), dp(8), dp(12))
-                    tag = index
-                }
-
-                // klik -> picker
-                btn.setOnClickListener {
-                    showEdgeTypePicker(slot) { newSlot ->
-                        val normalized = fixSlotPosition(index, normalizeSlot(newSlot))
-                        enforceNoDuplicates(slots, index, normalized)
-                        slots[index] = normalized
-                        buildGrid()
-                    }
-                }
-
-                // long press -> start drag
-                btn.setOnLongClickListener { v ->
-                    startDragCompat(v, index)
-                    true
-                }
-
-                // drop target
-                btn.setOnDragListener { v, e ->
-                    when (e.action) {
-                        DragEvent.ACTION_DRAG_STARTED -> {
-                            e.clipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true
-                        }
-
-                        DragEvent.ACTION_DRAG_ENTERED -> {
-                            v.alpha = 0.65f
-                            true
-                        }
-
-                        DragEvent.ACTION_DRAG_EXITED -> {
-                            v.alpha = 1f
-                            true
-                        }
-
-                        DragEvent.ACTION_DROP -> {
-                            v.alpha = 1f
-                            val from = parseFromIndex(e) ?: return@setOnDragListener true
-                            val to = (v.tag as? Int) ?: return@setOnDragListener true
-                            if (from == to) return@setOnDragListener true
-
-                            // SWAP
-                            val tmp = slots[from]
-                            slots[from] = slots[to]
-                            slots[to] = tmp
-
-                            // ✅ nakon swap-a zakucaj index+side po poziciji
-                            slots[from] = fixSlotPosition(from, slots[from])
-                            slots[to] = fixSlotPosition(to, slots[to])
-
-                            buildGrid()
-                            true
-                        }
-
-                        DragEvent.ACTION_DRAG_ENDED -> {
-                            v.alpha = 1f
-                            true
-                        }
-
-                        else -> true
-                    }
-                }
-
-                val lp = GridLayout.LayoutParams().apply {
-                    width = 0
-                    height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    columnSpec = GridLayout.spec(index % 2, 1f)
-                    rowSpec = GridLayout.spec(index / 2)
-                    setMargins(dp(6), dp(6), dp(6), dp(6))
-                }
-
-                grid.addView(btn, lp)
-            }
-        }
-
-        buildGrid()
-
-        root.addView(grid)
-
-        val saveBtn = Button(this).apply {
-            text = "Save"
-            setOnClickListener {
-                EdgeSlotsStorage.save(this@MainActivity, slots)
-                Toast.makeText(this@MainActivity, "Side buttons saved", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
-            }
-        }
-
-        root.addView(saveBtn)
-
-        dialog.setContentView(root)
-        dialog.show()
     }
+
+    private fun activeNumericLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        return when (rowCount) {
+            3 -> defaultThreeRowNumericLayout
+            4 -> defaultFourRowNumericLayout
+            else -> defaultNumericLayout
+        }
+    }
+
+    private fun resetSideButtonsForRowCount(rowCount: Int) {
+        val slots = when (rowCount) {
+            4 -> listOf(
+                EdgeSlot(0, EdgePos.Side.RIGHT, EdgeActionType.BACKSPACE),
+                EdgeSlot(1, EdgePos.Side.LEFT, EdgeActionType.SHIFT),
+                EdgeSlot(2, EdgePos.Side.RIGHT, EdgeActionType.NONE),
+                EdgeSlot(3, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(4, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(5, EdgePos.Side.RIGHT, EdgeActionType.NONE)
+            )
+
+            3 -> listOf(
+                EdgeSlot(0, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(1, EdgePos.Side.RIGHT, EdgeActionType.NONE),
+                EdgeSlot(2, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(3, EdgePos.Side.RIGHT, EdgeActionType.NONE),
+                EdgeSlot(4, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(5, EdgePos.Side.RIGHT, EdgeActionType.NONE)
+            )
+
+            else -> listOf(
+                EdgeSlot(0, EdgePos.Side.LEFT, EdgeActionType.SHIFT),
+                EdgeSlot(1, EdgePos.Side.RIGHT, EdgeActionType.BACKSPACE),
+                EdgeSlot(2, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(3, EdgePos.Side.RIGHT, EdgeActionType.NONE),
+                EdgeSlot(4, EdgePos.Side.LEFT, EdgeActionType.NONE),
+                EdgeSlot(5, EdgePos.Side.RIGHT, EdgeActionType.NONE)
+            )
+        }
+
+        EdgeSlotsStorage.save(this, slots)
+    }
+
+    private fun saveDefaultsForRowCount(rowCount: Int) {
+        KeyboardPrefs.setRowCount(this, rowCount)
+        KeyboardPrefs.saveLayout(this, activeAlphabetLayoutForRowCount(rowCount))
+        KeyboardPrefs.saveNumericLayout(this, activeNumericLayoutForRowCount(rowCount))
+        resetSideButtonsForRowCount(rowCount)
+    }
+
     private fun setCheckedForRowCount(count: Int) {
         when (count) {
             3 -> radio3Rows.isChecked = true
@@ -507,8 +404,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun enforceNoDuplicates(slots: MutableList<EdgeSlot>, changedIndex: Int, chosen: EdgeSlot) {
-        // jedinstvene akcije (smiju postojati samo jednom)
+    private fun enforceNoDuplicates(
+        slots: MutableList<EdgeSlot>,
+        changedIndex: Int,
+        chosen: EdgeSlot
+    ) {
         val uniqueTypes = setOf(
             EdgeActionType.SHIFT,
             EdgeActionType.BACKSPACE,
@@ -516,7 +416,6 @@ class MainActivity : AppCompatActivity() {
             EdgeActionType.SPACE
         )
 
-        // ako je SHIFT/BKSP/ENTER/SPACE odabran, makni ga sa starog mjesta
         if (chosen.type in uniqueTypes) {
             for (i in slots.indices) {
                 if (i != changedIndex && slots[i].type == chosen.type) {
@@ -525,7 +424,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ako je CHAR, ne smije se ponavljati isti znak
         if (chosen.type == EdgeActionType.CHAR && !chosen.value.isNullOrBlank()) {
             for (i in slots.indices) {
                 if (i != changedIndex &&
@@ -537,6 +435,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun showSpecialCharPicker(onPicked: (String) -> Unit) {
         val all = mutableListOf("∅")
         all.addAll(SpecialChars.ALL)
@@ -550,13 +449,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Pravilo:
-     * - ne smije se ponavljati nijedan action (SHIFT/BACKSPACE/ENTER/SPACE) -> premjesti na novo mjesto
-     * - ne smije se ponavljati ni CHAR + isti value -> premjesti na novo mjesto
-     */
-    private fun applyNoDuplicates(slots: MutableList<EdgeSlot>, targetIndex: Int, newSlot: EdgeSlot) {
-        // prvo postavi novi slot
+    private fun applyNoDuplicates(
+        slots: MutableList<EdgeSlot>,
+        targetIndex: Int,
+        newSlot: EdgeSlot
+    ) {
         slots[targetIndex] = newSlot
 
         if (newSlot.type == EdgeActionType.NONE) return
@@ -567,17 +464,19 @@ class MainActivity : AppCompatActivity() {
             val s = slots[i]
 
             val sameType = s.type == newSlot.type && newSlot.type != EdgeActionType.CHAR
-            val sameChar = (newSlot.type == EdgeActionType.CHAR
-                    && s.type == EdgeActionType.CHAR
-                    && !newSlot.value.isNullOrBlank()
-                    && s.value == newSlot.value)
+            val sameChar = (
+                    newSlot.type == EdgeActionType.CHAR &&
+                            s.type == EdgeActionType.CHAR &&
+                            !newSlot.value.isNullOrBlank() &&
+                            s.value == newSlot.value
+                    )
 
             if (sameType || sameChar) {
-                // makni duplikat (prebaci na novo mjesto)
                 slots[i] = s.copy(type = EdgeActionType.NONE, value = null)
             }
         }
     }
+
     private fun showEdgeTypePicker(
         oldSlot: EdgeSlot,
         onSelected: (EdgeSlot) -> Unit
@@ -587,7 +486,6 @@ class MainActivity : AppCompatActivity() {
             setPadding(dp(16), dp(12), dp(16), dp(8))
         }
 
-        // --- akcije gore ---
         val actions = listOf(
             EdgeActionType.SHIFT to "⇧ Shift",
             EdgeActionType.BACKSPACE to "⌫ Backspace",
@@ -614,13 +512,11 @@ class MainActivity : AppCompatActivity() {
 
         root.addView(actionsRow)
 
-        // --- separator ---
         root.addView(TextView(this).apply {
             text = "Special chars"
             setPadding(0, dp(10), 0, dp(6))
         })
 
-        // --- grid special chars ---
         val scroll = ScrollView(this)
         val grid = GridLayout(this).apply {
             columnCount = 6
@@ -647,10 +543,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         scroll.addView(grid)
-        root.addView(scroll, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(320) // možeš povećat/smanjit
-        ))
+        root.addView(
+            scroll,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(320)
+            )
+        )
 
         AlertDialog.Builder(this)
             .setTitle("Choose side button")
@@ -658,9 +557,6 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton("Close", null)
             .show()
     }
-    /* =========================
-       SPACE / ENTER COLOR DIALOGS
-       ========================= */
 
     private fun showSpaceColorDialog() {
         var linked = KeyboardPrefs.isSpaceLinked(this)
@@ -725,11 +621,15 @@ class MainActivity : AppCompatActivity() {
 
         row.addView(
             b1,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(6)
+            }
         )
         row.addView(
             b2,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(6) }
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dp(6)
+            }
         )
 
         root.addView(row)
@@ -753,7 +653,6 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
-
 
     private fun showEnterColorDialog() {
         var bg = KeyboardPrefs.getEnterBg(this)
@@ -793,7 +692,10 @@ class MainActivity : AppCompatActivity() {
         root.addView(bgBtn)
         root.addView(
             iconBtn,
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
                 topMargin = dp(8)
             }
         )
@@ -808,6 +710,7 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
+
     private fun openHorizontalCenterEditorDialog() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -997,10 +900,7 @@ class MainActivity : AppCompatActivity() {
 
         showPage(0)
     }
-    /**
-     * HSV(A) picker: Hue/Sat/Value + Alpha
-     * Važno: onPicked se zove live, ali prefs spremaš tek na "Save" u parent dialogu.
-     */
+
     private fun showAdvancedColorPicker(
         title: String,
         initialColor: Int,
@@ -1010,8 +910,6 @@ class MainActivity : AppCompatActivity() {
         android.graphics.Color.colorToHSV(initialColor, hsv)
         var alpha = android.graphics.Color.alpha(initialColor)
 
-        var currentColor = initialColor
-
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(16), dp(16), dp(8))
@@ -1019,7 +917,10 @@ class MainActivity : AppCompatActivity() {
 
         val previewBar = View(this).apply {
             setBackgroundColor(initialColor)
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48))
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(48)
+            )
         }
         root.addView(previewBar)
 
@@ -1034,7 +935,7 @@ class MainActivity : AppCompatActivity() {
             hsv[2] = valSeek.progress / 100f
             alpha = alphaSeek.progress
 
-            currentColor = android.graphics.Color.HSVToColor(alpha, hsv)
+            val currentColor = android.graphics.Color.HSVToColor(alpha, hsv)
             previewBar.setBackgroundColor(currentColor)
             onPicked(currentColor)
         }
@@ -1062,13 +963,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun simpleSeek(onChange: () -> Unit) =
         object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) = onChange()
+            override fun onProgressChanged(
+                seekBar: SeekBar?,
+                progress: Int,
+                fromUser: Boolean
+            ) = onChange()
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
 
     private fun setupSideButtonsPage(container: LinearLayout): () -> Unit {
         container.removeAllViews()
+
+        val selectedRowCount = KeyboardPrefs.getRowCount(this)
 
         val title = TextView(this).apply {
             text = "Set side buttons"
@@ -1077,24 +985,54 @@ class MainActivity : AppCompatActivity() {
         }
 
         val hint = TextView(this).apply {
-            text = "Tap = change action, long press + drag = swap position"
+            text = when (selectedRowCount) {
+                4 -> "4-row: row1 right, row2 left, row3 right, row4 left"
+                3 -> "3-row preview mode"
+                else -> "5-row: 3 lijeva + 3 desna side buttona"
+            }
             textSize = 13f
             alpha = 0.75f
             setPadding(0, 0, 0, dp(10))
         }
 
         val grid = GridLayout(this).apply {
-            rowCount = 3
+            rowCount = when (selectedRowCount) {
+                3 -> 3
+                4 -> 4
+                else -> 3
+            }
             columnCount = 2
+        }
+
+        val slotCount = when (selectedRowCount) {
+            3 -> 3
+            4 -> 4
+            else -> 6
         }
 
         val slots = EdgeSlotsStorage.load(this).toMutableList()
 
-        fun fixedSideForIndex(i: Int): EdgePos.Side =
-            if (i % 2 == 0) EdgePos.Side.LEFT else EdgePos.Side.RIGHT
+        while (slots.size < slotCount) {
+            val i = slots.size
+            slots.add(
+                EdgeSlot(
+                    index = i,
+                    side = fixedSideForRowCount(selectedRowCount, i),
+                    type = EdgeActionType.NONE
+                )
+            )
+        }
 
-        fun fixSlotPosition(i: Int, s: EdgeSlot): EdgeSlot =
-            s.copy(index = i, side = fixedSideForIndex(i))
+        while (slots.size > slotCount) {
+            slots.removeAt(slots.lastIndex)
+        }
+
+        fun fixSlotPosition(i: Int, s: EdgeSlot): EdgeSlot {
+            return s.copy(
+                index = i,
+                side = fixedSideForRowCount(selectedRowCount, i)
+            )
+        }
 
         fun startDragCompat(v: View, fromIndex: Int) {
             val data = ClipData.newPlainText("fromIndex", fromIndex.toString())
@@ -1118,7 +1056,20 @@ class MainActivity : AppCompatActivity() {
 
             slots.forEachIndexed { index, slot ->
                 val btn = Button(this).apply {
-                    text = slot.label.ifBlank { "None" }
+                    text = when (selectedRowCount) {
+                        4 -> {
+                            val rowLabel = when (index) {
+                                0 -> "R1"
+                                1 -> "R2"
+                                2 -> "R3"
+                                else -> "R4"
+                            }
+                            "$rowLabel • ${slot.label.ifBlank { "None" }}"
+                        }
+
+                        else -> slot.label.ifBlank { "None" }
+                    }
+
                     isAllCaps = false
                     tag = index
                     setPadding(dp(8), dp(14), dp(8), dp(14))
@@ -1181,11 +1132,22 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                val col = if (fixedSideForRowCount(selectedRowCount, index) == EdgePos.Side.LEFT) {
+                    0
+                } else {
+                    1
+                }
+
+                val row = when (selectedRowCount) {
+                    4 -> index
+                    else -> index / 2
+                }
+
                 val lp = GridLayout.LayoutParams().apply {
                     width = 0
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    columnSpec = GridLayout.spec(index % 2, 1f)
-                    rowSpec = GridLayout.spec(index / 2)
+                    columnSpec = GridLayout.spec(col, 1f)
+                    rowSpec = GridLayout.spec(row)
                     setMargins(dp(6), dp(6), dp(6), dp(6))
                 }
 
@@ -1204,14 +1166,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun fixedSideForRowCount(rowCount: Int, index: Int): EdgePos.Side {
+        return when (rowCount) {
+            4 -> when (index) {
+                0 -> EdgePos.Side.RIGHT
+                1 -> EdgePos.Side.LEFT
+                2 -> EdgePos.Side.RIGHT
+                else -> EdgePos.Side.LEFT
+            }
 
-
-
-
-
-    /* =========================
-       SHAPE
-       ========================= */
+            else -> if (index % 2 == 0) EdgePos.Side.LEFT else EdgePos.Side.RIGHT
+        }
+    }
 
     private fun applyShape(shape: KeyShape) {
         preview.shape = shape
@@ -1224,24 +1190,24 @@ class MainActivity : AppCompatActivity() {
             KeyShape.HEX,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> hex.isChecked = true
-
             KeyShape.TRIANGLE -> tri.isChecked = true
             KeyShape.CIRCLE -> circle.isChecked = true
             KeyShape.CUBE -> cube.isChecked = true
         }
     }
 
-    /* =========================
-       UTIL
-       ========================= */
-
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
-
 
     private fun themeColor(attr: Int, fallback: Int): Int {
         val tv = android.util.TypedValue()
-        return if (theme.resolveAttribute(attr, tv, true) &&
-            tv.type in android.util.TypedValue.TYPE_FIRST_COLOR_INT..android.util.TypedValue.TYPE_LAST_COLOR_INT
-        ) tv.data else fallback
+        return if (
+            theme.resolveAttribute(attr, tv, true) &&
+            tv.type in android.util.TypedValue.TYPE_FIRST_COLOR_INT..
+            android.util.TypedValue.TYPE_LAST_COLOR_INT
+        ) {
+            tv.data
+        } else {
+            fallback
+        }
     }
 }
