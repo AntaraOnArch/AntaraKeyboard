@@ -178,7 +178,15 @@ class KeyView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
         if (!forceSquare) return
+
+        // HEX_TALL mora smjeti ostati viši od širine.
+        // Inače LayoutParams height iz MyKeyboardService nema nikakav efekt.
+        if (shape == KeyShape.HEX_TALL) {
+            return
+        }
+
         val s = min(measuredWidth, measuredHeight)
         setMeasuredDimension(s, s)
     }
@@ -337,6 +345,7 @@ class KeyView @JvmOverloads constructor(
             label.length == 1 -> {
                 when (shape) {
                     KeyShape.HEX,
+                    KeyShape.HEX_TALL,
                     KeyShape.HEX_HALF_LEFT,
                     KeyShape.HEX_HALF_RIGHT -> 15f
                     KeyShape.TRIANGLE -> 14f
@@ -368,6 +377,8 @@ class KeyView @JvmOverloads constructor(
     private fun buildShapePath(p: Path, l: Float, t: Float, r: Float, b: Float) {
         when (shape) {
             KeyShape.HEX -> buildHex(p, l, t, r, b)
+            KeyShape.HEX_TALL -> buildTallHex(p, l, t, r, b)
+
             KeyShape.HEX_HALF_LEFT -> buildHalfHexLeft(p, l, t, r, b)
             KeyShape.HEX_HALF_RIGHT -> buildHalfHexRight(p, l, t, r, b)
             KeyShape.TRIANGLE -> buildTriangle(p, l, t, r, b, triangleFlipped)
@@ -390,6 +401,29 @@ class KeyView @JvmOverloads constructor(
         p.lineTo(cx + dx, cy - dy)
         p.lineTo(cx + dx, cy + dy)
         p.lineTo(cx, cy + radius)
+        p.lineTo(cx - dx, cy + dy)
+        p.lineTo(cx - dx, cy - dy)
+        p.close()
+    }
+
+    private fun buildTallHex(p: Path, l: Float, t: Float, r: Float, b: Float) {
+        val w = r - l
+        val h = b - t
+        val cx = l + w * 0.5f
+        val cy = t + h * 0.5f
+
+        // isti hex kut kao buildHex, samo rastegnut po visini
+        val rx = w * 0.48f
+        val ry = h * 0.48f
+
+        val dx = 0.8660254f * rx
+        val dy = 0.5f * ry
+
+        p.reset()
+        p.moveTo(cx, cy - ry)
+        p.lineTo(cx + dx, cy - dy)
+        p.lineTo(cx + dx, cy + dy)
+        p.lineTo(cx, cy + ry)
         p.lineTo(cx - dx, cy + dy)
         p.lineTo(cx - dx, cy - dy)
         p.close()

@@ -20,10 +20,12 @@ import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.antarakeyboard.EmojiData
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
@@ -31,20 +33,18 @@ import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyConfig
-import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
+import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.service.input.KeyInputController
 import com.example.antarakeyboard.ui.KeyView
+import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
+import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
+import com.example.antarakeyboard.ui.defaultKeyboardLayout
+import com.example.antarakeyboard.ui.defaultNumericLayout
+import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
+import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import kotlin.math.max
 import kotlin.math.roundToInt
-import android.widget.ScrollView
-import com.example.antarakeyboard.EmojiData
-import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
-import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
-import com.example.antarakeyboard.ui.defaultKeyboardLayout
-import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
-import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
-import com.example.antarakeyboard.ui.defaultNumericLayout
 
 
 class MyKeyboardService : InputMethodService() {
@@ -57,6 +57,7 @@ class MyKeyboardService : InputMethodService() {
 
     private var currentKeyboardConfig: KeyboardConfig = defaultKeyboardLayout
     private var currentShape: KeyShape = KeyShape.HEX
+    private var activeShape: KeyShape = KeyShape.HEX
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val swipeEditHandler = Handler(Looper.getMainLooper())
@@ -288,6 +289,18 @@ class MyKeyboardService : InputMethodService() {
     }
 
     /* ───────── HELPERS ───────── */
+    private fun effectiveShape(): KeyShape {
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
+        return if (
+            !isLandscape() &&
+            savedRowCount == 3 &&
+            currentShape == KeyShape.HEX
+        ) {
+            KeyShape.HEX_TALL
+        } else {
+            currentShape
+        }
+    }
     private data class EdgeBinding(
         val visualIndex: Int,
         val side: EdgePos.Side,
@@ -298,27 +311,32 @@ class MyKeyboardService : InputMethodService() {
         val slots = EdgeSlotsStorage.load(this)
         val result = mutableListOf<EdgeBinding>()
 
+        // 3-row pravilo:
+        // row 1 -> DESNO
+        // row 2 -> LIJEVO
+        // row 3 -> DESNO
+
         slots.getOrNull(0)?.takeIf { it.type != EdgeActionType.NONE }?.let {
             result += EdgeBinding(
                 visualIndex = 0,
-                side = EdgePos.Side.LEFT,   // ⬅️ flip
-                slot = it.copy(side = EdgePos.Side.LEFT)
+                side = EdgePos.Side.RIGHT,
+                slot = it.copy(side = EdgePos.Side.RIGHT)
             )
         }
 
         slots.getOrNull(1)?.takeIf { it.type != EdgeActionType.NONE }?.let {
             result += EdgeBinding(
                 visualIndex = 1,
-                side = EdgePos.Side.RIGHT,  // ⬅️ flip
-                slot = it.copy(side = EdgePos.Side.RIGHT)
+                side = EdgePos.Side.LEFT,
+                slot = it.copy(side = EdgePos.Side.LEFT)
             )
         }
 
         slots.getOrNull(2)?.takeIf { it.type != EdgeActionType.NONE }?.let {
             result += EdgeBinding(
                 visualIndex = 2,
-                side = EdgePos.Side.LEFT,   // ⬅️ flip
-                slot = it.copy(side = EdgePos.Side.LEFT)
+                side = EdgePos.Side.RIGHT,
+                slot = it.copy(side = EdgePos.Side.RIGHT)
             )
         }
 
@@ -593,6 +611,7 @@ class MyKeyboardService : InputMethodService() {
     private fun landscapeHalfKeyWidthPx(keySize: Int, isLeft: Boolean): Int {
         return when (currentShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> (keySize * 0.56f).toInt()
 
@@ -673,14 +692,16 @@ class MyKeyboardService : InputMethodService() {
             .coerceAtLeast(dp(120))
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
+        val activeShape = currentShape
         val usableFactor = if (isLandscape()) 0.88f else 0.92f
         val usableForKeys = (usableH * usableFactor).toInt()
 
         if (!isLandscape()) {
             when (savedRowCount) {
                 3 -> {
-                    return when (currentShape) {
+                    return when(activeShape) {
                         KeyShape.HEX,
+                        KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
                         KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 3.15f).toInt().coerceAtLeast(dp(52))
 
@@ -691,8 +712,9 @@ class MyKeyboardService : InputMethodService() {
                 }
 
                 4 -> {
-                    return when (currentShape) {
+                    return when (activeShape) {
                         KeyShape.HEX,
+                        KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
                         KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 4.05f).toInt().coerceAtLeast(dp(44))
 
@@ -704,8 +726,9 @@ class MyKeyboardService : InputMethodService() {
             }
         }
 
-        val denom = when (currentShape) {
+        val denom = when (activeShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> (rows - (rows - 1) * OVERLAP_RATIO).coerceAtLeast(1f)
 
@@ -718,8 +741,9 @@ class MyKeyboardService : InputMethodService() {
             if (isLandscape()) dp(28) else dp(36)
         )
 
-        return when (currentShape) {
+        return when (activeShape){
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> (baseH * 1.08f).toInt()
 
@@ -1347,21 +1371,28 @@ class MyKeyboardService : InputMethodService() {
         val triOverlapY: Int
     )
 
-    private fun gapPxForShape(): Int = when (currentShape) {
-        KeyShape.HEX,
-        KeyShape.HEX_HALF_LEFT,
-        KeyShape.HEX_HALF_RIGHT -> dp(1)
+    private fun gapPxForShape(): Int {
+        val activeShape = effectiveShape()
 
-        KeyShape.TRIANGLE -> dp(0)
-        KeyShape.CIRCLE -> dp(4)
-        KeyShape.CUBE -> dp(4)
+        return when (activeShape) {
+            KeyShape.HEX,
+            KeyShape.HEX_TALL,
+            KeyShape.HEX_HALF_LEFT,
+            KeyShape.HEX_HALF_RIGHT -> dp(1)
+
+            KeyShape.TRIANGLE -> dp(0)
+            KeyShape.CIRCLE -> dp(4)
+            KeyShape.CUBE -> dp(4)
+        }
     }
 
     private fun computeRowSizing(count: Int, availW: Int): RowSizing {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
+        val layoutShape = currentShape
 
-        val gap = when (currentShape) {
+        val gap = when (layoutShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 when {
@@ -1377,13 +1408,21 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.CUBE -> if (isLandscape()) dp(2) else dp(4)
         }
 
-        val effectiveAvailW = when (currentShape) {
+        val effectiveAvailW = when (layoutShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 when {
-                    isLandscape() -> (availW * 1.22f).toInt()
-                    savedRowCount == 3 -> (availW * 1.25f).toInt()
+                    isLandscape() -> {
+                        if (savedRowCount == 3) {
+                            availW
+                        } else {
+                            (availW * 1.22f).toInt()
+                        }
+                    }
+
+                    savedRowCount == 3 -> (availW * 0.95f).toInt()
                     savedRowCount == 4 -> (availW * 0.94f).toInt()
                     else -> availW
                 }
@@ -1395,16 +1434,18 @@ class MyKeyboardService : InputMethodService() {
         }
 
         val targetColumns = when {
-            currentShape == KeyShape.HEX && isLandscape() -> 7f
-            savedRowCount == 3 -> 8.2f
-            currentShape == KeyShape.HEX && savedRowCount == 4 -> 8.9f
-            currentShape == KeyShape.HEX -> 7f
+            layoutShape == KeyShape.HEX && isLandscape() && savedRowCount == 3 -> 11f
+            layoutShape == KeyShape.HEX && isLandscape() -> 7f
+            savedRowCount == 3 -> 8.8f
+            layoutShape == KeyShape.HEX && savedRowCount == 4 -> 8.9f
+            layoutShape == KeyShape.HEX -> 7f
             else -> max(1, count).toFloat()
         }
 
         val minKeyWidth = when {
+            isLandscape() && savedRowCount == 3 -> dp(24)
             isLandscape() -> dp(40)
-            savedRowCount == 3 -> dp(30)
+            savedRowCount == 3 -> dp(20)
             savedRowCount == 4 -> dp(24)
             else -> dp(36)
         }
@@ -1414,19 +1455,27 @@ class MyKeyboardService : InputMethodService() {
             .coerceAtLeast(minKeyWidth)
 
         val keyW = when {
-            currentShape == KeyShape.HEX && isLandscape() && count <= 6 -> (baseKeyW * 1.06f).toInt()
-            currentShape == KeyShape.HEX && isLandscape() && count >= 7 -> baseKeyW
+            layoutShape == KeyShape.HEX && isLandscape() && savedRowCount == 3 -> baseKeyW
+
+            layoutShape == KeyShape.HEX && isLandscape() && count <= 6 -> {
+                (baseKeyW * 1.06f).toInt()
+            }
+
+            layoutShape == KeyShape.HEX && isLandscape() && count >= 7 -> {
+                baseKeyW
+            }
 
             savedRowCount == 3 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
                     .toInt()
-                    .coerceAtLeast(dp(28))
+                    .coerceAtLeast(dp(24))
             }
 
-            savedRowCount == 4 -> ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                .toInt()
-                .coerceAtLeast(dp(22)
-                )
+            savedRowCount == 4 -> {
+                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
+                    .toInt()
+                    .coerceAtLeast(dp(22))
+            }
 
             count == 7 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
@@ -1446,22 +1495,52 @@ class MyKeyboardService : InputMethodService() {
         val used = count * keyW + (count - 1) * gap
 
         val outer = when {
-            isLandscape() && currentShape == KeyShape.HEX -> ((availW - used) / 2).coerceAtLeast(dp(4))
-            isLandscape() -> ((availW - used) / 2).coerceAtLeast(dp(6))
-            savedRowCount == 3 -> ((availW - used) / 2).coerceAtLeast(0)
-            savedRowCount == 4 -> ((availW - used) / 2).coerceAtLeast(0)
-            else -> ((availW - used) / 2).coerceAtLeast(0)
+            isLandscape() && layoutShape == KeyShape.HEX -> {
+                ((availW - used) / 2).coerceAtLeast(dp(4))
+            }
+
+            isLandscape() -> {
+                ((availW - used) / 2).coerceAtLeast(dp(6))
+            }
+
+            savedRowCount == 3 -> {
+                ((availW - used) / 2).coerceAtLeast(0)
+            }
+
+            savedRowCount == 4 -> {
+                ((availW - used) / 2).coerceAtLeast(0)
+            }
+
+            else -> {
+                ((availW - used) / 2).coerceAtLeast(0)
+            }
         }
 
-        val keyH = keyHeight()
+        val rawKeyH = keyHeight()
+
+        val keyH = if (
+            !isLandscape() &&
+            savedRowCount == 3 &&
+            (
+                    currentShape == KeyShape.HEX ||
+                            currentShape == KeyShape.HEX_HALF_LEFT ||
+                            currentShape == KeyShape.HEX_HALF_RIGHT
+                    )
+        ) {
+            // 3-row portrait: izduženi hex gumbi, +60% visine
+            (keyW * 1.90f).toInt().coerceAtLeast(dp(42))
+        } else {
+            rawKeyH
+        }
 
         val overlap = when (currentShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 val ratio = when {
-                    isLandscape() -> OVERLAP_RATIO * 0.72f
-                    savedRowCount == 3 -> OVERLAP_RATIO * 0.86f
+                    isLandscape() -> OVERLAP_RATIO * 0.6f
+                    savedRowCount == 3 -> OVERLAP_RATIO * 1.58f
                     savedRowCount == 4 -> OVERLAP_RATIO * 1.00f
                     else -> OVERLAP_RATIO
                 }
@@ -1557,21 +1636,32 @@ class MyKeyboardService : InputMethodService() {
                 val availW = availableKeyboardWidthPx()
                 val sizing = computeRowSizing(rowKeys.size, availW)
 
-                val vPad = when (currentShape) {
+                val savedRowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
+                val layoutShape = currentShape
+
+                val vPad = when (layoutShape) {
                     KeyShape.TRIANGLE -> 0
+
                     KeyShape.HEX,
+                    KeyShape.HEX_TALL,
                     KeyShape.HEX_HALF_LEFT,
-                    KeyShape.HEX_HALF_RIGHT -> if (isLandscape()) 0 else dp(1)
+                    KeyShape.HEX_HALF_RIGHT -> {
+                        when {
+                            isLandscape() -> 0
+                            savedRowCount == 3 -> dp(3)
+                            else -> dp(1)
+                        }
+                    }
+
                     else -> if (isLandscape()) dp(1) else dp(2)
                 }
 
-                val savedRowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
-
                 val shouldHoneycomb =
                     !isLandscape() &&
-                            (currentShape == KeyShape.HEX ||
-                                    currentShape == KeyShape.HEX_HALF_LEFT ||
-                                    currentShape == KeyShape.HEX_HALF_RIGHT) &&
+                            (layoutShape == KeyShape.HEX ||
+                                    layoutShape == KeyShape.HEX_TALL ||
+                                    layoutShape == KeyShape.HEX_HALF_LEFT ||
+                                    layoutShape == KeyShape.HEX_HALF_RIGHT) &&
                             (savedRowCount == 3 || savedRowCount == 4)
 
                 val honeycombShift = when {
@@ -1583,17 +1673,43 @@ class MyKeyboardService : InputMethodService() {
                 val isShiftedRow = shouldHoneycomb && (containerRowIndex % 2 == 1)
 
                 val leftPad = when {
-                    savedRowCount == 4 && isShiftedRow -> (sizing.outerPadPx + honeycombShift - dp(6)).coerceAtLeast(0)
-                    savedRowCount == 4 -> (sizing.outerPadPx - dp(6)).coerceAtLeast(0)
-                    isShiftedRow -> sizing.outerPadPx + honeycombShift
-                    else -> sizing.outerPadPx
+                    savedRowCount == 4 && isShiftedRow ->
+                        (sizing.outerPadPx + honeycombShift - dp(6)).coerceAtLeast(0)
+
+                    savedRowCount == 4 ->
+                        (sizing.outerPadPx - dp(6)).coerceAtLeast(0)
+
+                    savedRowCount == 3 && isShiftedRow ->
+                        (sizing.outerPadPx + honeycombShift - dp(8)).coerceAtLeast(0)
+
+                    savedRowCount == 3 ->
+                        (sizing.outerPadPx - dp(12)).coerceAtLeast(0)
+
+                    isShiftedRow ->
+                        sizing.outerPadPx + honeycombShift
+
+                    else ->
+                        sizing.outerPadPx
                 }
 
                 val rightPad = when {
-                    savedRowCount == 4 && shouldHoneycomb && !isShiftedRow -> sizing.outerPadPx + honeycombShift + dp(2)
-                    savedRowCount == 4 -> sizing.outerPadPx + dp(2)
-                    shouldHoneycomb && !isShiftedRow -> sizing.outerPadPx + honeycombShift
-                    else -> sizing.outerPadPx
+                    savedRowCount == 4 && shouldHoneycomb && !isShiftedRow ->
+                        sizing.outerPadPx + honeycombShift + dp(2)
+
+                    savedRowCount == 4 ->
+                        sizing.outerPadPx + dp(2)
+
+                    savedRowCount == 3 && shouldHoneycomb && !isShiftedRow ->
+                        (sizing.outerPadPx + honeycombShift - dp(10)).coerceAtLeast(0)
+
+                    savedRowCount == 3 ->
+                        (sizing.outerPadPx - dp(12)).coerceAtLeast(0)
+
+                    shouldHoneycomb && !isShiftedRow ->
+                        sizing.outerPadPx + honeycombShift
+
+                    else ->
+                        sizing.outerPadPx
                 }
 
                 val row = LinearLayout(this).apply {
@@ -1607,7 +1723,7 @@ class MyKeyboardService : InputMethodService() {
                 rowKeys.forEachIndexed { i, key ->
                     val kv = createKey(key)
 
-                    if (currentShape == KeyShape.TRIANGLE) {
+                    if (layoutShape == KeyShape.TRIANGLE) {
                         kv.triangleFlipped = (i % 2 == 1)
                     }
 
@@ -1626,8 +1742,9 @@ class MyKeyboardService : InputMethodService() {
                 )
 
                 if (containerRowIndex > 0) {
-                    lpRow.topMargin = when (currentShape) {
+                    lpRow.topMargin = when (layoutShape) {
                         KeyShape.HEX,
+                        KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
                         KeyShape.HEX_HALF_RIGHT -> -sizing.overlapPx
                         else -> 0
@@ -1834,7 +1951,7 @@ class MyKeyboardService : InputMethodService() {
 
             val totalRows = keyboardContainer.childCount
             val slotW = when (totalRows) {
-                3 -> (keyW * 0.34f).toInt().coerceIn(dp(16), dp(32))
+                3 -> (keyW * 0.30f).toInt().coerceIn(dp(14), dp(28))
                 4 -> (keyW * 0.34f).toInt().coerceIn(dp(16), dp(34))
                 else -> (keyW * 0.42f).toInt().coerceIn(dp(20), dp(50))
             }
@@ -1867,6 +1984,7 @@ class MyKeyboardService : InputMethodService() {
                 val sideOutset = when (totalRows) {
                     5 -> (slotW * 0.28f).toInt()
                     4 -> (slotW * 0.55f).toInt()
+                    3 -> (slotW * 0.40f).toInt()   // bilo 0.90f  // dozvoli 3-row side buttonima da izađu ulijevo/desno
                     else -> (slotW * 0.14f).toInt()
                 }
 
@@ -1947,12 +2065,17 @@ class MyKeyboardService : InputMethodService() {
                     overlayLayer.height - first.height - safeY
                 )
 
-                val top = if (totalRows == 4) {
-                    baseTop + dp(10)
-                } else {
-                    baseTop
-                }
+                val isLeftShift3Row =
+                    totalRows == 3 &&
+                            binding.side == EdgePos.Side.LEFT &&
+                            binding.slot.type == EdgeActionType.SHIFT
 
+                val top = when {
+                    totalRows == 4 -> baseTop + dp(10)
+                    isLeftShift3Row -> baseTop + dp(10)   // bilo 8
+                    totalRows == 3 && binding.side == EdgePos.Side.LEFT -> baseTop + dp(8)
+                    else -> baseTop
+                }
                 val rowLeft = firstLoc[0] - ovLoc[0]
                 val rowRight = lastLoc[0] - ovLoc[0] + last.width
 
@@ -1963,6 +2086,18 @@ class MyKeyboardService : InputMethodService() {
 
                     totalRows == 4 && binding.side == EdgePos.Side.LEFT -> {
                         -(slotW * 0.35f).toInt()
+                    }
+
+                    isLeftShift3Row -> {
+                        rowLeft - slotW - dp(28)   // shift ide jako lijevo od "a"
+                    }
+
+                    totalRows == 3 && binding.side == EdgePos.Side.LEFT -> {
+                        rowLeft - slotW - dp(28)
+                    }
+
+                    totalRows == 3 && binding.side == EdgePos.Side.RIGHT -> {
+                        rowRight - dp(8)
                     }
 
                     binding.side == EdgePos.Side.RIGHT -> {
@@ -2056,6 +2191,10 @@ class MyKeyboardService : InputMethodService() {
 
                 val icon = TextView(this).apply {
                     val isShiftSlot = slot.type == EdgeActionType.SHIFT
+                    val isLeftShift3Row =
+                        totalRows == 3 &&
+                                effectiveSide == EdgePos.Side.LEFT &&
+                                slot.type == EdgeActionType.SHIFT
                     text = if (isShiftSlot && isShifted) "⇪" else slot.label
                     gravity = Gravity.CENTER
                     includeFontPadding = false
@@ -2068,9 +2207,15 @@ class MyKeyboardService : InputMethodService() {
 
                     textSize = when (totalRows) {
                         4 -> (boxH * 0.20f / resources.configuration.fontScale).coerceIn(10f, 16f)
-                        3 -> (boxH * 0.32f / resources.configuration.fontScale).coerceIn(11f, 18f)
+                        3 -> (boxH * 0.20f / resources.configuration.fontScale).coerceIn(10f, 14f)
                         else -> (boxH * 0.28f / resources.configuration.fontScale).coerceIn(12f, 20f)
                     }
+
+
+                    val isShiftIcon =
+                        slot.type == EdgeActionType.SHIFT &&
+                                totalRows == 3 &&
+                                effectiveSide == EdgePos.Side.LEFT
 
                     translationX = when (totalRows) {
                         4 -> when (effectiveSide) {
@@ -2083,6 +2228,12 @@ class MyKeyboardService : InputMethodService() {
                             EdgePos.Side.RIGHT -> -dp(11).toFloat()
                         }
 
+                        3 -> when {
+                            isLeftShift3Row -> -dp(4).toFloat()   // malo više lijevo
+                            effectiveSide == EdgePos.Side.LEFT -> 0f
+                            else -> -dp(1).toFloat()
+                        }
+
                         else -> when (effectiveSide) {
                             EdgePos.Side.LEFT -> dp(1).toFloat()
                             EdgePos.Side.RIGHT -> -dp(2).toFloat()
@@ -2092,6 +2243,10 @@ class MyKeyboardService : InputMethodService() {
                     translationY = when (totalRows) {
                         4 -> -dp(7).toFloat()
                         5 -> -dp(7).toFloat()
+                        3 -> {
+                            if (isLeftShift3Row) -dp(15).toFloat()   // malo više gore
+                            else -dp(3).toFloat()
+                        }
                         else -> -dp(5).toFloat()
                     }
                 }
@@ -2184,16 +2339,26 @@ class MyKeyboardService : InputMethodService() {
     /* ───────── KEY VIEW ───────── */
     private fun buildLandscapeLayout() {
         landscapeSpaceIndex = 0
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(8), dp(4), dp(8), dp(4))
+            setPadding(
+                if (savedRowCount == 3) dp(2) else dp(8),
+                dp(4),
+                if (savedRowCount == 3) dp(4) else dp(8),
+                dp(4)
+            )
+            clipChildren = false
+            clipToPadding = false
         }
 
         val leftContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            clipChildren = false
+            clipToPadding = false
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -2215,11 +2380,12 @@ class MyKeyboardService : InputMethodService() {
 
         val rightContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                2.2f
+                if (savedRowCount == 3) 1.75f else 2.2f
             )
         }
 
@@ -2257,17 +2423,45 @@ class MyKeyboardService : InputMethodService() {
         }
     }
 
-    private fun landscapeKeySizePx(): Int = when (currentShape) {
-        KeyShape.HEX,
-        KeyShape.HEX_HALF_LEFT,
-        KeyShape.HEX_HALF_RIGHT -> dp(42)
+    private fun landscapeKeySizePx(): Int {
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
-        KeyShape.TRIANGLE -> dp(40)
-        KeyShape.CIRCLE -> dp(38)
-        KeyShape.CUBE -> dp(35)
+        return when (currentShape) {
+            KeyShape.HEX,
+            KeyShape.HEX_TALL,
+            KeyShape.HEX_HALF_LEFT,
+            KeyShape.HEX_HALF_RIGHT -> {
+                when (savedRowCount) {
+                    3 -> dp(33)
+                    else -> dp(42)
+                }
+            }
+
+            KeyShape.TRIANGLE -> {
+                when (savedRowCount) {
+                    3 -> dp(32)
+                    else -> dp(40)
+                }
+            }
+
+            KeyShape.CIRCLE -> {
+                when (savedRowCount) {
+                    3 -> dp(32)
+                    else -> dp(38)
+                }
+            }
+
+            KeyShape.CUBE -> {
+                when (savedRowCount) {
+                    3 -> dp(31)
+                    else -> dp(35)
+                }
+            }
+        }
     }
     private fun landscapeRowOverlapPx(keySize: Int): Int = when (currentShape) {
         KeyShape.HEX,
+        KeyShape.HEX_TALL,
         KeyShape.HEX_HALF_LEFT,
         KeyShape.HEX_HALF_RIGHT -> (keySize * 0.25f).toInt()
 
@@ -2292,16 +2486,19 @@ class MyKeyboardService : InputMethodService() {
                 clipToPadding = false
             }
 
+            val savedRowCount = KeyboardPrefs.getRowCount(this)
+
             val rowLp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
                 if (rowIndex > 0) topMargin = -rowOverlap
 
-                leftMargin = if (isOddLandscapeRow(rowIndex)) {
-                    halfStep
-                } else {
-                    0
+                leftMargin = when {
+                    savedRowCount == 3 && rowIndex in setOf(0, 2) -> -(halfStep / 2)
+                    savedRowCount == 3 -> 0
+                    isOddLandscapeRow(rowIndex) -> halfStep
+                    else -> 0
                 }
             }
 
@@ -2383,11 +2580,18 @@ class MyKeyboardService : InputMethodService() {
 
     private fun buildLandscapeCenter(container: LinearLayout) {
         val cfg = KeyboardPrefs.loadHorizontalCenterLayout(this)
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
-        val keySize = dp(28)
-        val rowGap = dp(6)
+        val centerRows = if (savedRowCount == 3 && cfg.rows.isNotEmpty()) {
+            cfg.rows.drop(1)   // 3-row: bez gornjeg reda
+        } else {
+            cfg.rows
+        }
 
-        cfg.rows.forEachIndexed { rowIndex, rowConfig ->
+        val keySize = if (savedRowCount == 3) dp(28) else dp(28)
+        val rowGap = if (savedRowCount == 3) dp(6) else dp(6)
+
+        centerRows.forEachIndexed { rowIndex, rowConfig ->
             val rowKeys = rowConfig.keys.filter { key ->
                 key.label.isNotBlank() &&
                         !key.longPressBindings.contains("__USER_EMPTY__") &&
@@ -2404,7 +2608,13 @@ class MyKeyboardService : InputMethodService() {
             }
 
             rowKeys.forEachIndexed { i, key ->
-                val kv = createCenterTextKey(key.label)
+                val displayLabel = when {
+                    savedRowCount == 3 && rowIndex == 0 && key.label == "@" -> "0"
+                    savedRowCount == 3 && rowIndex == centerRows.lastIndex && key.label == "$" -> "@"
+                    else -> key.label
+                }
+
+                val kv = createCenterTextKey(displayLabel)
 
                 val lp = LinearLayout.LayoutParams(
                     keySize,
@@ -2421,11 +2631,6 @@ class MyKeyboardService : InputMethodService() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
                 if (container.childCount > 0) topMargin = rowGap
-
-                when (container.childCount) {
-                    1 -> leftMargin = dp(8)
-                    3 -> leftMargin = dp(14)
-                }
             }
 
             container.addView(rowLayout, rowLp)
@@ -2589,6 +2794,7 @@ class MyKeyboardService : InputMethodService() {
     private fun isOddLandscapeRow(rowIndex: Int): Boolean {
         return rowIndex % 2 == 0
     }
+
     private fun leftLandscapeKeysForRow(
         rowKeys: List<KeyConfig>,
         rowIndex: Int
@@ -2598,6 +2804,15 @@ class MyKeyboardService : InputMethodService() {
         }
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
+
+        if (savedRowCount == 3) {
+            return when (rowIndex) {
+                0 -> visible.take(6)
+                1 -> visible.take(5)
+                2 -> visible.take(6)
+                else -> visible.take(6)
+            }
+        }
 
         val takeCount = if (
             savedRowCount == 4 &&
@@ -2611,6 +2826,7 @@ class MyKeyboardService : InputMethodService() {
 
         return visible.take(takeCount)
     }
+
     private fun rightLandscapeKeysForRow(
         rowKeys: List<KeyConfig>,
         rowIndex: Int
@@ -2620,6 +2836,15 @@ class MyKeyboardService : InputMethodService() {
         }
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
+
+        if (savedRowCount == 3) {
+            return when (rowIndex) {
+                0 -> visible.drop(6).take(5)
+                1 -> visible.drop(5).take(6)
+                2 -> visible.drop(6).take(5)
+                else -> visible.drop(6)
+            }
+        }
 
         val takeCount = if (
             savedRowCount == 4 &&
@@ -2649,6 +2874,7 @@ class MyKeyboardService : InputMethodService() {
     }
 
     private fun createKey(keyConfig: KeyConfig): KeyView = KeyView(themedCtx).apply {
+        val activeShape = effectiveShape()
         val label = keyConfig.label
 
         if (label.isEmpty()) {
@@ -2657,7 +2883,7 @@ class MyKeyboardService : InputMethodService() {
 
             text = ""
             isAllCaps = false
-            shape = currentShape
+            shape = activeShape
             gravity = Gravity.CENTER
             isClickable = false
             isFocusable = false
@@ -2728,14 +2954,15 @@ class MyKeyboardService : InputMethodService() {
         }
 
         isAllCaps = false
-        shape = currentShape
+        shape = activeShape
         isSpecial = (label == "↵")
         gravity = Gravity.CENTER
         includeFontPadding = false
         setPadding(0, 0, 0, 0)
 
-        textSize = when (currentShape) {
+        textSize = when (activeShape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> if (isLandscape()) 14f else 18f
 

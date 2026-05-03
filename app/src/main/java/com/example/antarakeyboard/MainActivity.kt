@@ -1188,6 +1188,7 @@ class MainActivity : AppCompatActivity() {
     private fun setCheckedForShape(shape: KeyShape) {
         when (shape) {
             KeyShape.HEX,
+            KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> hex.isChecked = true
             KeyShape.TRIANGLE -> tri.isChecked = true
