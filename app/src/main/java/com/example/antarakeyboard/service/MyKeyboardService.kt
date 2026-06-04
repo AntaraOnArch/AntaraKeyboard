@@ -69,12 +69,6 @@ class MyKeyboardService : InputMethodService() {
     private lateinit var keyboardContainer: LinearLayout
     private lateinit var overlayLayer: FrameLayout
     private lateinit var themedCtx: Context
-    private data class RowModeProfile(
-        val rowCount: Int,
-        val edgeVisualRows: List<Int>,
-        val useMiddleSpaceRow: Boolean,
-        val overlapMultiplier: Float
-    )
 
     private val myDefaultNumericConfig: KeyboardConfig
         get() = when (KeyboardPrefs.getRowCount(this)) {
@@ -156,6 +150,20 @@ class MyKeyboardService : InputMethodService() {
         overlayLayer.clipToPadding = false
         keyboardContainer.clipChildren = false
         keyboardContainer.clipToPadding = false
+
+        rootView.isFocusable = false
+        rootView.isFocusableInTouchMode = false
+        rootView.isLongClickable = false
+
+        overlayLayer.isFocusable = false
+        overlayLayer.isFocusableInTouchMode = false
+        overlayLayer.isLongClickable = false
+        overlayLayer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+        keyboardContainer.isFocusable = false
+        keyboardContainer.isFocusableInTouchMode = false
+        keyboardContainer.isLongClickable = false
+        keyboardContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 
         keyboardContainer.gravity = Gravity.CENTER_HORIZONTAL
 
@@ -289,10 +297,183 @@ class MyKeyboardService : InputMethodService() {
     }
 
     /* ───────── HELPERS ───────── */
+
+    private fun sideButtonTuning(
+        isLandscapeMode: Boolean,
+        rowCount: Int,
+        visualIndex: Int,
+        side: EdgePos.Side,
+        slotType: EdgeActionType
+    ): SideButtonTuning {
+        return if (isLandscapeMode) {
+            landscapeSideButtonTuning(rowCount, visualIndex, side, slotType)
+        } else {
+            portraitSideButtonTuning(rowCount, visualIndex, side, slotType)
+        }
+    }
+
+    private fun portraitSideButtonTuning(
+        rowCount: Int,
+        visualIndex: Int,
+        side: EdgePos.Side,
+        slotType: EdgeActionType
+    ): SideButtonTuning {
+        return when (rowCount) {
+            5 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)// više lijevo / prema rubu
+                    1 -> SideButtonTuning(x = -18, y = -3, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0) // manje lijevo / više unutra
+                    2 -> SideButtonTuning(x = -18, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = 2, y = -2, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = 2, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = 2, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+            }
+
+            4 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    3 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    3 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+            }
+
+            3 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
+                    1 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
+                    2 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
+                    else -> SideButtonTuning()
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
+                    1 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
+                    2 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
+                    else -> SideButtonTuning()
+                }
+            }
+
+            else -> SideButtonTuning()
+        }.let { base ->
+            if (slotType == EdgeActionType.SHIFT) {
+                base.copy(
+                    iconTextSizeSp = when (rowCount) {
+                        5 -> 21f
+                        4 -> 18f
+                        3 -> 18f
+                        else -> 18f
+                    },
+                    iconY = base.iconY - 3
+                )
+            } else {
+                base
+            }
+        }
+    }
+
+    private fun landscapeSideButtonTuning(
+        rowCount: Int,
+        visualIndex: Int,
+        side: EdgePos.Side,
+        slotType: EdgeActionType
+    ): SideButtonTuning {
+        return when (rowCount) {
+            5 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -14, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = -14, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = -14, y = -4, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = 17, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = 17, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = 17, y = -4, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
+                }
+            }
+
+            4 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    3 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    3 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
+                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
+                }
+            }
+
+            3 -> when (side) {
+                EdgePos.Side.LEFT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
+                    1 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
+                    2 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+
+                EdgePos.Side.RIGHT -> when (visualIndex) {
+                    0 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
+                    1 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
+                    2 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
+                    else -> SideButtonTuning()
+                }
+            }
+
+            else -> SideButtonTuning()
+        }.let { base ->
+            if (slotType == EdgeActionType.SHIFT) {
+                base.copy(
+                    iconTextSizeSp = 17f,
+                    iconY = base.iconY - 2
+                )
+            } else {
+                base.copy(
+                    iconTextSizeSp = 13.5f
+                )
+            }
+        }
+    }
+    private fun landscapeShape(): KeyShape {
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
+        return if (
+            isLandscape() &&
+            savedRowCount == 3 &&
+            currentShape == KeyShape.HEX
+        ) {
+            KeyShape.HEX_TALL
+        } else {
+            currentShape
+        }
+    }
+
     private fun effectiveShape(): KeyShape {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         return if (
-            !isLandscape() &&
             savedRowCount == 3 &&
             currentShape == KeyShape.HEX
         ) {
@@ -306,7 +487,15 @@ class MyKeyboardService : InputMethodService() {
         val side: EdgePos.Side,
         val slot: EdgeSlot
     )
-
+    private data class SideButtonTuning(
+        val x: Int = 0,
+        val y: Int = 0,
+        val widthScale: Float = 1f,
+        val heightScale: Float = 1f,
+        val iconX: Int = 0,
+        val iconY: Int = 0,
+        val iconTextSizeSp: Float? = null
+    )
     private fun threeRowEdgeBindings(): List<EdgeBinding> {
         val slots = EdgeSlotsStorage.load(this)
         val result = mutableListOf<EdgeBinding>()
@@ -410,28 +599,7 @@ class MyKeyboardService : InputMethodService() {
             }
         }
     }
-    private fun currentRowProfile(): RowModeProfile {
-        return when (KeyboardPrefs.getRowCount(this)) {
-            3 -> RowModeProfile(
-                rowCount = 3,
-                edgeVisualRows = listOf(0, 1, 2),
-                useMiddleSpaceRow = false,
-                overlapMultiplier = 0.82f
-            )
-            4 -> RowModeProfile(
-                rowCount = 4,
-                edgeVisualRows = listOf(0, 2, 3),
-                useMiddleSpaceRow = false,
-                overlapMultiplier = 0.90f
-            )
-            else -> RowModeProfile(
-                rowCount = 5,
-                edgeVisualRows = listOf(0, 2, 4),
-                useMiddleSpaceRow = true,
-                overlapMultiplier = 1f
-            )
-        }
-    }
+
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
         return when (KeyboardPrefs.getRowCount(this)) {
             3 -> defaultThreeRowKeyboardLayoutQwertz
@@ -439,28 +607,6 @@ class MyKeyboardService : InputMethodService() {
             5 -> KeyboardPrefs.loadLayout(this)
             else -> defaultThreeRowKeyboardLayoutQwertz
         }
-    }
-    private fun defaultAlphabetLayoutForRowCount(): KeyboardConfig {
-        return when (KeyboardPrefs.getRowCount(this)) {
-            3 -> defaultThreeRowKeyboardLayoutQwertz
-            4 -> defaultFourRowKeyboardLayout
-            5 -> defaultKeyboardLayout
-            else -> defaultThreeRowKeyboardLayoutQwertz
-        }
-    }
-
-    private fun defaultNumericLayoutForRowCount(): KeyboardConfig {
-        return when (KeyboardPrefs.getRowCount(this)) {
-            3 -> defaultThreeRowNumericLayout
-            4 -> defaultFourRowNumericLayout
-            5 -> defaultNumericLayout
-            else -> defaultThreeRowNumericLayout
-        }
-    }
-    private fun rowCount(): Int {
-        return currentKeyboardConfig.rows.size +
-                (if (currentKeyboardConfig.specialLeft.isNotEmpty()) 1 else 0) +
-                (if (currentKeyboardConfig.specialRight.isNotEmpty()) 1 else 0)
     }
 
 
@@ -608,20 +754,8 @@ class MyKeyboardService : InputMethodService() {
 
         popup.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, x, y)
     }
-    private fun landscapeHalfKeyWidthPx(keySize: Int, isLeft: Boolean): Int {
-        return when (currentShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> (keySize * 0.56f).toInt()
 
-            KeyShape.TRIANGLE -> (keySize * 0.72f).toInt()
-            KeyShape.CIRCLE -> (keySize * 0.82f).toInt()
-            KeyShape.CUBE -> (keySize * 0.82f).toInt()
-        }
-    }
-
-    private fun landscapeKeyGapPx(): Int = when (currentShape) {
+    private fun landscapeKeyGapPx(): Int = when (landscapeShape()) {
         KeyShape.TRIANGLE -> dp(0)
         KeyShape.CIRCLE -> dp(2)
         KeyShape.CUBE -> dp(2)
@@ -667,11 +801,26 @@ class MyKeyboardService : InputMethodService() {
 
     private fun computeTargetKeyboardHeight(): Int {
         val screenH = resources.displayMetrics.heightPixels
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         return if (isPortrait()) {
             (screenH * 0.36f).roundToInt().coerceAtLeast(dp(230))
         } else {
-            (screenH * 0.42f).roundToInt().coerceAtLeast(dp(160))
+            val ratio = when (savedRowCount) {
+                3 -> 0.28f
+                4 -> 0.38f
+                5 -> 0.52f
+                else -> 0.36f
+            }
+
+            val minH = when (savedRowCount) {
+                3 -> dp(120)
+                4 -> dp(160)
+                5 -> dp(175)
+                else -> dp(120)
+            }
+
+            (screenH * ratio).roundToInt().coerceAtLeast(minH)
         }
     }
 
@@ -779,16 +928,22 @@ class MyKeyboardService : InputMethodService() {
         val contentH = keyboardContainer.height
         if (contentH <= 0) return
 
-        val extraBottomSafety = dp(16)
+        val extraBottomSafety = if (isLandscape()) dp(6) else dp(16)
+
         val desired = contentH +
                 overlayLayer.paddingTop +
                 overlayLayer.paddingBottom +
                 extraBottomSafety
 
-        val maxTarget = (computeTargetKeyboardHeight() + lastBottomInsetPx)
-            .coerceAtLeast(dp(230))
+        val minTarget = if (isLandscape()) dp(110) else dp(180)
 
-        val newH = desired.coerceIn(dp(180), maxTarget)
+        val maxTarget = if (isLandscape()) {
+            (computeTargetKeyboardHeight() + lastBottomInsetPx).coerceAtLeast(dp(120))
+        } else {
+            (computeTargetKeyboardHeight() + lastBottomInsetPx).coerceAtLeast(dp(230))
+        }
+
+        val newH = desired.coerceIn(minTarget, maxTarget)
 
         val lp = overlayLayer.layoutParams ?: ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -802,6 +957,7 @@ class MyKeyboardService : InputMethodService() {
             overlayLayer.requestLayout()
         }
     }
+
 
     /* ───────── DELETE / RESTORE LOGIC ───────── */
 
@@ -1371,21 +1527,6 @@ class MyKeyboardService : InputMethodService() {
         val triOverlapY: Int
     )
 
-    private fun gapPxForShape(): Int {
-        val activeShape = effectiveShape()
-
-        return when (activeShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> dp(1)
-
-            KeyShape.TRIANGLE -> dp(0)
-            KeyShape.CIRCLE -> dp(4)
-            KeyShape.CUBE -> dp(4)
-        }
-    }
-
     private fun computeRowSizing(count: Int, availW: Int): RowSizing {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val layoutShape = currentShape
@@ -1572,19 +1713,6 @@ class MyKeyboardService : InputMethodService() {
         }
     }
 
-    private fun allowedEdgeSideForVisualRow(visualIndex: Int, totalRows: Int): EdgePos.Side? {
-        return when (totalRows) {
-            4 -> when (visualIndex) {
-                0 -> EdgePos.Side.RIGHT
-                1 -> EdgePos.Side.LEFT
-                2 -> EdgePos.Side.RIGHT
-                3 -> EdgePos.Side.LEFT
-                else -> null
-            }
-            else -> null
-        }
-    }
-
     private fun redrawKeyboard() {
         if (!::keyboardContainer.isInitialized) return
         if (!::overlayLayer.isInitialized) return
@@ -1616,7 +1744,6 @@ class MyKeyboardService : InputMethodService() {
                     toRemove.forEach { overlayLayer.removeView(it) }
 
                     drawLandscapeSideSlots()
-                    drawLandscapeSideButtons()
 
                     isDrawing = false
                 }
@@ -1773,7 +1900,6 @@ class MyKeyboardService : InputMethodService() {
                 syncOverlayHeightToContent()
                 overlayLayer.post {
                     drawEdgeSlots()
-                    drawEdgeIcons()
                     isDrawing = false
                 }
             }
@@ -1792,12 +1918,24 @@ class MyKeyboardService : InputMethodService() {
             val leftBlock = root.getChildAt(0) as? ViewGroup ?: return@post
             val rightBlock = root.getChildAt(2) as? ViewGroup ?: return@post
 
+            val slots = EdgeSlotsStorage.load(this@MyKeyboardService)
+                .filter { it.type != EdgeActionType.NONE }
+
+            val landscapeBindings = if (KeyboardPrefs.getRowCount(this@MyKeyboardService) == 5) {
+                emptyList()
+            } else {
+                activeEdgeBindings(KeyboardPrefs.getRowCount(this@MyKeyboardService))
+            }
+
             val ovLoc = IntArray(2)
             overlayLayer.getLocationOnScreen(ovLoc)
 
             val keySize = landscapeKeySizePx()
-            val sideWidthLeft = landscapeHalfKeyWidthPx(keySize, isLeft = true)
-            val sideWidthRight = landscapeHalfKeyWidthPx(keySize, isLeft = false)
+            val rawSideWidthLeft = keySize
+            val rawSideWidthRight = keySize
+
+            val savedRowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
+            val visualRows = edgeRowIndices(leftBlock.childCount)
 
             fun rowView(block: ViewGroup, rowIndex: Int): View? {
                 if (rowIndex !in 0 until block.childCount) return null
@@ -1816,9 +1954,6 @@ class MyKeyboardService : InputMethodService() {
                 return vg.getChildAt(vg.childCount - 1)
             }
 
-            val visualRows = edgeRowIndices(leftBlock.childCount)
-            val savedRowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
-
             visualRows.forEachIndexed { visualIndex, rowIndex ->
                 val leftRow = rowView(leftBlock, rowIndex)
                 val rightRow = rowView(rightBlock, rowIndex)
@@ -1836,6 +1971,30 @@ class MyKeyboardService : InputMethodService() {
                     return@post
                 }
 
+                val leftSlot = if (savedRowCount == 5) {
+                    slots.firstOrNull {
+                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
+                                it.side == EdgePos.Side.LEFT
+                    }
+                } else {
+                    landscapeBindings.firstOrNull {
+                        it.visualIndex == visualIndex &&
+                                it.side == EdgePos.Side.LEFT
+                    }?.slot
+                }
+
+                val rightSlot = if (savedRowCount == 5) {
+                    slots.firstOrNull {
+                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
+                                it.side == EdgePos.Side.RIGHT
+                    }
+                } else {
+                    landscapeBindings.firstOrNull {
+                        it.visualIndex == visualIndex &&
+                                it.side == EdgePos.Side.RIGHT
+                    }?.slot
+                }
+
                 val leftLoc = IntArray(2)
                 val rightLoc = IntArray(2)
 
@@ -1845,88 +2004,107 @@ class MyKeyboardService : InputMethodService() {
                 val leftAnchorLeft = leftLoc[0] - ovLoc[0]
                 val rightAnchorRight = (rightLoc[0] - ovLoc[0]) + rightAnchor.width
 
-                val leftTop: Int
-                val rightTop: Int
-                val leftSlotLeft: Int
-                val rightSlotLeft: Int
+                leftSlot?.let { slot ->
+                    val tuning = sideButtonTuning(
+                        isLandscapeMode = true,
+                        rowCount = savedRowCount,
+                        visualIndex = visualIndex,
+                        side = EdgePos.Side.LEFT,
+                        slotType = slot.type
+                    )
 
-                if (savedRowCount == 4) {
-                    val leftXOffset = when (rowIndex) {
-                        1 -> dp(2)
-                        3 -> dp(2)
-                        else -> 0
-                    }
+                    val sideW = (rawSideWidthLeft * tuning.widthScale).toInt()
+                        .coerceAtLeast(dp(14))
 
-                    val leftYOffset = when (rowIndex) {
-                        1 -> -dp(42)
-                        3 -> -dp(42)
-                        else -> 0
-                    }
+                    val left = leftAnchorLeft - sideW + dp(tuning.x)
+                    val top = leftLoc[1] - ovLoc[1] + dp(tuning.y)
 
-                    val rightXOffset = when (rowIndex) {
-                        0 -> -dp(-7)
-                        2 -> -dp(-7)
-                        else -> 0
-                    }
+                    val btn = createSideButtonView(
+                        tagName = "edge_slot_left_$visualIndex",
+                        slot = slot,
+                        tuning = tuning,
+                        isLandscapeMode = true
+                    )
 
-                    val rightYOffset = when (rowIndex) {
-                        0 -> -dp(12)
-                        2 -> -dp(12)
-                        else -> 0
-                    }
+                    val sideH = (leftAnchor.height * tuning.heightScale).toInt()
+                        .coerceAtLeast(dp(18))
 
-                    leftTop = leftLoc[1] - ovLoc[1] + leftYOffset
-                    rightTop = rightLoc[1] - ovLoc[1] + rightYOffset
+                    overlayLayer.addView(
+                        btn,
+                        FrameLayout.LayoutParams(sideW, sideH).apply {
+                            leftMargin = left.coerceIn(
+                                -sideW / 2,
+                                overlayLayer.width - sideW
+                            )
 
-                    leftSlotLeft = leftAnchorLeft - sideWidthLeft + leftXOffset
-                    rightSlotLeft = rightAnchorRight - sideWidthRight + rightXOffset
-                } else {
-                    // 5-row final — NE DIRAMO
-                    leftTop = leftLoc[1] - ovLoc[1] - dp(10)
-                    rightTop = rightLoc[1] - ovLoc[1] - dp(10)
-
-                    leftSlotLeft = leftAnchorLeft - sideWidthLeft - dp(11)
-                    rightSlotLeft = rightAnchorRight - sideWidthRight + dp(8)
+                            topMargin = (top + (leftAnchor.height - sideH) / 2).coerceIn(
+                                dp(2),
+                                overlayLayer.height - sideH - dp(2)
+                            )
+                        }
+                    )
                 }
 
-                val leftSlot = View(this).apply {
-                    tag = "edge_slot_left_$visualIndex"
-                    setBackgroundResource(R.drawable.hex_half_left_edge_sel)
-                    alpha = 0.98f
+                rightSlot?.let { slot ->
+                    val tuning = sideButtonTuning(
+                        isLandscapeMode = true,
+                        rowCount = savedRowCount,
+                        visualIndex = visualIndex,
+                        side = EdgePos.Side.RIGHT,
+                        slotType = slot.type
+                    )
+
+                    val sideW = (rawSideWidthRight * tuning.widthScale).toInt()
+                        .coerceAtLeast(dp(14))
+
+                    val left = rightAnchorRight - sideW + dp(tuning.x)
+                    val top = rightLoc[1] - ovLoc[1] + dp(tuning.y)
+
+                    val btn = createSideButtonView(
+                        tagName = "edge_slot_right_$visualIndex",
+                        slot = slot,
+                        tuning = tuning,
+                        isLandscapeMode = true
+                    )
+
+                    val sideH = (rightAnchor.height * tuning.heightScale).toInt()
+                        .coerceAtLeast(dp(18))
+
+                    overlayLayer.addView(
+                        btn,
+                        FrameLayout.LayoutParams(sideW, sideH).apply {
+                            leftMargin = left.coerceIn(
+                                0,
+                                overlayLayer.width - sideW
+                            )
+
+                            topMargin = (top + (rightAnchor.height - sideH) / 2).coerceIn(
+                                dp(2),
+                                overlayLayer.height - sideH - dp(2)
+                            )
+                        }
+                    )
                 }
-
-                val rightSlot = View(this).apply {
-                    tag = "edge_slot_right_$visualIndex"
-                    setBackgroundResource(R.drawable.hex_half_right_edge_sel)
-                    alpha = 0.98f
-                }
-
-                overlayLayer.addView(
-                    leftSlot,
-                    FrameLayout.LayoutParams(sideWidthLeft, leftAnchor.height).apply {
-                        leftMargin = leftSlotLeft
-                        topMargin = leftTop
-                    }
-                )
-
-                overlayLayer.addView(
-                    rightSlot,
-                    FrameLayout.LayoutParams(sideWidthRight, rightAnchor.height).apply {
-                        leftMargin = rightSlotLeft
-                        topMargin = rightTop
-                    }
-                )
             }
         }
     }
-
     private fun clearEdgeSlots() {
         val toRemove = mutableListOf<View>()
+
         for (i in 0 until overlayLayer.childCount) {
             val v = overlayLayer.getChildAt(i)
             val tag = v.tag?.toString() ?: continue
-            if (tag.startsWith("edge_slot_")) toRemove.add(v)
+
+            if (
+                tag.startsWith("edge_slot_") ||
+                tag.startsWith("edge_icon_") ||
+                tag.startsWith("landscape_side_btn_") ||
+                tag.startsWith("landscape_side_bg_")
+            ) {
+                toRemove.add(v)
+            }
         }
+
         toRemove.forEach { overlayLayer.removeView(it) }
     }
 
@@ -1941,19 +2119,21 @@ class MyKeyboardService : InputMethodService() {
             }
 
             val safeY = dp(2)
+
             val liftY = when (KeyboardPrefs.getRowCount(this)) {
-                5 -> dp(2)   // 5-row ne diramo
-                4 -> dp(12)   // 4-row malo više gore
+                5 -> dp(2)
+                4 -> dp(12)
                 else -> dp(6)
             }
+
             val sizing = computeRowSizing(7, availableKeyboardWidthPx())
             val keyW = sizing.keyW
-
             val totalRows = keyboardContainer.childCount
+
             val slotW = when (totalRows) {
-                3 -> (keyW * 0.30f).toInt().coerceIn(dp(14), dp(28))
-                4 -> (keyW * 0.34f).toInt().coerceIn(dp(16), dp(34))
-                else -> (keyW * 0.42f).toInt().coerceIn(dp(20), dp(50))
+                3 -> (keyW * 0.70f).toInt().coerceIn(dp(28), dp(54))
+                4 -> (keyW * 0.70f).toInt().coerceIn(dp(28), dp(56))
+                else -> (keyW * 0.72f).toInt().coerceIn(dp(30), dp(58))
             }
 
             val ovLoc = IntArray(2)
@@ -1971,78 +2151,139 @@ class MyKeyboardService : InputMethodService() {
                 return vg.getChildAt(vg.childCount - 1)
             }
 
-            fun addSlotAt(tag: String, isLeft: Boolean, left: Int, top: Int, h: Int) {
-                val v = View(this).apply {
-                    this.tag = tag
-                    setBackgroundResource(
-                        if (isLeft) R.drawable.hex_half_left_edge_sel
-                        else R.drawable.hex_half_right_edge_sel
-                    )
-                    alpha = 0.95f
-                }
+            fun addSideButtonAt(
+                tag: String,
+                slot: EdgeSlot,
+                tuning: SideButtonTuning,
+                left: Int,
+                top: Int,
+                width: Int,
+                height: Int
+            ) {
+                val btn = createSideButtonView(
+                    tagName = tag,
+                    slot = slot,
+                    tuning = tuning,
+                    isLandscapeMode = false
+                )
 
                 val sideOutset = when (totalRows) {
-                    5 -> (slotW * 0.28f).toInt()
-                    4 -> (slotW * 0.55f).toInt()
-                    3 -> (slotW * 0.40f).toInt()   // bilo 0.90f  // dozvoli 3-row side buttonima da izađu ulijevo/desno
-                    else -> (slotW * 0.14f).toInt()
+                    5 -> (width * 0.55f).toInt()
+                    4 -> (width * 0.55f).toInt()
+                    3 -> (width * 0.40f).toInt()
+                    else -> (width * 0.14f).toInt()
                 }
 
-                val lp = FrameLayout.LayoutParams(slotW, h).apply {
-                    gravity = Gravity.START
-                    leftMargin = left.coerceIn(
-                        -sideOutset,
-                        overlayLayer.width - slotW + sideOutset
-                    )
-                    topMargin = top.coerceIn(dp(2), overlayLayer.height - h - dp(2))
-                }
+                val finalHeight = (height * tuning.heightScale).toInt()
+                    .coerceAtLeast(dp(18))
 
-                overlayLayer.addView(v, 0, lp)
+                overlayLayer.addView(
+                    btn,
+                    FrameLayout.LayoutParams(width, finalHeight).apply {
+                        gravity = Gravity.START
+
+                        leftMargin = left.coerceIn(
+                            -sideOutset,
+                            overlayLayer.width - width + sideOutset
+                        )
+
+                        topMargin = (top + (height - finalHeight) / 2).coerceIn(
+                            dp(2),
+                            overlayLayer.height - finalHeight - dp(2)
+                        )
+                    }
+                )
             }
 
-            // 5-row = zalijepljeno uz rubove, kao sad
             if (totalRows == 5) {
                 val visualRows = edgeRowIndices(totalRows)
-                val sideOutset = (slotW * 0.28f).toInt()
+                val slots = EdgeSlotsStorage.load(this)
+                    .filter { it.type != EdgeActionType.NONE }
 
                 visualRows.forEachIndexed { visualIndex, rowIndex ->
                     val row = keyboardContainer.getChildAt(rowIndex) ?: return@forEachIndexed
                     val first = firstKey(row) ?: return@forEachIndexed
+                    val last = lastKey(row) ?: return@forEachIndexed
 
-                    if (first.width <= 0 || first.height <= 0) {
+                    if (first.width <= 0 || first.height <= 0 || last.width <= 0) {
                         first.post { drawEdgeSlots() }
                         return@post
                     }
 
                     val firstLoc = IntArray(2)
-                    first.getLocationOnScreen(firstLoc)
+                    val lastLoc = IntArray(2)
 
-                    val top = (firstLoc[1] - ovLoc[1] - liftY).coerceIn(
+                    first.getLocationOnScreen(firstLoc)
+                    last.getLocationOnScreen(lastLoc)
+
+                    val rowLeft = firstLoc[0] - ovLoc[0]
+                    val rowRight = lastLoc[0] - ovLoc[0] + last.width
+
+                    val baseTop = (firstLoc[1] - ovLoc[1] - liftY).coerceIn(
                         safeY,
                         overlayLayer.height - first.height - safeY
                     )
 
-                    addSlotAt(
-                        "edge_slot_left_$visualIndex",
-                        true,
-                        -sideOutset - dp(5),
-                        top,
-                        first.height
-                    )
+                    val leftSlot = slots.firstOrNull {
+                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
+                                it.side == EdgePos.Side.LEFT
+                    }
 
-                    addSlotAt(
-                        "edge_slot_right_$visualIndex",
-                        false,
-                        overlayLayer.width - slotW - dp(10),
-                        top + dp(2),
-                        first.height
-                    )
+                    val rightSlot = slots.firstOrNull {
+                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
+                                it.side == EdgePos.Side.RIGHT
+                    }
+
+                    leftSlot?.let { slot ->
+                        val tuning = sideButtonTuning(
+                            isLandscapeMode = false,
+                            rowCount = totalRows,
+                            visualIndex = visualIndex,
+                            side = EdgePos.Side.LEFT,
+                            slotType = slot.type
+                        )
+
+                        val width = (slotW * tuning.widthScale).toInt()
+                            .coerceAtLeast(dp(24))
+
+                        addSideButtonAt(
+                            tag = "edge_slot_left_$visualIndex",
+                            slot = slot,
+                            tuning = tuning,
+                            left = rowLeft - width + dp(tuning.x),
+                            top = baseTop + dp(tuning.y),
+                            width = width,
+                            height = first.height
+                        )
+                    }
+
+                    rightSlot?.let { slot ->
+                        val tuning = sideButtonTuning(
+                            isLandscapeMode = false,
+                            rowCount = totalRows,
+                            visualIndex = visualIndex,
+                            side = EdgePos.Side.RIGHT,
+                            slotType = slot.type
+                        )
+
+                        val width = (slotW * tuning.widthScale).toInt()
+                            .coerceAtLeast(dp(24))
+
+                        addSideButtonAt(
+                            tag = "edge_slot_right_$visualIndex",
+                            slot = slot,
+                            tuning = tuning,
+                            left = rowRight + dp(tuning.x),
+                            top = baseTop + dp(tuning.y),
+                            width = width,
+                            height = first.height
+                        )
+                    }
                 }
 
                 return@post
             }
 
-            // 3-row i 4-row = po binding pravilima
             val bindings = activeEdgeBindings(totalRows)
 
             bindings.forEach { binding ->
@@ -2057,68 +2298,47 @@ class MyKeyboardService : InputMethodService() {
 
                 val firstLoc = IntArray(2)
                 val lastLoc = IntArray(2)
+
                 first.getLocationOnScreen(firstLoc)
                 last.getLocationOnScreen(lastLoc)
+
+                val rowLeft = firstLoc[0] - ovLoc[0]
+                val rowRight = lastLoc[0] - ovLoc[0] + last.width
 
                 val baseTop = (firstLoc[1] - ovLoc[1] - liftY).coerceIn(
                     safeY,
                     overlayLayer.height - first.height - safeY
                 )
 
-                val isLeftShift3Row =
-                    totalRows == 3 &&
-                            binding.side == EdgePos.Side.LEFT &&
-                            binding.slot.type == EdgeActionType.SHIFT
+                val tuning = sideButtonTuning(
+                    isLandscapeMode = false,
+                    rowCount = totalRows,
+                    visualIndex = binding.visualIndex,
+                    side = binding.side,
+                    slotType = binding.slot.type
+                )
 
-                val top = when {
-                    totalRows == 4 -> baseTop + dp(10)
-                    isLeftShift3Row -> baseTop + dp(10)   // bilo 8
-                    totalRows == 3 && binding.side == EdgePos.Side.LEFT -> baseTop + dp(8)
-                    else -> baseTop
-                }
-                val rowLeft = firstLoc[0] - ovLoc[0]
-                val rowRight = lastLoc[0] - ovLoc[0] + last.width
+                val width = (slotW * tuning.widthScale).toInt()
+                    .coerceAtLeast(dp(24))
 
-                val left = when {
-                    totalRows == 4 && binding.side == EdgePos.Side.RIGHT -> {
-                        rowRight - dp(22)
-                    }
-
-                    totalRows == 4 && binding.side == EdgePos.Side.LEFT -> {
-                        -(slotW * 0.35f).toInt()
-                    }
-
-                    isLeftShift3Row -> {
-                        rowLeft - slotW - dp(28)   // shift ide jako lijevo od "a"
-                    }
-
-                    totalRows == 3 && binding.side == EdgePos.Side.LEFT -> {
-                        rowLeft - slotW - dp(28)
-                    }
-
-                    totalRows == 3 && binding.side == EdgePos.Side.RIGHT -> {
-                        rowRight - dp(8)
-                    }
-
-                    binding.side == EdgePos.Side.RIGHT -> {
-                        overlayLayer.width - slotW - dp(10)
-                    }
-
-                    else -> {
-                        0
-                    }
+                val left = if (binding.side == EdgePos.Side.LEFT) {
+                    rowLeft - width + dp(tuning.x)
+                } else {
+                    rowRight + dp(tuning.x)
                 }
 
-                addSlotAt(
+                addSideButtonAt(
                     tag = if (binding.side == EdgePos.Side.LEFT) {
                         "edge_slot_left_${binding.visualIndex}"
                     } else {
                         "edge_slot_right_${binding.visualIndex}"
                     },
-                    isLeft = binding.side == EdgePos.Side.LEFT,
+                    slot = binding.slot,
+                    tuning = tuning,
                     left = left,
-                    top = top,
-                    h = first.height
+                    top = baseTop + dp(tuning.y),
+                    width = width,
+                    height = first.height
                 )
             }
         }
@@ -2135,206 +2355,118 @@ class MyKeyboardService : InputMethodService() {
             EdgeActionType.NONE -> Unit
         }
     }
+    private fun createSideButtonView(
+        tagName: String,
+        slot: EdgeSlot,
+        tuning: SideButtonTuning,
+        isLandscapeMode: Boolean
+    ): FrameLayout {
+        val label = when (slot.type) {
+            EdgeActionType.SHIFT -> if (isShifted) "⇪" else "⇧"
+            EdgeActionType.BACKSPACE -> "⌫"
+            EdgeActionType.ENTER -> "↵"
+            EdgeActionType.SPACE -> "␣"
+            EdgeActionType.CHAR -> slot.value ?: ""
+            EdgeActionType.EMOJI_PICKER -> "😊"
+            EdgeActionType.NONE -> ""
+        }
 
-    private fun drawEdgeIcons() {
-        overlayLayer.post {
-            val toRemove = mutableListOf<View>()
-            for (i in 0 until overlayLayer.childCount) {
-                val v = overlayLayer.getChildAt(i)
-                val tag = v.tag?.toString() ?: continue
-                if (tag.startsWith("edge_icon_")) toRemove.add(v)
-            }
-            toRemove.forEach { overlayLayer.removeView(it) }
+        val box = FrameLayout(this).apply {
+            tag = tagName
 
-            val totalRows = keyboardContainer.childCount
+            // TEMP DEBUG: prava površina side buttona
+            setBackgroundColor(Color.GREEN)
 
-            fun addIcon(binding: EdgeBinding, iconId: String) {
-                val slot = binding.slot
-                val effectiveSide = binding.side
-                val visualIndex = binding.visualIndex
+            isClickable = true
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isSelected = false
+        }
 
-                val slotTag = if (effectiveSide == EdgePos.Side.LEFT) {
-                    "edge_slot_left_$visualIndex"
+        val icon = TextView(this).apply {
+            text = label
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setTextColor(
+                if (slot.type == EdgeActionType.SHIFT && isShifted) {
+                    edgeIconActiveColor(themedCtx)
                 } else {
-                    "edge_slot_right_$visualIndex"
+                    edgeIconTextColor(themedCtx)
                 }
+            )
 
-                if (overlayLayer.findViewWithTag<View>(iconId) != null) return
-
-                val slotView = overlayLayer.findViewWithTag<View>(slotTag) ?: return
-                if (slotView.width <= 0 || slotView.height <= 0) {
-                    slotView.post { addIcon(binding, iconId) }
-                    return
-                }
-
-                val slotLoc = IntArray(2)
-                val ovLoc = IntArray(2)
-                slotView.getLocationOnScreen(slotLoc)
-                overlayLayer.getLocationOnScreen(ovLoc)
-
-                val boxW = slotView.width
-                val boxH = slotView.height
-
-                val left = slotLoc[0] - ovLoc[0]
-                val top = slotLoc[1] - ovLoc[1]
-
-                val box = FrameLayout(this).apply {
-                    tag = iconId
-                    layoutParams = FrameLayout.LayoutParams(boxW, boxH).apply {
-                        gravity = Gravity.START
-                        leftMargin = left
-                        topMargin = top
-                    }
-                    setBackgroundColor(0x00000000)
-                    isClickable = true
-                }
-
-                val icon = TextView(this).apply {
-                    val isShiftSlot = slot.type == EdgeActionType.SHIFT
-                    val isLeftShift3Row =
-                        totalRows == 3 &&
-                                effectiveSide == EdgePos.Side.LEFT &&
-                                slot.type == EdgeActionType.SHIFT
-                    text = if (isShiftSlot && isShifted) "⇪" else slot.label
-                    gravity = Gravity.CENTER
-                    includeFontPadding = false
-
-                    val selectedShift = slot.type == EdgeActionType.SHIFT && isShifted
-                    setTextColor(
-                        if (selectedShift) edgeIconActiveColor(themedCtx)
-                        else edgeIconTextColor(themedCtx)
-                    )
-
-                    textSize = when (totalRows) {
-                        4 -> (boxH * 0.20f / resources.configuration.fontScale).coerceIn(10f, 16f)
-                        3 -> (boxH * 0.20f / resources.configuration.fontScale).coerceIn(10f, 14f)
-                        else -> (boxH * 0.28f / resources.configuration.fontScale).coerceIn(12f, 20f)
-                    }
-
-
-                    val isShiftIcon =
-                        slot.type == EdgeActionType.SHIFT &&
-                                totalRows == 3 &&
-                                effectiveSide == EdgePos.Side.LEFT
-
-                    translationX = when (totalRows) {
-                        4 -> when (effectiveSide) {
-                            EdgePos.Side.LEFT -> -dp(3).toFloat()
-                            EdgePos.Side.RIGHT -> dp(9).toFloat()
-                        }
-
-                        5 -> when (effectiveSide) {
-                            EdgePos.Side.LEFT -> dp(2).toFloat()
-                            EdgePos.Side.RIGHT -> -dp(11).toFloat()
-                        }
-
-                        3 -> when {
-                            isLeftShift3Row -> -dp(4).toFloat()   // malo više lijevo
-                            effectiveSide == EdgePos.Side.LEFT -> 0f
-                            else -> -dp(1).toFloat()
-                        }
-
-                        else -> when (effectiveSide) {
-                            EdgePos.Side.LEFT -> dp(1).toFloat()
-                            EdgePos.Side.RIGHT -> -dp(2).toFloat()
-                        }
-                    }
-
-                    translationY = when (totalRows) {
-                        4 -> -dp(7).toFloat()
-                        5 -> -dp(7).toFloat()
-                        3 -> {
-                            if (isLeftShift3Row) -dp(15).toFloat()   // malo više gore
-                            else -dp(3).toFloat()
-                        }
-                        else -> -dp(5).toFloat()
-                    }
-                }
-
-                box.addView(
-                    icon,
-                    FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                )
-
-                box.setOnTouchListener { view, e ->
-                    when (e.actionMasked) {
-                        MotionEvent.ACTION_DOWN -> {
-                            slotView.isPressed = true
-                            slotView.alpha = 0.85f
-                            icon.alpha = 0.70f
-
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                scheduleBackspaceHold()
-                            }
-                            true
-                        }
-
-                        MotionEvent.ACTION_UP -> {
-                            view.performClick()
-
-                            slotView.isPressed = false
-                            slotView.alpha = 1f
-                            icon.alpha = 1f
-
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                cancelPendingBackspaceHold()
-
-                                if (isBackspaceHoldRunning()) {
-                                    stopBackspaceHold()
-                                } else {
-                                    backspaceOnce()
-                                }
-                            } else {
-                                performEdgeAction(slot)
-                            }
-                            true
-                        }
-
-                        MotionEvent.ACTION_CANCEL -> {
-                            slotView.isPressed = false
-                            slotView.alpha = 1f
-                            icon.alpha = 1f
-
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                cancelPendingBackspaceHold()
-                                stopBackspaceHold()
-                            }
-                            true
-                        }
-
-                        else -> false
-                    }
-                }
-
-                overlayLayer.addView(box)
+            textSize = tuning.iconTextSizeSp ?: when {
+                slot.type == EdgeActionType.SHIFT && isLandscapeMode -> 17f
+                slot.type == EdgeActionType.SHIFT -> 21f
+                isLandscapeMode -> 13.5f
+                else -> 13f
             }
 
-            if (totalRows == 5) {
-                val slots = EdgeSlotsStorage.load(this)
-                    .filter { it.type != EdgeActionType.NONE }
+            translationX = dp(tuning.iconX).toFloat()
+            translationY = dp(tuning.iconY).toFloat()
 
-                slots.forEach { slot ->
-                    addIcon(
-                        binding = EdgeBinding(
-                            visualIndex = (slot.index / 2).coerceIn(0, 2),
-                            side = slot.side,
-                            slot = slot
-                        ),
-                        iconId = "edge_icon_${slot.index}"
-                    )
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isSelected = false
+        }
+
+        box.addView(
+            icon,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        box.setOnTouchListener { view, e ->
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    view.alpha = 0.75f
+
+                    if (slot.type == EdgeActionType.BACKSPACE) {
+                        scheduleBackspaceHold()
+                    }
+
+                    true
                 }
-                return@post
-            }
 
-            val bindings = activeEdgeBindings(totalRows)
-            bindings.forEachIndexed { index, binding ->
-                addIcon(binding, "edge_icon_$index")
+                MotionEvent.ACTION_UP -> {
+                    view.performClick()
+                    view.alpha = 1f
+
+                    if (slot.type == EdgeActionType.BACKSPACE) {
+                        cancelPendingBackspaceHold()
+
+                        if (isBackspaceHoldRunning()) {
+                            stopBackspaceHold()
+                        } else {
+                            backspaceOnce()
+                        }
+                    } else {
+                        performEdgeAction(slot)
+                    }
+
+                    true
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    view.alpha = 1f
+
+                    if (slot.type == EdgeActionType.BACKSPACE) {
+                        cancelPendingBackspaceHold()
+                        stopBackspaceHold()
+                    }
+
+                    true
+                }
+
+                else -> false
             }
         }
+
+        return box
     }
+
 
     /* ───────── KEY VIEW ───────── */
     private fun buildLandscapeLayout() {
@@ -2345,9 +2477,20 @@ class MyKeyboardService : InputMethodService() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(
-                if (savedRowCount == 3) dp(2) else dp(8),
-                dp(4),
-                if (savedRowCount == 3) dp(4) else dp(8),
+                when (savedRowCount) {
+                    3 -> dp(2)
+                    5 -> dp(10)
+                    else -> dp(8)
+                },
+                when (savedRowCount) {
+                    4 -> dp(0)
+                    else -> dp(4)
+                },
+                when (savedRowCount) {
+                    3 -> dp(4)
+                    5 -> dp(6)
+                    else -> dp(8)
+                },
                 dp(4)
             )
             clipChildren = false
@@ -2363,7 +2506,11 @@ class MyKeyboardService : InputMethodService() {
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 2.2f
-            )
+            ).apply {
+                if (savedRowCount == 5) {
+                    leftMargin = dp(14)
+                }
+            }
         }
 
         val centerContainer = LinearLayout(this).apply {
@@ -2373,20 +2520,34 @@ class MyKeyboardService : InputMethodService() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                leftMargin = dp(8)
-                rightMargin = dp(8)
+                leftMargin = if (savedRowCount == 3) dp(-16) else dp(8)
+                rightMargin = if (savedRowCount == 3) dp(30) else dp(8)
             }
         }
 
         val rightContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            clipChildren = false
+            clipToPadding = false
 
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                if (savedRowCount == 3) 1.75f else 2.2f
-            )
+                if (savedRowCount == 3) 1.9f else 2.2f
+            ).apply {
+                when (savedRowCount) {
+                    3 -> {
+                        leftMargin = -dp(24)
+                        rightMargin = dp(0)
+                    }
+
+                    5 -> {
+                        leftMargin = dp(0)
+                        rightMargin = dp(14)
+                    }
+                }
+            }
         }
 
         root.addView(leftContainer)
@@ -2406,23 +2567,70 @@ class MyKeyboardService : InputMethodService() {
         buildLandscapeRightLetters(rightContainer)
     }
     private fun createCenterTextKey(label: String): KeyView {
-        return createKey(
-            KeyConfig(
-                label = label,
-                longPressBindings = mutableListOf()
-            )
-        ).apply {
+        return KeyView(themedCtx).apply {
+            text = label
+            isAllCaps = false
 
+            shape = effectiveShape()
             hideFill = true
             hideStroke = true
             customBgColor = Color.TRANSPARENT
             forceSquare = false
+
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(0, 0, 0, 0)
+
             minWidth = 0
             minimumWidth = 0
             manualLabelSizeSp = 22f
+
+            setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, Color.WHITE))
+
+            // centralne tipke nemaju split label i nemaju swipe-up alternate
+            useSplitLabels = false
+            mainLabel = ""
+            swipeUpLabel = null
+
+            isClickable = true
+            isLongClickable = false
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isSelected = false
+            highlightColor = Color.TRANSPARENT
+            setTextIsSelectable(false)
+
+            setOnTouchListener { v, e ->
+                when (e.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        v.isPressed = true
+                        hideLongPressPopup()
+                        hideEmojiPopup()
+                        true
+                    }
+
+                    MotionEvent.ACTION_UP -> {
+                        v.performClick()
+                        v.isPressed = false
+                        v.isSelected = false
+                        v.clearFocus()
+
+                        currentInputConnection?.commitText(label, 1)
+                        true
+                    }
+
+                    MotionEvent.ACTION_CANCEL -> {
+                        v.isPressed = false
+                        v.isSelected = false
+                        v.clearFocus()
+                        true
+                    }
+
+                    else -> true
+                }
+            }
         }
     }
-
     private fun landscapeKeySizePx(): Int {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
@@ -2433,6 +2641,8 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.HEX_HALF_RIGHT -> {
                 when (savedRowCount) {
                     3 -> dp(33)
+                    4 -> dp(38)
+                    5 -> dp(36)
                     else -> dp(42)
                 }
             }
@@ -2440,6 +2650,7 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.TRIANGLE -> {
                 when (savedRowCount) {
                     3 -> dp(32)
+                    5 -> dp(34)
                     else -> dp(40)
                 }
             }
@@ -2447,6 +2658,7 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.CIRCLE -> {
                 when (savedRowCount) {
                     3 -> dp(32)
+                    5 -> dp(34)
                     else -> dp(38)
                 }
             }
@@ -2454,20 +2666,35 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.CUBE -> {
                 when (savedRowCount) {
                     3 -> dp(31)
+                    5 -> dp(33)
                     else -> dp(35)
                 }
             }
         }
     }
-    private fun landscapeRowOverlapPx(keySize: Int): Int = when (currentShape) {
-        KeyShape.HEX,
-        KeyShape.HEX_TALL,
-        KeyShape.HEX_HALF_LEFT,
-        KeyShape.HEX_HALF_RIGHT -> (keySize * 0.25f).toInt()
+    private fun landscapeRowOverlapPx(keySize: Int): Int {
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
-        KeyShape.TRIANGLE -> (keySize * 0.18f).toInt()
-        KeyShape.CIRCLE -> dp(4)
-        KeyShape.CUBE -> dp(4)
+        return when (currentShape) {
+            KeyShape.HEX,
+            KeyShape.HEX_TALL,
+            KeyShape.HEX_HALF_LEFT,
+            KeyShape.HEX_HALF_RIGHT -> {
+                when (savedRowCount) {
+                    5 -> dp(9)
+                    4 -> dp(4) // manje preklapanja = redovi se više razmaknu
+                    else -> (keySize * 0.25f).toInt()
+                }
+            }
+
+            KeyShape.TRIANGLE -> {
+                if (savedRowCount == 5) dp(3)
+                else (keySize * 0.18f).toInt()
+            }
+
+            KeyShape.CIRCLE -> if (savedRowCount == 5) dp(5) else dp(4)
+            KeyShape.CUBE -> if (savedRowCount == 5) dp(5) else dp(4)
+        }
     }
     private fun buildLandscapeLeftLetters(container: LinearLayout) {
         val keySize = landscapeKeySizePx()
@@ -2488,6 +2715,11 @@ class MyKeyboardService : InputMethodService() {
 
             val savedRowCount = KeyboardPrefs.getRowCount(this)
 
+            val baseLeftInset = when (savedRowCount) {
+                4 -> dp(12)   // povećaj na 14/16 ako treba još zraka
+                else -> 0
+            }
+
             val rowLp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -2497,7 +2729,15 @@ class MyKeyboardService : InputMethodService() {
                 leftMargin = when {
                     savedRowCount == 3 && rowIndex in setOf(0, 2) -> -(halfStep / 2)
                     savedRowCount == 3 -> 0
+
+                    // 4-row: 1. i 3. red ostaju ulijevo, ali svi dobiju malo zraka od side buttona
+                    savedRowCount == 4 && rowIndex in setOf(0, 2) -> -halfStep + baseLeftInset
+
+                    // 4-row: 2. i 4. red samo malo desno od side buttona
+                    savedRowCount == 4 -> baseLeftInset
+
                     isOddLandscapeRow(rowIndex) -> halfStep
+
                     else -> 0
                 }
             }
@@ -2506,6 +2746,7 @@ class MyKeyboardService : InputMethodService() {
 
             keys.forEachIndexed { i, key ->
                 val kv = createKey(key)
+
                 landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
 
                 if (currentShape == KeyShape.TRIANGLE) {
@@ -2527,6 +2768,7 @@ class MyKeyboardService : InputMethodService() {
         val rowOverlap = landscapeRowOverlapPx(keySize)
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
+        val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         currentKeyboardConfig.rows.forEachIndexed { rowIndex, row ->
             val visibleRow = row.keys.filterNot {
@@ -2536,18 +2778,40 @@ class MyKeyboardService : InputMethodService() {
             val keys = rightLandscapeKeysForRow(row.keys, rowIndex)
             if (keys.isEmpty()) return@forEachIndexed
 
+            val rowShiftX = 0
+
             val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 clipChildren = false
                 clipToPadding = false
+                translationX = rowShiftX.toFloat()
             }
 
-            val takeCount = if (isOddLandscapeRow(rowIndex)) 3 else 4
+            val takeCount = when {
+                savedRowCount == 3 -> {
+                    when (rowIndex) {
+                        0 -> 5
+                        1 -> 6
+                        2 -> 5
+                        else -> keys.size
+                    }
+                }
+
+                savedRowCount == 5 -> {
+                    if (isOddLandscapeRow(rowIndex)) 3 else 4
+                }
+
+                else -> {
+                    if (isOddLandscapeRow(rowIndex)) 3 else 4
+                }
+            }
+
             val startIndex = (visibleRow.size - takeCount).coerceAtLeast(0)
 
             keys.forEachIndexed { i, key ->
                 val kv = createKey(key)
+
                 landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
 
                 if (currentShape == KeyShape.TRIANGLE) {
@@ -2565,18 +2829,23 @@ class MyKeyboardService : InputMethodService() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                if (rowIndex > 0) topMargin = -rowOverlap
+                if (rowIndex > 0) {
+                    topMargin = -rowOverlap
+                }
 
-                rightMargin = if (isOddLandscapeRow(rowIndex)) {
-                    halfStep
-                } else {
-                    0
+                rightMargin = when {
+                    savedRowCount == 5 && isOddLandscapeRow(rowIndex) -> halfStep
+                    savedRowCount == 5 -> 0
+                    isOddLandscapeRow(rowIndex) -> halfStep
+                    else -> 0
                 }
             }
 
             container.addView(rowLayout, rowLp)
         }
     }
+
+
 
     private fun buildLandscapeCenter(container: LinearLayout) {
         val cfg = KeyboardPrefs.loadHorizontalCenterLayout(this)
@@ -2636,160 +2905,6 @@ class MyKeyboardService : InputMethodService() {
             container.addView(rowLayout, rowLp)
         }
     }
-    private fun drawLandscapeSideButtons() {
-        overlayLayer.post {
-            val toRemove = mutableListOf<View>()
-            for (i in 0 until overlayLayer.childCount) {
-                val v = overlayLayer.getChildAt(i)
-                val tag = v.tag?.toString() ?: continue
-                if (
-                    tag.startsWith("landscape_side_btn_") ||
-                    tag.startsWith("landscape_side_bg_")
-                ) {
-                    toRemove.add(v)
-                }
-            }
-            toRemove.forEach { overlayLayer.removeView(it) }
-
-            val root = keyboardContainer.getChildAt(0) as? ViewGroup ?: return@post
-            if (root.childCount < 3) return@post
-
-            val leftBlock = root.getChildAt(0) as? ViewGroup ?: return@post
-            val slots = EdgeSlotsStorage.load(this).filter { it.type != EdgeActionType.NONE }
-
-            fun labelForSlot(slot: EdgeSlot): String? {
-                return when (slot.type) {
-                    EdgeActionType.SHIFT -> if (isShifted) "⇪" else "⇧"
-                    EdgeActionType.BACKSPACE -> "⌫"
-                    EdgeActionType.ENTER -> "↵"
-                    EdgeActionType.SPACE -> " "
-                    EdgeActionType.CHAR -> slot.value
-                    EdgeActionType.EMOJI_PICKER -> "😊"
-                    EdgeActionType.NONE -> null
-                }
-            }
-
-            fun addSideButton(slot: EdgeSlot, visualIndex: Int, isLeft: Boolean) {
-                val slotTag = if (isLeft) {
-                    "edge_slot_left_$visualIndex"
-                } else {
-                    "edge_slot_right_$visualIndex"
-                }
-
-                val slotView = overlayLayer.findViewWithTag<View>(slotTag) ?: return
-                if (slotView.width <= 0 || slotView.height <= 0) {
-                    slotView.post { drawLandscapeSideButtons() }
-                    return
-                }
-
-                val label = labelForSlot(slot) ?: return
-
-                val slotLoc = IntArray(2)
-                val ovLoc = IntArray(2)
-                slotView.getLocationOnScreen(slotLoc)
-                overlayLayer.getLocationOnScreen(ovLoc)
-
-                val left = slotLoc[0] - ovLoc[0]
-                val top = slotLoc[1] - ovLoc[1]
-
-                val touchBox = FrameLayout(this).apply {
-                    tag = if (isLeft) {
-                        "landscape_side_btn_left_${slot.index}"
-                    } else {
-                        "landscape_side_btn_right_${slot.index}"
-                    }
-                    isClickable = true
-                    isFocusable = true
-                }
-
-                val icon = TextView(this).apply {
-                    text = label
-                    gravity = Gravity.CENTER
-                    includeFontPadding = false
-                    textSize = 17f
-                    setTextColor(
-                        if (slot.type == EdgeActionType.SHIFT && isShifted) {
-                            edgeIconActiveColor(themedCtx)
-                        } else {
-                            edgeIconTextColor(themedCtx)
-                        }
-                    )
-                    translationX = if (isLeft) -dp(2).toFloat() else dp(2).toFloat()
-                }
-
-                touchBox.addView(
-                    icon,
-                    FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                )
-
-                touchBox.setOnTouchListener { view, e ->
-                    when (e.actionMasked) {
-                        MotionEvent.ACTION_DOWN -> {
-                            slotView.alpha = 0.82f
-                            icon.alpha = 0.72f
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                scheduleBackspaceHold()
-                            }
-                            true
-                        }
-
-                        MotionEvent.ACTION_UP -> {
-                            view.performClick()
-                            slotView.alpha = 0.98f
-                            icon.alpha = 1f
-
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                cancelPendingBackspaceHold()
-                                if (isBackspaceHoldRunning()) {
-                                    stopBackspaceHold()
-                                } else {
-                                    backspaceOnce()
-                                }
-                            } else {
-                                performEdgeAction(slot)
-                            }
-                            true
-                        }
-
-                        MotionEvent.ACTION_CANCEL -> {
-                            slotView.alpha = 0.98f
-                            icon.alpha = 1f
-                            if (slot.type == EdgeActionType.BACKSPACE) {
-                                cancelPendingBackspaceHold()
-                                stopBackspaceHold()
-                            }
-                            true
-                        }
-
-                        else -> false
-                    }
-                }
-
-                overlayLayer.addView(
-                    touchBox,
-                    FrameLayout.LayoutParams(slotView.width, slotView.height).apply {
-                        leftMargin = left
-                        topMargin = top
-                    }
-                )
-            }
-
-            val totalRows = leftBlock.childCount
-            val bindings = activeEdgeBindings(totalRows)
-
-            bindings.forEach { binding ->
-                addSideButton(
-                    slot = binding.slot,
-                    visualIndex = binding.visualIndex,
-                    isLeft = binding.side == EdgePos.Side.LEFT
-                )
-            }
-        }
-    }
-
 
     private fun isOddLandscapeRow(rowIndex: Int): Boolean {
         return rowIndex % 2 == 0
@@ -2876,6 +2991,11 @@ class MyKeyboardService : InputMethodService() {
     private fun createKey(keyConfig: KeyConfig): KeyView = KeyView(themedCtx).apply {
         val activeShape = effectiveShape()
         val label = keyConfig.label
+        setTextIsSelectable(false)
+        highlightColor = Color.TRANSPARENT
+        isFocusable = false
+        isFocusableInTouchMode = false
+        isSelected = false
 
         if (label.isEmpty()) {
             val isEdgeGhost = keyConfig.longPressBindings.contains(EDGE_GHOST_MARKER)
@@ -3113,11 +3233,15 @@ class MyKeyboardService : InputMethodService() {
                 MotionEvent.ACTION_UP -> {
                     if (handledBySwipeUp) {
                         v.isPressed = false
+                        v.isSelected = false
+                        v.clearFocus()
                         mainHandler.removeCallbacks(longPressRunnable)
                         return@setOnTouchListener true
                     }
 
                     v.performClick()
+                    v.isSelected = false
+                    v.clearFocus()
                     mainHandler.removeCallbacks(longPressRunnable)
 
                     if (longPressTriggered) {
@@ -3158,6 +3282,8 @@ class MyKeyboardService : InputMethodService() {
                     }
 
                     v.isPressed = false
+                    v.isSelected = false
+                    v.clearFocus()
                     inputController.handleTouch(v as TextView, e)
                     true
                 }
