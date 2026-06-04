@@ -598,12 +598,8 @@ class MyKeyboardService : InputMethodService() {
     }
 
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
-        return when (KeyboardPrefs.getRowCount(this)) {
-            3 -> defaultThreeRowKeyboardLayoutQwertz
-            4 -> defaultFourRowKeyboardLayout
-            5 -> KeyboardPrefs.loadLayout(this)
-            else -> defaultThreeRowKeyboardLayoutQwertz
-        }
+        val rows = KeyboardPrefs.getRowCount(this)
+        return KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rows)
     }
 
 

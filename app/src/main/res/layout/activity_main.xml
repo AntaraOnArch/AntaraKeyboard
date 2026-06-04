@@ -34,6 +34,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnEnableKeyboard"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -46,6 +47,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnChooseKeyboard"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -56,6 +58,7 @@
         <!-- SET LAYOUT - full width -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnSetLayout"
+            style="@style/MainRoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
@@ -150,6 +153,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bindLPButton"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -162,6 +166,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/resetLayoutButton"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -178,6 +183,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnSpaceColor"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -190,6 +196,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnEnterColor"
+                style="@style/MainRoundedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -200,6 +207,7 @@
         <!-- Theme toggle -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnThemeToggle"
+            style="@style/MainRoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"

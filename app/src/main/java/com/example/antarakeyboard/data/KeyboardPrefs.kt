@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
-import com.example.antarakeyboard.ui.defaultKeyboardLayout
 import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
-import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
-import com.example.antarakeyboard.ui.defaultNumericLayout
 import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
-import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
+import com.example.antarakeyboard.ui.defaultKeyboardLayout
+import com.example.antarakeyboard.ui.defaultNumericLayout
+import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
+import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import com.google.gson.Gson
 
 object KeyboardPrefs {
@@ -19,35 +19,38 @@ object KeyboardPrefs {
 
     private const val KEY_SCALE = "key_scale"
     private const val KEY_SHAPE = "key_shape"
+
     private const val KEY_LAYOUT_JSON = "layout_json"
+    private const val KEY_ALPHABET_LAYOUT_3 = "alphabet_layout_3"
+    private const val KEY_ALPHABET_LAYOUT_4 = "alphabet_layout_4"
+
     private const val KEY_NUMERIC_LAYOUT_JSON = "numeric_layout_json"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_JSON = "horizontal_center_layout_json"
     private const val KEY_HEIGHT_PX = "key_height_px"
 
-    // Space colors
     private const val SPACE_LINKED = "space_linked"
     private const val SPACE1_BG = "space1_bg"
     private const val SPACE2_BG = "space2_bg"
 
-    // Enter colors
     private const val ENTER_BG = "enter_bg"
     private const val ENTER_ICON = "enter_icon"
+
     private const val KEY_ROW_COUNT = "row_count"
+
     private const val KEY_EDGE_MODE = "edge_mode"
     private const val KEY_EDGE_MODE_3 = "edge_mode_3"
     private const val KEY_EDGE_MODE_4 = "edge_mode_4"
     private const val KEY_EDGE_MODE_5 = "edge_mode_5"
-
 
     private val gson = Gson()
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    /* ───────── KEY HEIGHT (px) ───────── */
+    /* ───────── KEY HEIGHT ───────── */
 
     fun getKeyHeightPx(context: Context): Int =
-        prefs(context).getInt(KEY_HEIGHT_PX, 0) // 0 = auto
+        prefs(context).getInt(KEY_HEIGHT_PX, 0)
 
     fun setKeyHeightPx(context: Context, px: Int) {
         prefs(context).edit().putInt(KEY_HEIGHT_PX, px).apply()
@@ -69,15 +72,20 @@ object KeyboardPrefs {
     /* ───────── SHAPE ───────── */
 
     fun getShape(context: Context): KeyShape {
-        val name = prefs(context).getString(KEY_SHAPE, KeyShape.HEX.name) ?: KeyShape.HEX.name
-        return KeyShape.valueOf(name)
+        val name = prefs(context).getString(KEY_SHAPE, KeyShape.HEX.name)
+            ?: KeyShape.HEX.name
+
+        return runCatching {
+            KeyShape.valueOf(name)
+        }.getOrDefault(KeyShape.HEX)
     }
 
     fun setShape(context: Context, shape: KeyShape) {
         prefs(context).edit().putString(KEY_SHAPE, shape.name).apply()
     }
 
-    /* ───────── ALPHABET LAYOUT ───────── */
+    /* ───────── ROW COUNT ───────── */
+
     fun getRowCount(context: Context): Int =
         prefs(context).getInt(KEY_ROW_COUNT, 3)
 
@@ -88,11 +96,15 @@ object KeyboardPrefs {
     fun clearRowCount(context: Context) {
         prefs(context).edit().remove(KEY_ROW_COUNT).apply()
     }
+
+    /* ───────── DEFAULT LAYOUTS ───────── */
+
     private fun defaultAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
         return when (rowCount) {
             3 -> defaultThreeRowKeyboardLayoutQwertz
             4 -> defaultFourRowKeyboardLayout
-            else -> defaultKeyboardLayout
+            5 -> defaultKeyboardLayout
+            else -> defaultThreeRowKeyboardLayoutQwertz
         }
     }
 
@@ -100,19 +112,30 @@ object KeyboardPrefs {
         return when (rowCount) {
             3 -> defaultThreeRowNumericLayout
             4 -> defaultFourRowNumericLayout
-            else -> defaultNumericLayout
+            5 -> defaultNumericLayout
+            else -> defaultThreeRowNumericLayout
         }
     }
-    fun saveLayout(context: Context, layout: KeyboardConfig) {
-        val json = gson.toJson(layout)
-        prefs(context).edit().putString(KEY_LAYOUT_JSON, json).apply()
+
+    /* ───────── GENERIC JSON SAVE / LOAD ───────── */
+
+    private fun saveLayoutWithKey(
+        context: Context,
+        key: String,
+        layout: KeyboardConfig
+    ) {
+        prefs(context).edit()
+            .putString(key, gson.toJson(layout))
+            .apply()
     }
 
-    fun loadLayout(context: Context): KeyboardConfig {
-        val rowCount = getRowCount(context)
-        val fallback = defaultAlphabetLayoutForRowCount(rowCount)
+    private fun loadLayoutWithKey(
+        context: Context,
+        key: String,
+        fallback: KeyboardConfig
+    ): KeyboardConfig {
+        val json = prefs(context).getString(key, null)
 
-        val json = prefs(context).getString(KEY_LAYOUT_JSON, null)
         return if (!json.isNullOrBlank()) {
             runCatching {
                 gson.fromJson(json, KeyboardConfig::class.java)
@@ -124,15 +147,82 @@ object KeyboardPrefs {
         }
     }
 
+    /* ───────── ALPHABET LAYOUT ───────── */
+
+    fun saveAlphabetLayoutForRowCount(
+        context: Context,
+        rowCount: Int,
+        config: KeyboardConfig
+    ) {
+        when (rowCount) {
+            3 -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_3, config)
+            4 -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_4, config)
+            5 -> saveLayout(context, config)
+            else -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_3, config)
+        }
+    }
+
+    fun loadAlphabetLayoutForRowCount(
+        context: Context,
+        rowCount: Int
+    ): KeyboardConfig {
+        return when (rowCount) {
+            3 -> loadLayoutWithKey(
+                context,
+                KEY_ALPHABET_LAYOUT_3,
+                defaultThreeRowKeyboardLayoutQwertz
+            )
+
+            4 -> loadLayoutWithKey(
+                context,
+                KEY_ALPHABET_LAYOUT_4,
+                defaultFourRowKeyboardLayout
+            )
+
+            5 -> loadLayout(context)
+
+            else -> defaultThreeRowKeyboardLayoutQwertz
+        }
+    }
+
+    fun clearAlphabetLayoutForRowCount(context: Context, rowCount: Int) {
+        when (rowCount) {
+            3 -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_3).apply()
+            4 -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_4).apply()
+            5 -> clearLayout(context)
+            else -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_3).apply()
+        }
+    }
+
+    fun saveLayout(context: Context, layout: KeyboardConfig) {
+        prefs(context).edit()
+            .putString(KEY_LAYOUT_JSON, gson.toJson(layout))
+            .apply()
+    }
+
+    fun loadLayout(context: Context): KeyboardConfig {
+        val rowCount = getRowCount(context)
+        val fallback = defaultAlphabetLayoutForRowCount(rowCount)
+
+        return loadLayoutWithKey(
+            context = context,
+            key = KEY_LAYOUT_JSON,
+            fallback = fallback
+        )
+    }
+
     fun clearLayout(context: Context) {
         prefs(context).edit().remove(KEY_LAYOUT_JSON).apply()
     }
-    /*edge mode*/
+
+    /* ───────── EDGE MODE ───────── */
+
     fun edgeKeyForRowCount(rowCount: Int): String {
         return when (rowCount) {
             3 -> KEY_EDGE_MODE_3
             4 -> KEY_EDGE_MODE_4
-            else -> KEY_EDGE_MODE_5
+            5 -> KEY_EDGE_MODE_5
+            else -> KEY_EDGE_MODE_3
         }
     }
 
@@ -149,6 +239,7 @@ object KeyboardPrefs {
         return prefs(context).getString(KEY_EDGE_MODE, getEdgeModeKey(context))
             ?: getEdgeModeKey(context)
     }
+
     /* ───────── NUMERIC LAYOUT ───────── */
 
     fun saveNumericLayout(context: Context, config: KeyboardConfig) {
@@ -161,16 +252,11 @@ object KeyboardPrefs {
         val rowCount = getRowCount(context)
         val fallback = defaultNumericLayoutForRowCount(rowCount)
 
-        val json = prefs(context).getString(KEY_NUMERIC_LAYOUT_JSON, null)
-        return if (json.isNullOrBlank()) {
-            fallback
-        } else {
-            runCatching {
-                gson.fromJson(json, KeyboardConfig::class.java)
-            }.getOrElse {
-                fallback
-            }
-        }
+        return loadLayoutWithKey(
+            context = context,
+            key = KEY_NUMERIC_LAYOUT_JSON,
+            fallback = fallback
+        )
     }
 
     fun clearNumericLayout(context: Context) {
@@ -186,16 +272,11 @@ object KeyboardPrefs {
     }
 
     fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
-        val json = prefs(context).getString(KEY_HORIZONTAL_CENTER_LAYOUT_JSON, null)
-        return if (json.isNullOrBlank()) {
-            defaultHorizontalCenterLayout
-        } else {
-            runCatching {
-                gson.fromJson(json, KeyboardConfig::class.java)
-            }.getOrElse {
-                defaultHorizontalCenterLayout
-            }
-        }
+        return loadLayoutWithKey(
+            context = context,
+            key = KEY_HORIZONTAL_CENTER_LAYOUT_JSON,
+            fallback = defaultHorizontalCenterLayout
+        )
     }
 
     fun clearHorizontalCenterLayout(context: Context) {

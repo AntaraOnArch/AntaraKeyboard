@@ -102,12 +102,161 @@ class LayoutEditorBinder(
         selectedA = null
         selectedB = null
 
-        fun buildRow(keys: MutableList<KeyConfig>, rowIndex: Int) {
-            val visibleKeys = keys.filterIndexed { index, _ ->
-                // U editoru skrivamo "bočne" tipke iz 3. reda
-                !(rowIndex == 2 && (index == 0 || index == keys.lastIndex))
+        val rowCount = KeyboardPrefs.getRowCount(context)
+
+        fun addKeyToRow(
+            row: LinearLayout,
+            key: KeyConfig,
+            width: Int,
+            height: Int,
+            marginH: Int
+        ) {
+            val keyItem = createKeyView(key, userShape)
+
+            row.addView(
+                keyItem,
+                LinearLayout.LayoutParams(width, height).apply {
+                    marginStart = marginH
+                    marginEnd = marginH
+                }
+            )
+        }
+
+        fun buildThreeRowEditorRow(keys: MutableList<KeyConfig>) {
+            val visibleKeys = keys
+            if (visibleKeys.isEmpty()) return
+
+            val keyWidth = dp(34)
+            val keyHeight = dp(44)
+
+            val keyGap = dp(1)
+            val intraPairOverlap = -dp(8)
+            val interPairGap = dp(2)
+
+            // širina jednog razbijenog bloka: 6 tipki
+            val rowW = (keyWidth + keyGap * 2) * 6
+
+            val block = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(0, dp(1), dp(2), dp(1))
+                clipChildren = false
+                clipToPadding = false
             }
 
+            val topRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.START
+                clipChildren = false
+                clipToPadding = false
+            }
+
+            val bottomRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.END
+                clipChildren = false
+                clipToPadding = false
+            }
+
+            visibleKeys.take(6).forEach { key ->
+                addKeyToRow(
+                    row = topRow,
+                    key = key,
+                    width = keyWidth,
+                    height = keyHeight,
+                    marginH = keyGap
+                )
+            }
+
+            visibleKeys.drop(6).forEach { key ->
+                addKeyToRow(
+                    row = bottomRow,
+                    key = key,
+                    width = keyWidth,
+                    height = keyHeight,
+                    marginH = keyGap
+                )
+            }
+
+            block.addView(
+                topRow,
+                LinearLayout.LayoutParams(
+                    rowW,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            block.addView(
+                bottomRow,
+                LinearLayout.LayoutParams(
+                    rowW,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = intraPairOverlap
+                }
+            )
+
+            container.addView(
+                block,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    // ovo centrira CIJELI 6+5 blok u dialogu,
+                    // ali NE centrira topRow/bottomRow unutar bloka
+                    gravity = Gravity.CENTER_HORIZONTAL
+                    bottomMargin = interPairGap
+                }
+            )
+        }
+
+        fun buildFiveRowEditorRow(keys: MutableList<KeyConfig>) {
+            val visibleKeys = keys
+            if (visibleKeys.isEmpty()) return
+
+            val maxKeysInAnyRow = cfg.rows.maxOfOrNull { it.keys.size }
+                ?: visibleKeys.size
+
+            val dialogW = (context.resources.displayMetrics.widthPixels * 0.92f).toInt()
+
+            // root padding 14 + 14, plus safety
+            val availableW = dialogW - dp(28) - dp(8)
+
+            val gap = dp(1)
+
+            val keySize = (
+                    (availableW - (maxKeysInAnyRow * gap * 2)) /
+                            maxKeysInAnyRow.toFloat()
+                    ).toInt().coerceIn(dp(28), dp(32))
+
+            val row = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                setPadding(0, dp(3), 0, dp(3))
+                clipChildren = false
+                clipToPadding = false
+            }
+
+            visibleKeys.forEach { key ->
+                addKeyToRow(
+                    row = row,
+                    key = key,
+                    width = keySize,
+                    height = keySize,
+                    marginH = gap
+                )
+            }
+
+            container.addView(
+                row,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+
+        fun buildDefaultWeightedRow(keys: MutableList<KeyConfig>) {
+            val visibleKeys = keys
             if (visibleKeys.isEmpty()) return
 
             val row = LinearLayout(context).apply {
@@ -118,6 +267,7 @@ class LayoutEditorBinder(
 
             visibleKeys.forEach { key ->
                 val keyItem = createKeyView(key, userShape)
+
                 row.addView(
                     keyItem,
                     LinearLayout.LayoutParams(0, dp(56), 1f).apply {
@@ -130,8 +280,12 @@ class LayoutEditorBinder(
             container.addView(row)
         }
 
-        cfg.rows.forEachIndexed { rowIndex, rowCfg ->
-            buildRow(rowCfg.keys, rowIndex)
+        cfg.rows.forEach { rowCfg ->
+            when (rowCount) {
+                3 -> buildThreeRowEditorRow(rowCfg.keys)
+                5 -> buildFiveRowEditorRow(rowCfg.keys)
+                else -> buildDefaultWeightedRow(rowCfg.keys) // 4-row ne diramo
+            }
         }
     }
 
@@ -155,6 +309,7 @@ class LayoutEditorBinder(
             shape = userShape
             isSpecial = (key.label == "↵")
             setTextColor(0xFFFFFFFF.toInt())
+            customBgColor = 0xFF111111.toInt()
 
             alpha = when {
                 locked -> 0.55f
@@ -287,7 +442,7 @@ class LayoutEditorBinder(
                 view.setTextColor(0xFF000000.toInt())
                 startBounce(view)
             } else {
-                view.customBgColor = 0xFF3E3E3E.toInt()
+                view.customBgColor = 0xFF111111.toInt()
                 view.setTextColor(0xFFFFFFFF.toInt())
                 stopBounce(view)
             }

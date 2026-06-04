@@ -807,14 +807,15 @@ class MainActivity : AppCompatActivity() {
         val btnSwapSelected = dialog.findViewById<Button>(R.id.btnSwapSelected)
         val btnSaveEditor = dialog.findViewById<Button>(R.id.btnSaveEditor)
 
+        val rowCount = KeyboardPrefs.getRowCount(this)
+
         val layoutBinder = LayoutEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadLayout(this),
+            initial = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
-                KeyboardPrefs.saveLayout(this, updated)
+                KeyboardPrefs.saveAlphabetLayoutForRowCount(this, rowCount, updated)
             }
         )
-
         val numericLocked = setOf(
             "⇧", "⌫", "↵", "ABC", "abc", " ",
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"

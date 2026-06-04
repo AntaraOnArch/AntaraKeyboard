@@ -55,4 +55,16 @@
         <item name="keyFillPressed">@color/key_fill_pressed</item>
     </style>
 
+    <style name="MainRoundedButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/main_button_rounded</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:textColor">#2A2140</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">46dp</item>
+        <item name="android:paddingLeft">14dp</item>
+        <item name="android:paddingRight">14dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
 </resources>
