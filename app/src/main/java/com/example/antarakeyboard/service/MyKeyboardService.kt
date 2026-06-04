@@ -71,11 +71,9 @@ class MyKeyboardService : InputMethodService() {
     private lateinit var themedCtx: Context
 
     private val myDefaultNumericConfig: KeyboardConfig
-        get() = when (KeyboardPrefs.getRowCount(this)) {
-            3 -> defaultThreeRowNumericLayout
-            4 -> defaultFourRowNumericLayout
-            5 -> KeyboardPrefs.loadNumericLayout(this)
-            else -> defaultThreeRowNumericLayout
+        get() {
+            val rowCount = KeyboardPrefs.getRowCount(this)
+            return KeyboardPrefs.loadNumericLayoutForRowCount(this, rowCount)
         }
 
     private val OVERLAP_RATIO = 0.18f

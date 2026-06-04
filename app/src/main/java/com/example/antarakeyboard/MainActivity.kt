@@ -825,9 +825,9 @@ class MainActivity : AppCompatActivity() {
 
         numericBinder = LayoutEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadNumericLayout(this),
+            initial = KeyboardPrefs.loadNumericLayoutForRowCount(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
-                KeyboardPrefs.saveNumericLayout(this, updated)
+                KeyboardPrefs.saveNumericLayoutForRowCount(this, rowCount, updated)
             },
             lockedLabels = numericLocked,
             onEmptyKeyClick = { key ->

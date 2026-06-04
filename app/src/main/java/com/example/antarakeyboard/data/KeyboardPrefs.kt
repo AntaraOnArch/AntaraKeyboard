@@ -25,6 +25,9 @@ object KeyboardPrefs {
     private const val KEY_ALPHABET_LAYOUT_4 = "alphabet_layout_4"
 
     private const val KEY_NUMERIC_LAYOUT_JSON = "numeric_layout_json"
+    private const val KEY_NUMERIC_LAYOUT_3 = "numeric_layout_3"
+    private const val KEY_NUMERIC_LAYOUT_4 = "numeric_layout_4"
+    private const val KEY_NUMERIC_LAYOUT_5 = "numeric_layout_5"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_JSON = "horizontal_center_layout_json"
     private const val KEY_HEIGHT_PX = "key_height_px"
 
@@ -242,25 +245,72 @@ object KeyboardPrefs {
 
     /* ───────── NUMERIC LAYOUT ───────── */
 
-    fun saveNumericLayout(context: Context, config: KeyboardConfig) {
-        prefs(context).edit()
-            .putString(KEY_NUMERIC_LAYOUT_JSON, gson.toJson(config))
-            .apply()
+    fun saveNumericLayoutForRowCount(
+        context: Context,
+        rowCount: Int,
+        config: KeyboardConfig
+    ) {
+        val key = when (rowCount) {
+            3 -> KEY_NUMERIC_LAYOUT_3
+            4 -> KEY_NUMERIC_LAYOUT_4
+            5 -> KEY_NUMERIC_LAYOUT_5
+            else -> KEY_NUMERIC_LAYOUT_3
+        }
+
+        saveLayoutWithKey(context, key, config)
     }
 
-    fun loadNumericLayout(context: Context): KeyboardConfig {
-        val rowCount = getRowCount(context)
-        val fallback = defaultNumericLayoutForRowCount(rowCount)
+    fun loadNumericLayoutForRowCount(
+        context: Context,
+        rowCount: Int
+    ): KeyboardConfig {
+        val key = when (rowCount) {
+            3 -> KEY_NUMERIC_LAYOUT_3
+            4 -> KEY_NUMERIC_LAYOUT_4
+            5 -> KEY_NUMERIC_LAYOUT_5
+            else -> KEY_NUMERIC_LAYOUT_3
+        }
 
         return loadLayoutWithKey(
             context = context,
-            key = KEY_NUMERIC_LAYOUT_JSON,
-            fallback = fallback
+            key = key,
+            fallback = defaultNumericLayoutForRowCount(rowCount)
         )
     }
 
+    // stari naziv ostavljamo da postojeći kod ne pukne
+    fun saveNumericLayout(context: Context, config: KeyboardConfig) {
+        saveNumericLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context),
+            config = config
+        )
+    }
+
+    // stari naziv ostavljamo da postojeći kod ne pukne
+    fun loadNumericLayout(context: Context): KeyboardConfig {
+        return loadNumericLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context)
+        )
+    }
+
+    fun clearNumericLayoutForRowCount(context: Context, rowCount: Int) {
+        val key = when (rowCount) {
+            3 -> KEY_NUMERIC_LAYOUT_3
+            4 -> KEY_NUMERIC_LAYOUT_4
+            5 -> KEY_NUMERIC_LAYOUT_5
+            else -> KEY_NUMERIC_LAYOUT_3
+        }
+
+        prefs(context).edit().remove(key).apply()
+    }
+
     fun clearNumericLayout(context: Context) {
-        prefs(context).edit().remove(KEY_NUMERIC_LAYOUT_JSON).apply()
+        clearNumericLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context)
+        )
     }
 
     /* ───────── HORIZONTAL CENTER LAYOUT ───────── */
