@@ -267,14 +267,14 @@ val defaultThreeRowNumericLayout: KeyboardConfig = KeyboardConfig(
         RowConfig(
             mutableListOf(
                 KeyConfig("1"), KeyConfig("2"), KeyConfig("3"), KeyConfig("4"), KeyConfig("5"),
-                KeyConfig("6"), KeyConfig("7"), KeyConfig("8"), KeyConfig("9"), KeyConfig("0")
+                KeyConfig("6"), KeyConfig("7"), KeyConfig("8"), KeyConfig("9"), KeyConfig("0"), KeyConfig("$")
             )
         ),
 
         // 2) + - * / = ( ) . ? €
         RowConfig(
             mutableListOf(
-                KeyConfig("+"), KeyConfig("-"), KeyConfig("*"), KeyConfig("/"), KeyConfig("="),
+                KeyConfig("+"), KeyConfig("÷"), KeyConfig("-"), KeyConfig("*"), KeyConfig("/"), KeyConfig("="),
                 KeyConfig("("), KeyConfig(")"), KeyConfig("."), KeyConfig("?"), KeyConfig("€")
             )
         ),

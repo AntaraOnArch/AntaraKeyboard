@@ -355,16 +355,13 @@ class MyKeyboardService : InputMethodService() {
 
             3 -> when (side) {
                 EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
-                    1 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
-                    2 -> SideButtonTuning(x = -28, y = 8, widthScale = 1f, iconX = 0, iconY = -3)
+                    1 -> SideButtonTuning(x = -12, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
                     else -> SideButtonTuning()
                 }
 
                 EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
-                    1 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
-                    2 -> SideButtonTuning(x = -8, y = 0, widthScale = 1f, iconX = -1, iconY = -3)
+                    0 -> SideButtonTuning(x = -4, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
+                    2 -> SideButtonTuning(x = -4, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
                     else -> SideButtonTuning()
                 }
             }
@@ -430,16 +427,16 @@ class MyKeyboardService : InputMethodService() {
 
             3 -> when (side) {
                 EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
-                    1 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
-                    2 -> SideButtonTuning(x = -6, y = -6, widthScale = 1f, iconX = -2, iconY = 0)
+                   // 0 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
+                    1 -> SideButtonTuning(x = -17, y = -6, widthScale = 0.8f, heightScale = 0.4f, iconX = 5, iconY = 0)
+                    //2 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
                     else -> SideButtonTuning()
                 }
 
                 EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
-                    1 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
-                    2 -> SideButtonTuning(x = 6, y = -6, widthScale = 1f, iconX = 2, iconY = 0)
+                    0 -> SideButtonTuning(x = 22, y = -8, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
+                    //1 -> SideButtonTuning(x = 22, y = -6, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
+                    2 -> SideButtonTuning(x = 22, y = -2, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
                     else -> SideButtonTuning()
                 }
             }
@@ -1807,7 +1804,7 @@ class MyKeyboardService : InputMethodService() {
                         (sizing.outerPadPx - dp(6)).coerceAtLeast(0)
 
                     savedRowCount == 3 && isShiftedRow ->
-                        (sizing.outerPadPx + honeycombShift - dp(8)).coerceAtLeast(0)
+                        (sizing.outerPadPx + honeycombShift - dp(6)).coerceAtLeast(0)
 
                     savedRowCount == 3 ->
                         (sizing.outerPadPx - dp(12)).coerceAtLeast(0)
@@ -2244,7 +2241,7 @@ class MyKeyboardService : InputMethodService() {
                         )
 
                         val width = (slotW * tuning.widthScale).toInt()
-                            .coerceAtLeast(dp(24))
+                            .coerceAtLeast(dp(18))
 
                         addSideButtonAt(
                             tag = "edge_slot_left_$visualIndex",
@@ -2267,7 +2264,7 @@ class MyKeyboardService : InputMethodService() {
                         )
 
                         val width = (slotW * tuning.widthScale).toInt()
-                            .coerceAtLeast(dp(24))
+                            .coerceAtLeast(dp(18))
 
                         addSideButtonAt(
                             tag = "edge_slot_right_$visualIndex",
@@ -2319,7 +2316,7 @@ class MyKeyboardService : InputMethodService() {
                 )
 
                 val width = (slotW * tuning.widthScale).toInt()
-                    .coerceAtLeast(dp(24))
+                    .coerceAtLeast(dp(18))
 
                 val left = if (binding.side == EdgePos.Side.LEFT) {
                     rowLeft - width + dp(tuning.x)
@@ -2716,7 +2713,13 @@ class MyKeyboardService : InputMethodService() {
             val savedRowCount = KeyboardPrefs.getRowCount(this)
 
             val baseLeftInset = when (savedRowCount) {
-                4 -> dp(12)   // povećaj na 14/16 ako treba još zraka
+                3 -> dp(18)    // sva 3 reda desno od side buttona
+                4 -> dp(12)
+                else -> 0
+            }
+
+            val middleRowExtraRight = when (savedRowCount) {
+                3 -> dp(9)    // samo 2. red još mrvicu desno za centriranje
                 else -> 0
             }
 
@@ -2727,14 +2730,19 @@ class MyKeyboardService : InputMethodService() {
                 if (rowIndex > 0) topMargin = -rowOverlap
 
                 leftMargin = when {
-                    savedRowCount == 3 && rowIndex in setOf(0, 2) -> -(halfStep / 2)
-                    savedRowCount == 3 -> 0
+                    // 3-row: 1. i 3. red ostaju honeycomb, ali svi idu malo desno
+                    savedRowCount == 3 && rowIndex in setOf(0, 2) ->
+                        -(halfStep / 2) + baseLeftInset
 
-                    // 4-row: 1. i 3. red ostaju ulijevo, ali svi dobiju malo zraka od side buttona
-                    savedRowCount == 4 && rowIndex in setOf(0, 2) -> -halfStep + baseLeftInset
+                    // 3-row: 2. red ide desno + dodatno centriranje
+                    savedRowCount == 3 ->
+                        baseLeftInset + middleRowExtraRight
 
-                    // 4-row: 2. i 4. red samo malo desno od side buttona
-                    savedRowCount == 4 -> baseLeftInset
+                    savedRowCount == 4 && rowIndex in setOf(0, 2) ->
+                        -halfStep + baseLeftInset
+
+                    savedRowCount == 4 ->
+                        baseLeftInset
 
                     isOddLandscapeRow(rowIndex) -> halfStep
 
@@ -2769,6 +2777,10 @@ class MyKeyboardService : InputMethodService() {
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(this)
+        val baseRightInset = when (savedRowCount) {
+            3 -> dp(14)    // sva 3 desna reda lijevo od side buttona
+            else -> 0
+        }
 
         currentKeyboardConfig.rows.forEachIndexed { rowIndex, row ->
             val visibleRow = row.keys.filterNot {
@@ -2834,9 +2846,22 @@ class MyKeyboardService : InputMethodService() {
                 }
 
                 rightMargin = when {
-                    savedRowCount == 5 && isOddLandscapeRow(rowIndex) -> halfStep
-                    savedRowCount == 5 -> 0
-                    isOddLandscapeRow(rowIndex) -> halfStep
+                    // 3-row: sva 3 reda lijevo, uz postojeći honeycomb pomak
+                    savedRowCount == 3 && isOddLandscapeRow(rowIndex) ->
+                        halfStep + baseRightInset
+
+                    savedRowCount == 3 ->
+                        baseRightInset
+
+                    savedRowCount == 5 && isOddLandscapeRow(rowIndex) ->
+                        halfStep
+
+                    savedRowCount == 5 ->
+                        0
+
+                    isOddLandscapeRow(rowIndex) ->
+                        halfStep
+
                     else -> 0
                 }
             }
