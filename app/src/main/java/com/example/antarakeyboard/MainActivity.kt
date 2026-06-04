@@ -715,13 +715,15 @@ class MainActivity : AppCompatActivity() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
+        val rowCount = KeyboardPrefs.getRowCount(this)
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(16), dp(16), dp(12))
         }
 
         val title = TextView(this).apply {
-            text = "Horizontal center keys"
+            text = "Horizontal center keys ($rowCount rows)"
             textSize = 18f
             setPadding(0, 0, 0, dp(12))
         }
@@ -758,9 +760,9 @@ class MainActivity : AppCompatActivity() {
 
         horizontalBinder = LayoutEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadHorizontalCenterLayout(this),
+            initial = KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
-                KeyboardPrefs.saveHorizontalCenterLayout(this, updated)
+                KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, rowCount, updated)
             },
             lockedLabels = emptySet(),
             onEmptyKeyClick = { key ->
@@ -777,7 +779,13 @@ class MainActivity : AppCompatActivity() {
 
         btnSave.setOnClickListener {
             horizontalBinder.saveExternally()
-            Toast.makeText(this, "Horizontal center saved ✅", Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(
+                this,
+                "Horizontal center saved za $rowCount rows ✅",
+                Toast.LENGTH_SHORT
+            ).show()
+
             dialog.dismiss()
         }
 

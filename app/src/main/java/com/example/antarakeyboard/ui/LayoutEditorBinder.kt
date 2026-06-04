@@ -485,7 +485,11 @@ class LayoutEditorBinder(
                 val srcView = e.localState as? View ?: return true
                 val srcKey = srcView.tag as? KeyConfig ?: return true
 
-                if (isEmptyKey(srcKey) || isEmptyKey(targetKey)) return true
+                // Praznu tipku ne vučemo kao source,
+                // ali dopuštamo drop NA praznu tipku.
+                // To je bitno za numeric layout: broj se smije pomaknuti,
+                // ali ne smije nestati iz numeričkog dijela.
+                if (isEmptyKey(srcKey)) return true
 
                 if (srcKey != targetKey) {
                     swapPositions(srcKey, targetKey)

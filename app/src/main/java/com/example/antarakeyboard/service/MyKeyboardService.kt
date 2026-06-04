@@ -2867,26 +2867,38 @@ class MyKeyboardService : InputMethodService() {
 
 
     private fun buildLandscapeCenter(container: LinearLayout) {
-        val cfg = KeyboardPrefs.loadHorizontalCenterLayout(this)
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
-        val centerRows = if (savedRowCount == 3 && cfg.rows.isNotEmpty()) {
-            cfg.rows.drop(1)   // 3-row: bez gornjeg reda
-        } else {
-            cfg.rows
+        val cfg = KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(
+            this,
+            savedRowCount
+        )
+
+        // Prikazujemo sve redove iz horizontal center editora
+        val centerRows = cfg.rows
+
+        val keySize = when (savedRowCount) {
+            3 -> dp(25)
+            4 -> dp(27)
+            5 -> dp(28)
+            else -> dp(28)
         }
 
-        val keySize = if (savedRowCount == 3) dp(28) else dp(28)
-        val rowGap = if (savedRowCount == 3) dp(6) else dp(6)
+        val rowGap = when (savedRowCount) {
+            3 -> dp(4)
+            4 -> dp(5)
+            5 -> dp(6)
+            else -> dp(6)
+        }
 
-        centerRows.forEachIndexed { rowIndex, rowConfig ->
+        centerRows.forEach { rowConfig ->
             val rowKeys = rowConfig.keys.filter { key ->
                 key.label.isNotBlank() &&
                         !key.longPressBindings.contains("__USER_EMPTY__") &&
                         !key.longPressBindings.contains(EDGE_GHOST_MARKER)
             }
 
-            if (rowKeys.isEmpty()) return@forEachIndexed
+            if (rowKeys.isEmpty()) return@forEach
 
             val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -2896,13 +2908,7 @@ class MyKeyboardService : InputMethodService() {
             }
 
             rowKeys.forEachIndexed { i, key ->
-                val displayLabel = when {
-                    savedRowCount == 3 && rowIndex == 0 && key.label == "@" -> "0"
-                    savedRowCount == 3 && rowIndex == centerRows.lastIndex && key.label == "$" -> "@"
-                    else -> key.label
-                }
-
-                val kv = createCenterTextKey(displayLabel)
+                val kv = createCenterTextKey(key.label)
 
                 val lp = LinearLayout.LayoutParams(
                     keySize,

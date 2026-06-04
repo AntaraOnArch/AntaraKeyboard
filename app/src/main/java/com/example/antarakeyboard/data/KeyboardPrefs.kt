@@ -29,6 +29,9 @@ object KeyboardPrefs {
     private const val KEY_NUMERIC_LAYOUT_4 = "numeric_layout_4"
     private const val KEY_NUMERIC_LAYOUT_5 = "numeric_layout_5"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_JSON = "horizontal_center_layout_json"
+    private const val KEY_HORIZONTAL_CENTER_LAYOUT_3 = "horizontal_center_layout_3"
+    private const val KEY_HORIZONTAL_CENTER_LAYOUT_4 = "horizontal_center_layout_4"
+    private const val KEY_HORIZONTAL_CENTER_LAYOUT_5 = "horizontal_center_layout_5"
     private const val KEY_HEIGHT_PX = "key_height_px"
 
     private const val SPACE_LINKED = "space_linked"
@@ -315,24 +318,73 @@ object KeyboardPrefs {
 
     /* ───────── HORIZONTAL CENTER LAYOUT ───────── */
 
-    fun saveHorizontalCenterLayout(context: Context, config: KeyboardConfig) {
-        prefs(context).edit()
-            .putString(KEY_HORIZONTAL_CENTER_LAYOUT_JSON, gson.toJson(config))
-            .apply()
+    fun saveHorizontalCenterLayoutForRowCount(
+        context: Context,
+        rowCount: Int,
+        config: KeyboardConfig
+    ) {
+        val key = when (rowCount) {
+            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
+            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
+            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+        }
+
+        saveLayoutWithKey(context, key, config)
     }
 
-    fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
+    fun loadHorizontalCenterLayoutForRowCount(
+        context: Context,
+        rowCount: Int
+    ): KeyboardConfig {
+        val key = when (rowCount) {
+            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
+            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
+            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+        }
+
         return loadLayoutWithKey(
             context = context,
-            key = KEY_HORIZONTAL_CENTER_LAYOUT_JSON,
+            key = key,
             fallback = defaultHorizontalCenterLayout
         )
     }
 
-    fun clearHorizontalCenterLayout(context: Context) {
-        prefs(context).edit().remove(KEY_HORIZONTAL_CENTER_LAYOUT_JSON).apply()
+    // stari naziv ostavljamo da ne pukne postojeći kod
+    fun saveHorizontalCenterLayout(context: Context, config: KeyboardConfig) {
+        saveHorizontalCenterLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context),
+            config = config
+        )
     }
 
+    // stari naziv ostavljamo da ne pukne postojeći kod
+    fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
+        return loadHorizontalCenterLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context)
+        )
+    }
+
+    fun clearHorizontalCenterLayoutForRowCount(context: Context, rowCount: Int) {
+        val key = when (rowCount) {
+            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
+            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
+            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+        }
+
+        prefs(context).edit().remove(key).apply()
+    }
+
+    fun clearHorizontalCenterLayout(context: Context) {
+        clearHorizontalCenterLayoutForRowCount(
+            context = context,
+            rowCount = getRowCount(context)
+        )
+    }
     /* ───────── SPACE COLORS ───────── */
 
     fun isSpaceLinked(context: Context): Boolean =
