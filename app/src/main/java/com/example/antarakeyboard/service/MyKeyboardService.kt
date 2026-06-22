@@ -272,15 +272,16 @@ class MyKeyboardService : InputMethodService() {
             KeyboardPrefs.setSideButtonsColors(this, Color.TRANSPARENT, sideTextColor, true)
         }
 
-        // NOVO: Postavi keys boje prema temi
-        val keysAllSame = KeyboardPrefs.getKeysAllSameColor(this)
-        if (keysAllSame) {
-            val keysTextColor = themeColor(themedCtx, R.attr.keyText,
-                if (isDarkNow) Color.WHITE else Color.BLACK)
-            val keyFill = themeColor(themedCtx, R.attr.keyFill,
-                if (isDarkNow) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt())
-            KeyboardPrefs.setKeysColors(this, keyFill, keysTextColor, true)
-        }
+        // NE upisivati theme boje u KeyboardPrefs ovdje.
+        // Theme smije biti samo fallback kod crtanja, inače reset/start pregazi custom boje.
+        //val keysAllSame = KeyboardPrefs.getKeysAllSameColor(this)
+        //if (keysAllSame) {
+        //    val keysTextColor = themeColor(themedCtx, R.attr.keyText,
+        //        if (isDarkNow) Color.WHITE else Color.BLACK)
+        //    val keyFill = themeColor(themedCtx, R.attr.keyFill,
+        //        if (isDarkNow) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt())
+        //   KeyboardPrefs.setKeysColors(this, keyFill, keysTextColor, true)
+        //}
 
         currentShape = KeyboardPrefs.getShape(this)
 
@@ -1377,7 +1378,9 @@ class MyKeyboardService : InputMethodService() {
                 isClickable = false
                 isFocusable = false
                 textSize = popupTextSize
-                setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, Color.WHITE))
+
+                setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
+                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
                 includeFontPadding = false
                 setPadding(0, 0, 0, 0)
             }
@@ -2971,6 +2974,27 @@ class MyKeyboardService : InputMethodService() {
             rowKeys.forEachIndexed { i, key ->
                 val kv = createCenterTextKey(key.label)
 
+                // Primijeni iste boje kao za obične tipke u glavnom layoutu
+                if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
+                    val allSame = KeyboardPrefs.getKeysAllSameColor(this)
+                    if (allSame) {
+                        kv.customBgColor = KeyboardPrefs.getKeysBg(this)
+                        kv.setTextColor(KeyboardPrefs.getKeysTextColor(this))
+                    } else {
+                        val individualColors = KeyboardPrefs.getKeyIndividualColors(this, key.label)
+                        if (individualColors != null) {
+                            kv.customBgColor = individualColors.first
+                            kv.setTextColor(individualColors.second)
+                        } else {
+                            // Nema individualne boje — fallback na temu
+                            val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
+                            val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
+                            kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
+                            kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
+                        }
+                    }
+                }
+
                 val lp = LinearLayout.LayoutParams(
                     keySize,
                     keySize
@@ -3381,6 +3405,14 @@ class MyKeyboardService : InputMethodService() {
         }
    }
 
+    private fun colorLookupLabel(label: String): String {
+        return if (label.length == 1 && label[0].isLetter()) {
+            label.lowercase()
+        } else {
+            label
+        }
+    }
+
     private fun applySpecialKeyColors(kv: KeyView, key: KeyConfig, spaceIndex: Int): Int {
         var nextSpaceIndex = spaceIndex
 
@@ -3391,7 +3423,7 @@ class MyKeyboardService : InputMethodService() {
             val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
             kv.customBgColor = if (spaceIndex == 0) c1 else c2
             nextSpaceIndex++
-            return nextSpaceIndex  // space ne ide dalje u custom boje
+            return nextSpaceIndex
         }
 
         // 2. ENTER — uvijek posebno
@@ -3410,7 +3442,6 @@ class MyKeyboardService : InputMethodService() {
             } else {
                 kv.text = "⇧"
                 kv.customBgColor = null
-                // Prati temu, ne hardkodiraj WHITE
                 kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
                     if (lastIsDark == true) Color.WHITE else Color.BLACK))
             }
@@ -3433,16 +3464,16 @@ class MyKeyboardService : InputMethodService() {
             kv.setTextColor(keysText)
         } else {
             // Pokušaj individualne boje
-            val individualColors = KeyboardPrefs.getKeyIndividualColors(this, key.label)
+            val individualColors = KeyboardPrefs.getKeyIndividualColors(this, colorLookupLabel(key.label))
             if (individualColors != null) {
                 kv.customBgColor = individualColors.first
                 kv.setTextColor(individualColors.second)
             } else {
-                // NEMA individualne boje — koristi temu, ne hardkodirani WHITE!
+                // NEMA individualne boje — fallback na temu (kao da je allSame)
                 val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
+                val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
                 kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
-                // Background ne diraj — neka bude default iz KeyView (tema)
-                kv.customBgColor = null
+                kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
             }
         }
 
