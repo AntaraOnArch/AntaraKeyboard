@@ -73,7 +73,7 @@ class MyKeyboardService : InputMethodService() {
     private val myDefaultNumericConfig: KeyboardConfig
         get() {
             val rowCount = KeyboardPrefs.getRowCount(this)
-            return KeyboardPrefs.loadNumericLayoutForRowCount(this, rowCount)
+            return KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
         }
 
     private val OVERLAP_RATIO = 0.18f
@@ -597,7 +597,7 @@ class MyKeyboardService : InputMethodService() {
 
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
         val rows = KeyboardPrefs.getRowCount(this)
-        return KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rows)
+        return KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rows)
     }
 
 
@@ -3122,10 +3122,10 @@ class MyKeyboardService : InputMethodService() {
 
         setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, Color.WHITE))
 
-        if (label == "↵") {
-            customBgColor = KeyboardPrefs.getEnterBg(context)
-            setTextColor(KeyboardPrefs.getEnterIcon(context))
-        }
+        //if (label == "↵") {
+        //    customBgColor = KeyboardPrefs.getEnterBg(context)
+        //    setTextColor(KeyboardPrefs.getEnterIcon(context))
+        //}
 
         if (label == "⇧") {
             if (isShifted) {

@@ -127,7 +127,14 @@ class LongPressManagerDialog(
             text = "Spremi i zatvori"
             isAllCaps = false
             setOnClickListener {
-                KeyboardPrefs.saveLayout(context, keyboardConfig)
+                val rowCount = KeyboardPrefs.getRowCount(context)
+
+                KeyboardPrefs.saveAlphabetLayoutForRowCount(
+                    context,
+                    rowCount,
+                    keyboardConfig
+                )
+
                 onSaved()
                 dismiss()
             }
@@ -185,14 +192,24 @@ class LongPressManagerDialog(
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val k = items[position]
+
             holder.btn.text = k.label
             holder.btn.alpha = if (position == selected) 1f else 0.85f
+
             holder.btn.setOnClickListener {
+                val adapterPos = holder.bindingAdapterPosition
+                if (adapterPos == RecyclerView.NO_POSITION) return@setOnClickListener
+
                 val old = selected
-                selected = position
-                if (old != RecyclerView.NO_POSITION) notifyItemChanged(old)
+                selected = adapterPos
+
+                if (old != RecyclerView.NO_POSITION) {
+                    notifyItemChanged(old)
+                }
+
                 notifyItemChanged(selected)
-                onPick(k)
+
+                onPick(items[adapterPos])
             }
         }
 

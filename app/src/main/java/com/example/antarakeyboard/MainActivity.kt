@@ -42,7 +42,11 @@ import com.example.antarakeyboard.ui.defaultKeyboardLayout
 import com.example.antarakeyboard.ui.defaultNumericLayout
 import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
+import android.graphics.Color
+import com.example.antarakeyboard.ui.ColorWheelView
+import android.content.Context
 import com.example.antarakeyboard.R
+import com.example.antarakeyboard.data.GlobalLongPressStorage
 
 class MainActivity : AppCompatActivity() {
 
@@ -181,19 +185,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         resetLayoutButton.setOnClickListener {
-            KeyboardPrefs.clearHorizontalCenterLayout(this)
-            KeyboardPrefs.saveHorizontalCenterLayout(this, defaultHorizontalCenterLayout)
+            val currentRowCount = KeyboardPrefs.getRowCount(this)
+            val currentShape = KeyboardPrefs.getShape(this)
 
-            KeyboardPrefs.clearLayout(this)
-            KeyboardPrefs.clearNumericLayout(this)
-            KeyboardPrefs.clearRowCount(this)
+            // Resetiraj horizontal center layout
+            KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
+            KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, currentRowCount, defaultHorizontalCenterLayout)
 
-            KeyboardPrefs.setRowCount(this, 3)
-            KeyboardPrefs.saveLayout(this, defaultThreeRowKeyboardLayoutQwertz)
-            KeyboardPrefs.saveNumericLayout(this, defaultThreeRowNumericLayout)
+            // Resetiraj glavne layoute na default, ALI zadrži globalne bindove
+            KeyboardPrefs.clearAlphabetLayoutForRowCount(this, currentRowCount)
+            KeyboardPrefs.clearNumericLayoutForRowCount(this, currentRowCount)
 
-            KeyboardPrefs.setShape(this, KeyShape.HEX)
+            // Učitaj defaulte i apliciraj globalne bindove
+            val alphabetWithBinds = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount)
+            val numericWithBinds = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount)
 
+            KeyboardPrefs.saveAlphabetLayoutForRowCount(this, currentRowCount, alphabetWithBinds)
+            KeyboardPrefs.saveNumericLayoutForRowCount(this, currentRowCount, numericWithBinds)
+
+            // NE diraj oblik ni broj redova
             val keyFill = themeColor(R.attr.keyFill, getColor(R.color.key_fill_light))
             val specialFill = getColor(R.color.special_fill)
             val specialText = getColor(R.color.special_text)
@@ -201,13 +211,12 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
             KeyboardPrefs.setEnterColors(this, specialFill, specialText)
 
-            resetSideButtonsForRowCount(3)
+            resetSideButtonsForRowCount(currentRowCount)
 
-            preview.shape = KeyShape.HEX
-            setCheckedForShape(KeyShape.HEX)
-            setCheckedForRowCount(3)
+            preview.shape = currentShape
+            setCheckedForShape(currentShape)
 
-            Toast.makeText(this, "Sve postavke resetirane", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Layout resetiran (bindovi zadržani)", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -261,9 +270,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveDefaultsForRowCount(rowCount: Int) {
+        val currentRowCount = KeyboardPrefs.getRowCount(this)
+
+        // Spremi trenutne layoute s globalnim bindovima (ako već postoje)
+        if (currentRowCount != 0) {
+            val currentAlphabet = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, currentRowCount)
+            val currentNumeric = KeyboardPrefs.loadNumericLayoutForRowCount(this, currentRowCount)
+            GlobalLongPressStorage.extractAndSaveAlphabetBinds(this, currentAlphabet)
+            GlobalLongPressStorage.extractAndSaveNumericBinds(this, currentNumeric)
+        }
+
+        // Postavi novi broj redova
         KeyboardPrefs.setRowCount(this, rowCount)
-        KeyboardPrefs.saveLayout(this, activeAlphabetLayoutForRowCount(rowCount))
-        KeyboardPrefs.saveNumericLayout(this, activeNumericLayoutForRowCount(rowCount))
+
+        // Učitaj default layoute za novi broj redova i apliciraj globalne bindove
+        val alphabetWithBinds = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount)
+        val numericWithBinds = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
+
+        KeyboardPrefs.saveAlphabetLayoutForRowCount(this, rowCount, alphabetWithBinds)
+        KeyboardPrefs.saveNumericLayoutForRowCount(this, rowCount, numericWithBinds)
+
         resetSideButtonsForRowCount(rowCount)
     }
 
@@ -287,15 +313,18 @@ class MainActivity : AppCompatActivity() {
         val pageAlphabet = dialog.findViewById<LinearLayout>(R.id.pageAlphabetLp)
         val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumericLp)
 
+        val currentRowCount = KeyboardPrefs.getRowCount(this)
+
+        // Učitaj s globalnim bindovima
         val alphabetBinder = LongPressEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadLayout(this),
+            initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount),
             titleText = "Bind long press - alphabet"
         )
 
         val numericBinder = LongPressEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadNumericLayout(this),
+            initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount),
             titleText = "Bind long press - numeric",
             lockedLabels = setOf("⇧", "⌫", "↵", "ABC", "abc", " ")
         )
@@ -312,8 +341,9 @@ class MainActivity : AppCompatActivity() {
         btnTabNumeric.setOnClickListener { showPage(1) }
 
         btnSave.setOnClickListener {
-            KeyboardPrefs.saveLayout(this, alphabetBinder.getUpdatedConfig())
-            KeyboardPrefs.saveNumericLayout(this, numericBinder.getUpdatedConfig())
+            // Spremi i izvuci u globalni storage
+            KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, currentRowCount, alphabetBinder.getUpdatedConfig())
+            KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, currentRowCount, numericBinder.getUpdatedConfig())
             Toast.makeText(this, "Long press saved ✅", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
@@ -819,11 +849,12 @@ class MainActivity : AppCompatActivity() {
 
         val layoutBinder = LayoutEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount),
+            initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
-                KeyboardPrefs.saveAlphabetLayoutForRowCount(this, rowCount, updated)
+                KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, rowCount, updated)
             }
         )
+
         val numericLocked = setOf(
             "⇧", "⌫", "↵", "ABC", "abc", " ",
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
@@ -833,9 +864,9 @@ class MainActivity : AppCompatActivity() {
 
         numericBinder = LayoutEditorBinder(
             context = this,
-            initial = KeyboardPrefs.loadNumericLayoutForRowCount(this, rowCount),
+            initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
-                KeyboardPrefs.saveNumericLayoutForRowCount(this, rowCount, updated)
+                KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, rowCount, updated)
             },
             lockedLabels = numericLocked,
             onEmptyKeyClick = { key ->
@@ -915,59 +946,237 @@ class MainActivity : AppCompatActivity() {
         initialColor: Int,
         onPicked: (Int) -> Unit
     ) {
+        val r = Color.red(initialColor)
+        val g = Color.green(initialColor)
+        val b = Color.blue(initialColor)
+
         val hsv = FloatArray(3)
-        android.graphics.Color.colorToHSV(initialColor, hsv)
-        var alpha = android.graphics.Color.alpha(initialColor)
+        Color.RGBToHSV(r, g, b, hsv)
+
+        var currentHue = hsv[0]
+        var currentSat = hsv[1]
+        var currentVal = hsv[2]
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(8))
+            setPadding(dp(16), dp(16), dp(16), dp(16))
         }
 
+        // Preview bar (definiraj PRIJE updatePreview da bude dostupan)
         val previewBar = View(this).apply {
-            setBackgroundColor(initialColor)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 dp(48)
+            ).apply {
+                topMargin = dp(12)
+            }
+        }
+
+        // Input fields
+        val hexInput = android.widget.EditText(this).apply {
+            textSize = 14f
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val hslInput = TextView(this).apply {
+            textSize = 12f
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val rgbInput = TextView(this).apply {
+            textSize = 12f
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        // DEFINIRAJ updatePreview OVDJE, prije colorWheel
+        lateinit var updatePreviewRef: () -> Unit
+
+        val updatePreview: () -> Unit = {
+            val color = Color.HSVToColor(floatArrayOf(currentHue, currentSat, currentVal))
+            previewBar.setBackgroundColor(color)
+
+            val hex = String.format("#%06X", color and 0xFFFFFF)
+            hexInput.setText(hex.substring(1))
+
+            val rr = Color.red(color)
+            val gg = Color.green(color)
+            val bb = Color.blue(color)
+            rgbInput.text = "rgb($rr $gg $bb)"
+
+            val hslColor = colorToHSL(color)
+            hslInput.text = "hsl(${hslColor[0].toInt()}deg ${(hslColor[1] * 100).toInt()}% ${(hslColor[2] * 100).toInt()}%)"
+
+            onPicked(color)
+        }
+
+        // Sada možeš koristiti updatePreview u colorWheel
+        val colorWheel = ColorWheelView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(240)
+            )
+            setHueSaturation(currentHue, currentSat)
+            setOnColorChangedListener { h, s ->
+                currentHue = h
+                currentSat = s
+                updatePreview()
+            }
+        }
+
+        // Brightness slider
+        val brightnessLabel = TextView(this).apply {
+            text = "Brightness"
+            textSize = 14f
+            setPadding(0, dp(12), 0, dp(4))
+        }
+
+        val brightnessSeek = SeekBar(this).apply {
+            max = 100
+            progress = (currentVal * 100).toInt()
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
             )
         }
-        root.addView(previewBar)
 
-        val hueSeek = SeekBar(this).apply { max = 360; progress = hsv[0].toInt() }
-        val satSeek = SeekBar(this).apply { max = 100; progress = (hsv[1] * 100).toInt() }
-        val valSeek = SeekBar(this).apply { max = 100; progress = (hsv[2] * 100).toInt() }
-        val alphaSeek = SeekBar(this).apply { max = 255; progress = alpha }
+        brightnessSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                currentVal = progress / 100f
+                updatePreview()
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
-        fun recompute() {
-            hsv[0] = hueSeek.progress.toFloat()
-            hsv[1] = satSeek.progress / 100f
-            hsv[2] = valSeek.progress / 100f
-            alpha = alphaSeek.progress
-
-            val currentColor = android.graphics.Color.HSVToColor(alpha, hsv)
-            previewBar.setBackgroundColor(currentColor)
-            onPicked(currentColor)
+        // Hex input listener
+        hexInput.setOnEditorActionListener { _, _, _ ->
+            val hexText = hexInput.text.toString()
+            try {
+                val parsedColor = Color.parseColor("#$hexText")
+                Color.RGBToHSV(Color.red(parsedColor), Color.green(parsedColor), Color.blue(parsedColor), hsv)
+                currentHue = hsv[0]
+                currentSat = hsv[1]
+                currentVal = hsv[2]
+                colorWheel.setHueSaturation(currentHue, currentSat)
+                brightnessSeek.progress = (currentVal * 100).toInt()
+                updatePreview()
+            } catch (_: IllegalArgumentException) {}
+            true
         }
 
-        hueSeek.setOnSeekBarChangeListener(simpleSeek { recompute() })
-        satSeek.setOnSeekBarChangeListener(simpleSeek { recompute() })
-        valSeek.setOnSeekBarChangeListener(simpleSeek { recompute() })
-        alphaSeek.setOnSeekBarChangeListener(simpleSeek { recompute() })
+        // Build UI
+        root.addView(colorWheel)
+        root.addView(brightnessLabel)
+        root.addView(brightnessSeek)
+        root.addView(previewBar)
 
-        root.addView(TextView(this).apply { text = "Hue" })
-        root.addView(hueSeek)
-        root.addView(TextView(this).apply { text = "Saturation" })
-        root.addView(satSeek)
-        root.addView(TextView(this).apply { text = "Brightness" })
-        root.addView(valSeek)
-        root.addView(TextView(this).apply { text = "Alpha" })
-        root.addView(alphaSeek)
+        // Input fields
+        val inputsRow = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(12), 0, 0)
+        }
+
+        // Hex row
+        val hexRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+        }
+        hexRow.addView(TextView(this).apply { text = "#"; textSize = 14f })
+        hexRow.addView(hexInput)
+        hexRow.addView(Button(this).apply {
+            text = "📋"
+            isAllCaps = false
+            setOnClickListener {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = ClipData.newPlainText("hex", hexInput.text.toString())
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+            }
+        })
+        inputsRow.addView(hexRow)
+
+        // HSL row
+        val hslRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(0, dp(4), 0, 0)
+        }
+        hslRow.addView(hslInput)
+        hslRow.addView(Button(this).apply {
+            text = "📋"
+            isAllCaps = false
+            setOnClickListener {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = ClipData.newPlainText("hsl", hslInput.text.toString())
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+            }
+        })
+        inputsRow.addView(hslRow)
+
+        // RGB row
+        val rgbRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(0, dp(4), 0, 0)
+        }
+        rgbRow.addView(rgbInput)
+        rgbRow.addView(Button(this).apply {
+            text = "📋"
+            isAllCaps = false
+            setOnClickListener {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = ClipData.newPlainText("rgb", rgbInput.text.toString())
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+            }
+        })
+        inputsRow.addView(rgbRow)
+
+        root.addView(inputsRow)
+
+        // Initial update
+        updatePreview()
 
         AlertDialog.Builder(this)
             .setTitle(title)
-            .setView(root)
-            .setPositiveButton("Done", null)
+            .setView(ScrollView(this).apply { addView(root) })
+            .setPositiveButton("Done") { _, _ ->
+                val finalColor = Color.HSVToColor(floatArrayOf(currentHue, currentSat, currentVal))
+                onPicked(finalColor)
+            }
+            .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    // Helper: Convert RGB to HSL
+    private fun colorToHSL(color: Int): FloatArray {
+        val r = Color.red(color) / 255f
+        val g = Color.green(color) / 255f
+        val b = Color.blue(color) / 255f
+
+        val max = maxOf(r, g, b)
+        val min = minOf(r, g, b)
+        val l = (max + min) / 2f
+
+        val h: Float
+        val s: Float
+
+        if (max == min) {
+            h = 0f
+            s = 0f
+        } else {
+            val d = max - min
+            s = if (l > 0.5f) d / (2f - max - min) else d / (max + min)
+            h = when (max) {
+                r -> ((g - b) / d + (if (g < b) 6 else 0)) / 6f
+                g -> ((b - r) / d + 2) / 6f
+                else -> ((r - g) / d + 4) / 6f
+            }
+        }
+
+        return floatArrayOf(h * 360f, s, l)
     }
 
     private fun simpleSeek(onChange: () -> Unit) =

@@ -169,11 +169,7 @@ class KeyView @JvmOverloads constructor(
     }
 
     private fun resolvedTextColor(): Int {
-        return if (isSpecial) {
-            themeColor(R.attr.enterText, 0xFFFFFFFF.toInt())
-        } else {
-            currentTextColor
-        }
+        return currentTextColor
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

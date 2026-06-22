@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
@@ -20,18 +21,21 @@ object KeyboardPrefs {
     private const val KEY_SCALE = "key_scale"
     private const val KEY_SHAPE = "key_shape"
 
-    private const val KEY_LAYOUT_JSON = "layout_json"
+    // NOVO: Svaki row count ima svoj alphabet layout ključ
     private const val KEY_ALPHABET_LAYOUT_3 = "alphabet_layout_3"
     private const val KEY_ALPHABET_LAYOUT_4 = "alphabet_layout_4"
+    private const val KEY_ALPHABET_LAYOUT_5 = "alphabet_layout_5"
 
-    private const val KEY_NUMERIC_LAYOUT_JSON = "numeric_layout_json"
+    // NOVO: Svaki row count ima svoj numeric layout ključ
     private const val KEY_NUMERIC_LAYOUT_3 = "numeric_layout_3"
     private const val KEY_NUMERIC_LAYOUT_4 = "numeric_layout_4"
     private const val KEY_NUMERIC_LAYOUT_5 = "numeric_layout_5"
-    private const val KEY_HORIZONTAL_CENTER_LAYOUT_JSON = "horizontal_center_layout_json"
+
+    // Horizontal center layout ključevi
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_3 = "horizontal_center_layout_3"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_4 = "horizontal_center_layout_4"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_5 = "horizontal_center_layout_5"
+
     private const val KEY_HEIGHT_PX = "key_height_px"
 
     private const val SPACE_LINKED = "space_linked"
@@ -155,70 +159,55 @@ object KeyboardPrefs {
 
     /* ───────── ALPHABET LAYOUT ───────── */
 
+    private fun alphabetLayoutKeyForRowCount(rowCount: Int): String {
+        return when (rowCount) {
+            3 -> KEY_ALPHABET_LAYOUT_3
+            4 -> KEY_ALPHABET_LAYOUT_4
+            5 -> KEY_ALPHABET_LAYOUT_5
+            else -> KEY_ALPHABET_LAYOUT_3
+        }
+    }
+
     fun saveAlphabetLayoutForRowCount(
         context: Context,
         rowCount: Int,
         config: KeyboardConfig
     ) {
-        when (rowCount) {
-            3 -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_3, config)
-            4 -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_4, config)
-            5 -> saveLayout(context, config)
-            else -> saveLayoutWithKey(context, KEY_ALPHABET_LAYOUT_3, config)
-        }
+        val key = alphabetLayoutKeyForRowCount(rowCount)
+        saveLayoutWithKey(context, key, config)
     }
 
     fun loadAlphabetLayoutForRowCount(
         context: Context,
         rowCount: Int
     ): KeyboardConfig {
-        return when (rowCount) {
-            3 -> loadLayoutWithKey(
-                context,
-                KEY_ALPHABET_LAYOUT_3,
-                defaultThreeRowKeyboardLayoutQwertz
-            )
-
-            4 -> loadLayoutWithKey(
-                context,
-                KEY_ALPHABET_LAYOUT_4,
-                defaultFourRowKeyboardLayout
-            )
-
-            5 -> loadLayout(context)
-
-            else -> defaultThreeRowKeyboardLayoutQwertz
-        }
+        val key = alphabetLayoutKeyForRowCount(rowCount)
+        val fallback = defaultAlphabetLayoutForRowCount(rowCount)
+        return loadLayoutWithKey(context, key, fallback)
     }
 
     fun clearAlphabetLayoutForRowCount(context: Context, rowCount: Int) {
-        when (rowCount) {
-            3 -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_3).apply()
-            4 -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_4).apply()
-            5 -> clearLayout(context)
-            else -> prefs(context).edit().remove(KEY_ALPHABET_LAYOUT_3).apply()
-        }
+        val key = alphabetLayoutKeyForRowCount(rowCount)
+        prefs(context).edit().remove(key).apply()
     }
 
+    // STARI KLJUČEVI - zadržani za kompatibilnost, ali se ne koriste za nove save-ove
+    @Deprecated("Koristi saveAlphabetLayoutForRowCount")
     fun saveLayout(context: Context, layout: KeyboardConfig) {
-        prefs(context).edit()
-            .putString(KEY_LAYOUT_JSON, gson.toJson(layout))
-            .apply()
+        val rowCount = getRowCount(context)
+        saveAlphabetLayoutForRowCount(context, rowCount, layout)
     }
 
+    @Deprecated("Koristi loadAlphabetLayoutForRowCount")
     fun loadLayout(context: Context): KeyboardConfig {
         val rowCount = getRowCount(context)
-        val fallback = defaultAlphabetLayoutForRowCount(rowCount)
-
-        return loadLayoutWithKey(
-            context = context,
-            key = KEY_LAYOUT_JSON,
-            fallback = fallback
-        )
+        return loadAlphabetLayoutForRowCount(context, rowCount)
     }
 
+    @Deprecated("Koristi clearAlphabetLayoutForRowCount")
     fun clearLayout(context: Context) {
-        prefs(context).edit().remove(KEY_LAYOUT_JSON).apply()
+        val rowCount = getRowCount(context)
+        clearAlphabetLayoutForRowCount(context, rowCount)
     }
 
     /* ───────── EDGE MODE ───────── */
@@ -248,18 +237,21 @@ object KeyboardPrefs {
 
     /* ───────── NUMERIC LAYOUT ───────── */
 
-    fun saveNumericLayoutForRowCount(
-        context: Context,
-        rowCount: Int,
-        config: KeyboardConfig
-    ) {
-        val key = when (rowCount) {
+    private fun numericLayoutKeyForRowCount(rowCount: Int): String {
+        return when (rowCount) {
             3 -> KEY_NUMERIC_LAYOUT_3
             4 -> KEY_NUMERIC_LAYOUT_4
             5 -> KEY_NUMERIC_LAYOUT_5
             else -> KEY_NUMERIC_LAYOUT_3
         }
+    }
 
+    fun saveNumericLayoutForRowCount(
+        context: Context,
+        rowCount: Int,
+        config: KeyboardConfig
+    ) {
+        val key = numericLayoutKeyForRowCount(rowCount)
         saveLayoutWithKey(context, key, config)
     }
 
@@ -267,69 +259,52 @@ object KeyboardPrefs {
         context: Context,
         rowCount: Int
     ): KeyboardConfig {
-        val key = when (rowCount) {
-            3 -> KEY_NUMERIC_LAYOUT_3
-            4 -> KEY_NUMERIC_LAYOUT_4
-            5 -> KEY_NUMERIC_LAYOUT_5
-            else -> KEY_NUMERIC_LAYOUT_3
-        }
-
-        return loadLayoutWithKey(
-            context = context,
-            key = key,
-            fallback = defaultNumericLayoutForRowCount(rowCount)
-        )
-    }
-
-    // stari naziv ostavljamo da postojeći kod ne pukne
-    fun saveNumericLayout(context: Context, config: KeyboardConfig) {
-        saveNumericLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context),
-            config = config
-        )
-    }
-
-    // stari naziv ostavljamo da postojeći kod ne pukne
-    fun loadNumericLayout(context: Context): KeyboardConfig {
-        return loadNumericLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context)
-        )
+        val key = numericLayoutKeyForRowCount(rowCount)
+        val fallback = defaultNumericLayoutForRowCount(rowCount)
+        return loadLayoutWithKey(context, key, fallback)
     }
 
     fun clearNumericLayoutForRowCount(context: Context, rowCount: Int) {
-        val key = when (rowCount) {
-            3 -> KEY_NUMERIC_LAYOUT_3
-            4 -> KEY_NUMERIC_LAYOUT_4
-            5 -> KEY_NUMERIC_LAYOUT_5
-            else -> KEY_NUMERIC_LAYOUT_3
-        }
-
+        val key = numericLayoutKeyForRowCount(rowCount)
         prefs(context).edit().remove(key).apply()
     }
 
+    // STARI KLJUČEVI - zadržani za kompatibilnost
+    @Deprecated("Koristi saveNumericLayoutForRowCount")
+    fun saveNumericLayout(context: Context, config: KeyboardConfig) {
+        val rowCount = getRowCount(context)
+        saveNumericLayoutForRowCount(context, rowCount, config)
+    }
+
+    @Deprecated("Koristi loadNumericLayoutForRowCount")
+    fun loadNumericLayout(context: Context): KeyboardConfig {
+        val rowCount = getRowCount(context)
+        return loadNumericLayoutForRowCount(context, rowCount)
+    }
+
+    @Deprecated("Koristi clearNumericLayoutForRowCount")
     fun clearNumericLayout(context: Context) {
-        clearNumericLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context)
-        )
+        val rowCount = getRowCount(context)
+        clearNumericLayoutForRowCount(context, rowCount)
     }
 
     /* ───────── HORIZONTAL CENTER LAYOUT ───────── */
+
+    private fun horizontalCenterLayoutKeyForRowCount(rowCount: Int): String {
+        return when (rowCount) {
+            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
+            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
+            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
+        }
+    }
 
     fun saveHorizontalCenterLayoutForRowCount(
         context: Context,
         rowCount: Int,
         config: KeyboardConfig
     ) {
-        val key = when (rowCount) {
-            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
-            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
-            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-        }
-
+        val key = horizontalCenterLayoutKeyForRowCount(rowCount)
         saveLayoutWithKey(context, key, config)
     }
 
@@ -337,54 +312,34 @@ object KeyboardPrefs {
         context: Context,
         rowCount: Int
     ): KeyboardConfig {
-        val key = when (rowCount) {
-            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
-            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
-            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-        }
-
-        return loadLayoutWithKey(
-            context = context,
-            key = key,
-            fallback = defaultHorizontalCenterLayout
-        )
-    }
-
-    // stari naziv ostavljamo da ne pukne postojeći kod
-    fun saveHorizontalCenterLayout(context: Context, config: KeyboardConfig) {
-        saveHorizontalCenterLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context),
-            config = config
-        )
-    }
-
-    // stari naziv ostavljamo da ne pukne postojeći kod
-    fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
-        return loadHorizontalCenterLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context)
-        )
+        val key = horizontalCenterLayoutKeyForRowCount(rowCount)
+        return loadLayoutWithKey(context, key, defaultHorizontalCenterLayout)
     }
 
     fun clearHorizontalCenterLayoutForRowCount(context: Context, rowCount: Int) {
-        val key = when (rowCount) {
-            3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-            4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
-            5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
-            else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
-        }
-
+        val key = horizontalCenterLayoutKeyForRowCount(rowCount)
         prefs(context).edit().remove(key).apply()
     }
 
-    fun clearHorizontalCenterLayout(context: Context) {
-        clearHorizontalCenterLayoutForRowCount(
-            context = context,
-            rowCount = getRowCount(context)
-        )
+    // STARI KLJUČEVI
+    @Deprecated("Koristi saveHorizontalCenterLayoutForRowCount")
+    fun saveHorizontalCenterLayout(context: Context, config: KeyboardConfig) {
+        val rowCount = getRowCount(context)
+        saveHorizontalCenterLayoutForRowCount(context, rowCount, config)
     }
+
+    @Deprecated("Koristi loadHorizontalCenterLayoutForRowCount")
+    fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
+        val rowCount = getRowCount(context)
+        return loadHorizontalCenterLayoutForRowCount(context, rowCount)
+    }
+
+    @Deprecated("Koristi clearHorizontalCenterLayoutForRowCount")
+    fun clearHorizontalCenterLayout(context: Context) {
+        val rowCount = getRowCount(context)
+        clearHorizontalCenterLayoutForRowCount(context, rowCount)
+    }
+
     /* ───────── SPACE COLORS ───────── */
 
     fun isSpaceLinked(context: Context): Boolean =
@@ -437,5 +392,52 @@ object KeyboardPrefs {
             .putInt(ENTER_BG, bg)
             .putInt(ENTER_ICON, icon)
             .apply()
+    }
+
+    /* ───────── PROSLJEĐIVANJE BINDOVA ───────── */
+    // NOVO: Kopiraj bindove iz jednog layouta u drugi kad mijenjaš broj redova
+
+    /**
+     * Kopira long press bindove iz izvornog layouta u ciljni layout.
+     * Mapira bindove prema labelu tipke.
+     */
+    /* ───────── GLOBAL BINDS INTEGRATION ───────── */
+
+    /**
+     * Učitaj layout i automatski apliciraj globalne bindove.
+     * Ovo se koristi za alphabet layout.
+     */
+    fun loadAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
+        val baseLayout = loadAlphabetLayoutForRowCount(context, rowCount)
+        return GlobalLongPressStorage.applyAlphabetBindsToLayout(context, baseLayout)
+    }
+
+    /**
+     * Učitaj layout i automatski apliciraj globalne bindove.
+     * Ovo se koristi za numeric layout.
+     */
+    fun loadNumericLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
+        val baseLayout = loadNumericLayoutForRowCount(context, rowCount)
+        return GlobalLongPressStorage.applyNumericBindsToLayout(context, baseLayout)
+    }
+
+    /**
+     * Spremi layout i izvuci bindove u globalni storage.
+     * Ovo se koristi za alphabet layout.
+     */
+    fun saveAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
+        // Prvo spremi normalno
+        saveAlphabetLayoutForRowCount(context, rowCount, layout)
+        // Onda izvuci i spremi globalne bindove
+        GlobalLongPressStorage.extractAndSaveAlphabetBinds(context, layout)
+    }
+
+    /**
+     * Spremi layout i izvuci bindove u globalni storage.
+     * Ovo se koristi za numeric layout.
+     */
+    fun saveNumericLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
+        saveNumericLayoutForRowCount(context, rowCount, layout)
+        GlobalLongPressStorage.extractAndSaveNumericBinds(context, layout)
     }
 }
