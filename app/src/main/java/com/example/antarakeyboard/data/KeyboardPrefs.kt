@@ -370,6 +370,98 @@ object KeyboardPrefs {
             .putBoolean(SPACE_LINKED, linked)
             .apply()
     }
+    /* ───────── SIDE BUTTONS COLORS ───────── */
+    private const val SIDE_BUTTONS_USE_THEME_BG = "side_buttons_use_theme_bg"
+    private const val SIDE_BUTTONS_BG = "side_buttons_bg"
+    private const val SIDE_BUTTONS_TEXT_COLOR = "side_buttons_text_color"
+
+    fun getSideButtonsUseThemeBg(context: Context): Boolean =
+        prefs(context).getBoolean(SIDE_BUTTONS_USE_THEME_BG, true)
+
+    fun getSideButtonsBg(context: Context): Int =
+        prefs(context).getInt(SIDE_BUTTONS_BG, 0xFF3E3E3E.toInt())
+
+    fun getSideButtonsTextColor(context: Context): Int =
+        prefs(context).getInt(SIDE_BUTTONS_TEXT_COLOR, 0xFFFFFFFF.toInt())
+
+    fun setSideButtonsColors(context: Context, bg: Int, textColor: Int, useThemeBg: Boolean) {
+        prefs(context).edit()
+            .putInt(SIDE_BUTTONS_BG, bg)
+            .putInt(SIDE_BUTTONS_TEXT_COLOR, textColor)
+            .putBoolean(SIDE_BUTTONS_USE_THEME_BG, useThemeBg)
+            .apply()
+    }
+
+    /* ───────── KEYS COLORS ───────── */
+    private const val KEYS_ALL_SAME_COLOR = "keys_all_same_color"
+    private const val KEYS_BG = "keys_bg"
+    private const val KEYS_TEXT_COLOR = "keys_text_color"
+
+    fun getKeysAllSameColor(context: Context): Boolean =
+        prefs(context).getBoolean(KEYS_ALL_SAME_COLOR, true)
+
+    fun getKeysBg(context: Context): Int =
+        prefs(context).getInt(KEYS_BG, 0xFF3E3E3E.toInt())
+
+    fun getKeysTextColor(context: Context): Int =
+        prefs(context).getInt(KEYS_TEXT_COLOR, 0xFFFFFFFF.toInt())
+
+    fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean) {
+        prefs(context).edit()
+            .putInt(KEYS_BG, bg)
+            .putInt(KEYS_TEXT_COLOR, textColor)
+            .putBoolean(KEYS_ALL_SAME_COLOR, allSame)
+            .apply()
+    }
+
+    /* ───────── BACKGROUND COLOR ───────── */
+    private const val BACKGROUND_USE_THEME = "background_use_theme"
+    private const val BACKGROUND_COLOR = "background_color"
+    /* ───────── INDIVIDUAL KEY COLORS ───────── */
+    private const val KEY_INDIVIDUAL_COLORS_PREFIX = "key_individual_"
+
+    fun getKeyIndividualColors(context: Context, keyLabel: String): Pair<Int, Int>? {
+        val bg = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", 0)
+        val text = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", 0)
+        return if (bg != 0 && text != 0) Pair(bg, text) else null
+    }
+
+    fun getKeyIndividualBg(context: Context, keyLabel: String): Int? {
+        val bg = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", 0)
+        return if (bg != 0) bg else null
+    }
+
+    fun getKeyIndividualTextColor(context: Context, keyLabel: String): Int? {
+        val text = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", 0)
+        return if (text != 0) text else null
+    }
+
+    fun setKeyIndividualColors(context: Context, keyLabel: String, bg: Int, textColor: Int) {
+        prefs(context).edit()
+            .putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", bg)
+            .putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", textColor)
+            .apply()
+    }
+
+    fun clearKeyIndividualColors(context: Context, keyLabel: String) {
+        prefs(context).edit()
+            .remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg")
+            .remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text")
+            .apply()
+    }
+
+    fun getBackgroundUseTheme(context: Context): Boolean =
+        prefs(context).getBoolean(BACKGROUND_USE_THEME, true)
+
+    fun getBackgroundColor(context: Context): Int =
+        prefs(context).getInt(BACKGROUND_COLOR, 0xFF1A1A1A.toInt())
+
+    fun setBackgroundColor(context: Context, color: Int, useTheme: Boolean) {
+        prefs(context).edit()
+            .putInt(BACKGROUND_COLOR, color)
+            .putBoolean(BACKGROUND_USE_THEME, useTheme)
+            .apply()
+    }
 
     /* ───────── ENTER COLORS ───────── */
 

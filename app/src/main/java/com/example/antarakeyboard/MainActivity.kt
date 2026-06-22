@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.FrameLayout
 import android.widget.GridLayout
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -26,11 +27,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
+import com.example.antarakeyboard.data.GlobalLongPressStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
+import com.example.antarakeyboard.ui.ColorWheelView
 import com.example.antarakeyboard.ui.LayoutEditorBinder
 import com.example.antarakeyboard.ui.LongPressEditorBinder
 import com.example.antarakeyboard.ui.LongPressKeyPickerDialog
@@ -43,10 +46,8 @@ import com.example.antarakeyboard.ui.defaultNumericLayout
 import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import android.graphics.Color
-import com.example.antarakeyboard.ui.ColorWheelView
 import android.content.Context
 import com.example.antarakeyboard.R
-import com.example.antarakeyboard.data.GlobalLongPressStorage
 
 class MainActivity : AppCompatActivity() {
 
@@ -105,8 +106,7 @@ class MainActivity : AppCompatActivity() {
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
         val btnSetLayout: Button = findViewById(R.id.btnSetLayout)
-        val btnSpaceColor: Button = findViewById(R.id.btnSpaceColor)
-        val btnEnterColor: Button = findViewById(R.id.btnEnterColor)
+        val btnColors: Button = findViewById(R.id.btnColors)
 
         btnEnableKeyboard.setOnClickListener {
             startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
@@ -121,12 +121,8 @@ class MainActivity : AppCompatActivity() {
             openLayoutEditorDialog()
         }
 
-        btnSpaceColor.setOnClickListener {
-            showSpaceColorDialog()
-        }
-
-        btnEnterColor.setOnClickListener {
-            showEnterColorDialog()
+        btnColors.setOnClickListener {
+            openColorsDialog()
         }
 
         preview = findViewById(R.id.preview)
@@ -187,38 +183,601 @@ class MainActivity : AppCompatActivity() {
         resetLayoutButton.setOnClickListener {
             val currentRowCount = KeyboardPrefs.getRowCount(this)
             val currentShape = KeyboardPrefs.getShape(this)
+            val isDark = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+                .getBoolean("dark_mode", true)
 
-            // Resetiraj horizontal center layout
+            // 1. Resetiraj horizontal center layout
             KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, currentRowCount, defaultHorizontalCenterLayout)
 
-            // Resetiraj glavne layoute na default, ALI zadrži globalne bindove
+            // 2. Resetiraj glavne layoute na default, ALI zadrži globalne bindove
             KeyboardPrefs.clearAlphabetLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.clearNumericLayoutForRowCount(this, currentRowCount)
 
-            // Učitaj defaulte i apliciraj globalne bindove
             val alphabetWithBinds = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount)
             val numericWithBinds = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount)
 
             KeyboardPrefs.saveAlphabetLayoutForRowCount(this, currentRowCount, alphabetWithBinds)
             KeyboardPrefs.saveNumericLayoutForRowCount(this, currentRowCount, numericWithBinds)
 
-            // NE diraj oblik ni broj redova
-            val keyFill = themeColor(R.attr.keyFill, getColor(R.color.key_fill_light))
-            val specialFill = getColor(R.color.special_fill)
-            val specialText = getColor(R.color.special_text)
+            // Resetiraj SVE boje na default teme
+            resetAllColorsToThemeDefault(isDark)
 
-            KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
-            KeyboardPrefs.setEnterColors(this, specialFill, specialText)
+            // NOVO: Signaliziraj tipkovnici da se recreate
+            val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
+            sendBroadcast(keyboardIntent)
 
+            // 4. Resetiraj side buttons za trenutni broj redova
             resetSideButtonsForRowCount(currentRowCount)
 
+            // 5. Update UI
             preview.shape = currentShape
             setCheckedForShape(currentShape)
 
-            Toast.makeText(this, "Layout resetiran (bindovi zadržani)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Layout i boje resetirani na default", Toast.LENGTH_SHORT).show()
         }
     }
+
+    /* =========================
+       COLORS DIALOG
+       ========================= */
+    private fun resetAllColorsToThemeDefault(isDark: Boolean) {
+        // Theme default boje
+        val keyFill = if (isDark) {
+            getColor(R.color.key_fill_dark)  // ili što god je tvoj dark default
+        } else {
+            getColor(R.color.key_fill_light)  // ili što god je tvoj light default
+        }
+
+        val specialFill = getColor(R.color.special_fill)
+        val specialText = getColor(R.color.special_text)
+        val keyboardBg = if (isDark) {
+            getColor(R.color.keyboard_bg_dark)
+        } else {
+            getColor(R.color.keyboard_bg_light)
+        }
+
+        // 1. Space colors
+        KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
+
+        // 2. Enter colors
+        KeyboardPrefs.setEnterColors(this, specialFill, specialText)
+
+        // 3. Side buttons colors
+        val sideTextColor = themeColor(R.attr.edgeIconText, if (isDark) Color.WHITE else Color.BLACK)
+        KeyboardPrefs.setSideButtonsColors(this, Color.TRANSPARENT, sideTextColor, true)
+
+        // 4. Keys colors - use theme
+        KeyboardPrefs.setKeysColors(this, keyFill, Color.WHITE, true)
+
+        // 5. Background color - use theme
+        KeyboardPrefs.setBackgroundColor(this, keyboardBg, true)
+
+        // 6. Očisti individualne keys boje
+        val rowCount = KeyboardPrefs.getRowCount(this)
+        val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount)
+        layout.rows.forEach { row ->
+            row.keys.forEach { key ->
+                if (key.label.isNotBlank()) {
+                    KeyboardPrefs.clearKeyIndividualColors(this, key.label)
+                }
+            }
+        }
+    }
+
+    private fun openColorsDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_colors)
+
+        val btnSpaceColor = dialog.findViewById<Button>(R.id.btnSpaceColor)
+        val btnEnterColor = dialog.findViewById<Button>(R.id.btnEnterColor)
+        val btnSideButtonsColor = dialog.findViewById<Button>(R.id.btnSideButtonsColor)
+        val btnKeysColor = dialog.findViewById<Button>(R.id.btnKeysColor)
+        val btnBackgroundColor = dialog.findViewById<Button>(R.id.btnBackgroundColor)
+
+        val scrollView = dialog.findViewById<HorizontalScrollView>(R.id.colorsScrollView)
+        val btnScrollLeft = dialog.findViewById<Button>(R.id.btnScrollLeft)
+        val btnScrollRight = dialog.findViewById<Button>(R.id.btnScrollRight)
+
+        btnScrollLeft.setOnClickListener {
+            scrollView.smoothScrollBy(-dp(200), 0)
+        }
+
+        btnScrollRight.setOnClickListener {
+            scrollView.smoothScrollBy(dp(200), 0)
+        }
+
+        btnSpaceColor.setOnClickListener { showSpaceColorDialog() }
+        btnEnterColor.setOnClickListener { showEnterColorDialog() }
+        btnSideButtonsColor.setOnClickListener { showSideButtonsColorDialog() }
+        btnKeysColor.setOnClickListener { showKeysColorDialog() }
+        btnBackgroundColor.setOnClickListener { showBackgroundColorDialog() }
+
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.94f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    private fun showSpaceColorDialog() {
+        var linked = KeyboardPrefs.isSpaceLinked(this)
+        var c1 = KeyboardPrefs.getSpace1Bg(this)
+        var c2 = KeyboardPrefs.getSpace2Bg(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val cb = CheckBox(this).apply {
+            text = "Both space keys same color"
+            isChecked = linked
+        }
+        root.addView(cb)
+
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(8), 0, 0)
+        }
+
+        lateinit var b1: Button
+        lateinit var b2: Button
+
+        fun styleColorButton(btn: Button, color: Int) {
+            btn.setBackgroundColor(color)
+            btn.setTextColor(0xFFFFFFFF.toInt())
+        }
+
+        b1 = Button(this).apply {
+            text = "Space 1"
+            isAllCaps = false
+            styleColorButton(this, c1)
+            setOnClickListener {
+                showAdvancedColorPicker("Space 1 color", c1) { picked ->
+                    c1 = picked
+                    styleColorButton(b1, c1)
+                    if (linked) {
+                        c2 = picked
+                        styleColorButton(b2, c2)
+                    }
+                }
+            }
+        }
+
+        b2 = Button(this).apply {
+            text = "Space 2"
+            isAllCaps = false
+            styleColorButton(this, c2)
+            setOnClickListener {
+                showAdvancedColorPicker("Space 2 color", c2) { picked ->
+                    c2 = picked
+                    styleColorButton(b2, c2)
+                    if (linked) {
+                        c1 = picked
+                        styleColorButton(b1, c1)
+                    }
+                }
+            }
+        }
+
+        row.addView(
+            b1,
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(6)
+            }
+        )
+        row.addView(
+            b2,
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dp(6)
+            }
+        )
+
+        root.addView(row)
+
+        cb.setOnCheckedChangeListener { _, isChecked ->
+            linked = isChecked
+            if (linked) {
+                c2 = c1
+                styleColorButton(b2, c2)
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Space color")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                if (linked) c2 = c1
+                KeyboardPrefs.setSpaceColors(this, c1, c2, linked)
+                Toast.makeText(this, "Space colors saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun showEnterColorDialog() {
+        var bg = KeyboardPrefs.getEnterBg(this)
+        var icon = KeyboardPrefs.getEnterIcon(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val bgBtn = Button(this).apply {
+            text = "Background"
+            isAllCaps = false
+            setBackgroundColor(bg)
+            setTextColor(0xFFFFFFFF.toInt())
+            setOnClickListener {
+                showAdvancedColorPicker("Enter background", bg) { picked ->
+                    bg = picked
+                    setBackgroundColor(bg)
+                }
+            }
+        }
+
+        val iconBtn = Button(this).apply {
+            text = "Icon color"
+            isAllCaps = false
+            setBackgroundColor(0xFF222222.toInt())
+            setTextColor(icon)
+            setOnClickListener {
+                showAdvancedColorPicker("Enter icon color", icon) { picked ->
+                    icon = picked
+                    setTextColor(icon)
+                }
+            }
+        }
+
+        root.addView(bgBtn)
+        root.addView(
+            iconBtn,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dp(8)
+            }
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle("Enter color")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                KeyboardPrefs.setEnterColors(this, bg, icon)
+                Toast.makeText(this, "Enter colors saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun showSideButtonsColorDialog() {
+        var useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(this)
+        var bg = KeyboardPrefs.getSideButtonsBg(this)
+        var textColor = KeyboardPrefs.getSideButtonsTextColor(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val cb = CheckBox(this).apply {
+            text = "Use theme background color"
+            isChecked = useThemeBg
+        }
+        root.addView(cb)
+
+        val bgBtn = Button(this).apply {
+            text = "Background"
+            isAllCaps = false
+            setBackgroundColor(bg)
+            setTextColor(0xFFFFFFFF.toInt())
+            isEnabled = !useThemeBg
+            setOnClickListener {
+                showAdvancedColorPicker("Side buttons background", bg) { picked ->
+                    bg = picked
+                    setBackgroundColor(bg)
+                }
+            }
+        }
+
+        val textBtn = Button(this).apply {
+            text = "Text color"
+            isAllCaps = false
+            setBackgroundColor(0xFF222222.toInt())
+            setTextColor(textColor)
+            isEnabled = !useThemeBg
+            setOnClickListener {
+                showAdvancedColorPicker("Side buttons text color", textColor) { picked ->
+                    textColor = picked
+                    setTextColor(textColor)
+                }
+            }
+        }
+
+        root.addView(bgBtn)
+        root.addView(
+            textBtn,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dp(8)
+            }
+        )
+
+        cb.setOnCheckedChangeListener { _, isChecked ->
+            useThemeBg = isChecked
+            bgBtn.isEnabled = !isChecked
+            textBtn.isEnabled = !isChecked
+            if (isChecked) {
+                val themeBg = themeColor(R.attr.keyFill, getColor(R.color.key_fill_light))
+                bg = themeBg
+                bgBtn.setBackgroundColor(themeBg)
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Side buttons color")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                KeyboardPrefs.setSideButtonsColors(this, bg, textColor, useThemeBg)
+                Toast.makeText(this, "Side buttons colors saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun showKeysColorDialog() {
+        val allSame = KeyboardPrefs.getKeysAllSameColor(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val cb = CheckBox(this).apply {
+            text = "All keys same color"
+            isChecked = allSame
+        }
+        root.addView(cb)
+
+        // Container za "all same" gumbe
+        val allSameContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = if (allSame) View.VISIBLE else View.GONE
+        }
+
+        val bgBtn = Button(this).apply {
+            text = "Background"
+            isAllCaps = false
+            setBackgroundColor(KeyboardPrefs.getKeysBg(this@MainActivity))
+            setTextColor(0xFFFFFFFF.toInt())
+            setOnClickListener {
+                showAdvancedColorPicker("Keys background", KeyboardPrefs.getKeysBg(this@MainActivity)) { picked ->
+                    val currentText = KeyboardPrefs.getKeysTextColor(this@MainActivity)
+                    val currentAllSame = KeyboardPrefs.getKeysAllSameColor(this@MainActivity)
+                    KeyboardPrefs.setKeysColors(this@MainActivity, picked, currentText, currentAllSame)
+                    setBackgroundColor(picked)
+                }
+            }
+        }
+
+        val textBtn = Button(this).apply {
+            text = "Text color"
+            isAllCaps = false
+            setBackgroundColor(0xFF222222.toInt())
+            setTextColor(KeyboardPrefs.getKeysTextColor(this@MainActivity))
+            setOnClickListener {
+                showAdvancedColorPicker("Keys text color", KeyboardPrefs.getKeysTextColor(this@MainActivity)) { picked ->
+                    val currentBg = KeyboardPrefs.getKeysBg(this@MainActivity)
+                    val currentAllSame2 = KeyboardPrefs.getKeysAllSameColor(this@MainActivity)
+                    KeyboardPrefs.setKeysColors(this@MainActivity, currentBg, picked, currentAllSame2)
+                    setTextColor(picked)
+                }
+            }
+        }
+
+        allSameContainer.addView(bgBtn)
+        allSameContainer.addView(textBtn)
+        root.addView(allSameContainer)
+
+        // Container za individualne tipke (skriven ako je allSame)
+        val individualContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = if (allSame) View.GONE else View.VISIBLE
+        }
+
+        // Dohvati SVE tipke iz trenutnog layouta
+        val rowCount = KeyboardPrefs.getRowCount(this)
+        val layout = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount)
+        val allKeys = mutableSetOf<String>()
+
+        layout.rows.forEach { row ->
+            row.keys.forEach { key ->
+                if (key.label.isNotBlank() && key.label !in setOf(" ", "↵", "⇧", "⌫", "😊")) {
+                    allKeys.add(key.label)
+                }
+            }
+        }
+
+        // Grid s 3 stupca
+        val grid = GridLayout(this).apply {
+            columnCount = 3
+        }
+
+        allKeys.sorted().forEach { keyLabel ->
+            val btn = Button(this).apply {
+                text = keyLabel
+                isAllCaps = false
+                minHeight = dp(48)
+                minWidth = dp(48)
+
+                // Postavi trenutne boje
+                val keyColors = KeyboardPrefs.getKeyIndividualColors(this@MainActivity, keyLabel)
+                if (keyColors != null) {
+                    setBackgroundColor(keyColors.first)
+                    setTextColor(keyColors.second)
+                }
+
+                setOnClickListener {
+                    showIndividualKeyColorPicker(keyLabel)
+                }
+            }
+
+            val lp = GridLayout.LayoutParams().apply {
+                width = 0
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                setMargins(dp(4), dp(4), dp(4), dp(4))
+            }
+            grid.addView(btn, lp)
+        }
+
+        individualContainer.addView(grid)
+        root.addView(individualContainer)
+
+        cb.setOnCheckedChangeListener { _, isChecked ->
+            val currentBg2 = KeyboardPrefs.getKeysBg(this@MainActivity)
+            val currentText2 = KeyboardPrefs.getKeysTextColor(this@MainActivity)
+            KeyboardPrefs.setKeysColors(this@MainActivity, currentBg2, currentText2, isChecked)
+            allSameContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+            individualContainer.visibility = if (isChecked) View.GONE else View.VISIBLE
+        }
+
+        // ScrollView koji sadrži sve
+        val scrollView = ScrollView(this).apply {
+            addView(root)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Keys color")
+            .setView(scrollView)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                Toast.makeText(this, "Keys colors saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun showIndividualKeyColorPicker(keyLabel: String) {
+        var bg = KeyboardPrefs.getKeyIndividualBg(this, keyLabel) ?: KeyboardPrefs.getKeysBg(this)
+        var textColor = KeyboardPrefs.getKeyIndividualTextColor(this, keyLabel) ?: KeyboardPrefs.getKeysTextColor(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val preview = Button(this).apply {
+            text = keyLabel
+            isAllCaps = false
+            setBackgroundColor(bg)
+            setTextColor(textColor)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(64)
+            )
+        }
+        root.addView(preview)
+
+        val bgBtn = Button(this).apply {
+            text = "Background"
+            isAllCaps = false
+            setBackgroundColor(bg)
+            setTextColor(0xFFFFFFFF.toInt())
+            setOnClickListener {
+                showAdvancedColorPicker("Key $keyLabel background", bg) { picked ->
+                    bg = picked
+                    preview.setBackgroundColor(picked)
+                    setBackgroundColor(picked)
+                }
+            }
+        }
+
+        val textBtn = Button(this).apply {
+            text = "Text color"
+            isAllCaps = false
+            setBackgroundColor(0xFF222222.toInt())
+            setTextColor(textColor)
+            setOnClickListener {
+                showAdvancedColorPicker("Key $keyLabel text", textColor) { picked ->
+                    textColor = picked
+                    preview.setTextColor(picked)
+                    setTextColor(picked)
+                }
+            }
+        }
+
+        root.addView(bgBtn)
+        root.addView(textBtn)
+
+        AlertDialog.Builder(this)
+            .setTitle("Color for key: $keyLabel")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                KeyboardPrefs.setKeyIndividualColors(this, keyLabel, bg, textColor)
+                Toast.makeText(this, "Color for $keyLabel saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun showBackgroundColorDialog() {
+        var useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+        var bg = KeyboardPrefs.getBackgroundColor(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(4))
+        }
+
+        val cb = CheckBox(this).apply {
+            text = "Use theme background"
+            isChecked = useTheme
+        }
+        root.addView(cb)
+
+        val bgBtn = Button(this).apply {
+            text = "Background color"
+            isAllCaps = false
+            setBackgroundColor(bg)
+            setTextColor(0xFFFFFFFF.toInt())
+            isEnabled = !useTheme
+            setOnClickListener {
+                showAdvancedColorPicker("Background color", bg) { picked ->
+                    bg = picked
+                    setBackgroundColor(bg)
+                }
+            }
+        }
+
+        root.addView(bgBtn)
+
+        cb.setOnCheckedChangeListener { _, isChecked ->
+            useTheme = isChecked
+            bgBtn.isEnabled = !isChecked
+            if (isChecked) {
+                val themeBg = themeColor(R.attr.keyboardBg, getColor(R.color.keyboard_bg_dark))
+                bg = themeBg
+                bgBtn.setBackgroundColor(themeBg)
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Background color")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                KeyboardPrefs.setBackgroundColor(this, bg, useTheme)
+                Toast.makeText(this, "Background color saved", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
 
     private fun activeAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
         return when (rowCount) {
@@ -588,158 +1147,9 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showSpaceColorDialog() {
-        var linked = KeyboardPrefs.isSpaceLinked(this)
-        var c1 = KeyboardPrefs.getSpace1Bg(this)
-        var c2 = KeyboardPrefs.getSpace2Bg(this)
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
-        }
 
-        val cb = CheckBox(this).apply {
-            text = "Both space keys same color"
-            isChecked = linked
-        }
-        root.addView(cb)
 
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(0, dp(8), 0, 0)
-        }
-
-        lateinit var b1: Button
-        lateinit var b2: Button
-
-        fun styleColorButton(btn: Button, color: Int) {
-            btn.setBackgroundColor(color)
-            btn.setTextColor(0xFFFFFFFF.toInt())
-        }
-
-        b1 = Button(this).apply {
-            text = "Space 1"
-            isAllCaps = false
-            styleColorButton(this, c1)
-            setOnClickListener {
-                showAdvancedColorPicker("Space 1 color", c1) { picked ->
-                    c1 = picked
-                    styleColorButton(b1, c1)
-                    if (linked) {
-                        c2 = picked
-                        styleColorButton(b2, c2)
-                    }
-                }
-            }
-        }
-
-        b2 = Button(this).apply {
-            text = "Space 2"
-            isAllCaps = false
-            styleColorButton(this, c2)
-            setOnClickListener {
-                showAdvancedColorPicker("Space 2 color", c2) { picked ->
-                    c2 = picked
-                    styleColorButton(b2, c2)
-                    if (linked) {
-                        c1 = picked
-                        styleColorButton(b1, c1)
-                    }
-                }
-            }
-        }
-
-        row.addView(
-            b1,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginEnd = dp(6)
-            }
-        )
-        row.addView(
-            b2,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginStart = dp(6)
-            }
-        )
-
-        root.addView(row)
-
-        cb.setOnCheckedChangeListener { _, isChecked ->
-            linked = isChecked
-            if (linked) {
-                c2 = c1
-                styleColorButton(b2, c2)
-            }
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Space color")
-            .setView(root)
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save") { _, _ ->
-                if (linked) c2 = c1
-                KeyboardPrefs.setSpaceColors(this, c1, c2, linked)
-                Toast.makeText(this, "Space colors saved", Toast.LENGTH_SHORT).show()
-            }
-            .show()
-    }
-
-    private fun showEnterColorDialog() {
-        var bg = KeyboardPrefs.getEnterBg(this)
-        var icon = KeyboardPrefs.getEnterIcon(this)
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
-        }
-
-        val bgBtn = Button(this).apply {
-            text = "Background"
-            isAllCaps = false
-            setBackgroundColor(bg)
-            setTextColor(0xFFFFFFFF.toInt())
-            setOnClickListener {
-                showAdvancedColorPicker("Enter background", bg) { picked ->
-                    bg = picked
-                    setBackgroundColor(bg)
-                }
-            }
-        }
-
-        val iconBtn = Button(this).apply {
-            text = "Icon color"
-            isAllCaps = false
-            setBackgroundColor(0xFF222222.toInt())
-            setTextColor(icon)
-            setOnClickListener {
-                showAdvancedColorPicker("Enter icon color", icon) { picked ->
-                    icon = picked
-                    setTextColor(icon)
-                }
-            }
-        }
-
-        root.addView(bgBtn)
-        root.addView(
-            iconBtn,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = dp(8)
-            }
-        )
-
-        AlertDialog.Builder(this)
-            .setTitle("Enter color")
-            .setView(root)
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save") { _, _ ->
-                KeyboardPrefs.setEnterColors(this, bg, icon)
-                Toast.makeText(this, "Enter colors saved", Toast.LENGTH_SHORT).show()
-            }
-            .show()
-    }
 
     private fun openHorizontalCenterEditorDialog() {
         val dialog = Dialog(this)

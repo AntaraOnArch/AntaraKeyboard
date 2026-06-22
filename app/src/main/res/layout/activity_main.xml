@@ -181,27 +181,11 @@
             android:layout_marginTop="14dp"
             android:orientation="horizontal">
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnSpaceColor"
-                style="@style/MainRoundedButton"
-                android:layout_width="0dp"
+            <Button
+                android:id="@+id/btnColors"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Space color"
-                app:textAllCaps="false" />
-
-            <Space
-                android:layout_width="12dp"
-                android:layout_height="wrap_content" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnEnterColor"
-                style="@style/MainRoundedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Enter color"
-                app:textAllCaps="false" />
+                android:text="Colors" />
         </LinearLayout>
 
         <!-- Theme toggle -->
