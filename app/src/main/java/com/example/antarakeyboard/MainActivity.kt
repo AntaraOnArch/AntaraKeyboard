@@ -222,44 +222,78 @@ class MainActivity : AppCompatActivity() {
        COLORS DIALOG
        ========================= */
     private fun resetAllColorsToThemeDefault(isDark: Boolean) {
-        // Theme default boje
         val keyFill = if (isDark) {
-            getColor(R.color.key_fill_dark)  // ili što god je tvoj dark default
+            getColor(R.color.key_fill_dark)
         } else {
-            getColor(R.color.key_fill_light)  // ili što god je tvoj light default
+            getColor(R.color.key_fill_light)
         }
+
+        val keyText = themeColor(
+            R.attr.keyText,
+            if (isDark) Color.WHITE else Color.BLACK
+        )
 
         val specialFill = getColor(R.color.special_fill)
         val specialText = getColor(R.color.special_text)
+
         val keyboardBg = if (isDark) {
             getColor(R.color.keyboard_bg_dark)
         } else {
             getColor(R.color.keyboard_bg_light)
         }
 
-        // 1. Space colors
+        // 1. Space colors — oba spacea na theme default
         KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
+
+        // opcionalno: počisti eventualni stari individual zapis za " "
+        KeyboardPrefs.clearKeyIndividualColors(this, " ")
 
         // 2. Enter colors
         KeyboardPrefs.setEnterColors(this, specialFill, specialText)
 
         // 3. Side buttons colors
-        val sideTextColor = themeColor(R.attr.edgeIconText, if (isDark) Color.WHITE else Color.BLACK)
-        KeyboardPrefs.setSideButtonsColors(this, Color.TRANSPARENT, sideTextColor, true)
+        val sideTextColor = themeColor(
+            R.attr.edgeIconText,
+            if (isDark) Color.WHITE else Color.BLACK
+        )
+        KeyboardPrefs.setSideButtonsColors(
+            this,
+            Color.TRANSPARENT,
+            sideTextColor,
+            true
+        )
 
-        // 4. Keys colors - use theme
-        KeyboardPrefs.setKeysColors(this, keyFill, Color.WHITE, true)
+        // 4. Keys colors
+        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true)
 
-        // 5. Background color - use theme
+        // 5. Background color
         KeyboardPrefs.setBackgroundColor(this, keyboardBg, true)
 
         // 6. Očisti individualne keys boje
         val rowCount = KeyboardPrefs.getRowCount(this)
         val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount)
+
+        val skipLabels = setOf(
+            " ",
+            "↵",
+            "⇧",
+            "⌫",
+            "😊"
+        )
+
         layout.rows.forEach { row ->
             row.keys.forEach { key ->
-                if (key.label.isNotBlank()) {
-                    KeyboardPrefs.clearKeyIndividualColors(this, key.label)
+                val label = key.label
+
+                if (label.isNotEmpty() && label !in skipLabels) {
+                    KeyboardPrefs.clearKeyIndividualColors(
+                        this,
+                        if (label.length == 1 && label[0].isLetter()) {
+                            label.lowercase()
+                        } else {
+                            label
+                        }
+                    )
                 }
             }
         }

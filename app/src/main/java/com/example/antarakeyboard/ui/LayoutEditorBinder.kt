@@ -14,8 +14,10 @@ import android.widget.ScrollView
 import android.widget.TextView
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.model.KeyConfig
+import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
+import com.example.antarakeyboard.model.ensureSpaceMarkers
 
 class LayoutEditorBinder(
     private val context: Context,
@@ -24,19 +26,26 @@ class LayoutEditorBinder(
     private val lockedLabels: Set<String> = setOf("⇧", "⌫"),
     private val onEmptyKeyClick: ((KeyConfig) -> Unit)? = null,
     private val allowClearKeys: Boolean = false
-){
+) {
     private fun isLocked(key: KeyConfig): Boolean = key.label in lockedLabels
     private fun isEmptyKey(key: KeyConfig): Boolean = key.label == ""
-    private val cfg: KeyboardConfig = deepCopy(initial)
+
     private val TAG_SHAKE = 987654321
-    private val USER_EMPTY_MARKER = "__USER_EMPTY__"
+    private val USER_EMPTY_MARKER = KeyMarkers.USER_EMPTY
 
     private var keyboardContainer: LinearLayout? = null
 
-    private var selectedA: KeyConfig? = null
-    private var selectedB: KeyConfig? = null
+    private val cfg: KeyboardConfig = deepCopy(initial).ensureSpaceMarkers()
 
-    private val keyToView = linkedMapOf<KeyConfig, KeyView>()
+    private data class KeyPos(
+        val row: Int,
+        val col: Int
+    )
+
+    private var selectedA: KeyPos? = null
+    private var selectedB: KeyPos? = null
+
+    private val keyToView = linkedMapOf<KeyPos, KeyView>()
     private val shakingViews = mutableListOf<View>()
     private val bounceViews = mutableSetOf<View>()
 
@@ -99,6 +108,7 @@ class LayoutEditorBinder(
         keyToView.clear()
         shakingViews.clear()
         bounceViews.clear()
+
         selectedA = null
         selectedB = null
 
@@ -107,11 +117,16 @@ class LayoutEditorBinder(
         fun addKeyToRow(
             row: LinearLayout,
             key: KeyConfig,
+            pos: KeyPos,
             width: Int,
             height: Int,
             marginH: Int
         ) {
-            val keyItem = createKeyView(key, userShape)
+            val keyItem = createKeyView(
+                key = key,
+                pos = pos,
+                userShape = userShape
+            )
 
             row.addView(
                 keyItem,
@@ -122,7 +137,10 @@ class LayoutEditorBinder(
             )
         }
 
-        fun buildThreeRowEditorRow(keys: MutableList<KeyConfig>) {
+        fun buildThreeRowEditorRow(
+            rowIndex: Int,
+            keys: MutableList<KeyConfig>
+        ) {
             val visibleKeys = keys
             if (visibleKeys.isEmpty()) return
 
@@ -133,7 +151,6 @@ class LayoutEditorBinder(
             val intraPairOverlap = -dp(8)
             val interPairGap = dp(2)
 
-            // širina jednog razbijenog bloka: 6 tipki
             val rowW = (keyWidth + keyGap * 2) * 6
 
             val block = LinearLayout(context).apply {
@@ -157,20 +174,22 @@ class LayoutEditorBinder(
                 clipToPadding = false
             }
 
-            visibleKeys.take(6).forEach { key ->
+            visibleKeys.take(6).forEachIndexed { keyIndex, key ->
                 addKeyToRow(
                     row = topRow,
                     key = key,
+                    pos = KeyPos(rowIndex, keyIndex),
                     width = keyWidth,
                     height = keyHeight,
                     marginH = keyGap
                 )
             }
 
-            visibleKeys.drop(6).forEach { key ->
+            visibleKeys.drop(6).forEachIndexed { i, key ->
                 addKeyToRow(
                     row = bottomRow,
                     key = key,
+                    pos = KeyPos(rowIndex, i + 6),
                     width = keyWidth,
                     height = keyHeight,
                     marginH = keyGap
@@ -201,15 +220,16 @@ class LayoutEditorBinder(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    // ovo centrira CIJELI 6+5 blok u dialogu,
-                    // ali NE centrira topRow/bottomRow unutar bloka
                     gravity = Gravity.CENTER_HORIZONTAL
                     bottomMargin = interPairGap
                 }
             )
         }
 
-        fun buildFiveRowEditorRow(keys: MutableList<KeyConfig>) {
+        fun buildFiveRowEditorRow(
+            rowIndex: Int,
+            keys: MutableList<KeyConfig>
+        ) {
             val visibleKeys = keys
             if (visibleKeys.isEmpty()) return
 
@@ -217,8 +237,6 @@ class LayoutEditorBinder(
                 ?: visibleKeys.size
 
             val dialogW = (context.resources.displayMetrics.widthPixels * 0.92f).toInt()
-
-            // root padding 14 + 14, plus safety
             val availableW = dialogW - dp(28) - dp(8)
 
             val gap = dp(1)
@@ -236,10 +254,11 @@ class LayoutEditorBinder(
                 clipToPadding = false
             }
 
-            visibleKeys.forEach { key ->
+            visibleKeys.forEachIndexed { keyIndex, key ->
                 addKeyToRow(
                     row = row,
                     key = key,
+                    pos = KeyPos(rowIndex, keyIndex),
                     width = keySize,
                     height = keySize,
                     marginH = gap
@@ -255,7 +274,10 @@ class LayoutEditorBinder(
             )
         }
 
-        fun buildDefaultWeightedRow(keys: MutableList<KeyConfig>) {
+        fun buildDefaultWeightedRow(
+            rowIndex: Int,
+            keys: MutableList<KeyConfig>
+        ) {
             val visibleKeys = keys
             if (visibleKeys.isEmpty()) return
 
@@ -265,8 +287,12 @@ class LayoutEditorBinder(
                 setPadding(0, dp(4), 0, dp(4))
             }
 
-            visibleKeys.forEach { key ->
-                val keyItem = createKeyView(key, userShape)
+            visibleKeys.forEachIndexed { keyIndex, key ->
+                val keyItem = createKeyView(
+                    key = key,
+                    pos = KeyPos(rowIndex, keyIndex),
+                    userShape = userShape
+                )
 
                 row.addView(
                     keyItem,
@@ -280,16 +306,20 @@ class LayoutEditorBinder(
             container.addView(row)
         }
 
-        cfg.rows.forEach { rowCfg ->
+        cfg.rows.forEachIndexed { rowIndex, rowCfg ->
             when (rowCount) {
-                3 -> buildThreeRowEditorRow(rowCfg.keys)
-                5 -> buildFiveRowEditorRow(rowCfg.keys)
-                else -> buildDefaultWeightedRow(rowCfg.keys) // 4-row ne diramo
+                3 -> buildThreeRowEditorRow(rowIndex, rowCfg.keys)
+                5 -> buildFiveRowEditorRow(rowIndex, rowCfg.keys)
+                else -> buildDefaultWeightedRow(rowIndex, rowCfg.keys)
             }
         }
     }
 
-    private fun createKeyView(key: KeyConfig, userShape: KeyShape): View {
+    private fun createKeyView(
+        key: KeyConfig,
+        pos: KeyPos,
+        userShape: KeyShape
+    ): View {
         val locked = isLocked(key)
         val empty = isEmptyKey(key)
 
@@ -320,17 +350,17 @@ class LayoutEditorBinder(
             setOnClickListener {
                 when {
                     empty -> onEmptyKeyClick?.invoke(key)
-                    else -> onKeyClicked(key)
+                    else -> onKeyClicked(pos)
                 }
             }
 
             setOnLongClickListener {
-                startDragForKey(this, key)
+                startDragForKey(this, pos)
                 true
             }
 
             setOnDragListener { v, e ->
-                handleDrop(v as KeyView, key, e)
+                handleDrop(v as KeyView, pos, e)
             }
         }
 
@@ -342,7 +372,7 @@ class LayoutEditorBinder(
             )
         )
 
-        keyToView[key] = keyView
+        keyToView[pos] = keyView
         shakingViews.add(keyView)
 
         if (allowClearKeys && !locked && !empty) {
@@ -380,34 +410,27 @@ class LayoutEditorBinder(
         return wrapper
     }
 
+    private fun keyAt(pos: KeyPos): KeyConfig? {
+        return cfg.rows
+            .getOrNull(pos.row)
+            ?.keys
+            ?.getOrNull(pos.col)
+    }
 
-
-    private fun onKeyClicked(key: KeyConfig) {
+    private fun onKeyClicked(pos: KeyPos) {
+        val key = keyAt(pos) ?: return
         if (isEmptyKey(key)) return
 
-        if (selectedA == null || selectedA == key) {
-            selectedA = key
-        } else if (selectedB == null || selectedB == key) {
-            selectedB = key
+        if (selectedA == null || selectedA == pos) {
+            selectedA = pos
+        } else if (selectedB == null || selectedB == pos) {
+            selectedB = pos
         } else {
             clearSelection()
-            selectedA = key
+            selectedA = pos
         }
 
         applySelectionUI()
-    }
-    private data class KeyLocation(
-        val row: MutableList<KeyConfig>,
-        val index: Int
-    )
-
-    private fun findKeyLocation(target: KeyConfig): KeyLocation? {
-        cfg.rows.forEach { rowCfg ->
-            val i = rowCfg.keys.indexOf(target)
-            if (i != -1) return KeyLocation(rowCfg.keys, i)
-        }
-
-        return null
     }
 
     private fun afterLayoutChanged() {
@@ -421,21 +444,31 @@ class LayoutEditorBinder(
         applySelectionUI()
     }
 
-    private fun swapPositions(a: KeyConfig, b: KeyConfig) {
-        val locA = findKeyLocation(a) ?: return
-        val locB = findKeyLocation(b) ?: return
+    private fun swapPositions(a: KeyPos, b: KeyPos) {
+        val rowA = cfg.rows.getOrNull(a.row)?.keys ?: return
+        val rowB = cfg.rows.getOrNull(b.row)?.keys ?: return
 
-        val tmp = locA.row[locA.index]
-        locA.row[locA.index] = locB.row[locB.index]
-        locB.row[locB.index] = tmp
+        if (a.col !in rowA.indices) return
+        if (b.col !in rowB.indices) return
+
+        val tmp = rowA[a.col]
+        rowA[a.col] = rowB[b.col]
+        rowB[b.col] = tmp
     }
 
     private fun applySelectionUI() {
         val hasSelection = selectedA != null || selectedB != null
-        if (hasSelection) stopIdleShake() else startIdleShake()
+        if (hasSelection) {
+            stopIdleShake()
+        } else {
+            startIdleShake()
+        }
 
-        keyToView.forEach { (key, view) ->
-            val isSel = (key == selectedA || key == selectedB)
+        keyToView.forEach { entry ->
+            val pos = entry.key
+            val view = entry.value
+
+            val isSel = pos == selectedA || pos == selectedB
 
             if (isSel) {
                 view.customBgColor = 0xFFFFFFFF.toInt()
@@ -451,11 +484,11 @@ class LayoutEditorBinder(
         }
     }
 
-    private fun startDragForKey(view: View, key: KeyConfig) {
-        val data = ClipData.newPlainText("key_ref", key.hashCode().toString())
+    private fun startDragForKey(view: View, pos: KeyPos) {
+        val data = ClipData.newPlainText("key_pos", "${pos.row}:${pos.col}")
         val shadow = View.DragShadowBuilder(view)
 
-        view.tag = key
+        view.tag = pos
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             view.startDragAndDrop(data, shadow, view, 0)
@@ -465,9 +498,15 @@ class LayoutEditorBinder(
         }
     }
 
-    private fun handleDrop(targetView: KeyView, targetKey: KeyConfig, e: DragEvent): Boolean {
+    private fun handleDrop(
+        targetView: KeyView,
+        targetPos: KeyPos,
+        e: DragEvent
+    ): Boolean {
         when (e.action) {
-            DragEvent.ACTION_DRAG_STARTED -> return true
+            DragEvent.ACTION_DRAG_STARTED -> {
+                return true
+            }
 
             DragEvent.ACTION_DRAG_ENTERED -> {
                 targetView.alpha = 0.7f
@@ -483,18 +522,16 @@ class LayoutEditorBinder(
                 targetView.alpha = 1f
 
                 val srcView = e.localState as? View ?: return true
-                val srcKey = srcView.tag as? KeyConfig ?: return true
+                val srcPos = srcView.tag as? KeyPos ?: return true
 
-                // Praznu tipku ne vučemo kao source,
-                // ali dopuštamo drop NA praznu tipku.
-                // To je bitno za numeric layout: broj se smije pomaknuti,
-                // ali ne smije nestati iz numeričkog dijela.
+                val srcKey = keyAt(srcPos) ?: return true
                 if (isEmptyKey(srcKey)) return true
 
-                if (srcKey != targetKey) {
-                    swapPositions(srcKey, targetKey)
+                if (srcPos != targetPos) {
+                    swapPositions(srcPos, targetPos)
                     afterLayoutChanged()
                 }
+
                 return true
             }
 
@@ -503,6 +540,7 @@ class LayoutEditorBinder(
                 return true
             }
         }
+
         return false
     }
 
@@ -560,12 +598,14 @@ class LayoutEditorBinder(
 
         fun loop() {
             if (!bounceViews.contains(v)) return
+
             v.animate().cancel()
             v.animate()
                 .translationY(-dp(3).toFloat())
                 .setDuration(120)
                 .withEndAction {
                     if (!bounceViews.contains(v)) return@withEndAction
+
                     v.animate()
                         .translationY(0f)
                         .setDuration(120)
@@ -586,17 +626,23 @@ class LayoutEditorBinder(
 
     fun stopAllAnims() {
         stopIdleShake()
-        keyToView.values.forEach { stopBounce(it) }
+
+        keyToView.values.forEach { view ->
+            stopBounce(view)
+        }
+
         bounceViews.clear()
     }
 
     fun swapSelectedExternally(): Boolean {
         val a = selectedA
         val b = selectedB
+
         if (a == null || b == null) return false
 
         swapPositions(a, b)
         afterLayoutChanged()
+
         return true
     }
 
@@ -608,23 +654,30 @@ class LayoutEditorBinder(
         return selectedA != null && selectedB != null
     }
 
-    private fun dp(v: Int): Int =
-        (v * context.resources.displayMetrics.density).toInt()
+    private fun dp(v: Int): Int {
+        return (v * context.resources.displayMetrics.density).toInt()
+    }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {
         return KeyboardConfig(
             rows = src.rows.map { row ->
                 row.copy(
-                    keys = row.keys.map {
-                        it.copy(longPressBindings = it.longPressBindings.toMutableList())
+                    keys = row.keys.map { key ->
+                        key.copy(
+                            longPressBindings = key.longPressBindings.toMutableList()
+                        )
                     }.toMutableList()
                 )
             }.toMutableList(),
-            specialLeft = src.specialLeft.map {
-                it.copy(longPressBindings = it.longPressBindings.toMutableList())
+            specialLeft = src.specialLeft.map { key ->
+                key.copy(
+                    longPressBindings = key.longPressBindings.toMutableList()
+                )
             }.toMutableList(),
-            specialRight = src.specialRight.map {
-                it.copy(longPressBindings = it.longPressBindings.toMutableList())
+            specialRight = src.specialRight.map { key ->
+                key.copy(
+                    longPressBindings = key.longPressBindings.toMutableList()
+                )
             }.toMutableList()
         )
     }

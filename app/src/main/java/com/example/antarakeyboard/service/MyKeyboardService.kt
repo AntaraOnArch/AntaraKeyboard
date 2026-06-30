@@ -45,6 +45,7 @@ import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import kotlin.math.max
 import kotlin.math.roundToInt
+import com.example.antarakeyboard.model.KeyMarkers
 
 
 class MyKeyboardService : InputMethodService() {
@@ -63,6 +64,11 @@ class MyKeyboardService : InputMethodService() {
     private val swipeEditHandler = Handler(Looper.getMainLooper())
     private val backspaceHoldHandler = Handler(Looper.getMainLooper())
 
+    private val EDGE_GHOST_MARKER = KeyMarkers.EDGE_GHOST
+    private val USER_EMPTY_MARKER = KeyMarkers.USER_EMPTY
+    private val SPACE_LEFT_MARKER = KeyMarkers.SPACE_LEFT
+    private val SPACE_RIGHT_MARKER = KeyMarkers.SPACE_RIGHT
+
     private var longPressPopup: PopupWindow? = null
 
     private lateinit var rootView: View
@@ -73,7 +79,9 @@ class MyKeyboardService : InputMethodService() {
     private val myDefaultNumericConfig: KeyboardConfig
         get() {
             val rowCount = KeyboardPrefs.getRowCount(this)
-            return KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
+            return ensureStableSpaceMarkers(
+                KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
+            )
         }
 
     private val OVERLAP_RATIO = 0.18f
@@ -112,8 +120,8 @@ class MyKeyboardService : InputMethodService() {
 
     private val LIVE_REPLACE = false
     private var lpHasLiveInserted = false
-    private val EDGE_GHOST_MARKER = "__EDGE_GHOST__"
-    private val USER_EMPTY_MARKER = "__USER_EMPTY__"
+
+
     private var emojiPopup: PopupWindow? = null
     /* ───────── LIFECYCLE ───────── */
 
@@ -336,6 +344,54 @@ class MyKeyboardService : InputMethodService() {
     }
 
     /* ───────── HELPERS ───────── */
+    private fun ensureStableSpaceMarkers(cfg: KeyboardConfig): KeyboardConfig {
+        var spaceCount = 0
+
+        fun fixKey(key: KeyConfig): KeyConfig {
+            if (key.label != " ") return key
+
+            val thisSpaceIndex = spaceCount
+            spaceCount++
+
+            if (hasSpaceMarker(key)) return key
+
+            val marker = if (thisSpaceIndex == 0) {
+                KeyMarkers.SPACE_LEFT
+            } else {
+                KeyMarkers.SPACE_RIGHT
+            }
+
+            return key.copy(
+                longPressBindings = key.longPressBindings.toMutableList().apply {
+                    add(marker)
+                }
+            )
+        }
+
+        return cfg.copy(
+            rows = cfg.rows.map { row ->
+                row.copy(
+                    keys = row.keys.map(::fixKey).toMutableList()
+                )
+            }.toMutableList(),
+
+            specialLeft = cfg.specialLeft.map(::fixKey).toMutableList(),
+            specialRight = cfg.specialRight.map(::fixKey).toMutableList()
+        )
+    }
+    private fun isLeftSpace(key: KeyConfig): Boolean {
+        return key.label == " " &&
+                key.longPressBindings.contains(KeyMarkers.SPACE_LEFT)
+    }
+
+    private fun isRightSpace(key: KeyConfig): Boolean {
+        return key.label == " " &&
+                key.longPressBindings.contains(KeyMarkers.SPACE_RIGHT)
+    }
+
+    private fun hasSpaceMarker(key: KeyConfig): Boolean {
+        return isLeftSpace(key) || isRightSpace(key)
+    }
 
     private fun sideButtonTuning(
         isLandscapeMode: Boolean,
@@ -466,7 +522,7 @@ class MyKeyboardService : InputMethodService() {
 
             3 -> when (side) {
                 EdgePos.Side.LEFT -> when (visualIndex) {
-                   // 0 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
+                    // 0 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
                     1 -> SideButtonTuning(x = -17, y = -6, widthScale = 0.8f, heightScale = 0.4f, iconX = 5, iconY = 0)
                     //2 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
                     else -> SideButtonTuning()
@@ -518,6 +574,12 @@ class MyKeyboardService : InputMethodService() {
             currentShape
         }
     }
+    private data class KeyPos(
+        val row: Int,
+        val col: Int
+    )
+
+    private var selectedPos: KeyPos? = null
     private data class EdgeBinding(
         val visualIndex: Int,
         val side: EdgePos.Side,
@@ -638,7 +700,9 @@ class MyKeyboardService : InputMethodService() {
 
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
         val rows = KeyboardPrefs.getRowCount(this)
-        return KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rows)
+        return ensureStableSpaceMarkers(
+            KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rows)
+        )
     }
 
 
@@ -1298,7 +1362,7 @@ class MyKeyboardService : InputMethodService() {
                 if (key.label in labelsToHideFromMainLayout) {
                     list[i] = key.copy(
                         label = "",
-                        longPressBindings = mutableListOf(EDGE_GHOST_MARKER)
+                        longPressBindings = mutableListOf(KeyMarkers.EDGE_GHOST)
                     )
                 }
             }
@@ -1789,7 +1853,7 @@ class MyKeyboardService : InputMethodService() {
 
             fun buildRow(keys: List<KeyConfig>, containerRowIndex: Int) {
                 val rowKeys = keys.filterNot { key ->
-                    key.longPressBindings.contains(EDGE_GHOST_MARKER)
+                    key.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
                 }
 
                 if (rowKeys.isEmpty()) return
@@ -2842,7 +2906,7 @@ class MyKeyboardService : InputMethodService() {
 
         currentKeyboardConfig.rows.forEachIndexed { rowIndex, row ->
             val visibleRow = row.keys.filterNot {
-                it.longPressBindings.contains(EDGE_GHOST_MARKER)
+                it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
             }
 
             val keys = rightLandscapeKeysForRow(row.keys, rowIndex)
@@ -2959,7 +3023,7 @@ class MyKeyboardService : InputMethodService() {
             val rowKeys = rowConfig.keys.filter { key ->
                 key.label.isNotBlank() &&
                         !key.longPressBindings.contains("__USER_EMPTY__") &&
-                        !key.longPressBindings.contains(EDGE_GHOST_MARKER)
+                        !key.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
             }
 
             if (rowKeys.isEmpty()) return@forEach
@@ -3025,7 +3089,7 @@ class MyKeyboardService : InputMethodService() {
         rowIndex: Int
     ): List<KeyConfig> {
         val visible = rowKeys.filterNot {
-            it.longPressBindings.contains(EDGE_GHOST_MARKER)
+            it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
         }
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
@@ -3057,7 +3121,7 @@ class MyKeyboardService : InputMethodService() {
         rowIndex: Int
     ): List<KeyConfig> {
         val visible = rowKeys.filterNot {
-            it.longPressBindings.contains(EDGE_GHOST_MARKER)
+            it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
         }
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
@@ -3108,8 +3172,8 @@ class MyKeyboardService : InputMethodService() {
         isSelected = false
 
         if (label.isEmpty()) {
-            val isEdgeGhost = keyConfig.longPressBindings.contains(EDGE_GHOST_MARKER)
-            val isUserEmpty = keyConfig.longPressBindings.contains(USER_EMPTY_MARKER)
+            val isEdgeGhost = keyConfig.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
+            val isUserEmpty = keyConfig.longPressBindings.contains(KeyMarkers.USER_EMPTY)
 
             text = ""
             isAllCaps = false
@@ -3403,7 +3467,7 @@ class MyKeyboardService : InputMethodService() {
                 else -> false
             }
         }
-   }
+    }
 
     private fun colorLookupLabel(label: String): String {
         return if (label.length == 1 && label[0].isLetter()) {
@@ -3421,7 +3485,16 @@ class MyKeyboardService : InputMethodService() {
             val linked = KeyboardPrefs.isSpaceLinked(this)
             val c1 = KeyboardPrefs.getSpace1Bg(this)
             val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
-            kv.customBgColor = if (spaceIndex == 0) c1 else c2
+
+            kv.customBgColor = when {
+                isLeftSpace(key) -> c1
+                isRightSpace(key) -> c2
+
+                // fallback za stare layoutove bez markera
+                spaceIndex == 0 -> c1
+                else -> c2
+            }
+
             nextSpaceIndex++
             return nextSpaceIndex
         }
