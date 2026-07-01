@@ -136,7 +136,11 @@ class MainActivity : AppCompatActivity() {
         resetLayoutButton = findViewById(R.id.resetLayoutButton)
 
         val savedShape = KeyboardPrefs.getShape(this)
+
+        preview.visibility = View.VISIBLE
         preview.shape = savedShape
+        preview.invalidate()
+
         setCheckedForShape(savedShape)
 
         hex.setOnCheckedChangeListener { _, checked ->
@@ -310,18 +314,6 @@ class MainActivity : AppCompatActivity() {
         val btnKeysColor = dialog.findViewById<Button>(R.id.btnKeysColor)
         val btnBackgroundColor = dialog.findViewById<Button>(R.id.btnBackgroundColor)
 
-        val scrollView = dialog.findViewById<HorizontalScrollView>(R.id.colorsScrollView)
-        val btnScrollLeft = dialog.findViewById<Button>(R.id.btnScrollLeft)
-        val btnScrollRight = dialog.findViewById<Button>(R.id.btnScrollRight)
-
-        btnScrollLeft.setOnClickListener {
-            scrollView.smoothScrollBy(-dp(200), 0)
-        }
-
-        btnScrollRight.setOnClickListener {
-            scrollView.smoothScrollBy(dp(200), 0)
-        }
-
         btnSpaceColor.setOnClickListener { showSpaceColorDialog() }
         btnEnterColor.setOnClickListener { showEnterColorDialog() }
         btnSideButtonsColor.setOnClickListener { showSideButtonsColorDialog() }
@@ -330,7 +322,7 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
         dialog.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.94f).toInt(),
+            (resources.displayMetrics.widthPixels * 0.82f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
     }
@@ -1842,7 +1834,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyShape(shape: KeyShape) {
+        preview.visibility = View.VISIBLE
         preview.shape = shape
+        preview.invalidate()
+
         KeyboardPrefs.setShape(this, shape)
         setCheckedForShape(shape)
     }
