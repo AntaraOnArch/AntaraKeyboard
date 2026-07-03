@@ -46,6 +46,10 @@ import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import kotlin.math.max
 import kotlin.math.roundToInt
 import com.example.antarakeyboard.model.KeyMarkers
+import com.example.antarakeyboard.data.LongPressPresets
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import java.util.Locale
 
 
 class MyKeyboardService : InputMethodService() {
@@ -121,11 +125,20 @@ class MyKeyboardService : InputMethodService() {
     private val LIVE_REPLACE = false
     private var lpHasLiveInserted = false
 
-
     private var emojiPopup: PopupWindow? = null
+
+    private var languagePresetPopup: PopupWindow? = null
+
+    private var leftSpaceHeld = false
+    private var rightSpaceHeld = false
+    private var dualSpaceHoldRunnable: Runnable? = null
+    private var dualSpacePickerWasShown = false
+
+    private val DUAL_SPACE_HOLD_MS = 4000L
     /* ───────── LIFECYCLE ───────── */
 
     override fun onCreateInputView(): View {
+        KeyboardPrefs.ensureDefaultLongPress(this)
         val isDark = getSharedPreferences("theme_prefs", MODE_PRIVATE)
             .getBoolean("dark_mode", true)
 
@@ -248,7 +261,7 @@ class MyKeyboardService : InputMethodService() {
         super.onStartInputView(info, restarting)
         setExtractViewShown(false)
 
-        isShifted = false
+        KeyboardPrefs.ensureDefaultLongPress(this)
 
         val isDarkNow = getSharedPreferences("theme_prefs", MODE_PRIVATE)
             .getBoolean("dark_mode", true)
@@ -329,14 +342,15 @@ class MyKeyboardService : InputMethodService() {
         stopSwipeRestore()
         stopBackspaceHold()
         hideEmojiPopup()
+        hideLongPressPopup()
+        hideLanguagePresetPopup()
+        resetDualSpaceHoldState()
 
         currentDeleteBatch.clear()
         isDeleteGestureActive = false
         isRestoreGestureActive = false
         isBackspaceHoldActive = false
         restoreProgressIndex = 0
-
-        hideLongPressPopup()
     }
 
     private fun recreateInputView() {
@@ -344,6 +358,138 @@ class MyKeyboardService : InputMethodService() {
     }
 
     /* ───────── HELPERS ───────── */
+
+
+    private val serbianCyrillicDirectMap = mapOf(
+        "a" to "а",
+        "b" to "б",
+        "c" to "ц",
+        "d" to "д",
+        "e" to "е",
+        "f" to "ф",
+        "g" to "г",
+        "h" to "х",
+        "i" to "и",
+        "j" to "ј",
+        "k" to "к",
+        "l" to "л",
+        "m" to "м",
+        "n" to "н",
+        "o" to "о",
+        "p" to "п",
+        "r" to "р",
+        "s" to "с",
+        "t" to "т",
+        "u" to "у",
+        "v" to "в",
+        "z" to "з",
+
+        // fallback za tipke koje postoje na layoutu, ali nisu standardna srpska latinica
+        "q" to "љ",
+        "w" to "њ",
+        "x" to "џ",
+        "y" to "ј"
+    )
+
+    private fun isSerbianCyrillicPresetActive(): Boolean {
+        return KeyboardPrefs.getSelectedLongPressPreset(this) ==
+                LongPressPresets.PRESET_SERBIAN_CYRILLIC
+    }
+
+    private fun mapForSelectedScript(text: String): String {
+        if (!isSerbianCyrillicPresetActive()) return text
+        if (text.length != 1) return text
+
+        val lower = text.lowercase(Locale.ROOT)
+        val mapped = serbianCyrillicDirectMap[lower] ?: return text
+
+        val isUpper = text == text.uppercase(Locale.ROOT) &&
+                text != text.lowercase(Locale.ROOT)
+
+        return if (isUpper) {
+            mapped.uppercase(Locale.ROOT)
+        } else {
+            mapped
+        }
+    }
+
+    private fun isDualSpaceKey(key: KeyConfig): Boolean {
+        return key.label == " " && hasSpaceMarker(key)
+    }
+
+    private fun handleDualSpaceDown(key: KeyConfig) {
+        if (!isDualSpaceKey(key)) return
+
+        if (isLeftSpace(key)) {
+            leftSpaceHeld = true
+        }
+
+        if (isRightSpace(key)) {
+            rightSpaceHeld = true
+        }
+
+        if (
+            leftSpaceHeld &&
+            rightSpaceHeld &&
+            dualSpaceHoldRunnable == null &&
+            languagePresetPopup == null
+        ) {
+            dualSpacePickerWasShown = false
+
+            dualSpaceHoldRunnable = Runnable {
+                dualSpaceHoldRunnable = null
+
+                if (leftSpaceHeld && rightSpaceHeld) {
+                    dualSpacePickerWasShown = true
+                    showLanguagePresetPopup()
+                }
+            }
+
+            mainHandler.postDelayed(
+                dualSpaceHoldRunnable!!,
+                DUAL_SPACE_HOLD_MS
+            )
+        }
+    }
+
+    private fun handleDualSpaceUpOrCancel(key: KeyConfig): Boolean {
+        if (!isDualSpaceKey(key)) return false
+
+        val shouldConsumeSpace =
+            dualSpacePickerWasShown || languagePresetPopup != null
+
+        if (isLeftSpace(key)) {
+            leftSpaceHeld = false
+        }
+
+        if (isRightSpace(key)) {
+            rightSpaceHeld = false
+        }
+
+        if (!(leftSpaceHeld && rightSpaceHeld)) {
+            cancelDualSpaceHoldTimer()
+        }
+
+        if (!leftSpaceHeld && !rightSpaceHeld && languagePresetPopup == null) {
+            dualSpacePickerWasShown = false
+        }
+
+        return shouldConsumeSpace
+    }
+
+    private fun cancelDualSpaceHoldTimer() {
+        dualSpaceHoldRunnable?.let {
+            mainHandler.removeCallbacks(it)
+        }
+        dualSpaceHoldRunnable = null
+    }
+
+    private fun resetDualSpaceHoldState() {
+        leftSpaceHeld = false
+        rightSpaceHeld = false
+        dualSpacePickerWasShown = false
+        cancelDualSpaceHoldTimer()
+    }
     private fun ensureStableSpaceMarkers(cfg: KeyboardConfig): KeyboardConfig {
         var spaceCount = 0
 
@@ -718,6 +864,219 @@ class MyKeyboardService : InputMethodService() {
         emojiPopup?.dismiss()
         emojiPopup = null
     }
+
+    private fun hideLanguagePresetPopup() {
+        languagePresetPopup?.dismiss()
+        languagePresetPopup = null
+    }
+
+    private fun showLanguagePresetPopup() {
+        hideLongPressPopup()
+        hideEmojiPopup()
+        hideLanguagePresetPopup()
+        cancelDualSpaceHoldTimer()
+
+        dualSpacePickerWasShown = true
+
+        val popupWidth = (resources.displayMetrics.widthPixels * 0.86f).toInt()
+            .coerceAtLeast(dp(280))
+
+        val popupBg = themeColor(
+            themedCtx,
+            R.attr.keyFill,
+            if (lastIsDark == true) 0xFF2A2A2A.toInt() else 0xFFFFFFFF.toInt()
+        )
+
+        val popupText = themeColor(
+            themedCtx,
+            R.attr.keyText,
+            if (lastIsDark == true) Color.WHITE else Color.BLACK
+        )
+
+        val selectedPreset = KeyboardPrefs.getSelectedLongPressPreset(this)
+
+        val root = LinearLayout(themedCtx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(18), dp(20), dp(14))
+            setBackgroundColor(popupBg)
+        }
+
+        val title = TextView(themedCtx).apply {
+            text = "Odaberi pismo"
+            textSize = 18f
+            setTextColor(popupText)
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            setPadding(0, 0, 0, dp(14))
+        }
+
+        val radioGroup = RadioGroup(themedCtx).apply {
+            orientation = RadioGroup.VERTICAL
+        }
+
+        fun makeRadioButton(
+            titleText: String,
+            subtitleText: String
+        ): RadioButton {
+            return RadioButton(themedCtx).apply {
+                text = "$titleText\n$subtitleText"
+                textSize = 15f
+                setTextColor(popupText)
+                includeFontPadding = true
+                setPadding(0, dp(8), 0, dp(8))
+                isClickable = true
+                isFocusable = false
+            }
+        }
+
+        val latinId = View.generateViewId()
+        val serbianCyrId = View.generateViewId()
+
+        val latinRadio = makeRadioButton(
+            titleText = "Latinica",
+            subtitleText = "a, b, c + á, č, ć, š, ž..."
+        ).apply {
+            id = latinId
+        }
+
+        val serbianCyrRadio = makeRadioButton(
+            titleText = "Srpska ćirilica",
+            subtitleText = "а, б, в, љ, њ, ђ, ћ..."
+        ).apply {
+            id = serbianCyrId
+        }
+
+        radioGroup.addView(
+            latinRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        radioGroup.addView(
+            serbianCyrRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        val initialCheckedId = when (selectedPreset) {
+            LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrId
+            else -> latinId
+        }
+
+        radioGroup.check(initialCheckedId)
+
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val presetId = when (checkedId) {
+                serbianCyrId -> LongPressPresets.PRESET_SERBIAN_CYRILLIC
+                else -> LongPressPresets.PRESET_LATIN
+            }
+
+            applyLongPressPresetAndRefresh(presetId)
+        }
+
+        val closeBtn = TextView(themedCtx).apply {
+            text = "Zatvori"
+            textSize = 14f
+            setTextColor(popupText)
+            gravity = Gravity.CENTER
+            setPadding(dp(8), dp(16), dp(8), 0)
+            isClickable = true
+            isFocusable = false
+            setOnClickListener {
+                hideLanguagePresetPopup()
+            }
+        }
+
+        root.addView(
+            title,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        root.addView(
+            radioGroup,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        root.addView(
+            closeBtn,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        val popup = PopupWindow(
+            root,
+            popupWidth,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            isClippingEnabled = false
+            elevation = dp(12).toFloat()
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setOnDismissListener {
+                languagePresetPopup = null
+
+                if (!leftSpaceHeld && !rightSpaceHeld) {
+                    dualSpacePickerWasShown = false
+                }
+            }
+        }
+
+        languagePresetPopup = popup
+
+        /*
+         * Gravity.CENTER je sigurniji od ručnog x/y računanja.
+         * U IME-u ovo je najstabilniji modal bez rušenja.
+         */
+        popup.showAtLocation(
+            rootView,
+            Gravity.CENTER,
+            0,
+            0
+        )
+    }
+
+    private fun applyLongPressPresetAndRefresh(presetId: String) {
+        KeyboardPrefs.applyLongPressPreset(this, presetId)
+
+        val baseCfg = activeAlphabetBaseLayout()
+        alphabetLayoutLower = baseCfg
+        alphabetLayoutUpper = makeUppercaseConfig(baseCfg)
+
+        currentKeyboardConfig = applyEdgeKeys(
+            if (isShifted) {
+                alphabetLayoutUpper ?: baseCfg
+            } else {
+                alphabetLayoutLower ?: baseCfg
+            }
+        )
+
+        resetDualSpaceHoldState()
+        hideLanguagePresetPopup()
+
+        if (isDrawing) {
+            mainHandler.postDelayed({
+                redrawKeyboard()
+            }, 60L)
+        } else {
+            redrawKeyboard()
+        }
+    }
+
+
     private fun showEmojiPicker() {
         hideLongPressPopup()
         hideEmojiPopup()
@@ -1306,11 +1665,17 @@ class MyKeyboardService : InputMethodService() {
             }
         }
 
-        val out = if (text.length == 1 && text[0].isLetter()) {
-            if (isShifted) text.uppercase() else text.lowercase()
+        val baseOut = if (text.length == 1 && text[0].isLetter()) {
+            if (isShifted) {
+                text.uppercase(Locale.ROOT)
+            } else {
+                text.lowercase(Locale.ROOT)
+            }
         } else {
             text
         }
+
+        val out = mapForSelectedScript(baseOut)
 
         currentInputConnection?.commitText(out, 1)
     }
@@ -3151,12 +3516,30 @@ class MyKeyboardService : InputMethodService() {
     private fun makeUppercaseConfig(cfg: KeyboardConfig): KeyboardConfig {
         fun up(k: KeyConfig): KeyConfig {
             val lbl = k.label
-            val newLbl = if (lbl.length == 1 && lbl[0].isLetter()) lbl.uppercase() else lbl
-            return k.copy(label = newLbl, longPressBindings = k.longPressBindings.toMutableList())
+            val isLetterKey = lbl.length == 1 && lbl[0].isLetter()
+
+            val newLbl = if (isLetterKey) {
+                lbl.uppercase()
+            } else {
+                lbl
+            }
+
+            val newBinds = if (isLetterKey) {
+                k.longPressBindings.map { it.uppercase() }.toMutableList()
+            } else {
+                k.longPressBindings.toMutableList()
+            }
+
+            return k.copy(
+                label = newLbl,
+                longPressBindings = newBinds
+            )
         }
 
         return cfg.copy(
-            rows = cfg.rows.map { it.copy(keys = it.keys.map(::up).toMutableList()) }.toMutableList(),
+            rows = cfg.rows.map {
+                it.copy(keys = it.keys.map(::up).toMutableList())
+            }.toMutableList(),
             specialLeft = cfg.specialLeft.map(::up).toMutableList(),
             specialRight = cfg.specialRight.map(::up).toMutableList()
         )
@@ -3211,11 +3594,17 @@ class MyKeyboardService : InputMethodService() {
 
         hideCompletely = false
 
-        val display = if (label.length == 1 && label[0].isLetter()) {
-            if (isShifted) label.uppercase() else label.lowercase()
+        val rawDisplay = if (label.length == 1 && label[0].isLetter()) {
+            if (isShifted) {
+                label.uppercase(Locale.ROOT)
+            } else {
+                label.lowercase(Locale.ROOT)
+            }
         } else {
             label
         }
+
+        val display = mapForSelectedScript(rawDisplay)
 
         text = display
 
@@ -3323,6 +3712,10 @@ class MyKeyboardService : InputMethodService() {
                     hideLongPressPopup()
                     hideEmojiPopup()
 
+                    if (label == " ") {
+                        handleDualSpaceDown(keyConfig)
+                    }
+
                     mainHandler.removeCallbacks(longPressRunnable)
                     if (label !in nonBindable) {
                         mainHandler.postDelayed(longPressRunnable, longPressTimeout)
@@ -3407,6 +3800,14 @@ class MyKeyboardService : InputMethodService() {
                 }
 
                 MotionEvent.ACTION_UP -> {
+                    if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
+                        v.isPressed = false
+                        v.isSelected = false
+                        v.clearFocus()
+                        mainHandler.removeCallbacks(longPressRunnable)
+                        return@setOnTouchListener true
+                    }
+
                     if (handledBySwipeUp) {
                         v.isPressed = false
                         v.isSelected = false
@@ -3450,6 +3851,10 @@ class MyKeyboardService : InputMethodService() {
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
+                    if (label == " ") {
+                        handleDualSpaceUpOrCancel(keyConfig)
+                    }
+
                     handledBySwipeUp = false
                     mainHandler.removeCallbacks(longPressRunnable)
 

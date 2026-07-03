@@ -32,6 +32,15 @@ object GlobalLongPressStorage {
             emptyMap()
         }
     }
+    fun getAlphabetBind(context: Context, keyLabel: String): List<String> {
+        return loadAlphabetBinds(context)[keyLabel].orEmpty()
+    }
+
+    fun saveAlphabetBind(context: Context, keyLabel: String, values: List<String>) {
+        val binds = loadAlphabetBinds(context).toMutableMap()
+        binds[keyLabel] = values
+        saveAlphabetBinds(context, binds)
+    }
 
     fun clearAlphabetBinds(context: Context) {
         prefs(context).edit().remove(KEY_ALPHABET_BINDS).apply()

@@ -20,6 +20,8 @@ object KeyboardPrefs {
 
     private const val KEY_SCALE = "key_scale"
     private const val KEY_SHAPE = "key_shape"
+    private const val LONG_PRESS_DEFAULTS_VERSION = 4
+    private const val KEY_LONG_PRESS_DEFAULTS_VERSION = "long_press_defaults_version"
 
     // NOVO: Svaki row count ima svoj alphabet layout ključ
     private const val KEY_ALPHABET_LAYOUT_3 = "alphabet_layout_3"
@@ -51,6 +53,7 @@ object KeyboardPrefs {
     private const val KEY_EDGE_MODE_3 = "edge_mode_3"
     private const val KEY_EDGE_MODE_4 = "edge_mode_4"
     private const val KEY_EDGE_MODE_5 = "edge_mode_5"
+    private const val KEY_SELECTED_LONG_PRESS_PRESET = "selected_long_press_preset"
 
     private val gson = Gson()
 
@@ -370,6 +373,7 @@ object KeyboardPrefs {
             .putBoolean(SPACE_LINKED, linked)
             .apply()
     }
+
     /* ───────── SIDE BUTTONS COLORS ───────── */
     private const val SIDE_BUTTONS_USE_THEME_BG = "side_buttons_use_theme_bg"
     private const val SIDE_BUTTONS_BG = "side_buttons_bg"
@@ -417,6 +421,7 @@ object KeyboardPrefs {
     /* ───────── BACKGROUND COLOR ───────── */
     private const val BACKGROUND_USE_THEME = "background_use_theme"
     private const val BACKGROUND_COLOR = "background_color"
+
     /* ───────── INDIVIDUAL KEY COLORS ───────── */
     private const val KEY_INDIVIDUAL_COLORS_PREFIX = "key_individual_"
 
@@ -528,8 +533,57 @@ object KeyboardPrefs {
      * Spremi layout i izvuci bindove u globalni storage.
      * Ovo se koristi za numeric layout.
      */
+
     fun saveNumericLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
         saveNumericLayoutForRowCount(context, rowCount, layout)
         GlobalLongPressStorage.extractAndSaveNumericBinds(context, layout)
+    }
+
+    fun getSelectedLongPressPreset(context: Context): String {
+        return prefs(context).getString(
+            KEY_SELECTED_LONG_PRESS_PRESET,
+            LongPressPresets.PRESET_SYSTEM
+        ) ?: LongPressPresets.PRESET_SYSTEM
+    }
+
+    fun applyLongPressPreset(context: Context, presetId: String) {
+        val defaults = LongPressPresets.getById(context, presetId)
+
+        GlobalLongPressStorage.saveAlphabetBinds(context, defaults)
+
+        prefs(context).edit()
+            .putString(KEY_SELECTED_LONG_PRESS_PRESET, presetId)
+            .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
+            .remove("long_press_defaults_initialized")
+            .apply()
+    }
+
+    // puni bindove automatski
+    fun ensureDefaultLongPress(context: Context) {
+        val sp = prefs(context)
+
+        val currentVersion = sp.getInt(KEY_LONG_PRESS_DEFAULTS_VERSION, 0)
+        if (currentVersion >= LONG_PRESS_DEFAULTS_VERSION) return
+
+        val selectedPreset = getSelectedLongPressPreset(context)
+
+        val defaults = if (selectedPreset == LongPressPresets.PRESET_SYSTEM) {
+            LongPressPresets.getForSystemLanguage(context)
+        } else {
+            LongPressPresets.getById(context, selectedPreset)
+        }
+
+        defaults.forEach { (key, values) ->
+            val existing = GlobalLongPressStorage.getAlphabetBind(context, key)
+
+            if (existing.isEmpty()) {
+                GlobalLongPressStorage.saveAlphabetBind(context, key, values)
+            }
+        }
+
+        sp.edit()
+            .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
+            .remove("long_press_defaults_initialized")
+            .apply()
     }
 }
