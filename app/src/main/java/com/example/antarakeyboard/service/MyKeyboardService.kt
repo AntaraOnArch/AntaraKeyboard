@@ -384,24 +384,155 @@ class MyKeyboardService : InputMethodService() {
         "v" to "в",
         "z" to "з",
 
-        // fallback za tipke koje postoje na layoutu, ali nisu standardna srpska latinica
         "q" to "љ",
         "w" to "њ",
         "x" to "џ",
         "y" to "ј"
     )
 
-    private fun isSerbianCyrillicPresetActive(): Boolean {
-        return KeyboardPrefs.getSelectedLongPressPreset(this) ==
-                LongPressPresets.PRESET_SERBIAN_CYRILLIC
+    private val bulgarianCyrillicDirectMap = mapOf(
+        "a" to "а",
+        "b" to "б",
+        "c" to "ц",
+        "d" to "д",
+        "e" to "е",
+        "f" to "ф",
+        "g" to "г",
+        "h" to "х",
+        "i" to "и",
+        "j" to "й",
+        "k" to "к",
+        "l" to "л",
+        "m" to "м",
+        "n" to "н",
+        "o" to "о",
+        "p" to "п",
+        "r" to "р",
+        "s" to "с",
+        "t" to "т",
+        "u" to "у",
+        "v" to "в",
+        "z" to "з",
+
+        // fallback za bugarska slova bez čistog latin para
+        "q" to "я",
+        "w" to "ш",
+        "x" to "х",
+        "y" to "ъ"
+    )
+
+    private val ukrainianCyrillicDirectMap = mapOf(
+        "a" to "а",
+        "b" to "б",
+        "c" to "ц",
+        "d" to "д",
+        "e" to "е",
+        "f" to "ф",
+        "g" to "г",
+        "h" to "х",
+        "i" to "і",
+        "j" to "й",
+        "k" to "к",
+        "l" to "л",
+        "m" to "м",
+        "n" to "н",
+        "o" to "о",
+        "p" to "п",
+        "r" to "р",
+        "s" to "с",
+        "t" to "т",
+        "u" to "у",
+        "v" to "в",
+        "z" to "з",
+
+        // fallback za ukrajinska slova bez čistog latin para
+        "q" to "я",
+        "w" to "ш",
+        "x" to "ь",
+        "y" to "и"
+    )
+
+    private val macedonianCyrillicDirectMap = mapOf(
+        "a" to "а",
+        "b" to "б",
+        "c" to "ц",
+        "d" to "д",
+        "e" to "е",
+        "f" to "ф",
+        "g" to "г",
+        "h" to "х",
+        "i" to "и",
+        "j" to "ј",
+        "k" to "к",
+        "l" to "л",
+        "m" to "м",
+        "n" to "н",
+        "o" to "о",
+        "p" to "п",
+        "r" to "р",
+        "s" to "с",
+        "t" to "т",
+        "u" to "у",
+        "v" to "в",
+        "z" to "з",
+
+        // fallback za makedonska slova bez čistog latin para
+        "q" to "љ",
+        "w" to "њ",
+        "x" to "џ",
+        "y" to "ѕ"
+    )
+
+    private val russianCyrillicDirectMap = mapOf(
+        "a" to "а",
+        "b" to "б",
+        "c" to "ц",
+        "d" to "д",
+        "e" to "е",
+        "f" to "ф",
+        "g" to "г",
+        "h" to "х",
+        "i" to "и",
+        "j" to "й",
+        "k" to "к",
+        "l" to "л",
+        "m" to "м",
+        "n" to "н",
+        "o" to "о",
+        "p" to "п",
+        "r" to "р",
+        "s" to "с",
+        "t" to "т",
+        "u" to "у",
+        "v" to "в",
+        "z" to "з",
+
+        // fallback za ruska slova bez čistog latin para
+        "q" to "я",
+        "w" to "ш",
+        "x" to "ь",
+        "y" to "ы"
+    )
+
+
+    private fun directMapForSelectedPreset(): Map<String, String>? {
+        return when (KeyboardPrefs.getSelectedLongPressPreset(this)) {
+            LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrillicDirectMap
+            LongPressPresets.PRESET_BULGARIAN_CYRILLIC -> bulgarianCyrillicDirectMap
+            LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrillicDirectMap
+            LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrillicDirectMap
+            LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrillicDirectMap
+            else -> null
+        }
     }
 
     private fun mapForSelectedScript(text: String): String {
-        if (!isSerbianCyrillicPresetActive()) return text
         if (text.length != 1) return text
 
+        val map = directMapForSelectedPreset() ?: return text
+
         val lower = text.lowercase(Locale.ROOT)
-        val mapped = serbianCyrillicDirectMap[lower] ?: return text
+        val mapped = map[lower] ?: return text
 
         val isUpper = text == text.uppercase(Locale.ROOT) &&
                 text != text.lowercase(Locale.ROOT)
@@ -412,6 +543,8 @@ class MyKeyboardService : InputMethodService() {
             mapped
         }
     }
+
+
 
     private fun isDualSpaceKey(key: KeyConfig): Boolean {
         return key.label == " " && hasSpaceMarker(key)
@@ -931,6 +1064,10 @@ class MyKeyboardService : InputMethodService() {
 
         val latinId = View.generateViewId()
         val serbianCyrId = View.generateViewId()
+        val bulgarianCyrId = View.generateViewId()
+        val russianCyrId = View.generateViewId()
+        val ukrainianCyrId = View.generateViewId()
+        val macedonianCyrId = View.generateViewId()
 
         val latinRadio = makeRadioButton(
             titleText = "Latinica",
@@ -944,6 +1081,33 @@ class MyKeyboardService : InputMethodService() {
             subtitleText = "а, б, в, љ, њ, ђ, ћ..."
         ).apply {
             id = serbianCyrId
+        }
+
+        val bulgarianCyrRadio = makeRadioButton(
+            titleText = "Bugarska ćirilica",
+            subtitleText = "а, б, в, ж, ч, ш, щ, ъ..."
+        ).apply {
+            id = bulgarianCyrId
+        }
+
+        val russianCyrRadio = makeRadioButton(
+            titleText = "Ruska ćirilica",
+            subtitleText = "а, б, в, ж, ч, ш, щ, ы, э..."
+        ).apply {
+            id = russianCyrId
+        }
+        val ukrainianCyrRadio = makeRadioButton(
+            titleText = "Ukrajinska ćirilica",
+            subtitleText = "а, б, в, ґ, є, і, ї..."
+        ).apply {
+            id = ukrainianCyrId
+        }
+
+        val macedonianCyrRadio = makeRadioButton(
+            titleText = "Makedonska ćirilica",
+            subtitleText = "а, б, в, ѓ, ќ, љ, њ, џ..."
+        ).apply {
+            id = macedonianCyrId
         }
 
         radioGroup.addView(
@@ -962,8 +1126,43 @@ class MyKeyboardService : InputMethodService() {
             )
         )
 
+        radioGroup.addView(
+            bulgarianCyrRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        radioGroup.addView(
+            russianCyrRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        radioGroup.addView(
+            ukrainianCyrRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        radioGroup.addView(
+            macedonianCyrRadio,
+            RadioGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
         val initialCheckedId = when (selectedPreset) {
             LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrId
+            LongPressPresets.PRESET_BULGARIAN_CYRILLIC -> bulgarianCyrId
+            LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrId
+            LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrId
+            LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrId
             else -> latinId
         }
 
@@ -972,6 +1171,10 @@ class MyKeyboardService : InputMethodService() {
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             val presetId = when (checkedId) {
                 serbianCyrId -> LongPressPresets.PRESET_SERBIAN_CYRILLIC
+                bulgarianCyrId -> LongPressPresets.PRESET_BULGARIAN_CYRILLIC
+                russianCyrId -> LongPressPresets.PRESET_RUSSIAN_CYRILLIC
+                ukrainianCyrId -> LongPressPresets.PRESET_UKRAINIAN_CYRILLIC
+                macedonianCyrId -> LongPressPresets.PRESET_MACEDONIAN_CYRILLIC
                 else -> LongPressPresets.PRESET_LATIN
             }
 
@@ -998,12 +1201,23 @@ class MyKeyboardService : InputMethodService() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
         )
+        val scroll = ScrollView(themedCtx).apply {
+            isFillViewport = false
+
+            addView(
+                radioGroup,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
 
         root.addView(
-            radioGroup,
+            scroll,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                (resources.displayMetrics.heightPixels * 0.46f).toInt()
             )
         )
 
@@ -1041,11 +1255,30 @@ class MyKeyboardService : InputMethodService() {
          * Gravity.CENTER je sigurniji od ručnog x/y računanja.
          * U IME-u ovo je najstabilniji modal bez rušenja.
          */
+        val screenW = resources.displayMetrics.widthPixels
+        val screenH = resources.displayMetrics.heightPixels
+
+        val rootLoc = IntArray(2)
+        rootView.getLocationOnScreen(rootLoc)
+
+        val desiredScreenX = ((screenW - popupWidth) / 2).coerceAtLeast(dp(8))
+
+// Ovo je pozicija crvenog kvadrata sa screenshota.
+// Smanji na 0.08f ako želiš još više gore.
+// Povećaj na 0.14f ako želiš malo niže.
+        val desiredScreenY = (screenH * 0.105f).toInt()
+            .coerceAtLeast(dp(54))
+
+// showAtLocation kod IME-a radi relativno prema rootView prozoru,
+// zato screen Y pretvaramo u lokalni Y.
+        val localX = desiredScreenX
+        val localY = desiredScreenY - rootLoc[1]
+
         popup.showAtLocation(
             rootView,
-            Gravity.CENTER,
-            0,
-            0
+            Gravity.NO_GRAVITY,
+            localX,
+            localY
         )
     }
 
@@ -1081,7 +1314,8 @@ class MyKeyboardService : InputMethodService() {
         hideLongPressPopup()
         hideEmojiPopup()
 
-        val popupWidth = (availableKeyboardWidthPx() * 0.92f).toInt()
+        val popupWidth = (resources.displayMetrics.widthPixels * 0.68f).toInt()
+            .coerceAtLeast(dp(230))
         val popupHeight = (computeTargetKeyboardHeight() * 0.78f).toInt()
 
         val root = LinearLayout(this).apply {
