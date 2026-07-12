@@ -230,11 +230,11 @@ class MyKeyboardService : InputMethodService() {
             v.setPadding(basePadL, basePadT, basePadR, basePadB + bottomInset)
 
             v.post {
-                syncOverlayHeightToContent()
                 if (insetChanged) {
+                    targetKeyboardHeightPx = computeTargetKeyboardHeight()
                     redrawKeyboard()
                 } else {
-                    overlayLayer.requestLayout()
+                    syncOverlayHeightToContent()
                 }
             }
 
@@ -358,6 +358,20 @@ class MyKeyboardService : InputMethodService() {
     }
 
     /* ───────── HELPERS ───────── */
+    private fun safeOverlayTop(
+        requestedTop: Int,
+        childHeight: Int
+    ): Int {
+        val minTop = dp(2)
+
+        val maxTop = (
+                overlayLayer.height -
+                        childHeight -
+                        dp(2)
+                ).coerceAtLeast(minTop)
+
+        return requestedTop.coerceIn(minTop, maxTop)
+    }
 
 
     private val serbianCyrillicDirectMap = mapOf(
@@ -1613,40 +1627,75 @@ class MyKeyboardService : InputMethodService() {
 
     private fun syncOverlayHeightToContent() {
         if (!::overlayLayer.isInitialized || !::keyboardContainer.isInitialized) return
+        if (overlayLayer.width <= 0 || keyboardContainer.childCount == 0) return
 
-        val contentH = keyboardContainer.height
+        /*
+         * Bitno:
+         * keyboardContainer.height može biti odrezan trenutačnom visinom overlayja.
+         * Zato ga ponovno mjerimo s UNSPECIFIED visinom da dobijemo stvarnu
+         * visinu svih redova.
+         */
+        val contentWidth = (
+                overlayLayer.width -
+                        overlayLayer.paddingLeft -
+                        overlayLayer.paddingRight
+                ).coerceAtLeast(dp(200))
+
+        keyboardContainer.measure(
+            View.MeasureSpec.makeMeasureSpec(
+                contentWidth,
+                View.MeasureSpec.EXACTLY
+            ),
+            View.MeasureSpec.makeMeasureSpec(
+                0,
+                View.MeasureSpec.UNSPECIFIED
+            )
+        )
+
+        val contentH = keyboardContainer.measuredHeight
         if (contentH <= 0) return
 
-        val extraBottomSafety = if (isLandscape()) dp(6) else dp(16)
+        /*
+         * paddingBottom već sadrži navigation/system inset.
+         * Ne dodajemo umjetni minTarget ni extraBottomSafety jer su oni
+         * stvarali prazan prostor gore.
+         */
+        val desiredHeight =
+            contentH +
+                    overlayLayer.paddingTop +
+                    overlayLayer.paddingBottom
 
-        val desired = contentH +
-                overlayLayer.paddingTop +
-                overlayLayer.paddingBottom +
-                extraBottomSafety
+        /*
+         * Samo zaštita od potpuno pogrešnog mjerenja.
+         * Ovo više nije normalni limit tipkovnice.
+         */
+        val screenH = resources.displayMetrics.heightPixels
 
-        val minTarget = if (isLandscape()) dp(110) else dp(180)
-
-        val maxTarget = if (isLandscape()) {
-            (computeTargetKeyboardHeight() + lastBottomInsetPx).coerceAtLeast(dp(120))
+        val screenLimit = if (isLandscape()) {
+            (screenH * 0.85f).roundToInt()
         } else {
-            (computeTargetKeyboardHeight() + lastBottomInsetPx).coerceAtLeast(dp(230))
-        }
+            (screenH * 0.70f).roundToInt()
+        }.coerceAtLeast(dp(120))
 
-        val newH = desired.coerceIn(minTarget, maxTarget)
+        val newHeight = desiredHeight.coerceIn(
+            dp(1),
+            screenLimit
+        )
+
+        // Ukloni eventualni stari minimum koji je ostao od ranije.
+        overlayLayer.minimumHeight = 0
 
         val lp = overlayLayer.layoutParams ?: ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            newH
+            newHeight
         )
 
-        if (lp.height != newH) {
-            lp.height = newH
+        if (lp.height != newHeight) {
+            lp.height = newHeight
             overlayLayer.layoutParams = lp
-            overlayLayer.minimumHeight = newH
             overlayLayer.requestLayout()
         }
     }
-
 
     /* ───────── DELETE / RESTORE LOGIC ───────── */
 
@@ -2096,9 +2145,29 @@ class MyKeyboardService : InputMethodService() {
         val desiredX = anchorLoc[0] - rootLoc[0] + anchor.width / 2 - popupW / 2
         val desiredY = anchorLoc[1] - rootLoc[1] - popupH - dp(10)
 
-        val x = desiredX.coerceIn(dp(8), overlayLayer.width - popupW - dp(8))
-        val y = desiredY.coerceIn(dp(8), overlayLayer.height - popupH - dp(8))
+        val minPopupOffset = dp(8)
 
+        val maxX = (
+                overlayLayer.width -
+                        popupW -
+                        minPopupOffset
+                ).coerceAtLeast(minPopupOffset)
+
+        val maxY = (
+                overlayLayer.height -
+                        popupH -
+                        minPopupOffset
+                ).coerceAtLeast(minPopupOffset)
+
+        val x = desiredX.coerceIn(
+            minPopupOffset,
+            maxX
+        )
+
+        val y = desiredY.coerceIn(
+            minPopupOffset,
+            maxY
+        )
         pw.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, x, y)
         longPressPopup = pw
 
@@ -2242,8 +2311,24 @@ class MyKeyboardService : InputMethodService() {
             }
 
             KeyShape.TRIANGLE -> dp(0)
-            KeyShape.CIRCLE -> if (isLandscape()) dp(2) else dp(4)
-            KeyShape.CUBE -> if (isLandscape()) dp(2) else dp(4)
+            KeyShape.CIRCLE -> {
+                when {
+                    isLandscape() -> dp(2)
+                    savedRowCount == 3 -> dp(2)
+                    else -> dp(4)
+                }
+            }
+            KeyShape.CUBE -> {
+                when {
+                    isLandscape() -> dp(2)
+
+                    // 3-row portrait: manje praznog prostora,
+                    // pa same tipke mogu biti veće
+                    savedRowCount == 3 -> dp(2)
+
+                    else -> dp(4)
+                }
+            }
         }
 
         val effectiveAvailW = when (layoutShape) {
@@ -2267,8 +2352,23 @@ class MyKeyboardService : InputMethodService() {
             }
 
             KeyShape.TRIANGLE -> if (isLandscape()) (availW * 0.92f).toInt() else (availW * 0.78f).toInt()
-            KeyShape.CIRCLE -> if (isLandscape()) availW else (availW * 0.92f).toInt()
-            KeyShape.CUBE -> if (isLandscape()) availW else (availW * 0.92f).toInt()
+            KeyShape.CIRCLE -> {
+                when {
+                    isLandscape() -> availW
+                    savedRowCount == 3 -> (availW * 0.98f).toInt()
+                    else -> (availW * 0.92f).toInt()
+                }
+            }
+            KeyShape.CUBE -> {
+                when {
+                    isLandscape() -> availW
+
+                    // 3-row portrait: veće tipke
+                    savedRowCount == 3 -> (availW * 0.98f).toInt()
+
+                    else -> (availW * 0.92f).toInt()
+                }
+            }
         }
 
         val targetColumns = when {
@@ -2293,13 +2393,32 @@ class MyKeyboardService : InputMethodService() {
             .coerceAtLeast(minKeyWidth)
 
         val keyW = when {
-            layoutShape == KeyShape.HEX && isLandscape() && savedRowCount == 3 -> baseKeyW
+            // Portrait CIRCLE i CUBE:
+            // red sa 6 tipki koristi istu veličinu gumba kao red sa 7 tipki
+            !isLandscape() &&
+                    count == 6 &&
+                    (
+                            layoutShape == KeyShape.CIRCLE ||
+                                    layoutShape == KeyShape.CUBE
+                            ) -> {
+                ((effectiveAvailW - 6 * gap) / 7f)
+                    .toInt()
+                    .coerceAtLeast(dp(36))
+            }
 
-            layoutShape == KeyShape.HEX && isLandscape() && count <= 6 -> {
+            layoutShape == KeyShape.HEX &&
+                    isLandscape() &&
+                    savedRowCount == 3 -> baseKeyW
+
+            layoutShape == KeyShape.HEX &&
+                    isLandscape() &&
+                    count <= 6 -> {
                 (baseKeyW * 1.06f).toInt()
             }
 
-            layoutShape == KeyShape.HEX && isLandscape() && count >= 7 -> {
+            layoutShape == KeyShape.HEX &&
+                    isLandscape() &&
+                    count >= 7 -> {
                 baseKeyW
             }
 
@@ -2356,19 +2475,29 @@ class MyKeyboardService : InputMethodService() {
 
         val rawKeyH = keyHeight()
 
-        val keyH = if (
+        val keyH = when {
+            // 3-row portrait CUBE:
+            // širina ostaje ista, povećavamo samo visinu za 25%
             !isLandscape() &&
-            savedRowCount == 3 &&
-            (
-                    currentShape == KeyShape.HEX ||
-                            currentShape == KeyShape.HEX_HALF_LEFT ||
-                            currentShape == KeyShape.HEX_HALF_RIGHT
-                    )
-        ) {
-            // 3-row portrait: izduženi hex gumbi, +60% visine
-            (keyW * 1.90f).toInt().coerceAtLeast(dp(42))
-        } else {
-            rawKeyH
+                    savedRowCount == 3 &&
+                    layoutShape == KeyShape.CUBE -> {
+                // Visina je 25% veća od širine gumba,
+                // a ne 30% veća od ukupno izračunate visine reda.
+                (keyW * 1.3f).toInt()
+            }
+
+            // postojeći 3-row portrait HEX
+            !isLandscape() &&
+                    savedRowCount == 3 &&
+                    (
+                            layoutShape == KeyShape.HEX ||
+                                    layoutShape == KeyShape.HEX_HALF_LEFT ||
+                                    layoutShape == KeyShape.HEX_HALF_RIGHT
+                            ) -> {
+                (keyW * 1.90f).toInt().coerceAtLeast(dp(42))
+            }
+
+            else -> rawKeyH
         }
 
         val overlap = when (currentShape) {
@@ -2536,12 +2665,48 @@ class MyKeyboardService : InputMethodService() {
                         sizing.outerPadPx
                 }
 
+                val shapeRowTranslationX = if (!isLandscape()) {
+                    when {
+                        // 4-row CUBE i CIRCLE — isti honeycomb raspored
+                        savedRowCount == 4 &&
+                                (
+                                        layoutShape == KeyShape.CUBE ||
+                                                layoutShape == KeyShape.CIRCLE
+                                        ) -> {
+                            if (containerRowIndex % 2 == 0) {
+                                -dp(5)   // 1. i 3. red ulijevo
+                            } else {
+                                dp(10)   // 2. i 4. red udesno
+                            }
+                        }
+
+                        // postojeći 3-row CUBE
+                        savedRowCount == 3 &&
+                                (
+                                        layoutShape == KeyShape.CUBE ||
+                                                layoutShape == KeyShape.CIRCLE
+                                        ) -> {
+                            if (containerRowIndex % 2 == 0) {
+                                -dp(5)   // 1. i 3. red ulijevo
+                            } else {
+                                dp(10)   // 2. red udesno
+                            }
+                        }
+
+                        else -> 0
+                    }
+                } else {
+                    0
+                }
+
                 val row = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = Gravity.START
                     setPadding(leftPad, vPad, rightPad, vPad)
                     clipToPadding = false
                     clipChildren = false
+
+                    translationX = shapeRowTranslationX.toFloat()
                 }
 
                 rowKeys.forEachIndexed { i, key ->
@@ -2734,9 +2899,9 @@ class MyKeyboardService : InputMethodService() {
                                 overlayLayer.width - sideW
                             )
 
-                            topMargin = (top + (leftAnchor.height - sideH) / 2).coerceIn(
-                                dp(2),
-                                overlayLayer.height - sideH - dp(2)
+                            topMargin = safeOverlayTop(
+                                requestedTop = top + (leftAnchor.height - sideH) / 2,
+                                childHeight = sideH
                             )
                         }
                     )
@@ -2775,9 +2940,9 @@ class MyKeyboardService : InputMethodService() {
                                 overlayLayer.width - sideW
                             )
 
-                            topMargin = (top + (rightAnchor.height - sideH) / 2).coerceIn(
-                                dp(2),
-                                overlayLayer.height - sideH - dp(2)
+                            topMargin = safeOverlayTop(
+                                requestedTop = top + (rightAnchor.height - sideH) / 2,
+                                childHeight = sideH
                             )
                         }
                     )
@@ -2815,7 +2980,6 @@ class MyKeyboardService : InputMethodService() {
                 return@post
             }
 
-            val safeY = dp(2)
 
             val liftY = when (KeyboardPrefs.getRowCount(this)) {
                 5 -> dp(2)
@@ -2884,9 +3048,9 @@ class MyKeyboardService : InputMethodService() {
                             overlayLayer.width - width + sideOutset
                         )
 
-                        topMargin = (top + (height - finalHeight) / 2).coerceIn(
-                            dp(2),
-                            overlayLayer.height - finalHeight - dp(2)
+                        topMargin = safeOverlayTop(
+                            requestedTop = top + (height - finalHeight) / 2,
+                            childHeight = finalHeight
                         )
                     }
                 )
@@ -2916,9 +3080,9 @@ class MyKeyboardService : InputMethodService() {
                     val rowLeft = firstLoc[0] - ovLoc[0]
                     val rowRight = lastLoc[0] - ovLoc[0] + last.width
 
-                    val baseTop = (firstLoc[1] - ovLoc[1] - liftY).coerceIn(
-                        safeY,
-                        overlayLayer.height - first.height - safeY
+                    val baseTop = safeOverlayTop(
+                        requestedTop = firstLoc[1] - ovLoc[1] - liftY,
+                        childHeight = first.height
                     )
 
                     val leftSlot = slots.firstOrNull {
@@ -3002,9 +3166,9 @@ class MyKeyboardService : InputMethodService() {
                 val rowLeft = firstLoc[0] - ovLoc[0]
                 val rowRight = lastLoc[0] - ovLoc[0] + last.width
 
-                val baseTop = (firstLoc[1] - ovLoc[1] - liftY).coerceIn(
-                    safeY,
-                    overlayLayer.height - first.height - safeY
+                val baseTop = safeOverlayTop(
+                    requestedTop = firstLoc[1] - ovLoc[1] - liftY,
+                    childHeight = first.height
                 )
 
                 val tuning = sideButtonTuning(
@@ -3411,7 +3575,13 @@ class MyKeyboardService : InputMethodService() {
             }
 
             KeyShape.CIRCLE -> if (savedRowCount == 5) dp(5) else dp(4)
-            KeyShape.CUBE -> if (savedRowCount == 5) dp(5) else dp(4)
+            KeyShape.CUBE -> {
+                when (savedRowCount) {
+                    3 -> -dp(2)
+                    5 -> dp(5)
+                    else -> dp(4)
+                }
+            }
         }
     }
     private fun buildLandscapeLeftLetters(container: LinearLayout) {
@@ -3872,6 +4042,15 @@ class MyKeyboardService : InputMethodService() {
 
         isAllCaps = false
         shape = activeShape
+
+// Samo 3-row portrait CUBE smije koristiti punu zadanu visinu.
+// Inače KeyView zadržava kvadrat i ignorira dodatni keyH.
+        forceSquare = !(
+                !isLandscape() &&
+                        rowCount == 3 &&
+                        activeShape == KeyShape.CUBE
+                )
+
         isSpecial = (label == "↵")
         gravity = Gravity.CENTER
         includeFontPadding = false
