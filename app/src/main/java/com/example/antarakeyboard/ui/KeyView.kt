@@ -461,15 +461,36 @@ class KeyView @JvmOverloads constructor(
         b: Float,
         flipped: Boolean
     ) {
+        val width = r - l
+        val height = b - t
+
+        val centerX = (l + r) * 0.5f
+        val centerY = (t + b) * 0.5f
+
+        /*
+         * Trokut koristi punu širinu, ali samo oko 46% visine.
+         * Tako dobivamo široku bazu i tupi kut na vrhu.
+         */
+        val triangleHeight = min(
+            height,
+            width * 0.4f
+        )
+
+        val topY = centerY - triangleHeight * 0.7f
+        val bottomY = centerY + triangleHeight * 0.7f
+
         if (!flipped) {
-            p.moveTo(l + (r - l) * 0.5f, t)
-            p.lineTo(l, b)
-            p.lineTo(r, b)
+            // vrh gore, široka baza dolje
+            p.moveTo(centerX, topY)
+            p.lineTo(l, bottomY)
+            p.lineTo(r, bottomY)
         } else {
-            p.moveTo(l, t)
-            p.lineTo(r, t)
-            p.lineTo(l + (r - l) * 0.5f, b)
+            // široka baza gore, vrh dolje
+            p.moveTo(l, topY)
+            p.lineTo(r, topY)
+            p.lineTo(centerX, bottomY)
         }
+
         p.close()
     }
 

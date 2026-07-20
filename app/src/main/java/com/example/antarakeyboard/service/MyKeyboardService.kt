@@ -2297,6 +2297,87 @@ class MyKeyboardService : InputMethodService() {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val layoutShape = currentShape
 
+        /*
+ * Portrait TRIANGLE:
+ * sve tipke dobivaju veličinu referentnog reda sa 6 tipki.
+ *
+ * Red sa 7 tipki koristi horizontalno preklapanje kako bi
+ * stao u istu dostupnu širinu bez smanjivanja tipki.
+ */
+        if (!isLandscape() && layoutShape == KeyShape.TRIANGLE) {
+            val usableW = when (savedRowCount) {
+                // Ostavljamo malo sigurnog prostora uz lijevi i desni rub
+                3 -> (availW - dp(20)).coerceAtLeast(dp(240))
+
+                // Postojeći dobar 4-row i 5-row prikaz
+                else -> (availW * 0.98f).toInt()
+            }
+
+            val referenceColumns = when (savedRowCount) {
+                // 3-row ima 11–12 tipki, zato mu trebaju manji trokuti
+                3 -> 8.4f
+
+                // Postojeći 4-row i 5-row sizing
+                else -> 6f
+            }
+
+            val minTriangleWidth = when (savedRowCount) {
+                3 -> dp(30)
+                else -> dp(40)
+            }
+
+            val keyW = (usableW / referenceColumns)
+                .toInt()
+                .coerceAtLeast(minTriangleWidth)
+
+            /*
+             * Za 7 tipki:
+             * 7 * keyW je preširoko, pa višak rasporedimo kroz
+             * šest razmaka između tipki.
+             */
+            // Mali stalni overlap vrijedi i za redove sa 6 tipki.
+            val baseOverlapX = (keyW * 0.22f).toInt()
+
+            // Dodatni overlap potreban da red sa 7 tipki stane.
+            val fitOverlapX = if (count > 1) {
+                ((count * keyW - usableW) / (count - 1))
+                    .coerceAtLeast(0)
+            } else {
+                0
+            }
+
+            val overlapX = when (savedRowCount) {
+                3 -> {
+                    /*
+                     * Ne oduzimamo više dp(2), jer je to proširivalo cijeli red
+                     * i izbacivalo krajnje tipke izvan ekrana.
+                     */
+                    maxOf(baseOverlapX, fitOverlapX)
+                }
+
+                else -> {
+                    maxOf(baseOverlapX, fitOverlapX) + dp(2)
+                }
+            }
+
+            val usedW =
+                count * keyW -
+                        (count - 1).coerceAtLeast(0) * overlapX
+
+            val outerPad = ((availW - usedW) / 2)
+                .coerceAtLeast(0)
+
+            return RowSizing(
+                keyW = keyW,
+                keyH = (keyW * 0.92f).toInt(),
+                gapPx = 0,
+                outerPadPx = outerPad,
+                overlapPx = 0,
+                triOverlapX = overlapX,
+                triOverlapY = 0
+            )
+        }
+
         val gap = when (layoutShape) {
             KeyShape.HEX,
             KeyShape.HEX_TALL,
@@ -2393,8 +2474,8 @@ class MyKeyboardService : InputMethodService() {
             .coerceAtLeast(minKeyWidth)
 
         val keyW = when {
-            // Portrait CIRCLE i CUBE:
             // red sa 6 tipki koristi istu veličinu gumba kao red sa 7 tipki
+            // Portrait CIRCLE, CUBE i TRIANGLE:
             !isLandscape() &&
                     count == 6 &&
                     (
@@ -2667,29 +2748,54 @@ class MyKeyboardService : InputMethodService() {
 
                 val shapeRowTranslationX = if (!isLandscape()) {
                     when {
-                        // 4-row CUBE i CIRCLE — isti honeycomb raspored
-                        savedRowCount == 4 &&
-                                (
-                                        layoutShape == KeyShape.CUBE ||
-                                                layoutShape == KeyShape.CIRCLE
-                                        ) -> {
-                            if (containerRowIndex % 2 == 0) {
-                                -dp(5)   // 1. i 3. red ulijevo
-                            } else {
-                                dp(10)   // 2. i 4. red udesno
+
+                        // 5-row TRIANGLE
+                        savedRowCount == 5 &&
+                                layoutShape == KeyShape.TRIANGLE -> {
+                            when (containerRowIndex) {
+                                0, 2, 4 -> -dp(14) // 1., 3. i 5. red lijevo
+                                1, 3 -> dp(8)     // 2. i 4. red desno
+                                else -> 0
                             }
                         }
 
-                        // postojeći 3-row CUBE
-                        savedRowCount == 3 &&
-                                (
-                                        layoutShape == KeyShape.CUBE ||
-                                                layoutShape == KeyShape.CIRCLE
-                                        ) -> {
+                        // 4-row TRIANGLE
+                        savedRowCount == 4 &&
+                                layoutShape == KeyShape.TRIANGLE -> {
                             if (containerRowIndex % 2 == 0) {
-                                -dp(5)   // 1. i 3. red ulijevo
+                                -dp(9)   // 1. i 3. red ulijevo
                             } else {
-                                dp(10)   // 2. red udesno
+                                dp(20)    // 2. i 4. red udesno
+                            }
+                        }
+
+                        // 3-row TRIANGLE
+                        savedRowCount == 3 &&
+                                layoutShape == KeyShape.TRIANGLE -> {
+                            when (containerRowIndex) {
+                                0, 2 -> -dp(4)   // 1. i 3. red ulijevo
+                                1 -> dp(18)       // 2. red udesno
+                                else -> 0
+                            }
+                        }
+
+                        // 4-row CUBE / CIRCLE
+                        savedRowCount == 4 &&
+                                (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
+                            if (containerRowIndex % 2 == 0) {
+                                -dp(5)
+                            } else {
+                                dp(10)
+                            }
+                        }
+
+                        // 3-row CUBE / CIRCLE
+                        savedRowCount == 3 &&
+                                (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
+                            if (containerRowIndex % 2 == 0) {
+                                -dp(5)
+                            } else {
+                                dp(10)
                             }
                         }
 
@@ -2712,14 +2818,19 @@ class MyKeyboardService : InputMethodService() {
                 rowKeys.forEachIndexed { i, key ->
                     val kv = createKey(key)
 
-                    if (layoutShape == KeyShape.TRIANGLE) {
+                    if (kv.shape == KeyShape.TRIANGLE) {
                         kv.triangleFlipped = (i % 2 == 1)
                     }
 
                     spaceIndex = applySpecialKeyColors(kv, key, spaceIndex)
 
-                    val lp = LinearLayout.LayoutParams(sizing.keyW, sizing.keyH).apply {
-                        if (i > 0) leftMargin = sizing.gapPx
+                    val lp = LinearLayout.LayoutParams(
+                        sizing.keyW,
+                        sizing.keyH
+                    ).apply {
+                        if (i > 0) {
+                            leftMargin = sizing.gapPx - sizing.triOverlapX
+                        }
                     }
 
                     row.addView(kv, lp)
@@ -2736,6 +2847,20 @@ class MyKeyboardService : InputMethodService() {
                         KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
                         KeyShape.HEX_HALF_RIGHT -> -sizing.overlapPx
+
+                        KeyShape.TRIANGLE -> {
+                            if (isLandscape()) {
+                                0
+                            } else {
+                                when (savedRowCount) {
+                                    3 -> dp(1)    // 3-row ostaje kakav je sada
+                                    4 -> -dp(12)   // 4-row stisni redove
+                                    5 -> -dp(12)   // 5-row još malo jače stisni
+                                    else -> dp(1)
+                                }
+                            }
+                        }
+
                         else -> 0
                     }
                 }
@@ -3648,7 +3773,7 @@ class MyKeyboardService : InputMethodService() {
 
                 landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
 
-                if (currentShape == KeyShape.TRIANGLE) {
+                if (kv.shape == KeyShape.TRIANGLE) {
                     kv.triangleFlipped = ((startIndex + i) % 2 == 1)
                 }
 
@@ -3717,7 +3842,7 @@ class MyKeyboardService : InputMethodService() {
 
                 landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
 
-                if (currentShape == KeyShape.TRIANGLE) {
+                if (kv.shape == KeyShape.TRIANGLE) {
                     kv.triangleFlipped = ((startIndex + i) % 2 == 1)
                 }
 
@@ -4045,11 +4170,17 @@ class MyKeyboardService : InputMethodService() {
 
 // Samo 3-row portrait CUBE smije koristiti punu zadanu visinu.
 // Inače KeyView zadržava kvadrat i ignorira dodatni keyH.
-        forceSquare = !(
-                !isLandscape() &&
-                        rowCount == 3 &&
-                        activeShape == KeyShape.CUBE
-                )
+        val allowNonSquareShape =
+            !isLandscape() &&
+                    (
+                            activeShape == KeyShape.TRIANGLE ||
+                                    (
+                                            rowCount == 3 &&
+                                                    activeShape == KeyShape.CUBE
+                                            )
+                            )
+
+        forceSquare = !allowNonSquareShape
 
         isSpecial = (label == "↵")
         gravity = Gravity.CENTER
