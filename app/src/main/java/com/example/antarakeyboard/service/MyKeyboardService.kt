@@ -2754,7 +2754,7 @@ class MyKeyboardService : InputMethodService() {
                                 layoutShape == KeyShape.TRIANGLE -> {
                             when (containerRowIndex) {
                                 0, 2, 4 -> -dp(14) // 1., 3. i 5. red lijevo
-                                1, 3 -> dp(8)     // 2. i 4. red desno
+                                1, 3 -> dp(7)     // 2. i 4. red desno
                                 else -> 0
                             }
                         }
@@ -2819,9 +2819,8 @@ class MyKeyboardService : InputMethodService() {
                     val kv = createKey(key)
 
                     if (kv.shape == KeyShape.TRIANGLE) {
-                        kv.triangleFlipped = (i % 2 == 1)
+                        kv.triangleFlipped = ((containerRowIndex + i) % 2 == 1)
                     }
-
                     spaceIndex = applySpecialKeyColors(kv, key, spaceIndex)
 
                     val lp = LinearLayout.LayoutParams(
