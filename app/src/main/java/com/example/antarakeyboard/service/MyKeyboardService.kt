@@ -136,6 +136,7 @@ class MyKeyboardService : InputMethodService() {
 
     private val DUAL_SPACE_HOLD_MS = 4000L
     /* ───────── LIFECYCLE ───────── */
+    //claude sync
 
     override fun onCreateInputView(): View {
         KeyboardPrefs.ensureDefaultLongPress(this)
