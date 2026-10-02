@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.data.GlobalLongPressStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.model.EdgeActionType
@@ -334,7 +335,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val cb = CheckBox(this).apply {
@@ -345,7 +346,7 @@ class MainActivity : AppCompatActivity() {
 
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, dp(8), 0, 0)
+            setPadding(0, 8.dp(this), 0, 0)
         }
 
         lateinit var b1: Button
@@ -391,13 +392,13 @@ class MainActivity : AppCompatActivity() {
         row.addView(
             b1,
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginEnd = dp(6)
+                marginEnd = 6.dp(this@MainActivity)
             }
         )
         row.addView(
             b2,
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginStart = dp(6)
+                marginStart = 6.dp(this@MainActivity)
             }
         )
 
@@ -429,7 +430,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val bgBtn = Button(this).apply {
@@ -465,7 +466,7 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                topMargin = dp(8)
+                topMargin = 8.dp(this@MainActivity)
             }
         )
 
@@ -487,7 +488,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val cb = CheckBox(this).apply {
@@ -531,7 +532,7 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                topMargin = dp(8)
+                topMargin = 8.dp(this@MainActivity)
             }
         )
 
@@ -562,7 +563,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val cb = CheckBox(this).apply {
@@ -639,8 +640,8 @@ class MainActivity : AppCompatActivity() {
             val btn = Button(this).apply {
                 text = keyLabel
                 isAllCaps = false
-                minHeight = dp(48)
-                minWidth = dp(48)
+                minHeight = 48.dp(this)
+                minWidth = 48.dp(this)
 
                 // Postavi trenutne boje
                 val keyColors = KeyboardPrefs.getKeyIndividualColors(this@MainActivity, keyLabel)
@@ -658,7 +659,7 @@ class MainActivity : AppCompatActivity() {
                 width = 0
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(4), dp(4), dp(4), dp(4))
+                setMargins(4.dp(this@MainActivity), 4.dp(this@MainActivity), 4.dp(this@MainActivity), 4.dp(this@MainActivity))
             }
             grid.addView(btn, lp)
         }
@@ -695,7 +696,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val preview = Button(this).apply {
@@ -705,7 +706,7 @@ class MainActivity : AppCompatActivity() {
             setTextColor(textColor)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(64)
+                64.dp(this)
             )
         }
         root.addView(preview)
@@ -758,7 +759,7 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(4))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 4.dp(this))
         }
 
         val cb = CheckBox(this).apply {
@@ -951,7 +952,7 @@ class MainActivity : AppCompatActivity() {
         val title = TextView(this).apply {
             text = "Bind long press - alphabet"
             textSize = 18f
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(this))
         }
 
         val btnOpen = Button(this).apply {
@@ -986,7 +987,7 @@ class MainActivity : AppCompatActivity() {
         val title = TextView(this).apply {
             text = "Bind long press - numeric"
             textSize = 18f
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(this))
         }
 
         val btnOpen = Button(this).apply {
@@ -1098,7 +1099,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(8))
+            setPadding(16.dp(this), 12.dp(this), 16.dp(this), 8.dp(this))
         }
 
         val actions = listOf(
@@ -1129,7 +1130,7 @@ class MainActivity : AppCompatActivity() {
 
         root.addView(TextView(this).apply {
             text = "Special chars"
-            setPadding(0, dp(10), 0, dp(6))
+            setPadding(0, 10.dp(this), 0, 6.dp(this))
         })
 
         val scroll = ScrollView(this)
@@ -1141,8 +1142,8 @@ class MainActivity : AppCompatActivity() {
             val b = Button(this).apply {
                 text = ch
                 isAllCaps = false
-                minHeight = dp(44)
-                minWidth = dp(44)
+                minHeight = 44.dp(this)
+                minWidth = 44.dp(this)
                 setPadding(0, 0, 0, 0)
             }
             b.setOnClickListener {
@@ -1152,7 +1153,7 @@ class MainActivity : AppCompatActivity() {
             val lp = GridLayout.LayoutParams().apply {
                 width = 0
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(4), dp(4), dp(4), dp(4))
+                setMargins(4.dp(this@MainActivity), 4.dp(this@MainActivity), 4.dp(this@MainActivity), 4.dp(this@MainActivity))
             }
             grid.addView(b, lp)
         }
@@ -1162,7 +1163,7 @@ class MainActivity : AppCompatActivity() {
             scroll,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(320)
+                320.dp(this)
             )
         )
 
@@ -1185,13 +1186,13 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(12))
+            setPadding(16.dp(this), 16.dp(this), 16.dp(this), 12.dp(this))
         }
 
         val title = TextView(this).apply {
             text = "Horizontal center keys ($rowCount rows)"
             textSize = 18f
-            setPadding(0, 0, 0, dp(12))
+            setPadding(0, 0, 0, 12.dp(this))
         }
 
         val editorContainer = LinearLayout(this).apply {
@@ -1216,7 +1217,7 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                topMargin = dp(12)
+                topMargin = 12.dp(this@MainActivity)
             }
         )
 
@@ -1395,23 +1396,23 @@ class MainActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
+            setPadding(16.dp(this), 16.dp(this), 16.dp(this), 16.dp(this))
         }
 
         // Preview bar (definiraj PRIJE updatePreview da bude dostupan)
         val previewBar = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(48)
+                48.dp(this@MainActivity)
             ).apply {
-                topMargin = dp(12)
+                topMargin = 12.dp(this@MainActivity)
             }
         }
 
         // Input fields
         val hexInput = android.widget.EditText(this).apply {
             textSize = 14f
-            setPadding(dp(8), dp(8), dp(8), dp(8))
+            setPadding(8.dp(this), 8.dp(this), 8.dp(this), 8.dp(this))
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
 
@@ -1450,7 +1451,7 @@ class MainActivity : AppCompatActivity() {
         val colorWheel = ColorWheelView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(240)
+                240.dp(this)
             )
             setHueSaturation(currentHue, currentSat)
             setOnColorChangedListener { h, s ->
@@ -1464,7 +1465,7 @@ class MainActivity : AppCompatActivity() {
         val brightnessLabel = TextView(this).apply {
             text = "Brightness"
             textSize = 14f
-            setPadding(0, dp(12), 0, dp(4))
+            setPadding(0, 12.dp(this), 0, 4.dp(this))
         }
 
         val brightnessSeek = SeekBar(this).apply {
@@ -1510,7 +1511,7 @@ class MainActivity : AppCompatActivity() {
         // Input fields
         val inputsRow = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, dp(12), 0, 0)
+            setPadding(0, 12.dp(this), 0, 0)
         }
 
         // Hex row
@@ -1536,7 +1537,7 @@ class MainActivity : AppCompatActivity() {
         val hslRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = android.view.Gravity.CENTER_VERTICAL
-            setPadding(0, dp(4), 0, 0)
+            setPadding(0, 4.dp(this), 0, 0)
         }
         hslRow.addView(hslInput)
         hslRow.addView(Button(this).apply {
@@ -1555,7 +1556,7 @@ class MainActivity : AppCompatActivity() {
         val rgbRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = android.view.Gravity.CENTER_VERTICAL
-            setPadding(0, dp(4), 0, 0)
+            setPadding(0, 4.dp(this), 0, 0)
         }
         rgbRow.addView(rgbInput)
         rgbRow.addView(Button(this).apply {
@@ -1635,7 +1636,7 @@ class MainActivity : AppCompatActivity() {
         val title = TextView(this).apply {
             text = "Set side buttons"
             textSize = 18f
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(this))
         }
 
         val hint = TextView(this).apply {
@@ -1646,7 +1647,7 @@ class MainActivity : AppCompatActivity() {
             }
             textSize = 13f
             alpha = 0.75f
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(this))
         }
 
         val grid = GridLayout(this).apply {
@@ -1726,7 +1727,7 @@ class MainActivity : AppCompatActivity() {
 
                     isAllCaps = false
                     tag = index
-                    setPadding(dp(8), dp(14), dp(8), dp(14))
+                    setPadding(8.dp(this), 14.dp(this), 8.dp(this), 14.dp(this))
 
                     setOnClickListener {
                         showEdgeTypePicker(slot) { newSlot ->
@@ -1802,7 +1803,7 @@ class MainActivity : AppCompatActivity() {
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
                     columnSpec = GridLayout.spec(col, 1f)
                     rowSpec = GridLayout.spec(row)
-                    setMargins(dp(6), dp(6), dp(6), dp(6))
+                    setMargins(6.dp(this@MainActivity), 6.dp(this@MainActivity), 6.dp(this@MainActivity), 6.dp(this@MainActivity))
                 }
 
                 grid.addView(btn, lp)
@@ -1853,8 +1854,6 @@ class MainActivity : AppCompatActivity() {
             KeyShape.CUBE -> cube.isChecked = true
         }
     }
-
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     private fun themeColor(attr: Int, fallback: Int): Int {
         val tv = android.util.TypedValue()

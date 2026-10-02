@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.example.antarakeyboard.R
+import com.example.antarakeyboard.extensions.dpF
 import com.example.antarakeyboard.model.KeyShape
 import kotlin.math.min
 
@@ -19,12 +20,14 @@ class KeyView @JvmOverloads constructor(
 
     var shape: KeyShape = KeyShape.HEX
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var isSpecial: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             applyTextColor()
             invalidate()
@@ -32,42 +35,49 @@ class KeyView @JvmOverloads constructor(
 
     var hideStroke: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var hideFill: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var manualLabelSizeSp: Float? = null
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var customBgColor: Int? = null
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var triangleFlipped: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var forceSquare: Boolean = true
         set(value) {
+            if (field == value) return
             field = value
             requestLayout()
         }
 
     var hideCompletely: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
@@ -76,18 +86,21 @@ class KeyView @JvmOverloads constructor(
 
     var useSplitLabels: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var mainLabel: String = ""
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
 
     var swipeUpLabel: String? = null
         set(value) {
+            if (field == value) return
             field = value
             invalidate()
         }
@@ -119,7 +132,13 @@ class KeyView @JvmOverloads constructor(
         isFakeBoldText = false
     }
 
+    // Cached paint for overlay to avoid allocation in onDraw
+    private val overlayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
 
+    // Cached path for overlay to avoid allocation in onDraw
+    private val overlayPath = Path()
 
     private val path = Path()
 
@@ -134,6 +153,48 @@ class KeyView @JvmOverloads constructor(
         maxLines = 1
         ellipsize = null
         setTextColor(themeColor(R.attr.keyText, 0xFFFFFFFF.toInt()))
+
+        // Accessibility
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        isFocusable = true
+    }
+
+    override fun setText(text: CharSequence?, type: BufferType?) {
+        super.setText(text, type)
+        contentDescription = getAccessibleDescription(text?.toString())
+    }
+
+    private fun getAccessibleDescription(label: String?): String {
+        if (label.isNullOrEmpty()) return ""
+        return when (label) {
+            "⇧" -> "Shift"
+            "⌫" -> "Backspace"
+            "↵" -> "Enter"
+            "123" -> "Numbers"
+            "ABC", "abc" -> "Letters"
+            " " -> "Space"
+            "." -> "Period"
+            "," -> "Comma"
+            "?" -> "Question mark"
+            "!" -> "Exclamation mark"
+            "@" -> "At sign"
+            "#" -> "Hash"
+            "$" -> "Dollar"
+            "%" -> "Percent"
+            "&" -> "Ampersand"
+            "*" -> "Asterisk"
+            "(" -> "Open parenthesis"
+            ")" -> "Close parenthesis"
+            "-" -> "Minus"
+            "+" -> "Plus"
+            "=" -> "Equals"
+            "/" -> "Slash"
+            ":" -> "Colon"
+            ";" -> "Semicolon"
+            "'" -> "Apostrophe"
+            "\"" -> "Quote"
+            else -> if (label.length == 1) "Key $label" else label
+        }
     }
 
     override fun setPressed(pressed: Boolean) {
@@ -260,24 +321,16 @@ class KeyView @JvmOverloads constructor(
     ) {
         val h = b - t
 
-        val overlayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = if (pressed) {
-                lightenColor(baseColor, 0.22f)
-            } else {
-                lightenColor(baseColor, 0.12f)
-            }
+        // Reuse cached paint - just update color
+        overlayPaint.color = if (pressed) {
+            lightenColor(baseColor, 0.22f)
+        } else {
+            lightenColor(baseColor, 0.12f)
         }
 
-        val overlayPath = Path().apply {
-            addRect(
-                l,
-                t,
-                r,
-                t + h * 0.48f,
-                Path.Direction.CW
-            )
-        }
+        // Reuse cached path - reset and rebuild
+        overlayPath.reset()
+        overlayPath.addRect(l, t, r, t + h * 0.48f, Path.Direction.CW)
 
         val save = canvas.save()
         canvas.clipPath(shapePath)
@@ -519,5 +572,5 @@ class KeyView @JvmOverloads constructor(
         return (color and 0x00FFFFFF) or (a shl 24)
     }
 
-    private fun dpF(v: Float): Float = v * resources.displayMetrics.density
+    private fun dpF(v: Float): Float = v.dpF(resources)
 }

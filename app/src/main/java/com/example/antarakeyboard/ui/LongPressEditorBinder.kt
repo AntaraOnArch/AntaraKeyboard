@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
@@ -28,7 +29,7 @@ class LongPressEditorBinder(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(14), dp(14), dp(10))
+            setPadding(14.dp(context), 14.dp(context), 14.dp(context), 10.dp(context))
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -39,14 +40,14 @@ class LongPressEditorBinder(
             text = titleText
             textSize = 18f
             setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(context))
         })
 
         val hint = TextView(context).apply {
             text = "Tap na tipku za uređivanje long press znakova"
             textSize = 13f
             alpha = 0.75f
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(context))
         }
         root.addView(hint)
 
@@ -89,16 +90,16 @@ class LongPressEditorBinder(
             val row = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(4), 0, dp(4))
+                setPadding(0, 4.dp(context), 0, 4.dp(context))
             }
 
             keys.forEach { key ->
                 val kv = createKeyView(key, userShape)
                 row.addView(
                     kv,
-                    LinearLayout.LayoutParams(0, dp(56), 1f).apply {
-                        marginStart = dp(1)
-                        marginEnd = dp(1)
+                    LinearLayout.LayoutParams(0, 56.dp(context), 1f).apply {
+                        marginStart = 1.dp(context)
+                        marginEnd = 1.dp(context)
                     }
                 )
             }
@@ -155,9 +156,6 @@ class LongPressEditorBinder(
             }
             .show()
     }
-
-    private fun dp(v: Int): Int =
-        (v * context.resources.displayMetrics.density).toInt()
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {
         return KeyboardConfig(

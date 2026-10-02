@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 
@@ -54,7 +55,7 @@ class LongPressManagerDialog(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(12))
+            setPadding(16.dp(context), 16.dp(context), 16.dp(context), 12.dp(context))
         }
 
         titleTv = TextView(context).apply {
@@ -74,16 +75,16 @@ class LongPressManagerDialog(
             }
         }
         root.addView(keysRv, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(160)
-        ).apply { topMargin = dp(10) })
+            ViewGroup.LayoutParams.MATCH_PARENT, 160.dp(context)
+        ).apply { topMargin = 10.dp(context) })
 
         bindsRv = RecyclerView(context).apply {
             layoutManager = GridLayoutManager(context, 8)
             adapter = bindAdapter
         }
         root.addView(bindsRv, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(160)
-        ).apply { topMargin = dp(10) })
+            ViewGroup.LayoutParams.MATCH_PARENT, 160.dp(context)
+        ).apply { topMargin = 10.dp(context) })
 
         val actionsRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -146,7 +147,7 @@ class LongPressManagerDialog(
 
         root.addView(actionsRow, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(10) })
+        ).apply { topMargin = 10.dp(context) })
 
         setContentView(root)
 
@@ -165,8 +166,6 @@ class LongPressManagerDialog(
         val binds = selectedKey?.longPressBindings?.toList() ?: emptyList()
         bindAdapter.submit(binds, removeMode)
     }
-
-    private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
     // ---------- adapters ----------
 

@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.model.KeyShape
@@ -55,7 +56,7 @@ class LayoutEditorBinder(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(14), dp(14), dp(10))
+            setPadding(14.dp(context), 14.dp(context), 14.dp(context), 10.dp(context))
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -66,7 +67,7 @@ class LayoutEditorBinder(
             text = "Set Layout"
             textSize = 18f
             setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(context))
         })
 
         val scroll = ScrollView(context).apply {
@@ -144,18 +145,18 @@ class LayoutEditorBinder(
             val visibleKeys = keys
             if (visibleKeys.isEmpty()) return
 
-            val keyWidth = dp(34)
-            val keyHeight = dp(44)
+            val keyWidth = 34.dp(context)
+            val keyHeight = 44.dp(context)
 
-            val keyGap = dp(1)
-            val intraPairOverlap = -dp(8)
-            val interPairGap = dp(2)
+            val keyGap = 1.dp(context)
+            val intraPairOverlap = -8.dp(context)
+            val interPairGap = 2.dp(context)
 
             val rowW = (keyWidth + keyGap * 2) * 6
 
             val block = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(0, dp(1), dp(2), dp(1))
+                setPadding(0, 1.dp(context), 2.dp(context), 1.dp(context))
                 clipChildren = false
                 clipToPadding = false
             }
@@ -237,19 +238,19 @@ class LayoutEditorBinder(
                 ?: visibleKeys.size
 
             val dialogW = (context.resources.displayMetrics.widthPixels * 0.92f).toInt()
-            val availableW = dialogW - dp(28) - dp(8)
+            val availableW = dialogW - 28.dp(context) - 8.dp(context)
 
-            val gap = dp(1)
+            val gap = 1.dp(context)
 
             val keySize = (
                     (availableW - (maxKeysInAnyRow * gap * 2)) /
                             maxKeysInAnyRow.toFloat()
-                    ).toInt().coerceIn(dp(28), dp(32))
+                    ).toInt().coerceIn(28.dp(context), 32.dp(context))
 
             val row = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(3), 0, dp(3))
+                setPadding(0, 3.dp(context), 0, 3.dp(context))
                 clipChildren = false
                 clipToPadding = false
             }
@@ -284,7 +285,7 @@ class LayoutEditorBinder(
             val row = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(4), 0, dp(4))
+                setPadding(0, 4.dp(context), 0, 4.dp(context))
             }
 
             visibleKeys.forEachIndexed { keyIndex, key ->
@@ -296,9 +297,9 @@ class LayoutEditorBinder(
 
                 row.addView(
                     keyItem,
-                    LinearLayout.LayoutParams(0, dp(56), 1f).apply {
-                        marginStart = dp(1)
-                        marginEnd = dp(1)
+                    LinearLayout.LayoutParams(0, 56.dp(context), 1f).apply {
+                        marginStart = 1.dp(context)
+                        marginEnd = 1.dp(context)
                     }
                 )
             }
@@ -326,7 +327,7 @@ class LayoutEditorBinder(
         val wrapper = FrameLayout(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(56)
+                56.dp(context)
             )
         }
 
@@ -382,7 +383,7 @@ class LayoutEditorBinder(
                 gravity = Gravity.CENTER
                 setTextColor(0xFFFFFFFF.toInt())
                 setBackgroundColor(0x66000000)
-                setPadding(dp(4), dp(1), dp(4), dp(1))
+                setPadding(4.dp(context), 1.dp(context), 4.dp(context), 1.dp(context))
                 isClickable = true
                 isFocusable = false
 
@@ -401,8 +402,8 @@ class LayoutEditorBinder(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     Gravity.TOP or Gravity.END
                 ).apply {
-                    topMargin = dp(2)
-                    marginEnd = dp(2)
+                    topMargin = 2.dp(context)
+                    marginEnd = 2.dp(context)
                 }
             )
         }
@@ -601,7 +602,7 @@ class LayoutEditorBinder(
 
             v.animate().cancel()
             v.animate()
-                .translationY(-dp(3).toFloat())
+                .translationY(-3.dp(context).toFloat())
                 .setDuration(120)
                 .withEndAction {
                     if (!bounceViews.contains(v)) return@withEndAction
@@ -652,10 +653,6 @@ class LayoutEditorBinder(
 
     fun hasTwoSelected(): Boolean {
         return selectedA != null && selectedB != null
-    }
-
-    private fun dp(v: Int): Int {
-        return (v * context.resources.displayMetrics.density).toInt()
     }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {
