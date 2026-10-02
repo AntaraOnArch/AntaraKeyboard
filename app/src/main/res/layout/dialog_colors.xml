@@ -57,7 +57,7 @@
         android:id="@+id/btnEmojiPickerButtons"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="Emoji picker buttons"
+        android:text="Emoji picker settings"
         android:textAllCaps="false" />
 
 </LinearLayout>

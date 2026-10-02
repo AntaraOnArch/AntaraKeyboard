@@ -49,6 +49,7 @@ import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import android.graphics.Color
 import android.content.Context
 import com.example.antarakeyboard.R
+import com.example.antarakeyboard.data.EmojiPickerStorage
 
 class MainActivity : AppCompatActivity() {
 
@@ -332,6 +333,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showEmojiPickerButtonsDialog() {
+        val buttonOrder = EmojiPickerStorage.getButtonOrder(this).toMutableList()
+        var tabsPosition = EmojiPickerStorage.getTabsPosition(this)
+        var buttonsSide = EmojiPickerStorage.getButtonsSide(this)
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(
@@ -342,14 +347,189 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+        // --- Category tabs position ---
+        val tabsPosLabel = TextView(this).apply {
+            text = "Category tabs position"
+            textSize = 14f
+            setPadding(0, 0, 0, 4.dp(this))
+        }
+        root.addView(tabsPosLabel)
+
+        val tabsPosRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 0, 0, 16.dp(this))
+        }
+
+        val tabsPositions = EmojiPickerStorage.TabsPosition.entries
+        tabsPositions.forEach { pos ->
+            val btn = Button(this).apply {
+                text = pos.displayName
+                isAllCaps = false
+                alpha = if (pos == tabsPosition) 1f else 0.5f
+                setOnClickListener {
+                    tabsPosition = pos
+                    // Update all button alphas
+                    for (i in 0 until tabsPosRow.childCount) {
+                        tabsPosRow.getChildAt(i).alpha = if (i == tabsPositions.indexOf(pos)) 1f else 0.5f
+                    }
+                }
+            }
+            tabsPosRow.addView(btn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = 4.dp(this@MainActivity)
+            })
+        }
+        root.addView(tabsPosRow)
+
+        // --- Action buttons side ---
+        val buttonsSideLabel = TextView(this).apply {
+            text = "Action buttons side"
+            textSize = 14f
+            setPadding(0, 0, 0, 4.dp(this))
+        }
+        root.addView(buttonsSideLabel)
+
+        val buttonsSideRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 0, 0, 16.dp(this))
+        }
+
+        val buttonsSides = EmojiPickerStorage.ButtonsSide.entries
+        buttonsSides.forEach { side ->
+            val btn = Button(this).apply {
+                text = side.displayName
+                isAllCaps = false
+                alpha = if (side == buttonsSide) 1f else 0.5f
+                setOnClickListener {
+                    buttonsSide = side
+                    // Update all button alphas
+                    for (i in 0 until buttonsSideRow.childCount) {
+                        buttonsSideRow.getChildAt(i).alpha = if (i == buttonsSides.indexOf(side)) 1f else 0.5f
+                    }
+                }
+            }
+            buttonsSideRow.addView(btn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = 4.dp(this@MainActivity)
+            })
+        }
+        root.addView(buttonsSideRow)
+
+        // --- Button order ---
+        val orderLabel = TextView(this).apply {
+            text = "Button order (drag to reorder)"
+            textSize = 14f
+            setPadding(0, 0, 0, 8.dp(this))
+        }
+        root.addView(orderLabel)
+
+        val buttonsContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        fun startDragCompat(v: View, fromIndex: Int) {
+            val data = ClipData.newPlainText("fromIndex", fromIndex.toString())
+            val shadow = View.DragShadowBuilder(v)
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                v.startDragAndDrop(data, shadow, null, 0)
+            } else {
+                @Suppress("DEPRECATION")
+                v.startDrag(data, shadow, null, 0)
+            }
+        }
+
+        fun parseFromIndex(e: DragEvent): Int? {
+            val item = e.clipData?.getItemAt(0)?.text?.toString() ?: return null
+            return item.toIntOrNull()
+        }
+
+        fun rebuildButtons() {
+            buttonsContainer.removeAllViews()
+
+            buttonOrder.forEachIndexed { index, action ->
+                val btn = Button(this).apply {
+                    text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
+                    isAllCaps = false
+                    tag = index
+                    setPadding(16.dp(this), 12.dp(this), 16.dp(this), 12.dp(this))
+
+                    setOnLongClickListener { v ->
+                        startDragCompat(v, index)
+                        true
+                    }
+
+                    setOnDragListener { v, e ->
+                        when (e.action) {
+                            DragEvent.ACTION_DRAG_STARTED -> {
+                                e.clipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true
+                            }
+
+                            DragEvent.ACTION_DRAG_ENTERED -> {
+                                v.alpha = 0.65f
+                                true
+                            }
+
+                            DragEvent.ACTION_DRAG_EXITED -> {
+                                v.alpha = 1f
+                                true
+                            }
+
+                            DragEvent.ACTION_DROP -> {
+                                v.alpha = 1f
+
+                                val from = parseFromIndex(e) ?: return@setOnDragListener true
+                                val to = (v.tag as? Int) ?: return@setOnDragListener true
+                                if (from == to) return@setOnDragListener true
+
+                                // Swap positions
+                                val tmp = buttonOrder[from]
+                                buttonOrder[from] = buttonOrder[to]
+                                buttonOrder[to] = tmp
+
+                                rebuildButtons()
+                                true
+                            }
+
+                            DragEvent.ACTION_DRAG_ENDED -> {
+                                v.alpha = 1f
+                                true
+                            }
+
+                            else -> true
+                        }
+                    }
+                }
+
+                buttonsContainer.addView(
+                    btn,
+                    LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        bottomMargin = 6.dp(this@MainActivity)
+                    }
+                )
+            }
+        }
+
+        rebuildButtons()
+        root.addView(buttonsContainer)
+
+        // Wrap in ScrollView for smaller screens
+        val scrollView = ScrollView(this).apply {
+            addView(root)
+        }
+
         AlertDialog.Builder(this)
-            .setTitle("Emoji picker buttons")
-            .setView(root)
+            .setTitle("Emoji picker settings")
+            .setView(scrollView)
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Save") { _, _ ->
+                EmojiPickerStorage.saveButtonOrder(this, buttonOrder)
+                EmojiPickerStorage.setTabsPosition(this, tabsPosition)
+                EmojiPickerStorage.setButtonsSide(this, buttonsSide)
                 Toast.makeText(
                     this,
-                    "Emoji picker buttons saved",
+                    "Emoji picker settings saved",
                     Toast.LENGTH_SHORT
                 ).show()
             }

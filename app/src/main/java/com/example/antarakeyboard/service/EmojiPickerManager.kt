@@ -17,6 +17,8 @@ import android.widget.TextView
 import com.example.antarakeyboard.EmojiData
 import com.example.antarakeyboard.data.EmojiPickerStorage
 import com.example.antarakeyboard.data.EmojiPickerStorage.EmojiButtonAction
+import com.example.antarakeyboard.data.EmojiPickerStorage.TabsPosition
+import com.example.antarakeyboard.data.EmojiPickerStorage.ButtonsSide
 import com.example.antarakeyboard.extensions.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,42 +99,33 @@ class EmojiPickerManager(
         val overlayLayer = overlayLayerProvider()
         val screenWidth = context.resources.displayMetrics.widthPixels
 
+        // Read layout settings
+        val tabsPosition = EmojiPickerStorage.getTabsPosition(context)
+        val buttonsSide = EmojiPickerStorage.getButtonsSide(context)
+
         // Dimensions
         val popupWidth = (screenWidth * 0.85f).toInt().coerceAtLeast(280.dp(context))
         val popupHeight = (keyboardHeight * 0.88f).toInt()
 
-        val categoryTabWidth = 36.dp(context)
-        val actionButtonWidth = 44.dp(context)
+        val categoryTabSize = 36.dp(context)
+        val actionButtonSize = 44.dp(context)
 
-        // Root layout: horizontal [tabs | grid | buttons]
-        val root = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setBackgroundColor(0xFF1E1E1E.toInt())
-            clipChildren = false
-            clipToPadding = false
+        val isTabsHorizontal = tabsPosition == TabsPosition.TOP || tabsPosition == TabsPosition.BOTTOM
+
+        // Build layout based on settings
+        val root = if (isTabsHorizontal) {
+            buildHorizontalTabsLayout(
+                popupWidth, popupHeight,
+                categoryTabSize, actionButtonSize,
+                tabsPosition, buttonsSide
+            )
+        } else {
+            buildVerticalTabsLayout(
+                popupWidth, popupHeight,
+                categoryTabSize, actionButtonSize,
+                tabsPosition, buttonsSide
+            )
         }
-
-        // 1. Category tabs (left side, vertical)
-        val tabsContainer = createCategoryTabs(categoryTabWidth, popupHeight)
-        root.addView(tabsContainer, LinearLayout.LayoutParams(
-            categoryTabWidth,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ))
-
-        // 2. Emoji grid (center)
-        val gridContainer = createEmojiGridContainer()
-        root.addView(gridContainer, LinearLayout.LayoutParams(
-            0,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            1f
-        ))
-
-        // 3. Action buttons (right side, vertical)
-        val actionsContainer = createActionButtons(actionButtonWidth, popupHeight)
-        root.addView(actionsContainer, LinearLayout.LayoutParams(
-            actionButtonWidth,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ))
 
         // Create popup
         popup = PopupWindow(
@@ -161,12 +154,123 @@ class EmojiPickerManager(
         loadCategory(currentCategory)
     }
 
+    /**
+     * Build layout with tabs on LEFT or RIGHT (vertical tabs)
+     * Structure: [tabs?] [buttons?] [grid] [buttons?] [tabs?]
+     */
+    private fun buildVerticalTabsLayout(
+        popupWidth: Int,
+        popupHeight: Int,
+        tabSize: Int,
+        buttonSize: Int,
+        tabsPosition: TabsPosition,
+        buttonsSide: ButtonsSide
+    ): View {
+        val root = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setBackgroundColor(0xFF1E1E1E.toInt())
+            clipChildren = false
+            clipToPadding = false
+        }
+
+        val tabsContainer = createCategoryTabsVertical(tabSize, popupHeight)
+        val actionsContainer = createActionButtonsVertical(buttonSize, popupHeight)
+        val gridContainer = createEmojiGridContainer()
+
+        // Order depends on settings
+        val leftViews = mutableListOf<Pair<View, Int>>() // View to width
+        val rightViews = mutableListOf<Pair<View, Int>>()
+
+        // Place tabs
+        if (tabsPosition == TabsPosition.LEFT) {
+            leftViews.add(tabsContainer to tabSize)
+        } else {
+            rightViews.add(tabsContainer to tabSize)
+        }
+
+        // Place buttons
+        if (buttonsSide == ButtonsSide.LEFT) {
+            leftViews.add(actionsContainer to buttonSize)
+        } else {
+            rightViews.add(actionsContainer to buttonSize)
+        }
+
+        // Add left views
+        leftViews.forEach { (view, width) ->
+            root.addView(view, LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT))
+        }
+
+        // Add grid (center, flexible)
+        root.addView(gridContainer, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+
+        // Add right views
+        rightViews.forEach { (view, width) ->
+            root.addView(view, LinearLayout.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT))
+        }
+
+        return root
+    }
+
+    /**
+     * Build layout with tabs on TOP or BOTTOM (horizontal tabs)
+     * Structure: Vertical [tabs?] [content row] [tabs?]
+     * Content row: [buttons?] [grid] [buttons?]
+     */
+    private fun buildHorizontalTabsLayout(
+        popupWidth: Int,
+        popupHeight: Int,
+        tabSize: Int,
+        buttonSize: Int,
+        tabsPosition: TabsPosition,
+        buttonsSide: ButtonsSide
+    ): View {
+        val root = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(0xFF1E1E1E.toInt())
+            clipChildren = false
+            clipToPadding = false
+        }
+
+        val tabsContainer = createCategoryTabsHorizontal(tabSize)
+        val actionsContainer = createActionButtonsVertical(buttonSize, popupHeight - tabSize)
+        val gridContainer = createEmojiGridContainer()
+
+        // Content row (horizontal: buttons + grid + buttons)
+        val contentRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+
+        if (buttonsSide == ButtonsSide.LEFT) {
+            contentRow.addView(actionsContainer, LinearLayout.LayoutParams(buttonSize, ViewGroup.LayoutParams.MATCH_PARENT))
+        }
+
+        contentRow.addView(gridContainer, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+
+        if (buttonsSide == ButtonsSide.RIGHT) {
+            contentRow.addView(actionsContainer, LinearLayout.LayoutParams(buttonSize, ViewGroup.LayoutParams.MATCH_PARENT))
+        }
+
+        // Add to root based on tabs position
+        if (tabsPosition == TabsPosition.TOP) {
+            root.addView(tabsContainer, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, tabSize))
+            root.addView(contentRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        } else {
+            root.addView(contentRow, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+            root.addView(tabsContainer, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, tabSize))
+        }
+
+        return root
+    }
+
     fun hide() {
         popup?.dismiss()
         popup = null
     }
 
-    private fun createCategoryTabs(width: Int, height: Int): View {
+    /**
+     * Create vertical category tabs (for LEFT/RIGHT position)
+     */
+    private fun createCategoryTabsVertical(width: Int, height: Int): View {
         val scroll = ScrollView(context).apply {
             isVerticalScrollBarEnabled = false
             setBackgroundColor(0xFF2A2A2A.toInt())
@@ -197,6 +301,48 @@ class EmojiPickerManager(
             container.addView(tab, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+        }
+
+        categoryTabs = tabsMap
+        scroll.addView(container)
+        return scroll
+    }
+
+    /**
+     * Create horizontal category tabs (for TOP/BOTTOM position)
+     */
+    private fun createCategoryTabsHorizontal(height: Int): View {
+        val scroll = HorizontalScrollView(context).apply {
+            isHorizontalScrollBarEnabled = false
+            setBackgroundColor(0xFF2A2A2A.toInt())
+        }
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(8.dp(context), 2.dp(context), 8.dp(context), 2.dp(context))
+        }
+
+        val tabsMap = mutableMapOf<EmojiCategory, View>()
+
+        EmojiCategory.entries.forEach { category ->
+            val tab = TextView(context).apply {
+                text = category.icon
+                textSize = 18f
+                gravity = Gravity.CENTER
+                setPadding(10.dp(context), 4.dp(context), 10.dp(context), 4.dp(context))
+                alpha = if (category == currentCategory) 1f else 0.5f
+
+                setOnClickListener {
+                    selectCategory(category)
+                }
+            }
+
+            tabsMap[category] = tab
+            container.addView(tab, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             ))
         }
 
@@ -254,7 +400,10 @@ class EmojiPickerManager(
         return container
     }
 
-    private fun createActionButtons(width: Int, height: Int): View {
+    /**
+     * Create vertical action buttons (stacked top to bottom)
+     */
+    private fun createActionButtonsVertical(width: Int, height: Int): View {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL

@@ -8,12 +8,16 @@ import com.google.gson.reflect.TypeToken
  * Storage for emoji picker preferences:
  * - Recent/frequently used emojis
  * - Order of action buttons (Close, Backspace, Space)
+ * - Category tabs position (top/bottom/left/right)
+ * - Action buttons side (left/right)
  */
 object EmojiPickerStorage {
 
     private const val PREFS_NAME = "emoji_picker_prefs"
     private const val KEY_RECENT_EMOJIS = "recent_emojis"
     private const val KEY_BUTTON_ORDER = "button_order"
+    private const val KEY_TABS_POSITION = "tabs_position"
+    private const val KEY_BUTTONS_SIDE = "buttons_side"
 
     private const val MAX_RECENT_EMOJIS = 30
 
@@ -21,6 +25,18 @@ object EmojiPickerStorage {
         CLOSE,
         BACKSPACE,
         SPACE
+    }
+
+    enum class TabsPosition(val displayName: String) {
+        LEFT("Left"),
+        RIGHT("Right"),
+        TOP("Top"),
+        BOTTOM("Bottom")
+    }
+
+    enum class ButtonsSide(val displayName: String) {
+        LEFT("Left"),
+        RIGHT("Right")
     }
 
     private val gson = Gson()
@@ -126,5 +142,41 @@ object EmojiPickerStorage {
             EmojiButtonAction.BACKSPACE -> "Backspace"
             EmojiButtonAction.SPACE -> "Space"
         }
+    }
+
+    /* ───────── TABS POSITION ───────── */
+
+    fun getTabsPosition(context: Context): TabsPosition {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val name = prefs.getString(KEY_TABS_POSITION, null) ?: return TabsPosition.LEFT
+
+        return try {
+            TabsPosition.valueOf(name)
+        } catch (e: Exception) {
+            TabsPosition.LEFT
+        }
+    }
+
+    fun setTabsPosition(context: Context, position: TabsPosition) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_TABS_POSITION, position.name).apply()
+    }
+
+    /* ───────── BUTTONS SIDE ───────── */
+
+    fun getButtonsSide(context: Context): ButtonsSide {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val name = prefs.getString(KEY_BUTTONS_SIDE, null) ?: return ButtonsSide.RIGHT
+
+        return try {
+            ButtonsSide.valueOf(name)
+        } catch (e: Exception) {
+            ButtonsSide.RIGHT
+        }
+    }
+
+    fun setButtonsSide(context: Context, side: ButtonsSide) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_BUTTONS_SIDE, side.name).apply()
     }
 }
