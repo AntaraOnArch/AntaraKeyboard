@@ -2,12 +2,14 @@ package com.example.antarakeyboard.ui
 
 import android.content.Context
 import android.graphics.Typeface
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import com.example.antarakeyboard.R
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.extensions.dp
@@ -22,6 +24,14 @@ class LongPressEditorBinder(
     private val lockedLabels: Set<String> = setOf("⇧", "⌫", "↵", "123", "ABC", "abc", " ")
 ) {
     private val cfg: KeyboardConfig = deepCopy(initial)
+
+    // Create themed context for KeyView to use proper colors
+    private val themedContext: Context by lazy {
+        val isDark = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+            .getBoolean("dark_mode", true)
+        val themeRes = if (isDark) R.style.Theme_AntaraKeyboard_Dark else R.style.Theme_AntaraKeyboard_Light
+        ContextThemeWrapper(context, themeRes)
+    }
     private var keyboardContainer: LinearLayout? = null
 
     fun bindInto(container: ViewGroup) {
@@ -113,7 +123,7 @@ class LongPressEditorBinder(
     private fun createKeyView(key: KeyConfig, userShape: KeyShape): KeyView {
         val locked = key.label in lockedLabels
 
-        return KeyView(context).apply {
+        return KeyView(themedContext).apply {
             text = key.label
             gravity = Gravity.CENTER
             textSize = 16f

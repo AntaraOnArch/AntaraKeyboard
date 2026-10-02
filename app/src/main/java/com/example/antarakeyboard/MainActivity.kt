@@ -314,18 +314,46 @@ class MainActivity : AppCompatActivity() {
         val btnSideButtonsColor = dialog.findViewById<Button>(R.id.btnSideButtonsColor)
         val btnKeysColor = dialog.findViewById<Button>(R.id.btnKeysColor)
         val btnBackgroundColor = dialog.findViewById<Button>(R.id.btnBackgroundColor)
+        val btnEmojiPickerButtons = dialog.findViewById<Button>(R.id.btnEmojiPickerButtons)
 
         btnSpaceColor.setOnClickListener { showSpaceColorDialog() }
         btnEnterColor.setOnClickListener { showEnterColorDialog() }
         btnSideButtonsColor.setOnClickListener { showSideButtonsColorDialog() }
         btnKeysColor.setOnClickListener { showKeysColorDialog() }
         btnBackgroundColor.setOnClickListener { showBackgroundColorDialog() }
+        btnEmojiPickerButtons.setOnClickListener {
+            showEmojiPickerButtonsDialog() }
 
         dialog.show()
         dialog.window?.setLayout(
             (resources.displayMetrics.widthPixels * 0.82f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+    }
+
+    private fun showEmojiPickerButtonsDialog() {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                16.dp(this@MainActivity),
+                12.dp(this@MainActivity),
+                16.dp(this@MainActivity),
+                4.dp(this@MainActivity)
+            )
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Emoji picker buttons")
+            .setView(root)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Save") { _, _ ->
+                Toast.makeText(
+                    this,
+                    "Emoji picker buttons saved",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .show()
     }
 
     private fun showSpaceColorDialog() {
