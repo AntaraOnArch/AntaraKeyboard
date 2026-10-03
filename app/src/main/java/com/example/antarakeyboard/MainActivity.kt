@@ -14,11 +14,11 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.FrameLayout
 import android.widget.GridLayout
-import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
-import android.widget.RadioButton
-import android.widget.RadioGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
@@ -37,15 +37,8 @@ import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.ui.ColorWheelView
 import com.example.antarakeyboard.ui.LayoutEditorBinder
 import com.example.antarakeyboard.ui.LongPressEditorBinder
-import com.example.antarakeyboard.ui.LongPressKeyPickerDialog
 import com.example.antarakeyboard.ui.ShapePreviewView
-import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
-import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
-import com.example.antarakeyboard.ui.defaultKeyboardLayout
-import com.example.antarakeyboard.ui.defaultNumericLayout
-import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
-import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import android.graphics.Color
 import android.content.Context
 import com.example.antarakeyboard.R
@@ -54,16 +47,35 @@ import com.example.antarakeyboard.data.EmojiPickerStorage
 class MainActivity : AppCompatActivity() {
 
     private lateinit var preview: ShapePreviewView
-    private lateinit var hex: RadioButton
-    private lateinit var tri: RadioButton
-    private lateinit var circle: RadioButton
-    private lateinit var cube: RadioButton
+    private lateinit var spinnerKeyShape: Spinner
+    private lateinit var spinnerRowCount: Spinner
+    private lateinit var spinnerVibration: Spinner
+    private lateinit var spinnerTheme: Spinner
     private lateinit var bindLPButton: Button
     private lateinit var resetLayoutButton: Button
-    private lateinit var radio3Rows: RadioButton
-    private lateinit var radio4Rows: RadioButton
-    private lateinit var radio5Rows: RadioButton
-    private lateinit var rowCountGroup: RadioGroup
+
+    // Shape options for dropdown
+    private val shapeOptions = listOf(
+        KeyShape.HEX to "Hexagon",
+        KeyShape.TRIANGLE to "Triangle",
+        KeyShape.CIRCLE to "Circle",
+        KeyShape.CUBE to "Cube"
+    )
+
+    // Row count options for dropdown
+    private val rowCountOptions = listOf(3, 4, 5)
+
+    // Vibration options
+    private val vibrationOptions = listOf("On", "Off")
+
+    // Theme options (Custom added dynamically if user has custom colors)
+    private val baseThemeOptions = listOf("Light", "Dark")
+
+    companion object {
+        private const val THEME_LIGHT = 0
+        private const val THEME_DARK = 1
+        private const val THEME_CUSTOM = 2
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,33 +89,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         setContentView(R.layout.activity_main)
-
-        val themeBtn: Button = findViewById(R.id.btnThemeToggle)
-
-        fun applyThemeButtonText(isDarkMode: Boolean) {
-            themeBtn.text = if (isDarkMode) {
-                "Switch to Lightmode"
-            } else {
-                "Switch to Darkmode"
-            }
-        }
-
-        applyThemeButtonText(isDark)
-
-        themeBtn.setOnClickListener {
-            val prefs2 = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-            val current = prefs2.getBoolean("dark_mode", true)
-            val newMode = !current
-
-            prefs2.edit().putBoolean("dark_mode", newMode).apply()
-
-            AppCompatDelegate.setDefaultNightMode(
-                if (newMode) AppCompatDelegate.MODE_NIGHT_YES
-                else AppCompatDelegate.MODE_NIGHT_NO
-            )
-
-            applyThemeButtonText(newMode)
-        }
 
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
@@ -128,59 +113,84 @@ class MainActivity : AppCompatActivity() {
         }
 
         preview = findViewById(R.id.preview)
-
-        hex = findViewById(R.id.hexBtn)
-        tri = findViewById(R.id.triBtn)
-        circle = findViewById(R.id.circleBtn)
-        cube = findViewById(R.id.cubeBtn)
-
         bindLPButton = findViewById(R.id.bindLPButton)
         resetLayoutButton = findViewById(R.id.resetLayoutButton)
 
+        // Setup Key Shape Spinner
+        spinnerKeyShape = findViewById(R.id.spinnerKeyShape)
+        val shapeAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            shapeOptions.map { it.second }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerKeyShape.adapter = shapeAdapter
+
         val savedShape = KeyboardPrefs.getShape(this)
+        val savedShapeIndex = shapeOptions.indexOfFirst { it.first == savedShape }.coerceAtLeast(0)
+        spinnerKeyShape.setSelection(savedShapeIndex)
 
         preview.visibility = View.VISIBLE
         preview.shape = savedShape
         preview.invalidate()
 
-        setCheckedForShape(savedShape)
-
-        hex.setOnCheckedChangeListener { _, checked ->
-            if (checked) applyShape(KeyShape.HEX)
+        spinnerKeyShape.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedShape = shapeOptions[position].first
+                applyShape(selectedShape)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        tri.setOnCheckedChangeListener { _, checked ->
-            if (checked) applyShape(KeyShape.TRIANGLE)
+        // Setup Row Count Spinner
+        spinnerRowCount = findViewById(R.id.spinnerRowCount)
+        val rowCountAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            rowCountOptions.map { "$it rows" }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
-
-        circle.setOnCheckedChangeListener { _, checked ->
-            if (checked) applyShape(KeyShape.CIRCLE)
-        }
-
-        cube.setOnCheckedChangeListener { _, checked ->
-            if (checked) applyShape(KeyShape.CUBE)
-        }
-
-        rowCountGroup = findViewById(R.id.rowCountGroup)
-        radio3Rows = findViewById(R.id.radio3Rows)
-        radio4Rows = findViewById(R.id.radio4Rows)
-        radio5Rows = findViewById(R.id.radio5Rows)
+        spinnerRowCount.adapter = rowCountAdapter
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
-        setCheckedForRowCount(savedRowCount)
+        val savedRowIndex = rowCountOptions.indexOf(savedRowCount).coerceAtLeast(0)
+        spinnerRowCount.setSelection(savedRowIndex)
 
-        rowCountGroup.setOnCheckedChangeListener { _, checkedId ->
-            val rowCount = when (checkedId) {
-                R.id.radio3Rows -> 3
-                R.id.radio4Rows -> 4
-                R.id.radio5Rows -> 5
-                else -> 3
+        spinnerRowCount.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val rowCount = rowCountOptions[position]
+                saveDefaultsForRowCount(rowCount)
             }
-
-            saveDefaultsForRowCount(rowCount)
-
-            Toast.makeText(this, "Broj redova: $rowCount", Toast.LENGTH_SHORT).show()
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        // Setup Vibration Spinner
+        spinnerVibration = findViewById(R.id.spinnerVibration)
+        val vibrationAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            vibrationOptions
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerVibration.adapter = vibrationAdapter
+
+        val vibrationEnabled = KeyboardPrefs.isVibrationEnabled(this)
+        spinnerVibration.setSelection(if (vibrationEnabled) 0 else 1)
+
+        spinnerVibration.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val enabled = position == 0
+                KeyboardPrefs.setVibrationEnabled(this@MainActivity, enabled)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Setup Theme Spinner
+        spinnerTheme = findViewById(R.id.spinnerTheme)
+        setupThemeSpinner()
 
         bindLPButton.setOnClickListener {
             openLongPressEditorDialog()
@@ -189,8 +199,11 @@ class MainActivity : AppCompatActivity() {
         resetLayoutButton.setOnClickListener {
             val currentRowCount = KeyboardPrefs.getRowCount(this)
             val currentShape = KeyboardPrefs.getShape(this)
-            val isDark = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+            val isDarkTheme = getSharedPreferences("theme_prefs", MODE_PRIVATE)
                 .getBoolean("dark_mode", true)
+
+            // NOVO: Spremi trenutne boje kao custom temu prije reseta
+            saveCurrentColorsAsCustomTheme()
 
             // 1. Resetiraj horizontal center layout
             KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
@@ -207,7 +220,7 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.saveNumericLayoutForRowCount(this, currentRowCount, numericWithBinds)
 
             // Resetiraj SVE boje na default teme
-            resetAllColorsToThemeDefault(isDark)
+            resetAllColorsToThemeDefault(isDarkTheme)
 
             // NOVO: Signaliziraj tipkovnici da se recreate
             val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
@@ -218,7 +231,11 @@ class MainActivity : AppCompatActivity() {
 
             // 5. Update UI
             preview.shape = currentShape
-            setCheckedForShape(currentShape)
+            val shapeIndex = shapeOptions.indexOfFirst { it.first == currentShape }.coerceAtLeast(0)
+            spinnerKeyShape.setSelection(shapeIndex)
+
+            // 6. Refresh theme spinner (now has Custom option available)
+            setupThemeSpinner()
 
             Toast.makeText(this, "Layout i boje resetirani na default", Toast.LENGTH_SHORT).show()
         }
@@ -1013,23 +1030,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-
-    private fun activeAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
-        return when (rowCount) {
-            3 -> defaultThreeRowKeyboardLayoutQwertz
-            4 -> defaultFourRowKeyboardLayout
-            else -> defaultKeyboardLayout
-        }
-    }
-
-    private fun activeNumericLayoutForRowCount(rowCount: Int): KeyboardConfig {
-        return when (rowCount) {
-            3 -> defaultThreeRowNumericLayout
-            4 -> defaultFourRowNumericLayout
-            else -> defaultNumericLayout
-        }
-    }
-
     private fun resetSideButtonsForRowCount(rowCount: Int) {
         val slots = when (rowCount) {
             4 -> listOf(
@@ -1087,14 +1087,6 @@ class MainActivity : AppCompatActivity() {
         resetSideButtonsForRowCount(rowCount)
     }
 
-    private fun setCheckedForRowCount(count: Int) {
-        when (count) {
-            3 -> radio3Rows.isChecked = true
-            4 -> radio4Rows.isChecked = true
-            else -> radio5Rows.isChecked = true
-        }
-    }
-
     private fun openLongPressEditorDialog() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -1149,76 +1141,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         showPage(0)
-    }
-
-    private fun setupAlphabetLongPressPage(
-        container: LinearLayout,
-        cfg: KeyboardConfig
-    ) {
-        container.removeAllViews()
-
-        val title = TextView(this).apply {
-            text = "Bind long press - alphabet"
-            textSize = 18f
-            setPadding(0, 0, 0, 10.dp(this))
-        }
-
-        val btnOpen = Button(this).apply {
-            text = "Odaberi tipku"
-            isAllCaps = false
-            setOnClickListener {
-                LongPressKeyPickerDialog(
-                    context = this@MainActivity,
-                    cfg = cfg,
-                    onSave = { updated ->
-                        cfg.rows.clear()
-                        cfg.rows.addAll(updated.rows)
-                        cfg.specialLeft.clear()
-                        cfg.specialLeft.addAll(updated.specialLeft)
-                        cfg.specialRight.clear()
-                        cfg.specialRight.addAll(updated.specialRight)
-                    }
-                ).show()
-            }
-        }
-
-        container.addView(title)
-        container.addView(btnOpen)
-    }
-
-    private fun setupNumericLongPressPage(
-        container: LinearLayout,
-        cfg: KeyboardConfig
-    ) {
-        container.removeAllViews()
-
-        val title = TextView(this).apply {
-            text = "Bind long press - numeric"
-            textSize = 18f
-            setPadding(0, 0, 0, 10.dp(this))
-        }
-
-        val btnOpen = Button(this).apply {
-            text = "Odaberi tipku"
-            isAllCaps = false
-            setOnClickListener {
-                LongPressKeyPickerDialog(
-                    context = this@MainActivity,
-                    cfg = cfg,
-                    onSave = { updated ->
-                        cfg.rows.clear()
-                        cfg.rows.addAll(updated.rows)
-                        cfg.specialLeft.clear()
-                        cfg.specialLeft.addAll(updated.specialLeft)
-                        cfg.specialRight.clear()
-                        cfg.specialRight.addAll(updated.specialRight)
-                    }
-                ).show()
-            }
-        }
-
-        container.addView(title)
-        container.addView(btnOpen)
     }
 
     private fun normalizeSlot(s: EdgeSlot): EdgeSlot {
@@ -2048,19 +1970,6 @@ class MainActivity : AppCompatActivity() {
         preview.invalidate()
 
         KeyboardPrefs.setShape(this, shape)
-        setCheckedForShape(shape)
-    }
-
-    private fun setCheckedForShape(shape: KeyShape) {
-        when (shape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> hex.isChecked = true
-            KeyShape.TRIANGLE -> tri.isChecked = true
-            KeyShape.CIRCLE -> circle.isChecked = true
-            KeyShape.CUBE -> cube.isChecked = true
-        }
     }
 
     private fun themeColor(attr: Int, fallback: Int): Int {
@@ -2074,5 +1983,121 @@ class MainActivity : AppCompatActivity() {
         } else {
             fallback
         }
+    }
+
+    private fun setupThemeSpinner() {
+        val hasCustom = hasCustomColors()
+        val themeOptions = if (hasCustom) {
+            baseThemeOptions + "Custom"
+        } else {
+            baseThemeOptions
+        }
+
+        val themeAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            themeOptions
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerTheme.adapter = themeAdapter
+
+        // Determine current selection
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val isDark = prefs.getBoolean("dark_mode", true)
+        val isCustom = prefs.getBoolean("use_custom_theme", false)
+
+        val currentSelection = when {
+            isCustom && hasCustom -> THEME_CUSTOM
+            isDark -> THEME_DARK
+            else -> THEME_LIGHT
+        }
+        spinnerTheme.setSelection(currentSelection)
+
+        spinnerTheme.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                applyThemeSelection(position)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun applyThemeSelection(position: Int) {
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+
+        when (position) {
+            THEME_LIGHT -> {
+                prefs.edit()
+                    .putBoolean("dark_mode", false)
+                    .putBoolean("use_custom_theme", false)
+                    .apply()
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+            THEME_DARK -> {
+                prefs.edit()
+                    .putBoolean("dark_mode", true)
+                    .putBoolean("use_custom_theme", false)
+                    .apply()
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            }
+            THEME_CUSTOM -> {
+                // Load custom colors from saved custom theme
+                prefs.edit()
+                    .putBoolean("use_custom_theme", true)
+                    .apply()
+                loadCustomThemeColors()
+            }
+        }
+    }
+
+    private fun hasCustomColors(): Boolean {
+        // Check if user has saved custom theme colors
+        val prefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+        return prefs.getBoolean("has_custom_theme", false)
+    }
+
+    private fun saveCurrentColorsAsCustomTheme() {
+        val customPrefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+
+        // Save current keyboard colors as custom theme
+        customPrefs.edit()
+            .putBoolean("has_custom_theme", true)
+            .putInt("custom_key_fill", KeyboardPrefs.getKeysBg(this))
+            .putInt("custom_key_text", KeyboardPrefs.getKeysTextColor(this))
+            .putInt("custom_background", KeyboardPrefs.getBackgroundColor(this))
+            .putInt("custom_space1_bg", KeyboardPrefs.getSpace1Bg(this))
+            .putInt("custom_space2_bg", KeyboardPrefs.getSpace2Bg(this))
+            .putInt("custom_enter_bg", KeyboardPrefs.getEnterBg(this))
+            .putInt("custom_enter_icon", KeyboardPrefs.getEnterIcon(this))
+            .putInt("custom_side_bg", KeyboardPrefs.getSideButtonsBg(this))
+            .putInt("custom_side_text", KeyboardPrefs.getSideButtonsTextColor(this))
+            .apply()
+    }
+
+    private fun loadCustomThemeColors() {
+        val customPrefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+
+        if (!customPrefs.getBoolean("has_custom_theme", false)) return
+
+        // Load and apply custom theme colors
+        val keyFill = customPrefs.getInt("custom_key_fill", getColor(R.color.key_fill_light))
+        val keyText = customPrefs.getInt("custom_key_text", Color.BLACK)
+        val background = customPrefs.getInt("custom_background", getColor(R.color.keyboard_bg_light))
+        val space1Bg = customPrefs.getInt("custom_space1_bg", keyFill)
+        val space2Bg = customPrefs.getInt("custom_space2_bg", keyFill)
+        val enterBg = customPrefs.getInt("custom_enter_bg", getColor(R.color.special_fill))
+        val enterIcon = customPrefs.getInt("custom_enter_icon", Color.WHITE)
+        val sideBg = customPrefs.getInt("custom_side_bg", Color.TRANSPARENT)
+        val sideText = customPrefs.getInt("custom_side_text", Color.BLACK)
+
+        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true)
+        KeyboardPrefs.setBackgroundColor(this, background, false)
+        KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, true)
+        KeyboardPrefs.setEnterColors(this, enterBg, enterIcon)
+        KeyboardPrefs.setSideButtonsColors(this, sideBg, sideText, false)
+
+        // Signal keyboard to recreate
+        val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
+        sendBroadcast(keyboardIntent)
     }
 }

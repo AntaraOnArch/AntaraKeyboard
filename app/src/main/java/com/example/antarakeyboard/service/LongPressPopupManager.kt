@@ -17,6 +17,7 @@ import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.KeyView
+import com.example.antarakeyboard.ui.PopupColors
 
 /**
  * Manages long press popup for character selection.
@@ -65,14 +66,14 @@ class LongPressPopupManager(
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(10.dp(context), 10.dp(context), 10.dp(context), 10.dp(context))
-            setBackgroundColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(PopupColors.PREVIEW_BG)
             layoutParams = ViewGroup.LayoutParams(maxW, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
 
         val preview = TextView(context).apply {
             text = chars.first()
             textSize = 26f
-            setTextColor(0xFF000000.toInt())
+            setTextColor(PopupColors.PREVIEW_TEXT)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(0, 0, 0, 6.dp(context))

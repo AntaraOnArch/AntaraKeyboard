@@ -145,12 +145,15 @@ MyKeyboardService (InputMethodService)
 ├── LongPressPopupManager (character selection popup)
 ├── EdgeOverlayManager (side buttons/edge overlay)
 ├── EdgeKeyManager (edge key configuration)
-└── EmojiPickerManager (emoji picker popup)
+├── EmojiPickerManager (emoji picker popup)
+├── HapticManager (vibration feedback)
+└── KeyPreviewManager (key press preview popup)
         ↑
         │ loads/saves
         ↓
 Persistence Layer (SharedPreferences + Gson JSON)
 ├── KeyboardPrefs
+├── PrefsManager (centralized access)
 ├── GlobalLongPressStorage
 ├── EdgeSlotsStorage
 ├── EmojiPickerStorage
@@ -168,6 +171,8 @@ Persistence Layer (SharedPreferences + Gson JSON)
 | `EdgeOverlayManager` | `service/EdgeOverlayManager.kt` | Side buttons/edge overlay rendering |
 | `EdgeKeyManager` | `service/EdgeKeyManager.kt` | Edge key configuration for layout |
 | `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker with categories and lazy loading |
+| `HapticManager` | `service/HapticManager.kt` | Vibration feedback for key presses |
+| `KeyPreviewManager` | `service/KeyPreviewManager.kt` | Key press preview popup above finger |
 | `KeyboardConfig` | `model/KeyboardConfig.kt` | Data model: rows → keys → labels + long-press bindings |
 | `KeyView` | `ui/KeyView.kt` | Custom view for rendering keys in various shapes |
 | `DefaultLayout` | `ui/DefaultLayout.kt` | Predefined keyboard layouts (3/4/5-row, numeric, landscape) |

@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
@@ -27,8 +28,7 @@ class LongPressEditorBinder(
 
     // Create themed context for KeyView to use proper colors
     private val themedContext: Context by lazy {
-        val isDark = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
-            .getBoolean("dark_mode", true)
+        val isDark = PrefsManager.isDarkMode(context)
         val themeRes = if (isDark) R.style.Theme_AntaraKeyboard_Dark else R.style.Theme_AntaraKeyboard_Light
         ContextThemeWrapper(context, themeRes)
     }

@@ -58,13 +58,20 @@
     <style name="MainRoundedButton" parent="Widget.AppCompat.Button">
         <item name="android:background">@drawable/main_button_rounded</item>
         <item name="android:backgroundTint">@null</item>
-        <item name="android:textColor">#2A2140</item>
+        <item name="android:textColor">@color/main_button_text_light</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">46dp</item>
-        <item name="android:paddingLeft">14dp</item>
-        <item name="android:paddingRight">14dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="MainSpinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
 </resources>

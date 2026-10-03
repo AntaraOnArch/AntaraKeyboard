@@ -5,37 +5,19 @@ import android.content.res.Resources
 import android.view.View
 
 /**
- * Converts Int dp value to pixels using the provided Resources.
+ * Extension functions for converting dp values to pixels.
+ * Provides overloads for Resources, Context, and View for convenience.
  */
-fun Int.dp(resources: Resources): Int =
-    (this * resources.displayMetrics.density).toInt()
 
-/**
- * Converts Float dp value to pixels using the provided Resources.
- */
-fun Float.dpF(resources: Resources): Float =
-    this * resources.displayMetrics.density
+private inline val Resources.density: Float
+    get() = displayMetrics.density
 
-/**
- * Converts Int dp value to pixels using Context.
- */
-fun Int.dp(context: Context): Int =
-    (this * context.resources.displayMetrics.density).toInt()
+// Int -> pixels (Int)
+fun Int.dp(resources: Resources): Int = (this * resources.density).toInt()
+fun Int.dp(context: Context): Int = dp(context.resources)
+fun Int.dp(view: View): Int = dp(view.resources)
 
-/**
- * Converts Float dp value to pixels using Context.
- */
-fun Float.dpF(context: Context): Float =
-    this * context.resources.displayMetrics.density
-
-/**
- * Converts Int dp value to pixels using View's resources.
- */
-fun Int.dp(view: View): Int =
-    (this * view.resources.displayMetrics.density).toInt()
-
-/**
- * Converts Float dp value to pixels using View's resources.
- */
-fun Float.dpF(view: View): Float =
-    this * view.resources.displayMetrics.density
+// Float -> pixels (Float)
+fun Float.dpF(resources: Resources): Float = this * resources.density
+fun Float.dpF(context: Context): Float = dpF(context.resources)
+fun Float.dpF(view: View): Float = dpF(view.resources)

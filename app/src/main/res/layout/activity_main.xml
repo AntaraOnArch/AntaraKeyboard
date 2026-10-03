@@ -74,36 +74,12 @@
             android:text="Key shape"
             android:textSize="18sp" />
 
-        <RadioGroup
-            android:id="@+id/shapeGroup"
-            android:layout_width="wrap_content"
+        <Spinner
+            android:id="@+id/spinnerKeyShape"
+            style="@style/MainSpinner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/hexBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hexagon" />
-
-            <RadioButton
-                android:id="@+id/triBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Triangle" />
-
-            <RadioButton
-                android:id="@+id/circleBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Circle" />
-
-            <RadioButton
-                android:id="@+id/cubeBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cube" />
-        </RadioGroup>
+            android:layout_marginTop="8dp" />
 
         <com.example.antarakeyboard.ui.ShapePreviewView
             android:id="@+id/preview"
@@ -121,30 +97,12 @@
             android:text="Keyboard rows"
             android:textSize="18sp" />
 
-        <RadioGroup
-            android:id="@+id/rowCountGroup"
-            android:layout_width="wrap_content"
+        <Spinner
+            android:id="@+id/spinnerRowCount"
+            style="@style/MainSpinner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/radio3Rows"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3 rows" />
-
-            <RadioButton
-                android:id="@+id/radio4Rows"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="4 rows" />
-
-            <RadioButton
-                android:id="@+id/radio5Rows"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5 rows" />
-        </RadioGroup>
+            android:layout_marginTop="8dp" />
 
         <!-- Bind + Reset -->
         <LinearLayout
@@ -176,29 +134,47 @@
                 app:textAllCaps="false" />
         </LinearLayout>
 
-        <!-- Space + Enter color -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnColors"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Colors" />
-        </LinearLayout>
-
-        <!-- Theme toggle -->
+        <!-- Colors -->
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnThemeToggle"
+            android:id="@+id/btnColors"
             style="@style/MainRoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Switch theme"
+            android:layout_marginTop="14dp"
+            android:text="Colors"
             app:textAllCaps="false" />
+
+        <!-- Vibration toggle -->
+        <TextView
+            android:id="@+id/tvVibration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Vibration feedback"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/spinnerVibration"
+            style="@style/MainSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <!-- Theme dropdown -->
+        <TextView
+            android:id="@+id/tvTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Theme"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/spinnerTheme"
+            style="@style/MainSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 </ScrollView>

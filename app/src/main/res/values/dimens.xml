@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common spacing -->
+    <dimen name="spacing_tiny">2dp</dimen>
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_medium">8dp</dimen>
+    <dimen name="spacing_large">12dp</dimen>
+    <dimen name="spacing_xlarge">16dp</dimen>
+    <dimen name="spacing_xxlarge">20dp</dimen>
+
+    <!-- Popup dimensions -->
+    <dimen name="popup_padding">10dp</dimen>
+    <dimen name="popup_elevation">12dp</dimen>
+    <dimen name="popup_margin">4dp</dimen>
+    <dimen name="popup_min_width">280dp</dimen>
+
+    <!-- Emoji picker -->
+    <dimen name="emoji_tab_size">36dp</dimen>
+    <dimen name="emoji_action_button_size">44dp</dimen>
+    <dimen name="emoji_item_height">48dp</dimen>
+
+    <!-- Long press popup -->
+    <dimen name="long_press_key_min_height">28dp</dimen>
+    <dimen name="long_press_key_max_height">70dp</dimen>
+    <dimen name="long_press_elevation">10dp</dimen>
+
+    <!-- Gesture thresholds -->
+    <dimen name="swipe_threshold">20dp</dimen>
+    <dimen name="swipe_up_threshold">24dp</dimen>
+
+    <!-- Side buttons -->
+    <dimen name="side_button_min_height">18dp</dimen>
+    <dimen name="side_button_min_width">28dp</dimen>
+    <dimen name="side_button_max_width">58dp</dimen>
+
+    <!-- Key dimensions -->
+    <dimen name="key_corner_radius">6dp</dimen>
+    <dimen name="key_min_tap_size">44dp</dimen>
+</resources>

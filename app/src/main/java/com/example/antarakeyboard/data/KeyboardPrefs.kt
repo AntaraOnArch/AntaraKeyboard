@@ -586,4 +586,15 @@ object KeyboardPrefs {
             .remove("long_press_defaults_initialized")
             .apply()
     }
+
+    /* ───────── VIBRATION ───────── */
+
+    private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
+
+    fun isVibrationEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_VIBRATION_ENABLED, true)
+
+    fun setVibrationEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+    }
 }

@@ -37,6 +37,7 @@ import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyConfig
@@ -90,6 +91,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private lateinit var edgeKeyManager: EdgeKeyManager
     private lateinit var longPressPopupManager: LongPressPopupManager
     private lateinit var edgeOverlayManager: EdgeOverlayManager
+    private lateinit var hapticManager: HapticManager
+    private lateinit var keyPreviewManager: KeyPreviewManager
 
     private val myDefaultNumericConfig: KeyboardConfig
         get() {
@@ -125,8 +128,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     override fun onCreateInputView(): View {
         KeyboardPrefs.ensureDefaultLongPress(this)
-        val isDark = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-            .getBoolean("dark_mode", true)
+        val isDark = PrefsManager.isDarkMode(this)
 
         val themeRes = if (isDark) {
             R.style.Theme_AntaraKeyboard_Dark
@@ -257,6 +259,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
         )
 
+        hapticManager = HapticManager(this)
+        hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
+        keyPreviewManager = KeyPreviewManager(this) { overlayLayer }
+
         val basePadL = overlayLayer.paddingLeft
         val basePadT = overlayLayer.paddingTop
         val basePadR = overlayLayer.paddingRight
@@ -315,8 +321,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         KeyboardPrefs.ensureDefaultLongPress(this)
 
-        val isDarkNow = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-            .getBoolean("dark_mode", true)
+        // Refresh vibration preference
+        hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
+
+        val isDarkNow = PrefsManager.isDarkMode(this)
 
         if (lastIsDark != null && lastIsDark != isDarkNow) {
             lastIsDark = isDarkNow
@@ -389,7 +397,29 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     override fun onDestroy() {
         super.onDestroy()
-        serviceScope.cancel() // Cancel all coroutines when service is destroyed
+
+        // Cleanup popups to prevent memory leaks
+        hideEmojiPopup()
+        hideLongPressPopup()
+        hideLanguagePresetPopup()
+
+        // Cancel manager jobs
+        deleteRestoreManager.resetState()
+
+        // Cancel all coroutines
+        serviceScope.cancel()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        // Hide all popups on configuration change
+        hideEmojiPopup()
+        hideLongPressPopup()
+        hideLanguagePresetPopup()
+
+        // Recreate keyboard view to adapt to new configuration
+        recreateInputView()
     }
 
     private fun resetTransientState() {
@@ -1391,16 +1421,19 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     fun backspaceOnce() {
+        hapticManager.onSpecialKey()
         deleteRestoreManager.backspaceOnce()
     }
 
     fun sendEnter() {
+        hapticManager.onSpecialKey()
         currentInputConnection?.sendKeyEvent(
             KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
         )
     }
 
     fun toggleShift() {
+        hapticManager.onSpecialKey()
         isShifted = !isShifted
 
         val isNumeric = currentKeyboardConfig.rows.any { row ->
@@ -2919,6 +2952,12 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     hideLongPressPopup()
                     hideEmojiPopup()
 
+                    // Haptic feedback on key press
+                    hapticManager.performHapticFeedback(v)
+
+                    // Show key preview
+                    keyPreviewManager.show(v, label)
+
                     if (label == " ") {
                         handleDualSpaceDown(keyConfig)
                     }
@@ -2930,6 +2969,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                             val binds = keyConfig.longPressBindings
                             if (binds.isNotEmpty()) {
                                 longPressTriggered = true
+                                keyPreviewManager.hide()
+                                hapticManager.onLongPress()
                                 showLongPressPopup(this@apply, binds)
                                 longPressPopupManager.resetSelection()
                             }
@@ -2958,6 +2999,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         handledBySwipeUp = true
                         longPressJob?.cancel()
                         hideLongPressPopup()
+                        keyPreviewManager.hide()
                         showEmojiPicker()
                         v.isPressed = false
                         return@setOnTouchListener true
@@ -3017,6 +3059,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 }
 
                 MotionEvent.ACTION_UP -> {
+                    // Hide key preview
+                    keyPreviewManager.hide()
+
                     if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
                         v.isPressed = false
                         v.isSelected = false
@@ -3068,6 +3113,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
+                    // Hide key preview
+                    keyPreviewManager.hide()
+
                     if (label == " ") {
                         handleDualSpaceUpOrCancel(keyConfig)
                     }
