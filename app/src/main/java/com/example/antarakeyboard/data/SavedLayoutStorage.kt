@@ -175,6 +175,37 @@ object SavedLayoutStorage {
     }
 
     /**
+     * Update colors of a saved layout
+     */
+    fun updateLayoutColors(
+        context: Context,
+        layoutId: Long,
+        keyFill: Int,
+        keyText: Int,
+        spaceBg: Int,
+        enterBg: Int,
+        enterIcon: Int,
+        backgroundColor: Int
+    ) {
+        val layouts = getSavedLayouts(context).toMutableList()
+        val index = layouts.indexOfFirst { it.id == layoutId }
+        if (index >= 0) {
+            layouts[index] = layouts[index].copy(
+                keyFill = keyFill,
+                keyText = keyText,
+                space1Bg = spaceBg,
+                space2Bg = spaceBg,
+                enterBg = enterBg,
+                enterIcon = enterIcon,
+                backgroundColor = backgroundColor
+            )
+            prefs(context).edit()
+                .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
+                .apply()
+        }
+    }
+
+    /**
      * Format timestamp for display
      */
     fun formatTimestamp(timestamp: Long): String {

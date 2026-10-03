@@ -152,7 +152,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         // U onCreateInputView() ili onStartInputView()
         val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
         val bg = if (useTheme) {
-            keyboardBgColor(themedCtx)  // theme boja
+            // Use custom theme defaults
+            KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
         } else {
             KeyboardPrefs.getBackgroundColor(this)  // custom boja
         }
@@ -336,7 +337,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         // NOVO: Postavi background boju iz KeyboardPrefs
         val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
         val bg = if (useTheme) {
-            keyboardBgColor(themedCtx)
+            // Use custom theme defaults
+            KeyboardPrefs.getThemeDefaultsForMode(this, isDarkNow).keyboardBg
         } else {
             KeyboardPrefs.getBackgroundColor(this)
         }
@@ -2650,11 +2652,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                             kv.customBgColor = individualColors.first
                             kv.setTextColor(individualColors.second)
                         } else {
-                            // Nema individualne boje — fallback na temu
-                            val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-                            val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
-                            kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
-                            kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
+                            // Nema individualne boje — fallback na theme defaults
+                            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                            kv.setTextColor(themeColors.keyText)
+                            kv.customBgColor = themeColors.keyFill
                         }
                     }
                 }
@@ -3156,19 +3157,25 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         // 1. SPACE — uvijek posebno
         if (key.label == " ") {
-            val linked = KeyboardPrefs.isSpaceLinked(this)
-            val c1 = KeyboardPrefs.getSpace1Bg(this)
-            val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
+            val useTheme = KeyboardPrefs.getKeysUseTheme(this)
+            val spaceColor = if (useTheme) {
+                // Use custom theme defaults for space
+                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).spaceFill
+            } else {
+                // Use custom space color prefs
+                val linked = KeyboardPrefs.isSpaceLinked(this)
+                val c1 = KeyboardPrefs.getSpace1Bg(this)
+                val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
 
-            kv.customBgColor = when {
-                isLeftSpace(key) -> c1
-                isRightSpace(key) -> c2
-
-                // fallback za stare layoutove bez markera
-                spaceIndex == 0 -> c1
-                else -> c2
+                when {
+                    isLeftSpace(key) -> c1
+                    isRightSpace(key) -> c2
+                    spaceIndex == 0 -> c1
+                    else -> c2
+                }
             }
 
+            kv.customBgColor = spaceColor
             nextSpaceIndex++
             return nextSpaceIndex
         }
@@ -3205,11 +3212,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val useTheme = KeyboardPrefs.getKeysUseTheme(this)
 
         if (useTheme) {
-            // Koristi theme boje direktno
-            val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-            val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFF0F0F0.toInt()
-            kv.setTextColor(themeColor(themedCtx, R.attr.keyText, fallbackText))
-            kv.customBgColor = themeColor(themedCtx, R.attr.keyFill, fallbackBg)
+            // Koristi custom theme defaults
+            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+            kv.setTextColor(themeColors.keyText)
+            kv.customBgColor = themeColors.keyFill
         } else if (allSame) {
             // Sve iste boje iz prefs
             val keysBg = KeyboardPrefs.getKeysBg(this)
@@ -3223,11 +3229,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 kv.customBgColor = individualColors.first
                 kv.setTextColor(individualColors.second)
             } else {
-                // NEMA individualne boje — fallback na temu
-                val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-                val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFF0F0F0.toInt()
-                kv.setTextColor(themeColor(themedCtx, R.attr.keyText, fallbackText))
-                kv.customBgColor = themeColor(themedCtx, R.attr.keyFill, fallbackBg)
+                // NEMA individualne boje — fallback na theme defaults
+                val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                kv.setTextColor(themeColors.keyText)
+                kv.customBgColor = themeColors.keyFill
             }
         }
 

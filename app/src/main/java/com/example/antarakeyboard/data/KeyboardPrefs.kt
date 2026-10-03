@@ -602,4 +602,126 @@ object KeyboardPrefs {
     fun setVibrationEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
     }
+
+    /* ───────── THEME DEFAULTS ───────── */
+    // Custom default colors for light and dark mode themes
+
+    private const val THEME_DEFAULTS_CUSTOM = "theme_defaults_custom"
+
+    // Light mode defaults
+    private const val THEME_LIGHT_KEY_FILL = "theme_light_key_fill"
+    private const val THEME_LIGHT_KEY_TEXT = "theme_light_key_text"
+    private const val THEME_LIGHT_SPACE_FILL = "theme_light_space_fill"
+    private const val THEME_LIGHT_KEYBOARD_BG = "theme_light_keyboard_bg"
+
+    // Dark mode defaults
+    private const val THEME_DARK_KEY_FILL = "theme_dark_key_fill"
+    private const val THEME_DARK_KEY_TEXT = "theme_dark_key_text"
+    private const val THEME_DARK_SPACE_FILL = "theme_dark_space_fill"
+    private const val THEME_DARK_KEYBOARD_BG = "theme_dark_keyboard_bg"
+
+    // Factory defaults
+    object FactoryDefaults {
+        // Light mode
+        const val LIGHT_KEY_FILL = 0xFFF0F0F0.toInt()
+        const val LIGHT_KEY_TEXT = 0xFF000000.toInt()
+        const val LIGHT_SPACE_FILL = 0xFFD3CAC8.toInt()
+        const val LIGHT_KEYBOARD_BG = 0xFFFFFFFF.toInt()
+
+        // Dark mode
+        const val DARK_KEY_FILL = 0xFF3E3E3E.toInt()
+        const val DARK_KEY_TEXT = 0xFFFFFFFF.toInt()
+        const val DARK_SPACE_FILL = 0xFF4A4A4A.toInt()
+        const val DARK_KEYBOARD_BG = 0xFF000000.toInt()
+    }
+
+    fun hasCustomThemeDefaults(context: Context): Boolean =
+        prefs(context).getBoolean(THEME_DEFAULTS_CUSTOM, false)
+
+    // Light mode getters
+    fun getThemeLightKeyFill(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEY_FILL, FactoryDefaults.LIGHT_KEY_FILL)
+
+    fun getThemeLightKeyText(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEY_TEXT, FactoryDefaults.LIGHT_KEY_TEXT)
+
+    fun getThemeLightSpaceFill(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_SPACE_FILL, FactoryDefaults.LIGHT_SPACE_FILL)
+
+    fun getThemeLightKeyboardBg(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEYBOARD_BG, FactoryDefaults.LIGHT_KEYBOARD_BG)
+
+    // Dark mode getters
+    fun getThemeDarkKeyFill(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEY_FILL, FactoryDefaults.DARK_KEY_FILL)
+
+    fun getThemeDarkKeyText(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEY_TEXT, FactoryDefaults.DARK_KEY_TEXT)
+
+    fun getThemeDarkSpaceFill(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_SPACE_FILL, FactoryDefaults.DARK_SPACE_FILL)
+
+    fun getThemeDarkKeyboardBg(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEYBOARD_BG, FactoryDefaults.DARK_KEYBOARD_BG)
+
+    // Setters
+    fun setThemeLightDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
+        prefs(context).edit()
+            .putInt(THEME_LIGHT_KEY_FILL, keyFill)
+            .putInt(THEME_LIGHT_KEY_TEXT, keyText)
+            .putInt(THEME_LIGHT_SPACE_FILL, spaceFill)
+            .putInt(THEME_LIGHT_KEYBOARD_BG, keyboardBg)
+            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
+            .apply()
+    }
+
+    fun setThemeDarkDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
+        prefs(context).edit()
+            .putInt(THEME_DARK_KEY_FILL, keyFill)
+            .putInt(THEME_DARK_KEY_TEXT, keyText)
+            .putInt(THEME_DARK_SPACE_FILL, spaceFill)
+            .putInt(THEME_DARK_KEYBOARD_BG, keyboardBg)
+            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
+            .apply()
+    }
+
+    fun resetThemeDefaultsToFactory(context: Context) {
+        prefs(context).edit()
+            .remove(THEME_LIGHT_KEY_FILL)
+            .remove(THEME_LIGHT_KEY_TEXT)
+            .remove(THEME_LIGHT_SPACE_FILL)
+            .remove(THEME_LIGHT_KEYBOARD_BG)
+            .remove(THEME_DARK_KEY_FILL)
+            .remove(THEME_DARK_KEY_TEXT)
+            .remove(THEME_DARK_SPACE_FILL)
+            .remove(THEME_DARK_KEYBOARD_BG)
+            .remove(THEME_DEFAULTS_CUSTOM)
+            .apply()
+    }
+
+    // Convenience method to get colors for current mode
+    fun getThemeDefaultsForMode(context: Context, isDark: Boolean): ThemeColors {
+        return if (isDark) {
+            ThemeColors(
+                keyFill = getThemeDarkKeyFill(context),
+                keyText = getThemeDarkKeyText(context),
+                spaceFill = getThemeDarkSpaceFill(context),
+                keyboardBg = getThemeDarkKeyboardBg(context)
+            )
+        } else {
+            ThemeColors(
+                keyFill = getThemeLightKeyFill(context),
+                keyText = getThemeLightKeyText(context),
+                spaceFill = getThemeLightSpaceFill(context),
+                keyboardBg = getThemeLightKeyboardBg(context)
+            )
+        }
+    }
+
+    data class ThemeColors(
+        val keyFill: Int,
+        val keyText: Int,
+        val spaceFill: Int,
+        val keyboardBg: Int
+    )
 }

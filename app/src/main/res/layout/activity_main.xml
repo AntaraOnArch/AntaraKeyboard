@@ -134,15 +134,21 @@
                 app:textAllCaps="false" />
         </LinearLayout>
 
-        <!-- Colors -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnColors"
-            style="@style/MainRoundedButton"
+        <!-- Colors dropdown -->
+        <TextView
+            android:id="@+id/tvColors"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Colors"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/spinnerColors"
+            style="@style/MainSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="Colors"
-            app:textAllCaps="false" />
+            android:layout_marginTop="8dp" />
 
         <!-- Vibration toggle -->
         <TextView
