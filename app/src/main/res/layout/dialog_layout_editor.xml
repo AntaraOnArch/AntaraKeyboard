@@ -5,78 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?attr/keyboardBg">
+    android:background="@color/main_app_bg">
 
-    <LinearLayout
+    <!-- Section dropdown -->
+    <Spinner
+        android:id="@+id/spinnerSection"
+        style="@style/MainSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnTabLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Layout"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:gravity="center" />
-
-            <Space
-                android:layout_width="8dp"
-                android:layout_height="wrap_content" />
-
-            <Button
-                android:id="@+id/btnTabSideButtons"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Side buttons"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:gravity="center" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnTabNumeric"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Numeric"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:gravity="center" />
-
-            <Space
-                android:layout_width="8dp"
-                android:layout_height="wrap_content" />
-
-            <Button
-                android:id="@+id/btnEditHorizontalCenter"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Horizontal"
-                android:textAllCaps="false"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:gravity="center" />
-        </LinearLayout>
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <FrameLayout
         android:id="@+id/contentContainer"
@@ -95,11 +31,10 @@
                 android:id="@+id/tvLayoutTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Set Layout"
+                android:text="Alphabet Layout"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:paddingBottom="12dp" />fun showPage(page: Int) {
-
+                android:paddingBottom="12dp" />
 
             <FrameLayout
                 android:id="@+id/layoutEditorContainer"
@@ -154,6 +89,42 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/pageHorizontalCenter"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvHorizontalTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Horizontal center"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingBottom="12dp" />
+
+            <FrameLayout
+                android:id="@+id/horizontalEditorContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/pageEmojiPicker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/emojiPickerContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
     </FrameLayout>
 
     <LinearLayout
@@ -163,11 +134,36 @@
         android:layout_marginTop="12dp"
         android:orientation="vertical">
 
+        <!-- Saved layouts dropdown -->
+        <LinearLayout
+            android:id="@+id/savedLayoutsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Saved layouts:"
+                android:textSize="14sp"
+                android:paddingEnd="8dp" />
+
+            <Spinner
+                android:id="@+id/spinnerSavedLayouts"
+                style="@style/MainSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnSwapSelected"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zamijeni označene"
+            android:layout_marginTop="8dp"
+            android:text="Swap selected"
             android:textAllCaps="false" />
 
         <Button
@@ -175,7 +171,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Spremi"
+            android:text="Save"
             android:textAllCaps="false" />
     </LinearLayout>
 

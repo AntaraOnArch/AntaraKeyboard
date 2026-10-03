@@ -3202,8 +3202,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         // 5. OBIČNE TIPKE + "123", "ABC", "abc" — ovdje rješavamo boje
         val allSame = KeyboardPrefs.getKeysAllSameColor(this)
+        val useTheme = KeyboardPrefs.getKeysUseTheme(this)
 
-        if (allSame) {
+        if (useTheme) {
+            // Koristi theme boje direktno
+            val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
+            val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFF0F0F0.toInt()
+            kv.setTextColor(themeColor(themedCtx, R.attr.keyText, fallbackText))
+            kv.customBgColor = themeColor(themedCtx, R.attr.keyFill, fallbackBg)
+        } else if (allSame) {
             // Sve iste boje iz prefs
             val keysBg = KeyboardPrefs.getKeysBg(this)
             val keysText = KeyboardPrefs.getKeysTextColor(this)
@@ -3216,11 +3223,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 kv.customBgColor = individualColors.first
                 kv.setTextColor(individualColors.second)
             } else {
-                // NEMA individualne boje — fallback na temu (kao da je allSame)
+                // NEMA individualne boje — fallback na temu
                 val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-                val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
-                kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
-                kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
+                val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFF0F0F0.toInt()
+                kv.setTextColor(themeColor(themedCtx, R.attr.keyText, fallbackText))
+                kv.customBgColor = themeColor(themedCtx, R.attr.keyFill, fallbackBg)
             }
         }
 

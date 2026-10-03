@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="?attr/keyboardBg">
+    android:background="@color/main_app_bg">
 
     <LinearLayout
         android:id="@+id/mainRoot"

@@ -398,11 +398,15 @@ object KeyboardPrefs {
 
     /* ───────── KEYS COLORS ───────── */
     private const val KEYS_ALL_SAME_COLOR = "keys_all_same_color"
+    private const val KEYS_USE_THEME = "keys_use_theme"
     private const val KEYS_BG = "keys_bg"
     private const val KEYS_TEXT_COLOR = "keys_text_color"
 
     fun getKeysAllSameColor(context: Context): Boolean =
         prefs(context).getBoolean(KEYS_ALL_SAME_COLOR, true)
+
+    fun getKeysUseTheme(context: Context): Boolean =
+        prefs(context).getBoolean(KEYS_USE_THEME, true)
 
     fun getKeysBg(context: Context): Int =
         prefs(context).getInt(KEYS_BG, 0xFF3E3E3E.toInt())
@@ -410,11 +414,12 @@ object KeyboardPrefs {
     fun getKeysTextColor(context: Context): Int =
         prefs(context).getInt(KEYS_TEXT_COLOR, 0xFFFFFFFF.toInt())
 
-    fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean) {
+    fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean, useTheme: Boolean = false) {
         prefs(context).edit()
             .putInt(KEYS_BG, bg)
             .putInt(KEYS_TEXT_COLOR, textColor)
             .putBoolean(KEYS_ALL_SAME_COLOR, allSame)
+            .putBoolean(KEYS_USE_THEME, useTheme)
             .apply()
     }
 

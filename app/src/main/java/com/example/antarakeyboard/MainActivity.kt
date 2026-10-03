@@ -25,6 +25,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
@@ -43,6 +46,7 @@ import android.graphics.Color
 import android.content.Context
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EmojiPickerStorage
+import com.example.antarakeyboard.data.SavedLayoutStorage
 
 class MainActivity : AppCompatActivity() {
 
@@ -88,7 +92,25 @@ class MainActivity : AppCompatActivity() {
             else AppCompatDelegate.MODE_NIGHT_NO
         )
 
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContentView(R.layout.activity_main)
+
+        // Handle system bar insets (status bar + navigation bar)
+        val mainScroll = findViewById<ScrollView>(R.id.mainScroll)
+        val mainRoot = findViewById<LinearLayout>(R.id.mainRoot)
+
+        ViewCompat.setOnApplyWindowInsetsListener(mainScroll) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            mainRoot.setPadding(
+                16.dp(this),
+                16.dp(this) + systemBars.top,
+                16.dp(this),
+                16.dp(this) + systemBars.bottom
+            )
+            insets
+        }
 
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
@@ -202,7 +224,11 @@ class MainActivity : AppCompatActivity() {
             val isDarkTheme = getSharedPreferences("theme_prefs", MODE_PRIVATE)
                 .getBoolean("dark_mode", true)
 
-            // NOVO: Spremi trenutne boje kao custom temu prije reseta
+            // NOVO: Spremi trenutni layout kao backup prije reseta
+            val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
+            SavedLayoutStorage.saveCurrentLayout(this, "Backup $timestamp")
+
+            // Spremi trenutne boje kao custom temu prije reseta
             saveCurrentColorsAsCustomTheme()
 
             // 1. Resetiraj horizontal center layout
@@ -222,7 +248,12 @@ class MainActivity : AppCompatActivity() {
             // Resetiraj SVE boje na default teme
             resetAllColorsToThemeDefault(isDarkTheme)
 
-            // NOVO: Signaliziraj tipkovnici da se recreate
+            // Očisti custom theme flag da tipkovnica koristi default boje
+            getSharedPreferences("theme_prefs", MODE_PRIVATE).edit()
+                .putBoolean("use_custom_theme", false)
+                .apply()
+
+            // Signaliziraj tipkovnici da se recreate
             val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
             sendBroadcast(keyboardIntent)
 
@@ -237,7 +268,7 @@ class MainActivity : AppCompatActivity() {
             // 6. Refresh theme spinner (now has Custom option available)
             setupThemeSpinner()
 
-            Toast.makeText(this, "Layout i boje resetirani na default", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Layout reset. Previous saved as backup.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -265,8 +296,9 @@ class MainActivity : AppCompatActivity() {
             getColor(R.color.keyboard_bg_light)
         }
 
-        // 1. Space colors — oba spacea na theme default
-        KeyboardPrefs.setSpaceColors(this, keyFill, keyFill, true)
+        // 1. Space colors — malo svjetlije od ostalih tipki
+        val spaceFill = if (isDark) 0xFF4A4A4A.toInt() else 0xFFD3CAC8.toInt()
+        KeyboardPrefs.setSpaceColors(this, spaceFill, spaceFill, true)
 
         // opcionalno: počisti eventualni stari individual zapis za " "
         KeyboardPrefs.clearKeyIndividualColors(this, " ")
@@ -286,8 +318,8 @@ class MainActivity : AppCompatActivity() {
             true
         )
 
-        // 4. Keys colors
-        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true)
+        // 4. Keys colors - use theme colors after reset
+        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true, useTheme = true)
 
         // 5. Background color
         KeyboardPrefs.setBackgroundColor(this, keyboardBg, true)
@@ -332,225 +364,18 @@ class MainActivity : AppCompatActivity() {
         val btnSideButtonsColor = dialog.findViewById<Button>(R.id.btnSideButtonsColor)
         val btnKeysColor = dialog.findViewById<Button>(R.id.btnKeysColor)
         val btnBackgroundColor = dialog.findViewById<Button>(R.id.btnBackgroundColor)
-        val btnEmojiPickerButtons = dialog.findViewById<Button>(R.id.btnEmojiPickerButtons)
 
         btnSpaceColor.setOnClickListener { showSpaceColorDialog() }
         btnEnterColor.setOnClickListener { showEnterColorDialog() }
         btnSideButtonsColor.setOnClickListener { showSideButtonsColorDialog() }
         btnKeysColor.setOnClickListener { showKeysColorDialog() }
         btnBackgroundColor.setOnClickListener { showBackgroundColorDialog() }
-        btnEmojiPickerButtons.setOnClickListener {
-            showEmojiPickerButtonsDialog() }
 
         dialog.show()
         dialog.window?.setLayout(
             (resources.displayMetrics.widthPixels * 0.82f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-    }
-
-    private fun showEmojiPickerButtonsDialog() {
-        val buttonOrder = EmojiPickerStorage.getButtonOrder(this).toMutableList()
-        var tabsPosition = EmojiPickerStorage.getTabsPosition(this)
-        var buttonsSide = EmojiPickerStorage.getButtonsSide(this)
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(
-                16.dp(this@MainActivity),
-                12.dp(this@MainActivity),
-                16.dp(this@MainActivity),
-                4.dp(this@MainActivity)
-            )
-        }
-
-        // --- Category tabs position ---
-        val tabsPosLabel = TextView(this).apply {
-            text = "Category tabs position"
-            textSize = 14f
-            setPadding(0, 0, 0, 4.dp(this))
-        }
-        root.addView(tabsPosLabel)
-
-        val tabsPosRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 16.dp(this))
-        }
-
-        val tabsPositions = EmojiPickerStorage.TabsPosition.entries
-        tabsPositions.forEach { pos ->
-            val btn = Button(this).apply {
-                text = pos.displayName
-                isAllCaps = false
-                alpha = if (pos == tabsPosition) 1f else 0.5f
-                setOnClickListener {
-                    tabsPosition = pos
-                    // Update all button alphas
-                    for (i in 0 until tabsPosRow.childCount) {
-                        tabsPosRow.getChildAt(i).alpha = if (i == tabsPositions.indexOf(pos)) 1f else 0.5f
-                    }
-                }
-            }
-            tabsPosRow.addView(btn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginEnd = 4.dp(this@MainActivity)
-            })
-        }
-        root.addView(tabsPosRow)
-
-        // --- Action buttons side ---
-        val buttonsSideLabel = TextView(this).apply {
-            text = "Action buttons side"
-            textSize = 14f
-            setPadding(0, 0, 0, 4.dp(this))
-        }
-        root.addView(buttonsSideLabel)
-
-        val buttonsSideRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(0, 0, 0, 16.dp(this))
-        }
-
-        val buttonsSides = EmojiPickerStorage.ButtonsSide.entries
-        buttonsSides.forEach { side ->
-            val btn = Button(this).apply {
-                text = side.displayName
-                isAllCaps = false
-                alpha = if (side == buttonsSide) 1f else 0.5f
-                setOnClickListener {
-                    buttonsSide = side
-                    // Update all button alphas
-                    for (i in 0 until buttonsSideRow.childCount) {
-                        buttonsSideRow.getChildAt(i).alpha = if (i == buttonsSides.indexOf(side)) 1f else 0.5f
-                    }
-                }
-            }
-            buttonsSideRow.addView(btn, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginEnd = 4.dp(this@MainActivity)
-            })
-        }
-        root.addView(buttonsSideRow)
-
-        // --- Button order ---
-        val orderLabel = TextView(this).apply {
-            text = "Button order (drag to reorder)"
-            textSize = 14f
-            setPadding(0, 0, 0, 8.dp(this))
-        }
-        root.addView(orderLabel)
-
-        val buttonsContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        fun startDragCompat(v: View, fromIndex: Int) {
-            val data = ClipData.newPlainText("fromIndex", fromIndex.toString())
-            val shadow = View.DragShadowBuilder(v)
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                v.startDragAndDrop(data, shadow, null, 0)
-            } else {
-                @Suppress("DEPRECATION")
-                v.startDrag(data, shadow, null, 0)
-            }
-        }
-
-        fun parseFromIndex(e: DragEvent): Int? {
-            val item = e.clipData?.getItemAt(0)?.text?.toString() ?: return null
-            return item.toIntOrNull()
-        }
-
-        fun rebuildButtons() {
-            buttonsContainer.removeAllViews()
-
-            buttonOrder.forEachIndexed { index, action ->
-                val btn = Button(this).apply {
-                    text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
-                    isAllCaps = false
-                    tag = index
-                    setPadding(16.dp(this), 12.dp(this), 16.dp(this), 12.dp(this))
-
-                    setOnLongClickListener { v ->
-                        startDragCompat(v, index)
-                        true
-                    }
-
-                    setOnDragListener { v, e ->
-                        when (e.action) {
-                            DragEvent.ACTION_DRAG_STARTED -> {
-                                e.clipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true
-                            }
-
-                            DragEvent.ACTION_DRAG_ENTERED -> {
-                                v.alpha = 0.65f
-                                true
-                            }
-
-                            DragEvent.ACTION_DRAG_EXITED -> {
-                                v.alpha = 1f
-                                true
-                            }
-
-                            DragEvent.ACTION_DROP -> {
-                                v.alpha = 1f
-
-                                val from = parseFromIndex(e) ?: return@setOnDragListener true
-                                val to = (v.tag as? Int) ?: return@setOnDragListener true
-                                if (from == to) return@setOnDragListener true
-
-                                // Swap positions
-                                val tmp = buttonOrder[from]
-                                buttonOrder[from] = buttonOrder[to]
-                                buttonOrder[to] = tmp
-
-                                rebuildButtons()
-                                true
-                            }
-
-                            DragEvent.ACTION_DRAG_ENDED -> {
-                                v.alpha = 1f
-                                true
-                            }
-
-                            else -> true
-                        }
-                    }
-                }
-
-                buttonsContainer.addView(
-                    btn,
-                    LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        bottomMargin = 6.dp(this@MainActivity)
-                    }
-                )
-            }
-        }
-
-        rebuildButtons()
-        root.addView(buttonsContainer)
-
-        // Wrap in ScrollView for smaller screens
-        val scrollView = ScrollView(this).apply {
-            addView(root)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Emoji picker settings")
-            .setView(scrollView)
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save") { _, _ ->
-                EmojiPickerStorage.saveButtonOrder(this, buttonOrder)
-                EmojiPickerStorage.setTabsPosition(this, tabsPosition)
-                EmojiPickerStorage.setButtonsSide(this, buttonsSide)
-                Toast.makeText(
-                    this,
-                    "Emoji picker settings saved",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            .show()
     }
 
     private fun showSpaceColorDialog() {
@@ -812,7 +637,7 @@ class MainActivity : AppCompatActivity() {
                 showAdvancedColorPicker("Keys background", KeyboardPrefs.getKeysBg(this@MainActivity)) { picked ->
                     val currentText = KeyboardPrefs.getKeysTextColor(this@MainActivity)
                     val currentAllSame = KeyboardPrefs.getKeysAllSameColor(this@MainActivity)
-                    KeyboardPrefs.setKeysColors(this@MainActivity, picked, currentText, currentAllSame)
+                    KeyboardPrefs.setKeysColors(this@MainActivity, picked, currentText, currentAllSame, useTheme = false)
                     setBackgroundColor(picked)
                 }
             }
@@ -827,7 +652,7 @@ class MainActivity : AppCompatActivity() {
                 showAdvancedColorPicker("Keys text color", KeyboardPrefs.getKeysTextColor(this@MainActivity)) { picked ->
                     val currentBg = KeyboardPrefs.getKeysBg(this@MainActivity)
                     val currentAllSame2 = KeyboardPrefs.getKeysAllSameColor(this@MainActivity)
-                    KeyboardPrefs.setKeysColors(this@MainActivity, currentBg, picked, currentAllSame2)
+                    KeyboardPrefs.setKeysColors(this@MainActivity, currentBg, picked, currentAllSame2, useTheme = false)
                     setTextColor(picked)
                 }
             }
@@ -895,7 +720,7 @@ class MainActivity : AppCompatActivity() {
         cb.setOnCheckedChangeListener { _, isChecked ->
             val currentBg2 = KeyboardPrefs.getKeysBg(this@MainActivity)
             val currentText2 = KeyboardPrefs.getKeysTextColor(this@MainActivity)
-            KeyboardPrefs.setKeysColors(this@MainActivity, currentBg2, currentText2, isChecked)
+            KeyboardPrefs.setKeysColors(this@MainActivity, currentBg2, currentText2, isChecked, useTheme = false)
             allSameContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
             individualContainer.visibility = if (isChecked) View.GONE else View.VISIBLE
         }
@@ -1397,23 +1222,45 @@ class MainActivity : AppCompatActivity() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_layout_editor)
 
+        // Section dropdown
+        val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerSection)
+        val sectionOptions = listOf(
+            "Alphabet Layout",
+            "Numeric Layout",
+            "Side Buttons",
+            "Horizontal Center",
+            "Emoji Picker Settings"
+        )
+        val sectionAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerSection.adapter = sectionAdapter
+
+        // Pages
+        val pageLayout = dialog.findViewById<LinearLayout>(R.id.pageLayout)
+        val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumeric)
+        val pageSideButtons = dialog.findViewById<LinearLayout>(R.id.pageSideButtons)
+        val pageHorizontalCenter = dialog.findViewById<LinearLayout>(R.id.pageHorizontalCenter)
+        val pageEmojiPicker = dialog.findViewById<ScrollView>(R.id.pageEmojiPicker)
+        val emojiPickerContainer = dialog.findViewById<LinearLayout>(R.id.emojiPickerContainer)
+
+        // Containers
         val layoutEditorContainer = dialog.findViewById<FrameLayout>(R.id.layoutEditorContainer)
         val numericEditorContainer = dialog.findViewById<FrameLayout>(R.id.numericEditorContainer)
+        val horizontalEditorContainer = dialog.findViewById<FrameLayout>(R.id.horizontalEditorContainer)
 
-        val btnTabLayout = dialog.findViewById<Button>(R.id.btnTabLayout)
-        val btnTabSideButtons = dialog.findViewById<Button>(R.id.btnTabSideButtons)
-        val btnTabNumeric = dialog.findViewById<Button>(R.id.btnTabNumeric)
-        val btnEditHorizontalCenter = dialog.findViewById<Button>(R.id.btnEditHorizontalCenter)
-
-        val pageLayout = dialog.findViewById<LinearLayout>(R.id.pageLayout)
-        val pageSideButtons = dialog.findViewById<LinearLayout>(R.id.pageSideButtons)
-        val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumeric)
-
+        // Buttons
         val btnSwapSelected = dialog.findViewById<Button>(R.id.btnSwapSelected)
         val btnSaveEditor = dialog.findViewById<Button>(R.id.btnSaveEditor)
 
-        val rowCount = KeyboardPrefs.getRowCount(this)
+        // Saved layouts
+        val savedLayoutsContainer = dialog.findViewById<LinearLayout>(R.id.savedLayoutsContainer)
+        val spinnerSavedLayouts = dialog.findViewById<Spinner>(R.id.spinnerSavedLayouts)
 
+        val rowCount = KeyboardPrefs.getRowCount(this)
+        var currentPage = 0
+
+        // Layout binders
         val layoutBinder = LayoutEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount),
@@ -1422,13 +1269,8 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        val numericLocked = setOf(
-            "⇧", "⌫", "↵", "ABC", "abc", " ",
-            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-        )
-
+        val numericLocked = setOf("⇧", "⌫", "↵", "ABC", "abc", " ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
         lateinit var numericBinder: LayoutEditorBinder
-
         numericBinder = LayoutEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount),
@@ -1446,54 +1288,211 @@ class MainActivity : AppCompatActivity() {
             allowClearKeys = true
         )
 
+        lateinit var horizontalBinder: LayoutEditorBinder
+        horizontalBinder = LayoutEditorBinder(
+            context = this,
+            initial = KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(this, rowCount),
+            onSaved = { updated: KeyboardConfig ->
+                KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, rowCount, updated)
+            },
+            lockedLabels = emptySet(),
+            onEmptyKeyClick = { key ->
+                showSpecialCharPicker { picked ->
+                    key.label = picked
+                    key.longPressBindings.remove("__USER_EMPTY__")
+                    horizontalBinder.bindInto(horizontalEditorContainer)
+                }
+            },
+            allowClearKeys = true
+        )
+
         layoutBinder.bindInto(layoutEditorContainer)
         numericBinder.bindInto(numericEditorContainer)
+        horizontalBinder.bindInto(horizontalEditorContainer)
 
         val saveSideButtons = setupSideButtonsPage(pageSideButtons)
-        var currentPage = 0
 
+        // Emoji picker settings
+        var emojiButtonOrder = EmojiPickerStorage.getButtonOrder(this).toMutableList()
+        var emojiTabsPosition = EmojiPickerStorage.getTabsPosition(this)
+        var emojiButtonsSide = EmojiPickerStorage.getButtonsSide(this)
+
+        fun setupEmojiPickerPage() {
+            emojiPickerContainer.removeAllViews()
+
+            // Tabs position
+            val tabsLabel = TextView(this).apply {
+                text = "Category tabs position"
+                textSize = 16f
+                setPadding(0, 0, 0, 8.dp(this))
+            }
+            emojiPickerContainer.addView(tabsLabel)
+
+            val tabsSpinner = Spinner(this)
+            val tabsOptions = EmojiPickerStorage.TabsPosition.entries.map { it.displayName }
+            tabsSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, tabsOptions).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
+            tabsSpinner.setSelection(EmojiPickerStorage.TabsPosition.entries.indexOf(emojiTabsPosition))
+            tabsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    emojiTabsPosition = EmojiPickerStorage.TabsPosition.entries[position]
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+            emojiPickerContainer.addView(tabsSpinner, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 16.dp(this@MainActivity) })
+
+            // Buttons side
+            val sideLabel = TextView(this).apply {
+                text = "Action buttons side"
+                textSize = 16f
+                setPadding(0, 0, 0, 8.dp(this))
+            }
+            emojiPickerContainer.addView(sideLabel)
+
+            val sideSpinner = Spinner(this)
+            val sideOptions = EmojiPickerStorage.ButtonsSide.entries.map { it.displayName }
+            sideSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sideOptions).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
+            sideSpinner.setSelection(EmojiPickerStorage.ButtonsSide.entries.indexOf(emojiButtonsSide))
+            sideSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    emojiButtonsSide = EmojiPickerStorage.ButtonsSide.entries[position]
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+            emojiPickerContainer.addView(sideSpinner, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 16.dp(this@MainActivity) })
+
+            // Button order
+            val orderLabel = TextView(this).apply {
+                text = "Button order (long press to drag)"
+                textSize = 16f
+                setPadding(0, 0, 0, 8.dp(this))
+            }
+            emojiPickerContainer.addView(orderLabel)
+
+            emojiButtonOrder.forEachIndexed { index, action ->
+                val btn = Button(this).apply {
+                    text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
+                    isAllCaps = false
+                }
+                emojiPickerContainer.addView(btn, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = 4.dp(this@MainActivity) })
+            }
+        }
+
+        // Show page function
         fun showPage(page: Int) {
             currentPage = page
             pageLayout.visibility = if (page == 0) View.VISIBLE else View.GONE
-            pageSideButtons.visibility = if (page == 1) View.VISIBLE else View.GONE
-            pageNumeric.visibility = if (page == 2) View.VISIBLE else View.GONE
+            pageNumeric.visibility = if (page == 1) View.VISIBLE else View.GONE
+            pageSideButtons.visibility = if (page == 2) View.VISIBLE else View.GONE
+            pageHorizontalCenter.visibility = if (page == 3) View.VISIBLE else View.GONE
+            pageEmojiPicker.visibility = if (page == 4) View.VISIBLE else View.GONE
+
+            // Show/hide swap button (only for layout pages)
+            btnSwapSelected.visibility = if (page in listOf(0, 1, 3)) View.VISIBLE else View.GONE
+
+            if (page == 4) setupEmojiPickerPage()
         }
 
-        btnTabLayout.setOnClickListener { showPage(0) }
-        btnTabSideButtons.setOnClickListener { showPage(1) }
-        btnTabNumeric.setOnClickListener { showPage(2) }
-
-        btnEditHorizontalCenter.setOnClickListener {
-            openHorizontalCenterEditorDialog()
+        spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                showPage(position)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
+        // Saved layouts dropdown
+        fun refreshSavedLayoutsSpinner() {
+            val savedLayouts = SavedLayoutStorage.getSavedLayouts(this)
+            if (savedLayouts.isNotEmpty()) {
+                savedLayoutsContainer.visibility = View.VISIBLE
+                val layoutNames = mutableListOf("-- Saved layouts (${savedLayouts.size}) --")
+                layoutNames.addAll(savedLayouts.map { "${it.name} (${it.rowCount} rows)" })
+                spinnerSavedLayouts.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, layoutNames).apply {
+                    setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                }
+                spinnerSavedLayouts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                        if (position == 0) return
+                        val selectedLayout = SavedLayoutStorage.getSavedLayouts(this@MainActivity)[position - 1]
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle(selectedLayout.name)
+                            .setItems(arrayOf("Restore", "Rename", "Delete")) { _, which ->
+                                when (which) {
+                                    0 -> {
+                                        AlertDialog.Builder(this@MainActivity)
+                                            .setTitle("Restore layout")
+                                            .setMessage("This will replace your current layout and colors.")
+                                            .setPositiveButton("Restore") { _, _ ->
+                                                SavedLayoutStorage.restoreLayout(this@MainActivity, selectedLayout)
+                                                sendBroadcast(Intent("com.example.antarakeyboard.RECREATE_KEYBOARD"))
+                                                preview.shape = KeyboardPrefs.getShape(this@MainActivity)
+                                                spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this@MainActivity) }.coerceAtLeast(0))
+                                                spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this@MainActivity)).coerceAtLeast(0))
+                                                Toast.makeText(this@MainActivity, "Layout restored!", Toast.LENGTH_SHORT).show()
+                                                dialog.dismiss()
+                                            }
+                                            .setNegativeButton("Cancel", null)
+                                            .show()
+                                    }
+                                    1 -> {
+                                        val input = android.widget.EditText(this@MainActivity).apply { setText(selectedLayout.name); selectAll() }
+                                        AlertDialog.Builder(this@MainActivity).setTitle("Rename").setView(input)
+                                            .setPositiveButton("Save") { _, _ ->
+                                                SavedLayoutStorage.renameLayout(this@MainActivity, selectedLayout.id, input.text.toString().trim())
+                                                refreshSavedLayoutsSpinner()
+                                            }.setNegativeButton("Cancel", null).show()
+                                    }
+                                    2 -> {
+                                        AlertDialog.Builder(this@MainActivity).setTitle("Delete?")
+                                            .setPositiveButton("Delete") { _, _ ->
+                                                SavedLayoutStorage.deleteLayout(this@MainActivity, selectedLayout.id)
+                                                refreshSavedLayoutsSpinner()
+                                            }.setNegativeButton("Cancel", null).show()
+                                    }
+                                }
+                                spinnerSavedLayouts.setSelection(0)
+                            }
+                            .setOnCancelListener { spinnerSavedLayouts.setSelection(0) }
+                            .show()
+                    }
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+            } else {
+                savedLayoutsContainer.visibility = View.GONE
+            }
+        }
+        refreshSavedLayoutsSpinner()
 
         btnSwapSelected.setOnClickListener {
             val swapped = when (currentPage) {
                 0 -> layoutBinder.swapSelectedExternally()
-                2 -> numericBinder.swapSelectedExternally()
+                1 -> numericBinder.swapSelectedExternally()
+                3 -> horizontalBinder.swapSelectedExternally()
                 else -> false
             }
-
-            if (!swapped) {
-                Toast.makeText(this, "Označi 2 tipke", Toast.LENGTH_SHORT).show()
-            }
+            if (!swapped) Toast.makeText(this, "Select 2 keys", Toast.LENGTH_SHORT).show()
         }
 
         btnSaveEditor.setOnClickListener {
             when (currentPage) {
-                0 -> {
-                    layoutBinder.saveExternally()
-                    Toast.makeText(this, "Layout saved ✅", Toast.LENGTH_SHORT).show()
-                }
-
-                1 -> {
-                    saveSideButtons()
-                    Toast.makeText(this, "Side buttons saved ✅", Toast.LENGTH_SHORT).show()
-                }
-
-                2 -> {
-                    numericBinder.saveExternally()
-                    Toast.makeText(this, "Numeric layout saved ✅", Toast.LENGTH_SHORT).show()
+                0 -> { layoutBinder.saveExternally(); Toast.makeText(this, "Alphabet saved", Toast.LENGTH_SHORT).show() }
+                1 -> { numericBinder.saveExternally(); Toast.makeText(this, "Numeric saved", Toast.LENGTH_SHORT).show() }
+                2 -> { saveSideButtons(); Toast.makeText(this, "Side buttons saved", Toast.LENGTH_SHORT).show() }
+                3 -> { horizontalBinder.saveExternally(); Toast.makeText(this, "Horizontal saved", Toast.LENGTH_SHORT).show() }
+                4 -> {
+                    EmojiPickerStorage.saveButtonOrder(this, emojiButtonOrder)
+                    EmojiPickerStorage.setTabsPosition(this, emojiTabsPosition)
+                    EmojiPickerStorage.setButtonsSide(this, emojiButtonsSide)
+                    Toast.makeText(this, "Emoji settings saved", Toast.LENGTH_SHORT).show()
                 }
             }
             dialog.dismiss()
@@ -1504,7 +1503,6 @@ class MainActivity : AppCompatActivity() {
             (resources.displayMetrics.widthPixels * 0.94f).toInt(),
             (resources.displayMetrics.heightPixels * 0.9f).toInt()
         )
-
         showPage(0)
     }
 
@@ -2090,7 +2088,7 @@ class MainActivity : AppCompatActivity() {
         val sideBg = customPrefs.getInt("custom_side_bg", Color.TRANSPARENT)
         val sideText = customPrefs.getInt("custom_side_text", Color.BLACK)
 
-        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true)
+        KeyboardPrefs.setKeysColors(this, keyFill, keyText, true, useTheme = false)
         KeyboardPrefs.setBackgroundColor(this, background, false)
         KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, true)
         KeyboardPrefs.setEnterColors(this, enterBg, enterIcon)

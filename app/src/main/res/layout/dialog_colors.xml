@@ -50,14 +50,6 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="Background"
-        android:textAllCaps="false"
-        android:layout_marginBottom="10dp" />
-
-    <Button
-        android:id="@+id/btnEmojiPickerButtons"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Emoji picker settings"
         android:textAllCaps="false" />
 
 </LinearLayout>
