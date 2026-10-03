@@ -724,4 +724,96 @@ object KeyboardPrefs {
         val spaceFill: Int,
         val keyboardBg: Int
     )
+
+    /* ───────── RGB SMOOTH ───────── */
+
+    private const val RGB_SMOOTH_ENABLED = "rgb_rainbow_enabled"  // Keep old key for compatibility
+    private const val RGB_SMOOTH_SPEED = "rgb_rainbow_speed"
+    private const val RGB_SMOOTH_SATURATION = "rgb_rainbow_saturation"
+    private const val RGB_SMOOTH_BRIGHTNESS = "rgb_rainbow_brightness"
+
+    // Speed is in milliseconds for full cycle (360 degrees of hue)
+    const val RGB_SPEED_MIN = 2000      // 2 seconds - very fast
+    const val RGB_SPEED_MAX = 60000     // 60 seconds - very slow
+    const val RGB_SPEED_DEFAULT = 10000 // 10 seconds - medium
+
+    fun isRgbSmoothEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(RGB_SMOOTH_ENABLED, false)
+
+    fun setRgbSmoothEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(RGB_SMOOTH_ENABLED, enabled).apply()
+    }
+
+    fun getRgbSmoothSpeed(context: Context): Int =
+        prefs(context).getInt(RGB_SMOOTH_SPEED, RGB_SPEED_DEFAULT)
+
+    fun setRgbSmoothSpeed(context: Context, speedMs: Int) {
+        prefs(context).edit().putInt(RGB_SMOOTH_SPEED, speedMs.coerceIn(RGB_SPEED_MIN, RGB_SPEED_MAX)).apply()
+    }
+
+    fun getRgbSmoothSaturation(context: Context): Float =
+        prefs(context).getFloat(RGB_SMOOTH_SATURATION, 0.7f)
+
+    fun setRgbSmoothSaturation(context: Context, saturation: Float) {
+        prefs(context).edit().putFloat(RGB_SMOOTH_SATURATION, saturation.coerceIn(0.1f, 1.0f)).apply()
+    }
+
+    fun getRgbSmoothBrightness(context: Context): Float =
+        prefs(context).getFloat(RGB_SMOOTH_BRIGHTNESS, 0.3f)
+
+    fun setRgbSmoothBrightness(context: Context, brightness: Float) {
+        prefs(context).edit().putFloat(RGB_SMOOTH_BRIGHTNESS, brightness.coerceIn(0.1f, 1.0f)).apply()
+    }
+
+    /* ───────── RGB WILD ───────── */
+
+    private const val RGB_WILD_ENABLED = "rgb_wild_enabled"
+    private const val RGB_WILD_SPEED = "rgb_wild_speed"
+    private const val RGB_WILD_SATURATION = "rgb_wild_saturation"
+    private const val RGB_WILD_BRIGHTNESS = "rgb_wild_brightness"
+
+    // Wild mode speed - much faster!
+    const val RGB_WILD_SPEED_MIN = 50       // 50ms - insane
+    const val RGB_WILD_SPEED_MAX = 1000     // 1 second - chill wild
+    const val RGB_WILD_SPEED_DEFAULT = 200  // 200ms - aggressive
+
+    fun isRgbWildEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(RGB_WILD_ENABLED, false)
+
+    fun setRgbWildEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(RGB_WILD_ENABLED, enabled).apply()
+    }
+
+    fun getRgbWildSpeed(context: Context): Int =
+        prefs(context).getInt(RGB_WILD_SPEED, RGB_WILD_SPEED_DEFAULT)
+
+    fun setRgbWildSpeed(context: Context, speedMs: Int) {
+        prefs(context).edit().putInt(RGB_WILD_SPEED, speedMs.coerceIn(RGB_WILD_SPEED_MIN, RGB_WILD_SPEED_MAX)).apply()
+    }
+
+    fun getRgbWildSaturation(context: Context): Float =
+        prefs(context).getFloat(RGB_WILD_SATURATION, 1.0f)
+
+    fun setRgbWildSaturation(context: Context, saturation: Float) {
+        prefs(context).edit().putFloat(RGB_WILD_SATURATION, saturation.coerceIn(0.3f, 1.0f)).apply()
+    }
+
+    fun getRgbWildBrightness(context: Context): Float =
+        prefs(context).getFloat(RGB_WILD_BRIGHTNESS, 0.8f)
+
+    fun setRgbWildBrightness(context: Context, brightness: Float) {
+        prefs(context).edit().putFloat(RGB_WILD_BRIGHTNESS, brightness.coerceIn(0.3f, 1.0f)).apply()
+    }
+
+    // Helper to check if any RGB mode is active
+    fun isAnyRgbModeEnabled(context: Context): Boolean =
+        isRgbSmoothEnabled(context) || isRgbWildEnabled(context)
+
+    // Disable all RGB modes
+    fun disableAllRgbModes(context: Context) {
+        prefs(context).edit()
+            .putBoolean(RGB_SMOOTH_ENABLED, false)
+            .putBoolean(RGB_WILD_ENABLED, false)
+            .apply()
+    }
 }

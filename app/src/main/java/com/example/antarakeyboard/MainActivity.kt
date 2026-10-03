@@ -138,7 +138,9 @@ class MainActivity : AppCompatActivity() {
             "Side buttons",
             "Keys",
             "Background",
-            "Edit Theme Defaults"
+            "Edit Theme Defaults",
+            "RGB Smooth",
+            "RGB Wild"
         )
         val colorsAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, colorOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -154,6 +156,8 @@ class MainActivity : AppCompatActivity() {
                     4 -> { showKeysColorDialog(); spinnerColors.setSelection(0) }
                     5 -> { showBackgroundColorDialog(); spinnerColors.setSelection(0) }
                     6 -> { showThemeDefaultsDialog(); spinnerColors.setSelection(0) }
+                    7 -> { showRgbSmoothDialog(); spinnerColors.setSelection(0) }
+                    8 -> { showRgbWildDialog(); spinnerColors.setSelection(0) }
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -992,6 +996,560 @@ class MainActivity : AppCompatActivity() {
                 }
                 .show()
         }
+
+        dialog.show()
+    }
+
+    private fun showRgbSmoothDialog() {
+        val ctx = this
+
+        var enabled = KeyboardPrefs.isRgbSmoothEnabled(ctx)
+        var speed = KeyboardPrefs.getRgbSmoothSpeed(ctx)
+        var saturation = KeyboardPrefs.getRgbSmoothSaturation(ctx)
+        var brightness = KeyboardPrefs.getRgbSmoothBrightness(ctx)
+
+        val root = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24.dp(ctx), 16.dp(ctx), 24.dp(ctx), 8.dp(ctx))
+        }
+
+        // Enable checkbox
+        val enableCb = CheckBox(ctx).apply {
+            text = "Enable RGB Smooth Background"
+            isChecked = enabled
+            textSize = 16f
+        }
+        root.addView(enableCb)
+
+        // Preview bar with radial rainbow gradient
+        val previewBar = View(ctx).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                48.dp(ctx)
+            ).apply {
+                topMargin = 16.dp(ctx)
+                bottomMargin = 8.dp(ctx)
+            }
+        }
+        root.addView(previewBar)
+
+        // Speed label
+        val speedLabel = TextView(ctx).apply {
+            text = "Speed: ${speed / 1000}s per cycle"
+            textSize = 14f
+            setPadding(0, 12.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(speedLabel)
+
+        val speedSeekBar = SeekBar(ctx).apply {
+            max = KeyboardPrefs.RGB_SPEED_MAX - KeyboardPrefs.RGB_SPEED_MIN
+            progress = speed - KeyboardPrefs.RGB_SPEED_MIN
+        }
+        root.addView(speedSeekBar)
+
+        val speedHint = TextView(ctx).apply {
+            text = "Fast ← → Slow"
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setTextColor(0xFF888888.toInt())
+        }
+        root.addView(speedHint)
+
+        // Saturation
+        val satLabel = TextView(ctx).apply {
+            text = "Saturation: ${(saturation * 100).toInt()}%"
+            textSize = 14f
+            setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(satLabel)
+
+        val satSeekBar = SeekBar(ctx).apply {
+            max = 100
+            progress = (saturation * 100).toInt()
+        }
+        root.addView(satSeekBar)
+
+        // Brightness
+        val brightLabel = TextView(ctx).apply {
+            text = "Brightness: ${(brightness * 100).toInt()}%"
+            textSize = 14f
+            setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(brightLabel)
+
+        val brightSeekBar = SeekBar(ctx).apply {
+            max = 100
+            progress = (brightness * 100).toInt()
+        }
+        root.addView(brightSeekBar)
+
+        // Rainbow color function - 6 segments × 256 steps = 1536 total
+        fun rainbowColor(x: Int): Int {
+            val step = ((x % 1536) + 1536) % 1536
+            val segment = step / 256
+            val c = step % 256
+            return when (segment) {
+                0 -> Color.rgb(255, c, 0)           // Red to Yellow
+                1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
+                2 -> Color.rgb(0, 255, c)           // Green to Cyan
+                3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
+                4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
+                5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
+                else -> Color.rgb(255, 0, 0)
+            }
+        }
+
+        fun adjustBrightness(color: Int, bright: Float): Int {
+            val r = ((color shr 16) and 0xFF) * bright
+            val g = ((color shr 8) and 0xFF) * bright
+            val b = (color and 0xFF) * bright
+            return Color.rgb(r.toInt(), g.toInt(), b.toInt())
+        }
+
+        // Create multi-center radial rainbow drawable for preview (3 centers)
+        fun createRadialPreview(startStep: Int): android.graphics.drawable.Drawable {
+            val numColors = 7
+
+            fun buildColors(phaseOffset: Int): IntArray {
+                val colors = IntArray(numColors)
+                for (i in 0 until numColors) {
+                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
+                    val color = rainbowColor(colorStep)
+                    colors[i] = adjustBrightness(color, brightness)
+                }
+                return colors
+            }
+
+            return object : android.graphics.drawable.Drawable() {
+                private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+                override fun draw(canvas: android.graphics.Canvas) {
+                    val bounds = bounds
+                    val w = bounds.width().toFloat()
+                    val h = bounds.height().toFloat()
+
+                    // 3 center positions
+                    val cx1 = bounds.left + w * 0.12f
+                    val cy1 = bounds.top + h * 0.3f
+                    val cx2 = bounds.left + w * 0.88f
+                    val cy2 = bounds.top + h * 0.5f
+                    val cx3 = bounds.left + w * 0.5f
+                    val cy3 = bounds.top + h * 0.7f
+
+                    val radius = w * 0.7f
+                    val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
+
+                    // First gradient (base)
+                    paint.xfermode = null
+                    paint.shader = android.graphics.RadialGradient(
+                        cx1, cy1, radius, buildColors(0), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    // Second gradient (SCREEN blend)
+                    paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN)
+                    paint.shader = android.graphics.RadialGradient(
+                        cx2, cy2, radius, buildColors(512), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    // Third gradient (SCREEN blend)
+                    paint.shader = android.graphics.RadialGradient(
+                        cx3, cy3, radius, buildColors(1024), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    paint.xfermode = null
+                }
+
+                override fun setAlpha(alpha: Int) { paint.alpha = alpha }
+                override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
+                override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+            }
+        }
+
+        fun updatePreview(step: Int) {
+            previewBar.background = createRadialPreview(step)
+        }
+
+        var previewStep = 0
+        val previewHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        val previewRunnable = object : Runnable {
+            override fun run() {
+                if (enabled) {
+                    previewStep = (previewStep + 8) % 1536
+                    updatePreview(previewStep)
+                    previewHandler.postDelayed(this, (speed / 192L).coerceAtLeast(16L))
+                }
+            }
+        }
+
+        // Initialize preview
+        updatePreview(0)
+
+        enableCb.setOnCheckedChangeListener { _, isChecked ->
+            enabled = isChecked
+            if (enabled) {
+                // Disable wild mode if enabling smooth
+                KeyboardPrefs.setRgbWildEnabled(ctx, false)
+                previewHandler.post(previewRunnable)
+            } else {
+                previewHandler.removeCallbacks(previewRunnable)
+                updatePreview(0)
+            }
+        }
+
+        speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                speed = progress + KeyboardPrefs.RGB_SPEED_MIN
+                speedLabel.text = "Speed: ${speed / 1000}s per cycle"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        satSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                saturation = progress / 100f
+                satLabel.text = "Saturation: ${progress}%"
+                updatePreview(previewStep)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        brightSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                brightness = progress / 100f
+                brightLabel.text = "Brightness: ${progress}%"
+                updatePreview(previewStep)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        if (enabled) {
+            previewHandler.post(previewRunnable)
+        }
+
+        val dialog = AlertDialog.Builder(ctx)
+            .setTitle("RGB Smooth")
+            .setView(root)
+            .setNegativeButton("Cancel") { _, _ ->
+                previewHandler.removeCallbacks(previewRunnable)
+            }
+            .setPositiveButton("Save") { _, _ ->
+                previewHandler.removeCallbacks(previewRunnable)
+                if (enabled) KeyboardPrefs.setRgbWildEnabled(ctx, false)
+                KeyboardPrefs.setRgbSmoothEnabled(ctx, enabled)
+                KeyboardPrefs.setRgbSmoothSpeed(ctx, speed)
+                KeyboardPrefs.setRgbSmoothSaturation(ctx, saturation)
+                KeyboardPrefs.setRgbSmoothBrightness(ctx, brightness)
+                Toast.makeText(ctx, "RGB Smooth settings saved", Toast.LENGTH_SHORT).show()
+            }
+            .setOnDismissListener {
+                previewHandler.removeCallbacks(previewRunnable)
+            }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun showRgbWildDialog() {
+        val ctx = this
+
+        var enabled = KeyboardPrefs.isRgbWildEnabled(ctx)
+        var speed = KeyboardPrefs.getRgbWildSpeed(ctx)
+        var saturation = KeyboardPrefs.getRgbWildSaturation(ctx)
+        var brightness = KeyboardPrefs.getRgbWildBrightness(ctx)
+
+        val root = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24.dp(ctx), 16.dp(ctx), 24.dp(ctx), 8.dp(ctx))
+        }
+
+        // Enable checkbox
+        val enableCb = CheckBox(ctx).apply {
+            text = "Enable RGB Wild Background"
+            isChecked = enabled
+            textSize = 16f
+        }
+        root.addView(enableCb)
+
+        // Preview bar - will flash rapidly with radial gradient
+        val previewBar = View(ctx).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                48.dp(ctx)
+            ).apply {
+                topMargin = 16.dp(ctx)
+                bottomMargin = 8.dp(ctx)
+            }
+        }
+        root.addView(previewBar)
+
+        // Speed label
+        val speedLabel = TextView(ctx).apply {
+            text = "Speed: ${speed}ms"
+            textSize = 14f
+            setPadding(0, 12.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(speedLabel)
+
+        val speedSeekBar = SeekBar(ctx).apply {
+            max = KeyboardPrefs.RGB_WILD_SPEED_MAX - KeyboardPrefs.RGB_WILD_SPEED_MIN
+            progress = speed - KeyboardPrefs.RGB_WILD_SPEED_MIN
+        }
+        root.addView(speedSeekBar)
+
+        val speedHint = TextView(ctx).apply {
+            text = "Insane ← → Chill"
+            textSize = 12f
+            gravity = android.view.Gravity.CENTER
+            setTextColor(0xFF888888.toInt())
+        }
+        root.addView(speedHint)
+
+        // Saturation
+        val satLabel = TextView(ctx).apply {
+            text = "Saturation: ${(saturation * 100).toInt()}%"
+            textSize = 14f
+            setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(satLabel)
+
+        val satSeekBar = SeekBar(ctx).apply {
+            max = 70  // 30% to 100%
+            progress = ((saturation - 0.3f) * 100).toInt()
+        }
+        root.addView(satSeekBar)
+
+        // Brightness
+        val brightLabel = TextView(ctx).apply {
+            text = "Brightness: ${(brightness * 100).toInt()}%"
+            textSize = 14f
+            setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
+        }
+        root.addView(brightLabel)
+
+        val brightSeekBar = SeekBar(ctx).apply {
+            max = 70  // 30% to 100%
+            progress = ((brightness - 0.3f) * 100).toInt()
+        }
+        root.addView(brightSeekBar)
+
+        val random = java.util.Random()
+
+        // Rainbow color function - 6 segments × 256 steps = 1536 total
+        fun rainbowColor(x: Int): Int {
+            val step = x % 1536
+            val segment = step / 256
+            val c = step % 256
+            return when (segment) {
+                0 -> Color.rgb(255, c, 0)           // Red to Yellow
+                1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
+                2 -> Color.rgb(0, 255, c)           // Green to Cyan
+                3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
+                4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
+                5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
+                else -> Color.rgb(255, 0, 0)
+            }
+        }
+
+        fun adjustBrightness(color: Int, bright: Float): Int {
+            val r = ((color shr 16) and 0xFF) * bright
+            val g = ((color shr 8) and 0xFF) * bright
+            val b = (color and 0xFF) * bright
+            return Color.rgb(r.toInt(), g.toInt(), b.toInt())
+        }
+
+        // Create multi-center radial rainbow drawable for preview (3 centers)
+        fun createRadialPreview(startStep: Int): android.graphics.drawable.Drawable {
+            val numColors = 7
+
+            fun buildColors(phaseOffset: Int): IntArray {
+                val colors = IntArray(numColors)
+                for (i in 0 until numColors) {
+                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
+                    val color = rainbowColor(colorStep)
+                    colors[i] = adjustBrightness(color, brightness)
+                }
+                return colors
+            }
+
+            return object : android.graphics.drawable.Drawable() {
+                private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+                override fun draw(canvas: android.graphics.Canvas) {
+                    val bounds = bounds
+                    val w = bounds.width().toFloat()
+                    val h = bounds.height().toFloat()
+
+                    // 3 center positions
+                    val cx1 = bounds.left + w * 0.12f
+                    val cy1 = bounds.top + h * 0.3f
+                    val cx2 = bounds.left + w * 0.88f
+                    val cy2 = bounds.top + h * 0.5f
+                    val cx3 = bounds.left + w * 0.5f
+                    val cy3 = bounds.top + h * 0.7f
+
+                    val radius = w * 0.7f
+                    val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
+
+                    // First gradient (base)
+                    paint.xfermode = null
+                    paint.shader = android.graphics.RadialGradient(
+                        cx1, cy1, radius, buildColors(0), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    // Second gradient (SCREEN blend)
+                    paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN)
+                    paint.shader = android.graphics.RadialGradient(
+                        cx2, cy2, radius, buildColors(512), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    // Third gradient (SCREEN blend)
+                    paint.shader = android.graphics.RadialGradient(
+                        cx3, cy3, radius, buildColors(1024), positions,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    canvas.drawRect(bounds, paint)
+
+                    paint.xfermode = null
+                }
+
+                override fun setAlpha(alpha: Int) { paint.alpha = alpha }
+                override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
+                override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+            }
+        }
+
+        var startStep = 0
+        var targetStep = random.nextInt(1536)
+        val frameInterval = 16L  // ~60fps for smooth animation
+
+        // Ease-in-out function for smooth acceleration/deceleration
+        fun easeInOutCubic(t: Float): Float {
+            return if (t < 0.5f) {
+                4f * t * t * t
+            } else {
+                1f - (-2f * t + 2f).let { it * it * it } / 2f
+            }
+        }
+
+        fun updatePreview(step: Int) {
+            previewBar.background = createRadialPreview(step)
+        }
+
+        val previewHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        var transitionStartTime = System.currentTimeMillis()
+
+        val previewRunnable = object : Runnable {
+            override fun run() {
+                if (enabled) {
+                    val now = System.currentTimeMillis()
+                    val transitionDuration = (speed * 0.85f).toLong()
+                    val elapsed = now - transitionStartTime
+
+                    // Calculate eased progress
+                    val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
+                    val easedProgress = easeInOutCubic(rawProgress)
+
+                    // Calculate shortest path difference
+                    var diff = targetStep - startStep
+                    if (diff > 768) diff -= 1536
+                    if (diff < -768) diff += 1536
+
+                    // Interpolate with easing
+                    val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
+                    updatePreview(currentStep)
+
+                    // Pick new target when transition completes
+                    if (elapsed >= speed) {
+                        startStep = targetStep
+                        targetStep = random.nextInt(1536)
+                        transitionStartTime = now
+                    }
+
+                    previewHandler.postDelayed(this, frameInterval)
+                }
+            }
+        }
+
+        // Initialize preview with radial gradient
+        previewBar.background = createRadialPreview(0)
+
+        enableCb.setOnCheckedChangeListener { _, isChecked ->
+            enabled = isChecked
+            if (enabled) {
+                // Disable smooth mode if enabling wild
+                KeyboardPrefs.setRgbSmoothEnabled(ctx, false)
+                previewHandler.post(previewRunnable)
+            } else {
+                previewHandler.removeCallbacks(previewRunnable)
+                previewBar.background = createRadialPreview(0)
+            }
+        }
+
+        speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                speed = progress + KeyboardPrefs.RGB_WILD_SPEED_MIN
+                speedLabel.text = "Speed: ${speed}ms"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        satSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                saturation = 0.3f + (progress / 100f)
+                satLabel.text = "Saturation: ${(saturation * 100).toInt()}%"
+                previewBar.background = createRadialPreview(startStep)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        brightSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                brightness = 0.3f + (progress / 100f)
+                brightLabel.text = "Brightness: ${(brightness * 100).toInt()}%"
+                previewBar.background = createRadialPreview(startStep)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        if (enabled) {
+            previewHandler.post(previewRunnable)
+        }
+
+        val dialog = AlertDialog.Builder(ctx)
+            .setTitle("RGB Wild")
+            .setView(root)
+            .setNegativeButton("Cancel") { _, _ ->
+                previewHandler.removeCallbacks(previewRunnable)
+            }
+            .setPositiveButton("Save") { _, _ ->
+                previewHandler.removeCallbacks(previewRunnable)
+                if (enabled) KeyboardPrefs.setRgbSmoothEnabled(ctx, false)
+                KeyboardPrefs.setRgbWildEnabled(ctx, enabled)
+                KeyboardPrefs.setRgbWildSpeed(ctx, speed)
+                KeyboardPrefs.setRgbWildSaturation(ctx, saturation)
+                KeyboardPrefs.setRgbWildBrightness(ctx, brightness)
+                Toast.makeText(ctx, "RGB Wild settings saved", Toast.LENGTH_SHORT).show()
+            }
+            .setOnDismissListener {
+                previewHandler.removeCallbacks(previewRunnable)
+            }
+            .create()
 
         dialog.show()
     }

@@ -123,6 +123,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpacePickerWasShown = false
 
     private val DUAL_SPACE_HOLD_MS = 4000L
+
+    // RGB animation
+    private var rgbAnimationJob: Job? = null
+    private var rgbCurrentHue = 0f
+    private val rgbRandom = java.util.Random()
     /* ───────── LIFECYCLE ───────── */
     //claude sync
 
@@ -149,20 +154,22 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
 
 
-        // U onCreateInputView() ili onStartInputView()
-        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
-        val bg = if (useTheme) {
-            // Use custom theme defaults
-            KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
-        } else {
-            KeyboardPrefs.getBackgroundColor(this)  // custom boja
+        // U onCreateInputView() - postavi početnu pozadinu (RGB se pokreće u onStartInputView)
+        if (!KeyboardPrefs.isAnyRgbModeEnabled(this)) {
+            val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+            val bg = if (useTheme) {
+                // Use custom theme defaults
+                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
+            } else {
+                KeyboardPrefs.getBackgroundColor(this)  // custom boja
+            }
+
+            rootView.setBackgroundColor(bg)
+            overlayLayer.setBackgroundColor(bg)
+            keyboardContainer.setBackgroundColor(bg)
+
+            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
         }
-
-        rootView.setBackgroundColor(bg)
-        overlayLayer.setBackgroundColor(bg)
-        keyboardContainer.setBackgroundColor(bg)
-
-        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
 
 
         overlayLayer.clipChildren = false
@@ -334,18 +341,23 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
         lastIsDark = isDarkNow
 
-        // NOVO: Postavi background boju iz KeyboardPrefs
-        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
-        val bg = if (useTheme) {
-            // Use custom theme defaults
-            KeyboardPrefs.getThemeDefaultsForMode(this, isDarkNow).keyboardBg
+        // NOVO: Postavi background boju iz KeyboardPrefs ili RGB animaciju
+        if (KeyboardPrefs.isAnyRgbModeEnabled(this)) {
+            startRgbAnimation()
         } else {
-            KeyboardPrefs.getBackgroundColor(this)
+            stopRgbAnimation()
+            val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+            val bg = if (useTheme) {
+                // Use custom theme defaults
+                KeyboardPrefs.getThemeDefaultsForMode(this, isDarkNow).keyboardBg
+            } else {
+                KeyboardPrefs.getBackgroundColor(this)
+            }
+            rootView.setBackgroundColor(bg)
+            overlayLayer.setBackgroundColor(bg)
+            keyboardContainer.setBackgroundColor(bg)
+            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
         }
-        rootView.setBackgroundColor(bg)
-        overlayLayer.setBackgroundColor(bg)
-        keyboardContainer.setBackgroundColor(bg)
-        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
 
         // NOVO: Postavi side buttons boje prema temi
         val sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(this)
@@ -392,6 +404,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     override fun onWindowHidden() {
         super.onWindowHidden()
         resetTransientState()
+        stopRgbAnimation()
     }
 
     override fun onEvaluateFullscreenMode() = false
@@ -2643,7 +2656,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 // Primijeni iste boje kao za obične tipke u glavnom layoutu
                 if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
                     val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-                    if (allSame) {
+                    val useTheme = KeyboardPrefs.getKeysUseTheme(this)
+
+                    if (useTheme) {
+                        // Use custom theme defaults
+                        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                        kv.setTextColor(themeColors.keyText)
+                        kv.customBgColor = themeColors.keyFill
+                    } else if (allSame) {
                         kv.customBgColor = KeyboardPrefs.getKeysBg(this)
                         kv.setTextColor(KeyboardPrefs.getKeysTextColor(this))
                     } else {
@@ -3238,6 +3258,224 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         return nextSpaceIndex
     }
+
+    /* ───────── RGB ANIMATION ───────── */
+
+    // RGB Rainbow color calculation - 6 segments × 256 steps = 1536 total steps
+    // Produces smooth transitions: Red→Yellow→Green→Cyan→Blue→Magenta→Red
+    private fun rainbowColor(x: Int): Int {
+        val step = ((x % 1536) + 1536) % 1536  // Handle negative values
+        val segment = step / 256
+        val c = step % 256
+
+        return when (segment) {
+            0 -> Color.rgb(255, c, 0)           // Red to Yellow
+            1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
+            2 -> Color.rgb(0, 255, c)           // Green to Cyan
+            3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
+            4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
+            5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
+            else -> Color.rgb(255, 0, 0)        // Fallback to Red
+        }
+    }
+
+    // Apply brightness to a rainbow color
+    private fun adjustBrightness(color: Int, brightness: Float): Int {
+        val r = ((color shr 16) and 0xFF) * brightness
+        val g = ((color shr 8) and 0xFF) * brightness
+        val b = (color and 0xFF) * brightness
+        return Color.rgb(r.toInt(), g.toInt(), b.toInt())
+    }
+
+    // Create multi-center radial rainbow gradient
+    // 3 centers: first letter row 1, last letter row 2, 3rd letter row 3
+    private fun createRadialRainbowDrawable(startStep: Int, brightness: Float): android.graphics.drawable.Drawable {
+        val numColors = 7
+
+        return object : android.graphics.drawable.Drawable() {
+            private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+            private fun buildColors(phaseOffset: Int): IntArray {
+                val colors = IntArray(numColors)
+                for (i in 0 until numColors) {
+                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
+                    val color = rainbowColor(colorStep)
+                    colors[i] = adjustBrightness(color, brightness)
+                }
+                return colors
+            }
+
+            override fun draw(canvas: android.graphics.Canvas) {
+                val bounds = bounds
+                val w = bounds.width().toFloat()
+                val h = bounds.height().toFloat()
+                val maxDim = maxOf(w, h)
+
+                // 3 center positions (approximate key positions):
+                // Center 1: First letter, row 1 - top left area
+                val cx1 = bounds.left + w * 0.12f
+                val cy1 = bounds.top + h * 0.15f
+                // Center 2: Last letter, row 2 - right middle area
+                val cx2 = bounds.left + w * 0.88f
+                val cy2 = bounds.top + h * 0.42f
+                // Center 3: 3rd letter, row 3 - left-center lower area
+                val cx3 = bounds.left + w * 0.28f
+                val cy3 = bounds.top + h * 0.68f
+
+                val radius = maxDim * 0.9f
+                val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
+
+                // Draw 3 overlapping radial gradients with different phase offsets
+                // Using SCREEN blend mode for additive-like blending
+                paint.xfermode = null
+
+                // First gradient (base layer)
+                val colors1 = buildColors(0)
+                paint.shader = android.graphics.RadialGradient(
+                    cx1, cy1, radius, colors1, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                // Second gradient (blend on top)
+                paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN)
+                val colors2 = buildColors(512)  // Phase offset for variety
+                paint.shader = android.graphics.RadialGradient(
+                    cx2, cy2, radius, colors2, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                // Third gradient (blend on top)
+                val colors3 = buildColors(1024)  // Another phase offset
+                paint.shader = android.graphics.RadialGradient(
+                    cx3, cy3, radius, colors3, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                paint.xfermode = null
+            }
+
+            override fun setAlpha(alpha: Int) { paint.alpha = alpha }
+            override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
+            override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+        }
+    }
+
+    private fun applyRadialRainbow(startStep: Int, brightness: Float) {
+        val drawable1 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable2 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable3 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable4 = createRadialRainbowDrawable(startStep, brightness)
+
+        rootView.background = drawable1
+        overlayLayer.background = drawable2
+        keyboardContainer.background = drawable3
+        window?.window?.setBackgroundDrawable(drawable4)
+    }
+
+    private var rgbStep = 0
+
+    private fun startRgbSmooth() {
+        stopRgbAnimation()
+
+        val speedMs = KeyboardPrefs.getRgbSmoothSpeed(this)
+        val brightness = KeyboardPrefs.getRgbSmoothBrightness(this)
+
+        // Calculate delay per step (1536 steps for full rainbow cycle)
+        val delayPerStep = (speedMs / 1536f).toLong().coerceAtLeast(8L)
+
+        rgbAnimationJob = serviceScope.launch {
+            while (isActive) {
+                rgbStep = (rgbStep + 4) % 1536  // Move through rainbow
+                applyRadialRainbow(rgbStep, brightness)
+                delay(delayPerStep)
+            }
+        }
+    }
+
+    private fun startRgbWild() {
+        stopRgbAnimation()
+
+        val speedMs = KeyboardPrefs.getRgbWildSpeed(this)
+        val brightness = KeyboardPrefs.getRgbWildBrightness(this)
+        val frameInterval = 16L  // ~60fps for smooth animation
+        val transitionDuration = (speedMs * 0.85f).toLong()  // 85% of interval for transition
+
+        // Ease-in-out function for smooth acceleration/deceleration
+        fun easeInOutCubic(t: Float): Float {
+            return if (t < 0.5f) {
+                4f * t * t * t
+            } else {
+                1f - (-2f * t + 2f).let { it * it * it } / 2f
+            }
+        }
+
+        rgbAnimationJob = serviceScope.launch {
+            var startStep = 0
+            var targetStep = rgbRandom.nextInt(1536)
+            var transitionStartTime = System.currentTimeMillis()
+
+            while (isActive) {
+                val now = System.currentTimeMillis()
+                val elapsed = now - transitionStartTime
+
+                // Calculate eased progress
+                val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
+                val easedProgress = easeInOutCubic(rawProgress)
+
+                // Calculate shortest path difference
+                var diff = targetStep - startStep
+                if (diff > 768) diff -= 1536
+                if (diff < -768) diff += 1536
+
+                // Interpolate with easing
+                val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
+
+                applyRadialRainbow(currentStep, brightness)
+
+                // Pick new target when transition completes
+                if (elapsed >= speedMs) {
+                    startStep = targetStep
+                    targetStep = rgbRandom.nextInt(1536)
+                    transitionStartTime = now
+                }
+
+                delay(frameInterval)
+            }
+        }
+    }
+
+    private fun stopRgbAnimation() {
+        rgbAnimationJob?.cancel()
+        rgbAnimationJob = null
+    }
+
+    private fun restoreNormalBackground() {
+        stopRgbAnimation()
+
+        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+        val bg = if (useTheme) {
+            KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
+        } else {
+            KeyboardPrefs.getBackgroundColor(this)
+        }
+
+        rootView.setBackgroundColor(bg)
+        overlayLayer.setBackgroundColor(bg)
+        keyboardContainer.setBackgroundColor(bg)
+        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
+    }
+
+    private fun startRgbAnimation() {
+        when {
+            KeyboardPrefs.isRgbSmoothEnabled(this) -> startRgbSmooth()
+            KeyboardPrefs.isRgbWildEnabled(this) -> startRgbWild()
+            else -> restoreNormalBackground()
+        }
+    }
+
     /* ───────── INNER CLASSES ───────── */
 
     class CharSelectorAdapter(
