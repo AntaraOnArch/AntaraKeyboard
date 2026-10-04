@@ -631,7 +631,7 @@ object KeyboardPrefs {
         // Dark mode
         const val DARK_KEY_FILL = 0xFF3E3E3E.toInt()
         const val DARK_KEY_TEXT = 0xFFFFFFFF.toInt()
-        const val DARK_SPACE_FILL = 0xFF4A4A4A.toInt()
+        const val DARK_SPACE_FILL = 0xFFF5E7E4.toInt()
         const val DARK_KEYBOARD_BG = 0xFF000000.toInt()
     }
 

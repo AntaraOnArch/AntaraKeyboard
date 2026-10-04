@@ -362,8 +362,9 @@ class MainActivity : AppCompatActivity() {
             getColor(R.color.keyboard_bg_light)
         }
 
-        // 1. Space colors — malo svjetlije od ostalih tipki
-        val spaceFill = if (isDark) 0xFF4A4A4A.toInt() else 0xFFD3CAC8.toInt()
+        // 1. Space colors — iz tvorničkih defaulta teme
+        val spaceFill = if (isDark) KeyboardPrefs.FactoryDefaults.DARK_SPACE_FILL
+            else KeyboardPrefs.FactoryDefaults.LIGHT_SPACE_FILL
         KeyboardPrefs.setSpaceColors(this, spaceFill, spaceFill, true)
 
         // opcionalno: počisti eventualni stari individual zapis za " "

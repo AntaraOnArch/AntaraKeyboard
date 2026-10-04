@@ -1,23 +1,23 @@
 package com.example.antarakeyboard.service
 
 import android.content.Context
-import android.graphics.Color
+import android.graphics.Outline
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.Rect
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
-import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.KeyView
-import com.example.antarakeyboard.ui.PopupColors
 
 /**
  * Manages long press popup for character selection.
@@ -31,14 +31,28 @@ class LongPressPopupManager(
     private val keyHeightProvider: () -> Int,
     private val isPortraitProvider: () -> Boolean,
     private val currentShapeProvider: () -> KeyShape,
-    private val isDarkModeProvider: () -> Boolean
+    private val colorsProvider: (anchor: View) -> Colors,
+    /** Current RGB theme frame, or null when no RGB theme is active. */
+    private val rgbBackgroundProvider: () -> Drawable?
 ) {
+    /** Colors resolved from the user's theme / Colors settings at popup open time. */
+    data class Colors(
+        val popupBg: Int,
+        val keyBg: Int,
+        val keyText: Int,
+        val activeBg: Int,
+        val activeText: Int
+    )
+
+    private var lpColors: Colors? = null
+
     private var longPressPopup: PopupWindow? = null
     private var lpRects: List<Rect> = emptyList()
     private var lpChars: List<String> = emptyList()
     private var lpSelectedIndex: Int = 0
     private var lpPreviewTv: TextView? = null
     private var lpGrid: GridLayout? = null
+    private var lpRoot: LinearLayout? = null
     private var lpHasLiveInserted = false
 
     private val LIVE_REPLACE = false
@@ -55,6 +69,9 @@ class LongPressPopupManager(
         lpSelectedIndex = 0
         lpHasLiveInserted = false
 
+        val colors = colorsProvider(anchor)
+        lpColors = colors
+
         val overlayLayer = overlayLayerProvider()
         val themedCtx = themedCtxProvider()
 
@@ -63,17 +80,34 @@ class LongPressPopupManager(
 
         val cols = minOf(7, chars.size)
 
+        val corner = 14.dp(context).toFloat()
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(10.dp(context), 10.dp(context), 10.dp(context), 10.dp(context))
-            setBackgroundColor(PopupColors.PREVIEW_BG)
+            background = rgbBackgroundProvider() ?: GradientDrawable().apply {
+                cornerRadius = corner
+                setColor(colors.popupBg)
+            }
+            // Obrub u foregroundu da ostane i kad RGB mijenja pozadinu
+            foreground = GradientDrawable().apply {
+                cornerRadius = corner
+                setColor(0)
+                setStroke(1.dp(context), (colors.keyText and 0x00FFFFFF) or 0x40000000)
+            }
+            outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, corner)
+                }
+            }
+            clipToOutline = true
             layoutParams = ViewGroup.LayoutParams(maxW, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
+        lpRoot = root
 
         val preview = TextView(context).apply {
             text = chars.first()
             textSize = 26f
-            setTextColor(PopupColors.PREVIEW_TEXT)
+            setTextColor(colors.keyText)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(0, 0, 0, 6.dp(context))
@@ -103,10 +137,6 @@ class LongPressPopupManager(
         val popupKeyH = (keyHeightProvider() * 0.62f).toInt().coerceIn(28.dp(context), 70.dp(context))
         val popupTextSize = if (isPortraitProvider()) 16f else 14f
 
-        val isDark = isDarkModeProvider()
-        val keyTextColor = themeColor(themedCtx, R.attr.keyText,
-            if (isDark) Color.WHITE else Color.BLACK)
-
         chars.forEachIndexed { idx, ch ->
             val kv = KeyView(themedCtx).apply {
                 tag = idx
@@ -118,7 +148,8 @@ class LongPressPopupManager(
                 isFocusable = false
                 textSize = popupTextSize
 
-                setTextColor(keyTextColor)
+                customBgColor = colors.keyBg
+                setTextColor(colors.keyText)
                 includeFontPadding = false
                 setPadding(0, 0, 0, 0)
             }
@@ -144,13 +175,16 @@ class LongPressPopupManager(
         ).apply {
             isOutsideTouchable = false
             isFocusable = false
-            isClippingEnabled = true
+            // Gornji red: popup mora moći izaći iznad ruba tipkovnice
+            isClippingEnabled = false
             elevation = 10.dp(context).toFloat()
             setOnDismissListener {
                 longPressPopup = null
                 lpPreviewTv = null
                 lpGrid = null
+                lpRoot = null
                 lpChars = emptyList()
+                lpColors = null
                 lpHasLiveInserted = false
             }
         }
@@ -190,8 +224,9 @@ class LongPressPopupManager(
             maxX
         )
 
+        // rootLoc je screen pozicija overlaya — dopušta Y iznad tipkovnice, ali ne iznad ekrana
         val y = desiredY.coerceIn(
-            minPopupOffset,
+            minPopupOffset - rootLoc[1],
             maxY
         )
 
@@ -226,13 +261,14 @@ class LongPressPopupManager(
         }
     }
 
+    /** Called on every RGB animation frame so the popup background animates with the keyboard. */
+    fun updateRgbBackground(drawable: Drawable) {
+        lpRoot?.background = drawable
+    }
+
     private fun updateLongPressHighlight() {
         val grid = lpGrid ?: return
-        val themedCtx = themedCtxProvider()
-
-        val fillActive = themeColor(themedCtx, R.attr.enterFill, 0xFF2E55E7.toInt())
-        val textActive = themeColor(themedCtx, R.attr.enterText, 0xFFFFFFFF.toInt())
-        val textNormal = themeColor(themedCtx, R.attr.keyText, 0xFFFFFFFF.toInt())
+        val colors = lpColors ?: return
 
         for (i in 0 until grid.childCount) {
             val child = grid.getChildAt(i)
@@ -240,12 +276,12 @@ class LongPressPopupManager(
 
             if (child is KeyView) {
                 if (idx == lpSelectedIndex) {
-                    child.customBgColor = fillActive
-                    child.setTextColor(textActive)
+                    child.customBgColor = colors.activeBg
+                    child.setTextColor(colors.activeText)
                     child.alpha = 1f
                 } else {
-                    child.customBgColor = null
-                    child.setTextColor(textNormal)
+                    child.customBgColor = colors.keyBg
+                    child.setTextColor(colors.keyText)
                     child.alpha = 0.65f
                 }
             } else {
@@ -349,19 +385,6 @@ class LongPressPopupManager(
         lpSelectedIndex = 0
         if (longPressPopup != null) {
             updateLongPressHighlight()
-        }
-    }
-
-    private fun themeColor(ctx: Context, attr: Int, fallback: Int): Int {
-        val tv = TypedValue()
-        val th = ctx.theme
-        return if (
-            th.resolveAttribute(attr, tv, true) &&
-            tv.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT
-        ) {
-            tv.data
-        } else {
-            fallback
         }
     }
 }

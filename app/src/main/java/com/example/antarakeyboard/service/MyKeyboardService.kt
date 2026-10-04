@@ -218,7 +218,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             keyHeightProvider = { keyHeight() },
             isPortraitProvider = { isPortrait() },
             currentShapeProvider = { currentShape },
-            isDarkModeProvider = { lastIsDark == true }
+            colorsProvider = { anchor -> longPressPopupColors(anchor) },
+            rgbBackgroundProvider = {
+                if (rgbAnimationJob != null) createRadialRainbowDrawable(lastRgbStep, lastRgbBrightness) else null
+            }
         )
 
         edgeOverlayManager = EdgeOverlayManager(
@@ -269,7 +272,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         hapticManager = HapticManager(this)
         hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
-        keyPreviewManager = KeyPreviewManager(this) { overlayLayer }
+        keyPreviewManager = KeyPreviewManager(
+            this,
+            overlayLayerProvider = { overlayLayer },
+            colorsProvider = { anchor -> pressedKeyColors(anchor) }
+        )
 
         val basePadL = overlayLayer.paddingLeft
         val basePadT = overlayLayer.paddingTop
@@ -1518,6 +1525,42 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private fun showLongPressPopup(anchor: View, chars: List<String>) {
         longPressPopupManager.showLongPressPopup(anchor, chars)
+    }
+
+    /**
+     * Popup follows the active theme / Colors settings: keyboard background as surface,
+     * the long-pressed key's own colors for cells, Enter colors for the selected cell.
+     */
+    private fun longPressPopupColors(anchor: View): LongPressPopupManager.Colors {
+        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+
+        // Fallback kad RGB animacija ne radi; inače rgbBackgroundProvider daje živu pozadinu
+        val popupBg = if (
+            KeyboardPrefs.isAnyRgbModeEnabled(this) || KeyboardPrefs.getBackgroundUseTheme(this)
+        ) {
+            themeColors.keyboardBg
+        } else {
+            KeyboardPrefs.getBackgroundColor(this)
+        }
+
+        val (keyBg, keyText) = pressedKeyColors(anchor)
+        return LongPressPopupManager.Colors(
+            popupBg = popupBg,
+            keyBg = keyBg,
+            keyText = keyText,
+            activeBg = KeyboardPrefs.getEnterBg(this),
+            activeText = KeyboardPrefs.getEnterIcon(this)
+        )
+    }
+
+    /** (background, text) of a key as drawn — custom Colors setting or theme default. */
+    private fun pressedKeyColors(anchor: View): Pair<Int, Int> {
+        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+        val kv = anchor as? KeyView
+        return Pair(
+            kv?.customBgColor ?: themeColors.keyFill,
+            kv?.currentTextColor ?: themeColors.keyText
+        )
     }
 
     private fun updateLongPressHighlight() {
@@ -3373,9 +3416,17 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         overlayLayer.background = drawable2
         keyboardContainer.background = drawable3
         window?.window?.setBackgroundDrawable(drawable4)
+
+        lastRgbStep = startStep
+        lastRgbBrightness = brightness
+        if (longPressPopupManager.isPopupShowing) {
+            longPressPopupManager.updateRgbBackground(createRadialRainbowDrawable(startStep, brightness))
+        }
     }
 
     private var rgbStep = 0
+    private var lastRgbStep = 0
+    private var lastRgbBrightness = 1f
 
     private fun startRgbSmooth() {
         stopRgbAnimation()

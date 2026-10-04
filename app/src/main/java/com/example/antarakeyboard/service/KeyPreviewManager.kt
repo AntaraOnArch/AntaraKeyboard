@@ -1,7 +1,6 @@
 package com.example.antarakeyboard.service
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
@@ -10,7 +9,6 @@ import android.widget.FrameLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import com.example.antarakeyboard.extensions.dp
-import com.example.antarakeyboard.ui.PopupColors
 
 /**
  * Manages key preview popup that appears above pressed key.
@@ -18,7 +16,9 @@ import com.example.antarakeyboard.ui.PopupColors
  */
 class KeyPreviewManager(
     private val context: Context,
-    private val overlayLayerProvider: () -> FrameLayout
+    private val overlayLayerProvider: () -> FrameLayout,
+    /** (background, text) of the pressed key, so the preview matches it. */
+    private val colorsProvider: (anchor: View) -> Pair<Int, Int>
 ) {
     private var previewPopup: PopupWindow? = null
     private var previewTextView: TextView? = null
@@ -47,18 +47,19 @@ class KeyPreviewManager(
         hide()
 
         val overlayLayer = overlayLayerProvider()
+        val (bgColor, textColor) = colorsProvider(anchorView)
 
         // Create preview TextView
         val textView = TextView(context).apply {
             text = label
             textSize = 28f
-            setTextColor(PopupColors.PREVIEW_TEXT)
+            setTextColor(textColor)
             gravity = Gravity.CENTER
             includeFontPadding = false
 
             // Background with rounded corners
             background = GradientDrawable().apply {
-                setColor(PopupColors.PREVIEW_BG)
+                setColor(bgColor)
                 cornerRadius = 8.dp(context).toFloat()
             }
 
@@ -90,6 +91,8 @@ class KeyPreviewManager(
         ).apply {
             isOutsideTouchable = false
             isFocusable = false
+            // Gornji red: preview mora moći izaći iznad ruba tipkovnice
+            isClippingEnabled = false
             elevation = 8.dp(context).toFloat()
         }
 
@@ -102,9 +105,11 @@ class KeyPreviewManager(
         val x = anchorLoc[0] - rootLoc[0] + (anchorView.width - popupWidth) / 2
         val y = anchorLoc[1] - rootLoc[1] - popupHeight - 8.dp(context)
 
-        // Clamp to screen bounds
+        // Clamp to screen bounds (y may go above the keyboard, but not above the screen top)
+        val overlayScreenLoc = IntArray(2)
+        overlayLayer.getLocationOnScreen(overlayScreenLoc)
         val clampedX = x.coerceIn(4.dp(context), overlayLayer.width - popupWidth - 4.dp(context))
-        val clampedY = y.coerceAtLeast(4.dp(context))
+        val clampedY = y.coerceAtLeast(4.dp(context) - overlayScreenLoc[1])
 
         previewPopup?.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, clampedX, clampedY)
     }
