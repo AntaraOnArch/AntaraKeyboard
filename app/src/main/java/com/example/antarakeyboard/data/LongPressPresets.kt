@@ -41,6 +41,20 @@ object LongPressPresets {
             else -> getForSystemLanguage(context)
         }
     }
+    /** Every special letter bound in the Latin preset (lower + upper case). */
+    fun allLatinLetters(): List<String> =
+        withUppercase(basicLatin()).values.flatten().distinct()
+
+    /** Every Cyrillic letter used by any Cyrillic preset (lower + upper case). */
+    fun allCyrillicLetters(): List<String> =
+        listOf(
+            serbianCyrillic(), bulgarianCyrillic(), russianCyrillic(),
+            ukrainianCyrillic(), macedonianCyrillic()
+        )
+            .flatMap { preset -> withUppercase(preset).let { it.keys + it.values.flatten() } }
+            .filter { s -> s.any { Character.UnicodeBlock.of(it) == Character.UnicodeBlock.CYRILLIC } }
+            .distinct()
+
     private fun getSystemLocale(context: Context): Locale {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             context.resources.configuration.locales[0]

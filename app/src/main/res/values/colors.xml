@@ -1,16 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- LIGHT -->
-    <color name="key_fill_light">#FFE6E6E6</color>
-    <color name="key_fill_pressed_light">#FFD6D6D6</color>
-    <color name="key_stroke_light">#FFB0B0B0</color>
+    <!-- UNIFIED - Auto-switch between light/dark via values-night -->
+    <color name="keyboard_bg">#FFFFFFFF</color>
+    <color name="key_fill">#FFF0F0F0</color>
+    <color name="key_fill_pressed">#FFE0E0E0</color>
+    <color name="key_stroke">#FFDDDDDD</color>
+    <color name="key_text">#FF000000</color>
+    <color name="space_fill">#FFD3CAC8</color>
 
-    <color name="key_text_light">#111111</color>
-    <color name="key_bg_light">#EDEDED</color>
-    <color name="keyboard_bg_light">#F7F7F7</color>
+    <!-- Main App - unified names -->
+    <color name="main_app_bg">#FFFFFFFF</color>
+    <color name="main_button_bg">#FFF0F0F0</color>
+    <color name="main_button_border">#FFCCCCCC</color>
+    <color name="main_button_text">#FF1A1A1A</color>
+    <color name="main_spinner_bg">#FFFFFFFF</color>
+    <color name="main_spinner_border">#FFAAAAAA</color>
 
+    <!-- Legacy names for compatibility -->
+    <color name="keyboard_bg_light">#FFFFFFFF</color>
+    <color name="key_fill_light">#FFF0F0F0</color>
+    <color name="key_fill_pressed_light">#FFE0E0E0</color>
+    <color name="key_stroke_light">#FFDDDDDD</color>
+    <color name="key_text_light">#FF000000</color>
+    <color name="key_bg_light">#FFF5F5F5</color>
+    <color name="main_app_bg_light">#FFFFFFFF</color>
+    <color name="main_button_bg_light">#FFF0F0F0</color>
+    <color name="main_button_border_light">#FFCCCCCC</color>
+    <color name="main_button_text_light">#FF1A1A1A</color>
+    <color name="main_spinner_bg_light">#FFFFFFFF</color>
+    <color name="main_spinner_border_light">#FFAAAAAA</color>
+
+    <!-- Special keys -->
     <color name="special_fill">#FF2E55E7</color>
     <color name="special_fill_pressed">#FF2A55FF</color>
     <color name="special_text">#FFFFFFFF</color>
-    <color name="key_fill_pressed">#FFD6D6D6</color>
+
+    <!-- Popup/overlay colors -->
+    <color name="popup_bg">#FFF5F5F5</color>
+    <color name="popup_container_bg">#FFEBEBEB</color>
+    <color name="popup_button_bg">#FFDEDEDE</color>
+
+    <!-- Dark mode colors (for explicit dark theme reference) -->
+    <color name="keyboard_bg_dark">#FF000000</color>
+    <color name="key_fill_dark">#FF3E3E3E</color>
+    <color name="key_text_dark">#FFFFFFFF</color>
 </resources>

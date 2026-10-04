@@ -5,9 +5,15 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.inputmethodservice.InputMethodService
-import android.os.Handler
-import android.os.Looper
 import android.view.ContextThemeWrapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -29,7 +35,9 @@ import com.example.antarakeyboard.EmojiData
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyConfig
@@ -52,7 +60,7 @@ import android.widget.RadioGroup
 import java.util.Locale
 
 
-class MyKeyboardService : InputMethodService() {
+class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     /* ───────── STATE ───────── */
 
@@ -64,21 +72,27 @@ class MyKeyboardService : InputMethodService() {
     private var currentShape: KeyShape = KeyShape.HEX
     private var activeShape: KeyShape = KeyShape.HEX
 
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private val swipeEditHandler = Handler(Looper.getMainLooper())
-    private val backspaceHoldHandler = Handler(Looper.getMainLooper())
+    // Coroutine scope for the service lifecycle
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     private val EDGE_GHOST_MARKER = KeyMarkers.EDGE_GHOST
     private val USER_EMPTY_MARKER = KeyMarkers.USER_EMPTY
     private val SPACE_LEFT_MARKER = KeyMarkers.SPACE_LEFT
     private val SPACE_RIGHT_MARKER = KeyMarkers.SPACE_RIGHT
 
-    private var longPressPopup: PopupWindow? = null
-
     private lateinit var rootView: View
     private lateinit var keyboardContainer: LinearLayout
     private lateinit var overlayLayer: FrameLayout
     private lateinit var themedCtx: Context
+
+    // Extracted managers
+    private lateinit var deleteRestoreManager: DeleteRestoreManager
+    private lateinit var edgeKeyManager: EdgeKeyManager
+    private lateinit var longPressPopupManager: LongPressPopupManager
+    private lateinit var edgeOverlayManager: EdgeOverlayManager
+    private lateinit var hapticManager: HapticManager
+    private lateinit var keyPreviewManager: KeyPreviewManager
 
     private val myDefaultNumericConfig: KeyboardConfig
         get() {
@@ -96,52 +110,30 @@ class MyKeyboardService : InputMethodService() {
     lateinit var inputController: KeyInputController
     private var landscapeSpaceIndex = 0
 
-    private var lpRects: List<android.graphics.Rect> = emptyList()
-    private var lpChars: List<String> = emptyList()
-    private var lpSelectedIndex: Int = 0
-    private var lpPreviewTv: TextView? = null
-    private var lpGrid: GridLayout? = null
-
     private var alphabetLayoutLower: KeyboardConfig? = null
     private var alphabetLayoutUpper: KeyboardConfig? = null
 
-    private var deleteRepeatRunnable: Runnable? = null
-    private var restoreRepeatRunnable: Runnable? = null
-    private var backspaceHoldRunnable: Runnable? = null
-    private var backspaceStartHoldRunnable: Runnable? = null
-
-    private var deleteRepeatMs: Long = 120L
-    private var restoreRepeatMs: Long = 120L
-    private var backspaceHoldMs: Long = 90L
-
-    private var lastDeletedText: String = ""
-    private val currentDeleteBatch = StringBuilder()
-    private var restoreProgressIndex: Int = 0
-
-    private var isDeleteGestureActive = false
-    private var isRestoreGestureActive = false
-    private var isBackspaceHoldActive = false
-
-    private val LIVE_REPLACE = false
-    private var lpHasLiveInserted = false
-
-    private var emojiPopup: PopupWindow? = null
+    private lateinit var emojiPickerManager: EmojiPickerManager
 
     private var languagePresetPopup: PopupWindow? = null
 
     private var leftSpaceHeld = false
     private var rightSpaceHeld = false
-    private var dualSpaceHoldRunnable: Runnable? = null
+    private var dualSpaceHoldJob: Job? = null
     private var dualSpacePickerWasShown = false
 
     private val DUAL_SPACE_HOLD_MS = 4000L
+
+    // RGB animation
+    private var rgbAnimationJob: Job? = null
+    private var rgbCurrentHue = 0f
+    private val rgbRandom = java.util.Random()
     /* ───────── LIFECYCLE ───────── */
     //claude sync
 
     override fun onCreateInputView(): View {
         KeyboardPrefs.ensureDefaultLongPress(this)
-        val isDark = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-            .getBoolean("dark_mode", true)
+        val isDark = PrefsManager.isDarkMode(this)
 
         val themeRes = if (isDark) {
             R.style.Theme_AntaraKeyboard_Dark
@@ -162,19 +154,22 @@ class MyKeyboardService : InputMethodService() {
 
 
 
-        // U onCreateInputView() ili onStartInputView()
-        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
-        val bg = if (useTheme) {
-            keyboardBgColor(themedCtx)  // theme boja
-        } else {
-            KeyboardPrefs.getBackgroundColor(this)  // custom boja
+        // U onCreateInputView() - postavi početnu pozadinu (RGB se pokreće u onStartInputView)
+        if (!KeyboardPrefs.isAnyRgbModeEnabled(this)) {
+            val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+            val bg = if (useTheme) {
+                // Use custom theme defaults
+                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
+            } else {
+                KeyboardPrefs.getBackgroundColor(this)  // custom boja
+            }
+
+            rootView.setBackgroundColor(bg)
+            overlayLayer.setBackgroundColor(bg)
+            keyboardContainer.setBackgroundColor(bg)
+
+            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
         }
-
-        rootView.setBackgroundColor(bg)
-        overlayLayer.setBackgroundColor(bg)
-        keyboardContainer.setBackgroundColor(bg)
-
-        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
 
 
         overlayLayer.clipChildren = false
@@ -205,6 +200,76 @@ class MyKeyboardService : InputMethodService() {
         )
 
         inputController = KeyInputController(this)
+
+        // Initialize managers
+        deleteRestoreManager = DeleteRestoreManager(
+            context = this,
+            scope = serviceScope,
+            inputConnectionProvider = { currentInputConnection }
+        )
+
+        edgeKeyManager = EdgeKeyManager(this)
+
+        longPressPopupManager = LongPressPopupManager(
+            context = this,
+            overlayLayerProvider = { overlayLayer },
+            themedCtxProvider = { themedCtx },
+            inputConnectionProvider = { currentInputConnection },
+            keyHeightProvider = { keyHeight() },
+            isPortraitProvider = { isPortrait() },
+            currentShapeProvider = { currentShape },
+            isDarkModeProvider = { lastIsDark == true }
+        )
+
+        edgeOverlayManager = EdgeOverlayManager(
+            context = this,
+            overlayLayerProvider = { overlayLayer },
+            keyboardContainerProvider = { keyboardContainer },
+            themedCtxProvider = { themedCtx },
+            isDarkModeProvider = { lastIsDark == true },
+            landscapeKeySizePxProvider = { landscapeKeySizePx() },
+            availableKeyboardWidthPxProvider = { availableKeyboardWidthPx() },
+            computeRowSizingProvider = { count, availW ->
+                val sizing = computeRowSizing(count, availW)
+                EdgeOverlayManager.RowSizing(
+                    keyW = sizing.keyW,
+                    keyH = sizing.keyH,
+                    gapPx = sizing.gapPx,
+                    outerPadPx = sizing.outerPadPx,
+                    overlapPx = sizing.overlapPx,
+                    triOverlapX = sizing.triOverlapX,
+                    triOverlapY = sizing.triOverlapY
+                )
+            },
+            actionCallback = this
+        )
+
+        emojiPickerManager = EmojiPickerManager(
+            context = this,
+            overlayLayerProvider = { overlayLayer },
+            scope = serviceScope,
+            callback = object : EmojiPickerCallback {
+                override fun onEmojiSelected(emoji: String) {
+                    currentInputConnection?.commitText(emoji, 1)
+                }
+
+                override fun onBackspace() {
+                    backspaceOnce()
+                }
+
+                override fun onSpace() {
+                    currentInputConnection?.commitText(" ", 1)
+                }
+
+                override fun onClose() {
+                    hideEmojiPopup()
+                }
+            }
+        )
+
+        hapticManager = HapticManager(this)
+        hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
+        keyPreviewManager = KeyPreviewManager(this) { overlayLayer }
 
         val basePadL = overlayLayer.paddingLeft
         val basePadT = overlayLayer.paddingTop
@@ -264,8 +329,10 @@ class MyKeyboardService : InputMethodService() {
 
         KeyboardPrefs.ensureDefaultLongPress(this)
 
-        val isDarkNow = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-            .getBoolean("dark_mode", true)
+        // Refresh vibration preference
+        hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
+
+        val isDarkNow = PrefsManager.isDarkMode(this)
 
         if (lastIsDark != null && lastIsDark != isDarkNow) {
             lastIsDark = isDarkNow
@@ -274,17 +341,23 @@ class MyKeyboardService : InputMethodService() {
         }
         lastIsDark = isDarkNow
 
-        // NOVO: Postavi background boju iz KeyboardPrefs
-        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
-        val bg = if (useTheme) {
-            keyboardBgColor(themedCtx)
+        // NOVO: Postavi background boju iz KeyboardPrefs ili RGB animaciju
+        if (KeyboardPrefs.isAnyRgbModeEnabled(this)) {
+            startRgbAnimation()
         } else {
-            KeyboardPrefs.getBackgroundColor(this)
+            stopRgbAnimation()
+            val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+            val bg = if (useTheme) {
+                // Use custom theme defaults
+                KeyboardPrefs.getThemeDefaultsForMode(this, isDarkNow).keyboardBg
+            } else {
+                KeyboardPrefs.getBackgroundColor(this)
+            }
+            rootView.setBackgroundColor(bg)
+            overlayLayer.setBackgroundColor(bg)
+            keyboardContainer.setBackgroundColor(bg)
+            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
         }
-        rootView.setBackgroundColor(bg)
-        overlayLayer.setBackgroundColor(bg)
-        keyboardContainer.setBackgroundColor(bg)
-        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
 
         // NOVO: Postavi side buttons boje prema temi
         val sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(this)
@@ -331,27 +404,47 @@ class MyKeyboardService : InputMethodService() {
     override fun onWindowHidden() {
         super.onWindowHidden()
         resetTransientState()
+        stopRgbAnimation()
     }
 
     override fun onEvaluateFullscreenMode() = false
     override fun onCreateExtractTextView(): View? = null
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Cleanup popups to prevent memory leaks
+        hideEmojiPopup()
+        hideLongPressPopup()
+        hideLanguagePresetPopup()
+
+        // Cancel manager jobs
+        deleteRestoreManager.resetState()
+
+        // Cancel all coroutines
+        serviceScope.cancel()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        // Hide all popups on configuration change
+        hideEmojiPopup()
+        hideLongPressPopup()
+        hideLanguagePresetPopup()
+
+        // Recreate keyboard view to adapt to new configuration
+        recreateInputView()
+    }
+
     private fun resetTransientState() {
         isShifted = false
 
-        stopSwipeDelete()
-        stopSwipeRestore()
-        stopBackspaceHold()
+        deleteRestoreManager.resetState()
         hideEmojiPopup()
         hideLongPressPopup()
         hideLanguagePresetPopup()
         resetDualSpaceHoldState()
-
-        currentDeleteBatch.clear()
-        isDeleteGestureActive = false
-        isRestoreGestureActive = false
-        isBackspaceHoldActive = false
-        restoreProgressIndex = 0
     }
 
     private fun recreateInputView() {
@@ -363,12 +456,12 @@ class MyKeyboardService : InputMethodService() {
         requestedTop: Int,
         childHeight: Int
     ): Int {
-        val minTop = dp(2)
+        val minTop = 2.dp(this)
 
         val maxTop = (
                 overlayLayer.height -
                         childHeight -
-                        dp(2)
+                        2.dp(this)
                 ).coerceAtLeast(minTop)
 
         return requestedTop.coerceIn(minTop, maxTop)
@@ -579,24 +672,20 @@ class MyKeyboardService : InputMethodService() {
         if (
             leftSpaceHeld &&
             rightSpaceHeld &&
-            dualSpaceHoldRunnable == null &&
+            dualSpaceHoldJob == null &&
             languagePresetPopup == null
         ) {
             dualSpacePickerWasShown = false
 
-            dualSpaceHoldRunnable = Runnable {
-                dualSpaceHoldRunnable = null
+            dualSpaceHoldJob = serviceScope.launch {
+                delay(DUAL_SPACE_HOLD_MS)
+                dualSpaceHoldJob = null
 
                 if (leftSpaceHeld && rightSpaceHeld) {
                     dualSpacePickerWasShown = true
                     showLanguagePresetPopup()
                 }
             }
-
-            mainHandler.postDelayed(
-                dualSpaceHoldRunnable!!,
-                DUAL_SPACE_HOLD_MS
-            )
         }
     }
 
@@ -626,10 +715,8 @@ class MyKeyboardService : InputMethodService() {
     }
 
     private fun cancelDualSpaceHoldTimer() {
-        dualSpaceHoldRunnable?.let {
-            mainHandler.removeCallbacks(it)
-        }
-        dualSpaceHoldRunnable = null
+        dualSpaceHoldJob?.cancel()
+        dualSpaceHoldJob = null
     }
 
     private fun resetDualSpaceHoldState() {
@@ -687,163 +774,6 @@ class MyKeyboardService : InputMethodService() {
         return isLeftSpace(key) || isRightSpace(key)
     }
 
-    private fun sideButtonTuning(
-        isLandscapeMode: Boolean,
-        rowCount: Int,
-        visualIndex: Int,
-        side: EdgePos.Side,
-        slotType: EdgeActionType
-    ): SideButtonTuning {
-        return if (isLandscapeMode) {
-            landscapeSideButtonTuning(rowCount, visualIndex, side, slotType)
-        } else {
-            portraitSideButtonTuning(rowCount, visualIndex, side, slotType)
-        }
-    }
-
-    private fun portraitSideButtonTuning(
-        rowCount: Int,
-        visualIndex: Int,
-        side: EdgePos.Side,
-        slotType: EdgeActionType
-    ): SideButtonTuning {
-        return when (rowCount) {
-            5 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)// više lijevo / prema rubu
-                    1 -> SideButtonTuning(x = -18, y = -3, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0) // manje lijevo / više unutra
-                    2 -> SideButtonTuning(x = -18, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = 2, y = -2, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = 2, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = 2, y = -1, widthScale = 0.48f, heightScale = 0.58f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-            }
-
-            4 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    3 -> SideButtonTuning(x = -15, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    3 -> SideButtonTuning(x = -6, y = 7, widthScale = 0.48f, heightScale = 0.48f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-            }
-
-            3 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    1 -> SideButtonTuning(x = -12, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -4, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = -4, y = 0, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-            }
-
-            else -> SideButtonTuning()
-        }.let { base ->
-            if (slotType == EdgeActionType.SHIFT) {
-                base.copy(
-                    iconTextSizeSp = when (rowCount) {
-                        5 -> 21f
-                        4 -> 18f
-                        3 -> 18f
-                        else -> 18f
-                    },
-                    iconY = base.iconY - 3
-                )
-            } else {
-                base
-            }
-        }
-    }
-
-    private fun landscapeSideButtonTuning(
-        rowCount: Int,
-        visualIndex: Int,
-        side: EdgePos.Side,
-        slotType: EdgeActionType
-    ): SideButtonTuning {
-        return when (rowCount) {
-            5 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -14, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = -14, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = -14, y = -4, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = 17, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = 17, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = 17, y = -4, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
-                }
-            }
-
-            4 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    3 -> SideButtonTuning(x = -18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    2 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    3 -> SideButtonTuning(x = 18, y = -5, widthScale = 0.55f, heightScale = 0.55f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning(widthScale = 0.55f, heightScale = 0.55f)
-                }
-            }
-
-            3 -> when (side) {
-                EdgePos.Side.LEFT -> when (visualIndex) {
-                    // 0 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
-                    1 -> SideButtonTuning(x = -17, y = -6, widthScale = 0.8f, heightScale = 0.4f, iconX = 5, iconY = 0)
-                    //2 -> SideButtonTuning(x = -6, y = -6, widthScale = 0.2f, heightScale = 0.4f, iconX = 0, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-
-                EdgePos.Side.RIGHT -> when (visualIndex) {
-                    0 -> SideButtonTuning(x = 22, y = -8, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
-                    //1 -> SideButtonTuning(x = 22, y = -6, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
-                    2 -> SideButtonTuning(x = 22, y = -2, widthScale = 0.8f, heightScale = 0.4f, iconX = -3, iconY = 0)
-                    else -> SideButtonTuning()
-                }
-            }
-
-            else -> SideButtonTuning()
-        }.let { base ->
-            if (slotType == EdgeActionType.SHIFT) {
-                base.copy(
-                    iconTextSizeSp = 17f,
-                    iconY = base.iconY - 2
-                )
-            } else {
-                base.copy(
-                    iconTextSizeSp = 13.5f
-                )
-            }
-        }
-    }
     private fun landscapeShape(): KeyShape {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         return if (
@@ -874,123 +804,6 @@ class MyKeyboardService : InputMethodService() {
     )
 
     private var selectedPos: KeyPos? = null
-    private data class EdgeBinding(
-        val visualIndex: Int,
-        val side: EdgePos.Side,
-        val slot: EdgeSlot
-    )
-    private data class SideButtonTuning(
-        val x: Int = 0,
-        val y: Int = 0,
-        val widthScale: Float = 1f,
-        val heightScale: Float = 1f,
-        val iconX: Int = 0,
-        val iconY: Int = 0,
-        val iconTextSizeSp: Float? = null
-    )
-    private fun threeRowEdgeBindings(): List<EdgeBinding> {
-        val slots = EdgeSlotsStorage.load(this)
-        val result = mutableListOf<EdgeBinding>()
-
-        // 3-row pravilo:
-        // row 1 -> DESNO
-        // row 2 -> LIJEVO
-        // row 3 -> DESNO
-
-        slots.getOrNull(0)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 0,
-                side = EdgePos.Side.RIGHT,
-                slot = it.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        slots.getOrNull(1)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 1,
-                side = EdgePos.Side.LEFT,
-                slot = it.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        slots.getOrNull(2)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 2,
-                side = EdgePos.Side.RIGHT,
-                slot = it.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        return result
-    }
-
-    private fun fourRowEdgeBindings(): List<EdgeBinding> {
-        val slots = EdgeSlotsStorage.load(this)
-        val result = mutableListOf<EdgeBinding>()
-
-        // 4-row pravilo:
-        // row 1 -> desno
-        // row 2 -> lijevo
-        // row 3 -> desno
-        // row 4 -> lijevo
-
-        val slot0 = slots.getOrNull(0)
-        val slot1 = slots.getOrNull(1)
-        val slot2 = slots.getOrNull(2)
-        val slot3 = slots.getOrNull(3)
-
-        if (slot0 != null && slot0.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 0,
-                side = EdgePos.Side.RIGHT,
-                slot = slot0.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        if (slot1 != null && slot1.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 1,
-                side = EdgePos.Side.LEFT,
-                slot = slot1.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        if (slot2 != null && slot2.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 2,
-                side = EdgePos.Side.RIGHT,
-                slot = slot2.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        if (slot3 != null && slot3.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 3,
-                side = EdgePos.Side.LEFT,
-                slot = slot3.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        return result
-    }
-
-    private fun activeEdgeBindings(totalRows: Int): List<EdgeBinding> {
-        return when (totalRows) {
-            3 -> threeRowEdgeBindings()
-            4 -> fourRowEdgeBindings()
-            else -> {
-                EdgeSlotsStorage.load(this)
-                    .filter { it.type != EdgeActionType.NONE }
-                    .map { slot ->
-                        EdgeBinding(
-                            visualIndex = (slot.index / 2).coerceIn(0, 2),
-                            side = slot.side,
-                            slot = slot
-                        )
-                    }
-            }
-        }
-    }
 
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
         val rows = KeyboardPrefs.getRowCount(this)
@@ -1009,8 +822,7 @@ class MyKeyboardService : InputMethodService() {
     }
 
     private fun hideEmojiPopup() {
-        emojiPopup?.dismiss()
-        emojiPopup = null
+        emojiPickerManager.hide()
     }
 
     private fun hideLanguagePresetPopup() {
@@ -1027,7 +839,7 @@ class MyKeyboardService : InputMethodService() {
         dualSpacePickerWasShown = true
 
         val popupWidth = (resources.displayMetrics.widthPixels * 0.86f).toInt()
-            .coerceAtLeast(dp(280))
+            .coerceAtLeast(280.dp(this))
 
         val popupBg = themeColor(
             themedCtx,
@@ -1045,7 +857,7 @@ class MyKeyboardService : InputMethodService() {
 
         val root = LinearLayout(themedCtx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(18), dp(20), dp(14))
+            setPadding(20.dp(this), 18.dp(this), 20.dp(this), 14.dp(this))
             setBackgroundColor(popupBg)
         }
 
@@ -1055,7 +867,7 @@ class MyKeyboardService : InputMethodService() {
             setTextColor(popupText)
             gravity = Gravity.CENTER
             includeFontPadding = false
-            setPadding(0, 0, 0, dp(14))
+            setPadding(0, 0, 0, 14.dp(this))
         }
 
         val radioGroup = RadioGroup(themedCtx).apply {
@@ -1071,7 +883,7 @@ class MyKeyboardService : InputMethodService() {
                 textSize = 15f
                 setTextColor(popupText)
                 includeFontPadding = true
-                setPadding(0, dp(8), 0, dp(8))
+                setPadding(0, 8.dp(this), 0, 8.dp(this))
                 isClickable = true
                 isFocusable = false
             }
@@ -1201,7 +1013,7 @@ class MyKeyboardService : InputMethodService() {
             textSize = 14f
             setTextColor(popupText)
             gravity = Gravity.CENTER
-            setPadding(dp(8), dp(16), dp(8), 0)
+            setPadding(8.dp(this), 16.dp(this), 8.dp(this), 0)
             isClickable = true
             isFocusable = false
             setOnClickListener {
@@ -1253,7 +1065,7 @@ class MyKeyboardService : InputMethodService() {
             isOutsideTouchable = true
             isFocusable = true
             isClippingEnabled = false
-            elevation = dp(12).toFloat()
+            elevation = 12.dp(this@MyKeyboardService).toFloat()
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setOnDismissListener {
                 languagePresetPopup = null
@@ -1276,13 +1088,13 @@ class MyKeyboardService : InputMethodService() {
         val rootLoc = IntArray(2)
         rootView.getLocationOnScreen(rootLoc)
 
-        val desiredScreenX = ((screenW - popupWidth) / 2).coerceAtLeast(dp(8))
+        val desiredScreenX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
 
 // Ovo je pozicija crvenog kvadrata sa screenshota.
 // Smanji na 0.08f ako želiš još više gore.
 // Povećaj na 0.14f ako želiš malo niže.
         val desiredScreenY = (screenH * 0.105f).toInt()
-            .coerceAtLeast(dp(54))
+            .coerceAtLeast(54.dp(this))
 
 // showAtLocation kod IME-a radi relativno prema rootView prozoru,
 // zato screen Y pretvaramo u lokalni Y.
@@ -1316,9 +1128,10 @@ class MyKeyboardService : InputMethodService() {
         hideLanguagePresetPopup()
 
         if (isDrawing) {
-            mainHandler.postDelayed({
+            serviceScope.launch {
+                delay(60L)
                 redrawKeyboard()
-            }, 60L)
+            }
         } else {
             redrawKeyboard()
         }
@@ -1329,141 +1142,15 @@ class MyKeyboardService : InputMethodService() {
         hideLongPressPopup()
         hideEmojiPopup()
 
-        val popupWidth = (resources.displayMetrics.widthPixels * 0.68f).toInt()
-            .coerceAtLeast(dp(230))
-        val popupHeight = (computeTargetKeyboardHeight() * 0.78f).toInt()
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(10), dp(10), dp(10), dp(10))
-            setBackgroundColor(0xFF1E1E1E.toInt())
-        }
-
-        val header = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-
-        val title = TextView(this).apply {
-            text = "Emoji"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-        }
-
-        val closeBtn = TextView(this).apply {
-            text = "✕"
-            textSize = 20f
-            setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            setPadding(dp(10), dp(4), dp(10), dp(4))
-            setOnClickListener {
-                hideEmojiPopup()
-            }
-        }
-
-        header.addView(
-            title,
-            LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f
-            )
-        )
-
-        header.addView(
-            closeBtn,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val scroll = ScrollView(this).apply {
-            isFillViewport = true
-        }
-
-        val grid = GridLayout(this).apply {
-            columnCount = 5
-            useDefaultMargins = false
-            alignmentMode = GridLayout.ALIGN_BOUNDS
-        }
-
-        EmojiData.basic.forEach { emoji ->
-            val btn = Button(this).apply {
-                text = emoji
-                isAllCaps = false
-                textSize = 24f
-                setPadding(0, 0, 0, 0)
-                setOnClickListener {
-                    currentInputConnection?.commitText(emoji, 1)
-                }
-            }
-
-            val lp = GridLayout.LayoutParams().apply {
-                width = 0
-                height = dp(52)
-                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(4), dp(4), dp(4), dp(4))
-            }
-
-            grid.addView(btn, lp)
-        }
-
-        scroll.addView(
-            grid,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        root.addView(
-            header,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                bottomMargin = dp(8)
-            }
-        )
-
-        root.addView(
-            scroll,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f
-            )
-        )
-
-        val popup = PopupWindow(
-            root,
-            popupWidth,
-            popupHeight,
-            true
-        ).apply {
-            isOutsideTouchable = true
-            isFocusable = true
-            elevation = dp(10).toFloat()
-            setBackgroundDrawable(ColorDrawable(0xCC000000.toInt()))
-            setOnDismissListener {
-                emojiPopup = null
-            }
-        }
-
-        emojiPopup = popup
-
-        val x = ((overlayLayer.width - popupWidth) / 2).coerceAtLeast(dp(8))
-        val y = ((overlayLayer.height - popupHeight) / 2).coerceAtLeast(dp(8))
-
-        popup.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, x, y)
+        val keyboardHeight = computeTargetKeyboardHeight()
+        emojiPickerManager.show(keyboardHeight)
     }
 
     private fun landscapeKeyGapPx(): Int = when (landscapeShape()) {
-        KeyShape.TRIANGLE -> dp(0)
-        KeyShape.CIRCLE -> dp(2)
-        KeyShape.CUBE -> dp(2)
-        else -> dp(2)
+        KeyShape.TRIANGLE -> 0.dp(this)
+        KeyShape.CIRCLE -> 2.dp(this)
+        KeyShape.CUBE -> 2.dp(this)
+        else -> 2.dp(this)
     }
 
 
@@ -1500,15 +1187,12 @@ class MyKeyboardService : InputMethodService() {
     private fun isLandscape() =
         resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    private fun dp(v: Int): Int =
-        (v * resources.displayMetrics.density).toInt()
-
     private fun computeTargetKeyboardHeight(): Int {
         val screenH = resources.displayMetrics.heightPixels
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         return if (isPortrait()) {
-            (screenH * 0.36f).roundToInt().coerceAtLeast(dp(230))
+            (screenH * 0.36f).roundToInt().coerceAtLeast(230.dp(this))
         } else {
             val ratio = when (savedRowCount) {
                 3 -> 0.28f
@@ -1518,10 +1202,10 @@ class MyKeyboardService : InputMethodService() {
             }
 
             val minH = when (savedRowCount) {
-                3 -> dp(120)
-                4 -> dp(160)
-                5 -> dp(175)
-                else -> dp(120)
+                3 -> 120.dp(this)
+                4 -> 160.dp(this)
+                5 -> 175.dp(this)
+                else -> 120.dp(this)
             }
 
             (screenH * ratio).roundToInt().coerceAtLeast(minH)
@@ -1542,7 +1226,7 @@ class MyKeyboardService : InputMethodService() {
             ?: computeTargetKeyboardHeight()
 
         val usableH = (containerH - overlayLayer.paddingTop - overlayLayer.paddingBottom)
-            .coerceAtLeast(dp(120))
+            .coerceAtLeast(120.dp(this))
 
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val activeShape = currentShape
@@ -1556,11 +1240,11 @@ class MyKeyboardService : InputMethodService() {
                         KeyShape.HEX,
                         KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 3.15f).toInt().coerceAtLeast(dp(52))
+                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 3.15f).toInt().coerceAtLeast(52.dp(this))
 
-                        KeyShape.TRIANGLE -> (usableForKeys / 3.35f).toInt().coerceAtLeast(dp(48))
-                        KeyShape.CIRCLE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(dp(50))
-                        KeyShape.CUBE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(dp(50))
+                        KeyShape.TRIANGLE -> (usableForKeys / 3.35f).toInt().coerceAtLeast(48.dp(this))
+                        KeyShape.CIRCLE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
+                        KeyShape.CUBE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
                     }
                 }
 
@@ -1569,11 +1253,11 @@ class MyKeyboardService : InputMethodService() {
                         KeyShape.HEX,
                         KeyShape.HEX_TALL,
                         KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 4.05f).toInt().coerceAtLeast(dp(44))
+                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 4.05f).toInt().coerceAtLeast(44.dp(this))
 
-                        KeyShape.TRIANGLE -> (usableForKeys / 4.25f).toInt().coerceAtLeast(dp(42))
-                        KeyShape.CIRCLE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(dp(43))
-                        KeyShape.CUBE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(dp(43))
+                        KeyShape.TRIANGLE -> (usableForKeys / 4.25f).toInt().coerceAtLeast(42.dp(this))
+                        KeyShape.CIRCLE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
+                        KeyShape.CUBE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
                     }
                 }
             }
@@ -1591,7 +1275,7 @@ class MyKeyboardService : InputMethodService() {
         }
 
         val baseH = (usableForKeys / denom).toInt().coerceAtLeast(
-            if (isLandscape()) dp(28) else dp(36)
+            if (isLandscape()) 28.dp(this) else 36.dp(this)
         )
 
         return when (activeShape){
@@ -1623,7 +1307,7 @@ class MyKeyboardService : InputMethodService() {
     private fun availableKeyboardWidthPx(): Int {
         val w = overlayLayer.width
         val base = if (w > 0) w else resources.displayMetrics.widthPixels
-        return (base - overlayLayer.paddingLeft - overlayLayer.paddingRight).coerceAtLeast(dp(200))
+        return (base - overlayLayer.paddingLeft - overlayLayer.paddingRight).coerceAtLeast(200.dp(this))
     }
 
     private fun syncOverlayHeightToContent() {
@@ -1640,7 +1324,7 @@ class MyKeyboardService : InputMethodService() {
                 overlayLayer.width -
                         overlayLayer.paddingLeft -
                         overlayLayer.paddingRight
-                ).coerceAtLeast(dp(200))
+                ).coerceAtLeast(200.dp(this))
 
         keyboardContainer.measure(
             View.MeasureSpec.makeMeasureSpec(
@@ -1676,10 +1360,10 @@ class MyKeyboardService : InputMethodService() {
             (screenH * 0.85f).roundToInt()
         } else {
             (screenH * 0.70f).roundToInt()
-        }.coerceAtLeast(dp(120))
+        }.coerceAtLeast(120.dp(this))
 
         val newHeight = desiredHeight.coerceIn(
-            dp(1),
+            1.dp(this),
             screenLimit
         )
 
@@ -1698,215 +1382,73 @@ class MyKeyboardService : InputMethodService() {
         }
     }
 
-    /* ───────── DELETE / RESTORE LOGIC ───────── */
-
-    private fun beginDeleteBatch() {
-        currentDeleteBatch.clear()
-    }
-
-    private fun appendDeletedChar(ch: String) {
-        currentDeleteBatch.insert(0, ch)
-    }
-
-    private fun finishDeleteBatch() {
-        val result = currentDeleteBatch.toString()
-        if (result.isNotEmpty()) {
-            lastDeletedText = result
-            restoreProgressIndex = 0
-        }
-    }
-
-    private fun clearRestoreBuffer() {
-        lastDeletedText = ""
-        restoreProgressIndex = 0
-    }
-
-    private fun swipeRepeatDelay(absDx: Float): Long {
-        return when {
-            absDx > dp(170) -> 25L
-            absDx > dp(140) -> 40L
-            absDx > dp(110) -> 55L
-            absDx > dp(80) -> 75L
-            absDx > dp(60) -> 95L
-            else -> 120L
-        }
-    }
-
-    private fun deleteOneForSwipe() {
-        val ic = currentInputConnection ?: return
-        val before = ic.getTextBeforeCursor(1, 0)?.toString().orEmpty()
-        if (before.isEmpty()) return
-
-        appendDeletedChar(before)
-        ic.deleteSurroundingText(1, 0)
-    }
-
-    private fun restoreOneForSwipe() {
-        val ic = currentInputConnection ?: return
-        if (lastDeletedText.isEmpty()) return
-        if (restoreProgressIndex >= lastDeletedText.length) return
-
-        val ch = lastDeletedText[restoreProgressIndex].toString()
-        ic.commitText(ch, 1)
-        restoreProgressIndex++
-
-        if (restoreProgressIndex >= lastDeletedText.length) {
-            lastDeletedText = ""
-            restoreProgressIndex = 0
-        }
-    }
+    /* ───────── DELETE / RESTORE LOGIC (delegated to DeleteRestoreManager) ───────── */
 
     fun startSwipeDelete(absDx: Float) {
-        stopSwipeRestore()
-        deleteRepeatMs = swipeRepeatDelay(absDx)
-
-        if (!isDeleteGestureActive) {
-            isDeleteGestureActive = true
-            beginDeleteBatch()
-        }
-
-        if (deleteRepeatRunnable != null) return
-
-        deleteRepeatRunnable = object : Runnable {
-            override fun run() {
-                deleteOneForSwipe()
-                swipeEditHandler.postDelayed(this, deleteRepeatMs)
-            }
-        }
-
-        deleteOneForSwipe()
-        swipeEditHandler.postDelayed(deleteRepeatRunnable!!, deleteRepeatMs)
+        deleteRestoreManager.startSwipeDelete(absDx)
     }
 
     fun updateSwipeDelete(absDx: Float) {
-        deleteRepeatMs = swipeRepeatDelay(absDx)
+        deleteRestoreManager.updateSwipeDelete(absDx)
     }
 
     fun stopSwipeDelete() {
-        deleteRepeatRunnable?.let { swipeEditHandler.removeCallbacks(it) }
-        deleteRepeatRunnable = null
+        deleteRestoreManager.stopSwipeDelete()
+    }
 
-        if (isDeleteGestureActive) {
-            finishDeleteBatch()
-            isDeleteGestureActive = false
-        }
-    }
-    private fun restoreRepeatDelay(absDx: Float): Long {
-        return when {
-            absDx > dp(170) -> 14L
-            absDx > dp(140) -> 24L
-            absDx > dp(110) -> 36L
-            absDx > dp(80) -> 50L
-            absDx > dp(60) -> 68L
-            else -> 90L
-        }
-    }
     fun startSwipeRestore(absDx: Float) {
-        stopSwipeDelete()
-        restoreRepeatMs = restoreRepeatDelay(absDx)
-
-        if (!isRestoreGestureActive) {
-            isRestoreGestureActive = true
-        }
-
-        if (restoreRepeatRunnable != null) return
-
-        restoreRepeatRunnable = object : Runnable {
-            override fun run() {
-                restoreOneForSwipe()
-                swipeEditHandler.postDelayed(this, restoreRepeatMs)
-            }
-        }
-
-        restoreOneForSwipe()
-        swipeEditHandler.postDelayed(restoreRepeatRunnable!!, restoreRepeatMs)
+        deleteRestoreManager.startSwipeRestore(absDx)
     }
 
     fun updateSwipeRestore(absDx: Float) {
-        restoreRepeatMs = restoreRepeatDelay(absDx)
+        deleteRestoreManager.updateSwipeRestore(absDx)
     }
 
-
-
     fun stopSwipeRestore() {
-        restoreRepeatRunnable?.let { swipeEditHandler.removeCallbacks(it) }
-        restoreRepeatRunnable = null
-        isRestoreGestureActive = false
+        deleteRestoreManager.stopSwipeRestore()
     }
 
     fun startBackspaceHold() {
-        cancelPendingBackspaceHold()
-
-        if (!isBackspaceHoldActive) {
-            isBackspaceHoldActive = true
-            beginDeleteBatch()
-        }
-
-        if (backspaceHoldRunnable != null) return
-
-        backspaceHoldRunnable = object : Runnable {
-            override fun run() {
-                deleteOneForSwipe()
-                backspaceHoldHandler.postDelayed(this, backspaceHoldMs)
-            }
-        }
-
-        // prvi delete odmah kad hold stvarno krene
-        deleteOneForSwipe()
-        backspaceHoldHandler.postDelayed(backspaceHoldRunnable!!, backspaceHoldMs)
+        deleteRestoreManager.startBackspaceHold()
     }
+
     fun commitExactText(text: String) {
-        clearRestoreBuffer()
+        deleteRestoreManager.clearRestoreBuffer()
         currentInputConnection?.commitText(text, 1)
     }
-    fun isBackspaceHoldRunning(): Boolean {
-        return isBackspaceHoldActive
+
+    override fun isBackspaceHoldRunning(): Boolean {
+        return deleteRestoreManager.isBackspaceHoldRunning()
     }
 
     fun stopBackspaceHold() {
-        cancelPendingBackspaceHold()
-
-        backspaceHoldRunnable?.let { backspaceHoldHandler.removeCallbacks(it) }
-        backspaceHoldRunnable = null
-
-        if (isBackspaceHoldActive) {
-            finishDeleteBatch()
-            isBackspaceHoldActive = false
-        }
+        deleteRestoreManager.stopBackspaceHold()
     }
 
     /* ───────── INPUT API for Controller ───────── */
 
     fun scheduleBackspaceHold() {
-        cancelPendingBackspaceHold()
-
-        backspaceStartHoldRunnable = Runnable {
-            startBackspaceHold()
-        }
-
-        backspaceHoldHandler.postDelayed(
-            backspaceStartHoldRunnable!!,
-            ViewConfiguration.getLongPressTimeout().toLong()
-        )
+        deleteRestoreManager.scheduleBackspaceHold()
     }
 
     fun cancelPendingBackspaceHold() {
-        backspaceStartHoldRunnable?.let { backspaceHoldHandler.removeCallbacks(it) }
-        backspaceStartHoldRunnable = null
+        deleteRestoreManager.cancelPendingBackspaceHold()
     }
+
     fun backspaceOnce() {
-        beginDeleteBatch()
-        deleteOneForSwipe()
-        finishDeleteBatch()
+        hapticManager.onSpecialKey()
+        deleteRestoreManager.backspaceOnce()
     }
 
     fun sendEnter() {
+        hapticManager.onSpecialKey()
         currentInputConnection?.sendKeyEvent(
             KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
         )
     }
 
     fun toggleShift() {
+        hapticManager.onSpecialKey()
         isShifted = !isShifted
 
         val isNumeric = currentKeyboardConfig.rows.any { row ->
@@ -1926,7 +1468,7 @@ class MyKeyboardService : InputMethodService() {
 
     fun commitText(text: String) {
         if (text != "123" && text != "ABC" && text != "abc") {
-            clearRestoreBuffer()
+            deleteRestoreManager.clearRestoreBuffer()
         }
 
         when (text) {
@@ -1969,318 +1511,33 @@ class MyKeyboardService : InputMethodService() {
     /* ───────── EDGE KEYS ───────── */
 
     private fun applyEdgeKeys(cfg: KeyboardConfig): KeyboardConfig {
-        val copy = cfg.copy(
-            rows = cfg.rows.map { row ->
-                row.copy(
-                    keys = row.keys.map { key ->
-                        key.copy(longPressBindings = key.longPressBindings.toMutableList())
-                    }.toMutableList()
-                )
-            }.toMutableList(),
-            specialLeft = cfg.specialLeft.map {
-                it.copy(longPressBindings = it.longPressBindings.toMutableList())
-            }.toMutableList(),
-            specialRight = cfg.specialRight.map {
-                it.copy(longPressBindings = it.longPressBindings.toMutableList())
-            }.toMutableList()
-        )
-
-        val slots = EdgeSlotsStorage.load(this).filter { it.type != EdgeActionType.NONE }
-        if (slots.isEmpty()) return copy
-
-        val labelsToHideFromMainLayout = buildSet<String> {
-            slots.forEach { s ->
-                when (s.type) {
-                    EdgeActionType.SHIFT -> add("⇧")
-                    EdgeActionType.BACKSPACE -> add("⌫")
-
-                    // ENTER ostaje i u glavnom layoutu i kao side button
-                    EdgeActionType.ENTER -> Unit
-
-                    EdgeActionType.SPACE -> Unit
-                    EdgeActionType.CHAR -> Unit
-                    EdgeActionType.EMOJI_PICKER -> Unit
-                    EdgeActionType.NONE -> Unit
-                }
-            }
-        }
-
-        fun replaceWithGhostPlaceholder(list: MutableList<KeyConfig>) {
-            for (i in list.indices) {
-                val key = list[i]
-                if (key.label in labelsToHideFromMainLayout) {
-                    list[i] = key.copy(
-                        label = "",
-                        longPressBindings = mutableListOf(KeyMarkers.EDGE_GHOST)
-                    )
-                }
-            }
-        }
-
-        copy.rows.forEach { replaceWithGhostPlaceholder(it.keys) }
-        replaceWithGhostPlaceholder(copy.specialLeft)
-        replaceWithGhostPlaceholder(copy.specialRight)
-
-        return copy
+        return edgeKeyManager.applyEdgeKeys(cfg)
     }
 
-    /* ───────── LONG PRESS POPUP ───────── */
+    /* ───────── LONG PRESS POPUP (delegated to LongPressPopupManager) ───────── */
 
     private fun showLongPressPopup(anchor: View, chars: List<String>) {
-        if (chars.isEmpty()) return
-
-        hideLongPressPopup()
-
-        lpChars = chars
-        lpSelectedIndex = 0
-        lpHasLiveInserted = false
-
-        val maxW = (overlayLayer.width.takeIf { it > 0 }
-            ?: resources.displayMetrics.widthPixels) - dp(16)
-
-        val cols = minOf(7, chars.size)
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(10), dp(10), dp(10), dp(10))
-            setBackgroundColor(0xFFFFFFFF.toInt())
-            layoutParams = ViewGroup.LayoutParams(maxW, ViewGroup.LayoutParams.WRAP_CONTENT)
-        }
-
-        val preview = TextView(this).apply {
-            text = chars.first()
-            textSize = 26f
-            setTextColor(0xFF000000.toInt())
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setPadding(0, 0, 0, dp(6))
-        }
-
-        lpPreviewTv = preview
-        root.addView(
-            preview,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val grid = GridLayout(this).apply {
-            columnCount = cols
-            useDefaultMargins = false
-            alignmentMode = GridLayout.ALIGN_BOUNDS
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        lpGrid = grid
-
-        val popupKeyH = (keyHeight() * 0.62f).toInt().coerceIn(dp(28), dp(70))
-        val popupTextSize = if (isPortrait()) 16f else 14f
-
-
-        chars.forEachIndexed { idx, ch ->
-            val kv = KeyView(themedCtx).apply {
-                tag = idx
-                text = ch
-                isAllCaps = false
-                shape = currentShape
-                gravity = Gravity.CENTER
-                isClickable = false
-                isFocusable = false
-                textSize = popupTextSize
-
-                setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
-                includeFontPadding = false
-                setPadding(0, 0, 0, 0)
-            }
-
-            val lp = GridLayout.LayoutParams().apply {
-                rowSpec = GridLayout.spec(idx / cols)
-                columnSpec = GridLayout.spec(idx % cols, 1f)
-                width = 0
-                height = popupKeyH
-                setMargins(dp(4), dp(4), dp(4), dp(4))
-            }
-
-            grid.addView(kv, lp)
-        }
-
-        root.addView(grid)
-
-        val pw = PopupWindow(
-            root,
-            maxW,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            false
-        ).apply {
-            isOutsideTouchable = false
-            isFocusable = false
-            isClippingEnabled = true
-            elevation = dp(10).toFloat()
-            setOnDismissListener {
-                longPressPopup = null
-                lpPreviewTv = null
-                lpGrid = null
-                lpChars = emptyList()
-                lpHasLiveInserted = false
-            }
-        }
-
-        root.measure(
-            View.MeasureSpec.makeMeasureSpec(maxW, View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        )
-
-        val anchorLoc = IntArray(2)
-        val rootLoc = IntArray(2)
-        anchor.getLocationOnScreen(anchorLoc)
-        overlayLayer.getLocationOnScreen(rootLoc)
-
-        val popupW = maxW
-        val popupH = root.measuredHeight
-
-        val desiredX = anchorLoc[0] - rootLoc[0] + anchor.width / 2 - popupW / 2
-        val desiredY = anchorLoc[1] - rootLoc[1] - popupH - dp(10)
-
-        val minPopupOffset = dp(8)
-
-        val maxX = (
-                overlayLayer.width -
-                        popupW -
-                        minPopupOffset
-                ).coerceAtLeast(minPopupOffset)
-
-        val maxY = (
-                overlayLayer.height -
-                        popupH -
-                        minPopupOffset
-                ).coerceAtLeast(minPopupOffset)
-
-        val x = desiredX.coerceIn(
-            minPopupOffset,
-            maxX
-        )
-
-        val y = desiredY.coerceIn(
-            minPopupOffset,
-            maxY
-        )
-        pw.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, x, y)
-        longPressPopup = pw
-
-        updateLongPressHighlight()
-
-        root.post {
-            val rects = MutableList(lpChars.size) { android.graphics.Rect() }
-            val g = lpGrid ?: return@post
-
-            for (i in 0 until g.childCount) {
-                val child = g.getChildAt(i)
-                val idx = (child.tag as? Int) ?: continue
-                val loc = IntArray(2)
-                child.getLocationOnScreen(loc)
-
-                rects[idx] = android.graphics.Rect(
-                    loc[0],
-                    loc[1],
-                    loc[0] + child.width,
-                    loc[1] + child.height
-                )
-            }
-
-            lpRects = rects
-        }
-
-        if (LIVE_REPLACE) {
-            commitLiveSelected()
-        }
+        longPressPopupManager.showLongPressPopup(anchor, chars)
     }
 
     private fun updateLongPressHighlight() {
-        val grid = lpGrid ?: return
-
-        val fillActive = themeColor(this, R.attr.enterFill, 0xFF2E55E7.toInt())
-        val textActive = themeColor(this, R.attr.enterText, 0xFFFFFFFF.toInt())
-        val textNormal = themeColor(this, R.attr.keyText, 0xFFFFFFFF.toInt())
-
-        for (i in 0 until grid.childCount) {
-            val child = grid.getChildAt(i)
-            val idx = (child.tag as? Int) ?: continue
-
-            if (child is KeyView) {
-                if (idx == lpSelectedIndex) {
-                    child.customBgColor = fillActive
-                    child.setTextColor(textActive)
-                    child.alpha = 1f
-                } else {
-                    child.customBgColor = null
-                    child.setTextColor(textNormal)
-                    child.alpha = 0.65f
-                }
-            } else {
-                child.alpha = if (idx == lpSelectedIndex) 1f else 0.65f
-            }
-
-            child.scaleX = if (idx == lpSelectedIndex) 1.06f else 1f
-            child.scaleY = if (idx == lpSelectedIndex) 1.06f else 1f
-        }
-
-        lpPreviewTv?.text = lpChars.getOrNull(lpSelectedIndex) ?: ""
+        // No-op - handled internally by LongPressPopupManager
     }
 
     private fun moveLpSelection(dx: Int, dy: Int) {
-        if (lpChars.isEmpty()) return
-
-        val cols = lpGrid?.columnCount ?: 7
-        val total = lpChars.size
-        val rows = (total + cols - 1) / cols
-
-        val curRow = lpSelectedIndex / cols
-        val curCol = lpSelectedIndex % cols
-
-        var newRow = (curRow + dy).coerceIn(0, rows - 1)
-        var newCol = (curCol + dx).coerceIn(0, cols - 1)
-        var newIndex = newRow * cols + newCol
-
-        if (newIndex >= total) {
-            while (newIndex >= total && newCol > 0) {
-                newCol--
-                newIndex = newRow * cols + newCol
-            }
-            if (newIndex >= total) newIndex = total - 1
-        }
-
-        if (newIndex != lpSelectedIndex) {
-            lpSelectedIndex = newIndex
-            updateLongPressHighlight()
-
-            if (LIVE_REPLACE) {
-                replaceLiveSelected()
-            }
-        }
-    }
-
-    private fun commitLiveSelected() {
-        val ch = lpChars.getOrNull(lpSelectedIndex) ?: return
-        currentInputConnection?.commitText(ch, 1)
-        lpHasLiveInserted = true
-    }
-
-    private fun replaceLiveSelected() {
-        if (lpHasLiveInserted) {
-            currentInputConnection?.deleteSurroundingText(1, 0)
-        }
-        commitLiveSelected()
+        longPressPopupManager.moveLpSelection(dx, dy)
     }
 
     private fun hideLongPressPopup() {
-        longPressPopup?.dismiss()
-        longPressPopup = null
+        longPressPopupManager.hideLongPressPopup()
     }
+
+    // Helper properties for accessing popup state from manager
+    private val lpChars: List<String>
+        get() = longPressPopupManager.getLpChars()
+
+    private val lpRects: List<android.graphics.Rect>
+        get() = longPressPopupManager.getLpRects()
 
     /* ───────── LAYOUT ───────── */
 
@@ -2308,7 +1565,7 @@ class MyKeyboardService : InputMethodService() {
         if (!isLandscape() && layoutShape == KeyShape.TRIANGLE) {
             val usableW = when (savedRowCount) {
                 // Ostavljamo malo sigurnog prostora uz lijevi i desni rub
-                3 -> (availW - dp(20)).coerceAtLeast(dp(240))
+                3 -> (availW - 20.dp(this)).coerceAtLeast(240.dp(this))
 
                 // Postojeći dobar 4-row i 5-row prikaz
                 else -> (availW * 0.98f).toInt()
@@ -2323,8 +1580,8 @@ class MyKeyboardService : InputMethodService() {
             }
 
             val minTriangleWidth = when (savedRowCount) {
-                3 -> dp(30)
-                else -> dp(40)
+                3 -> 30.dp(this)
+                else -> 40.dp(this)
             }
 
             val keyW = (usableW / referenceColumns)
@@ -2350,14 +1607,14 @@ class MyKeyboardService : InputMethodService() {
             val overlapX = when (savedRowCount) {
                 3 -> {
                     /*
-                     * Ne oduzimamo više dp(2), jer je to proširivalo cijeli red
+                     * Ne oduzimamo više 2.dp(this), jer je to proširivalo cijeli red
                      * i izbacivalo krajnje tipke izvan ekrana.
                      */
                     maxOf(baseOverlapX, fitOverlapX)
                 }
 
                 else -> {
-                    maxOf(baseOverlapX, fitOverlapX) + dp(2)
+                    maxOf(baseOverlapX, fitOverlapX) + 2.dp(this)
                 }
             }
 
@@ -2385,30 +1642,30 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 when {
-                    isLandscape() -> dp(0)
-                    savedRowCount == 3 -> dp(0)
-                    savedRowCount == 4 -> dp(0)
-                    else -> dp(1)
+                    isLandscape() -> 0.dp(this)
+                    savedRowCount == 3 -> 0.dp(this)
+                    savedRowCount == 4 -> 0.dp(this)
+                    else -> 1.dp(this)
                 }
             }
 
-            KeyShape.TRIANGLE -> dp(0)
+            KeyShape.TRIANGLE -> 0.dp(this)
             KeyShape.CIRCLE -> {
                 when {
-                    isLandscape() -> dp(2)
-                    savedRowCount == 3 -> dp(2)
-                    else -> dp(4)
+                    isLandscape() -> 2.dp(this)
+                    savedRowCount == 3 -> 2.dp(this)
+                    else -> 4.dp(this)
                 }
             }
             KeyShape.CUBE -> {
                 when {
-                    isLandscape() -> dp(2)
+                    isLandscape() -> 2.dp(this)
 
                     // 3-row portrait: manje praznog prostora,
                     // pa same tipke mogu biti veće
-                    savedRowCount == 3 -> dp(2)
+                    savedRowCount == 3 -> 2.dp(this)
 
-                    else -> dp(4)
+                    else -> 4.dp(this)
                 }
             }
         }
@@ -2463,11 +1720,11 @@ class MyKeyboardService : InputMethodService() {
         }
 
         val minKeyWidth = when {
-            isLandscape() && savedRowCount == 3 -> dp(24)
-            isLandscape() -> dp(40)
-            savedRowCount == 3 -> dp(20)
-            savedRowCount == 4 -> dp(24)
-            else -> dp(36)
+            isLandscape() && savedRowCount == 3 -> 24.dp(this)
+            isLandscape() -> 40.dp(this)
+            savedRowCount == 3 -> 20.dp(this)
+            savedRowCount == 4 -> 24.dp(this)
+            else -> 36.dp(this)
         }
 
         val baseKeyW = ((effectiveAvailW - (targetColumns - 1) * gap) / targetColumns)
@@ -2485,7 +1742,7 @@ class MyKeyboardService : InputMethodService() {
                             ) -> {
                 ((effectiveAvailW - 6 * gap) / 7f)
                     .toInt()
-                    .coerceAtLeast(dp(36))
+                    .coerceAtLeast(36.dp(this))
             }
 
             layoutShape == KeyShape.HEX &&
@@ -2507,19 +1764,19 @@ class MyKeyboardService : InputMethodService() {
             savedRowCount == 3 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
                     .toInt()
-                    .coerceAtLeast(dp(24))
+                    .coerceAtLeast(24.dp(this))
             }
 
             savedRowCount == 4 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
                     .toInt()
-                    .coerceAtLeast(dp(22))
+                    .coerceAtLeast(22.dp(this))
             }
 
             count == 7 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
                     .toInt()
-                    .coerceAtLeast(dp(36))
+                    .coerceAtLeast(36.dp(this))
             }
 
             count == 6 -> baseKeyW
@@ -2527,7 +1784,7 @@ class MyKeyboardService : InputMethodService() {
             else -> {
                 ((effectiveAvailW - (count - 1) * gap) / max(1, count).toFloat())
                     .toInt()
-                    .coerceAtLeast(dp(36))
+                    .coerceAtLeast(36.dp(this))
             }
         }
 
@@ -2535,11 +1792,11 @@ class MyKeyboardService : InputMethodService() {
 
         val outer = when {
             isLandscape() && layoutShape == KeyShape.HEX -> {
-                ((availW - used) / 2).coerceAtLeast(dp(4))
+                ((availW - used) / 2).coerceAtLeast(4.dp(this))
             }
 
             isLandscape() -> {
-                ((availW - used) / 2).coerceAtLeast(dp(6))
+                ((availW - used) / 2).coerceAtLeast(6.dp(this))
             }
 
             savedRowCount == 3 -> {
@@ -2576,7 +1833,7 @@ class MyKeyboardService : InputMethodService() {
                                     layoutShape == KeyShape.HEX_HALF_LEFT ||
                                     layoutShape == KeyShape.HEX_HALF_RIGHT
                             ) -> {
-                (keyW * 1.90f).toInt().coerceAtLeast(dp(42))
+                (keyW * 1.90f).toInt().coerceAtLeast(42.dp(this))
             }
 
             else -> rawKeyH
@@ -2610,17 +1867,6 @@ class MyKeyboardService : InputMethodService() {
         )
     }
 
-    private fun edgeRowIndices(totalRows: Int): List<Int> {
-        if (totalRows <= 0) return emptyList()
-
-        return when (totalRows) {
-            3 -> listOf(0, 1, 2)
-            4 -> listOf(0, 1, 2, 3)
-            5 -> listOf(0, 2, 4)
-            else -> listOf(0, totalRows / 2, totalRows - 1).distinct()
-        }
-    }
-
     private fun redrawKeyboard() {
         if (!::keyboardContainer.isInitialized) return
         if (!::overlayLayer.isInitialized) return
@@ -2628,7 +1874,7 @@ class MyKeyboardService : InputMethodService() {
 
         isDrawing = true
 
-        mainHandler.post {
+        serviceScope.launch {
             keyboardContainer.removeAllViews()
             if (isLandscape()) {
                 buildLandscapeLayout()
@@ -2655,7 +1901,7 @@ class MyKeyboardService : InputMethodService() {
 
                     isDrawing = false
                 }
-                return@post
+                return@launch
             }
 
 
@@ -2683,12 +1929,12 @@ class MyKeyboardService : InputMethodService() {
                     KeyShape.HEX_HALF_RIGHT -> {
                         when {
                             isLandscape() -> 0
-                            savedRowCount == 3 -> dp(3)
-                            else -> dp(1)
+                            savedRowCount == 3 -> 3.dp(this@MyKeyboardService)
+                            else -> 1.dp(this@MyKeyboardService)
                         }
                     }
 
-                    else -> if (isLandscape()) dp(1) else dp(2)
+                    else -> if (isLandscape()) 1.dp(this@MyKeyboardService) else 2.dp(this@MyKeyboardService)
                 }
 
                 val shouldHoneycomb =
@@ -2709,16 +1955,16 @@ class MyKeyboardService : InputMethodService() {
 
                 val leftPad = when {
                     savedRowCount == 4 && isShiftedRow ->
-                        (sizing.outerPadPx + honeycombShift - dp(6)).coerceAtLeast(0)
+                        (sizing.outerPadPx + honeycombShift - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     savedRowCount == 4 ->
-                        (sizing.outerPadPx - dp(6)).coerceAtLeast(0)
+                        (sizing.outerPadPx - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     savedRowCount == 3 && isShiftedRow ->
-                        (sizing.outerPadPx + honeycombShift - dp(6)).coerceAtLeast(0)
+                        (sizing.outerPadPx + honeycombShift - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     savedRowCount == 3 ->
-                        (sizing.outerPadPx - dp(12)).coerceAtLeast(0)
+                        (sizing.outerPadPx - 12.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     isShiftedRow ->
                         sizing.outerPadPx + honeycombShift
@@ -2729,16 +1975,16 @@ class MyKeyboardService : InputMethodService() {
 
                 val rightPad = when {
                     savedRowCount == 4 && shouldHoneycomb && !isShiftedRow ->
-                        sizing.outerPadPx + honeycombShift + dp(2)
+                        sizing.outerPadPx + honeycombShift + 2.dp(this@MyKeyboardService)
 
                     savedRowCount == 4 ->
-                        sizing.outerPadPx + dp(2)
+                        sizing.outerPadPx + 2.dp(this@MyKeyboardService)
 
                     savedRowCount == 3 && shouldHoneycomb && !isShiftedRow ->
-                        (sizing.outerPadPx + honeycombShift - dp(10)).coerceAtLeast(0)
+                        (sizing.outerPadPx + honeycombShift - 10.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     savedRowCount == 3 ->
-                        (sizing.outerPadPx - dp(12)).coerceAtLeast(0)
+                        (sizing.outerPadPx - 12.dp(this@MyKeyboardService)).coerceAtLeast(0)
 
                     shouldHoneycomb && !isShiftedRow ->
                         sizing.outerPadPx + honeycombShift
@@ -2754,8 +2000,8 @@ class MyKeyboardService : InputMethodService() {
                         savedRowCount == 5 &&
                                 layoutShape == KeyShape.TRIANGLE -> {
                             when (containerRowIndex) {
-                                0, 2, 4 -> -dp(14) // 1., 3. i 5. red lijevo
-                                1, 3 -> dp(7)     // 2. i 4. red desno
+                                0, 2, 4 -> -(14.dp(this@MyKeyboardService)) // 1., 3. i 5. red lijevo
+                                1, 3 -> 7.dp(this@MyKeyboardService)     // 2. i 4. red desno
                                 else -> 0
                             }
                         }
@@ -2764,9 +2010,9 @@ class MyKeyboardService : InputMethodService() {
                         savedRowCount == 4 &&
                                 layoutShape == KeyShape.TRIANGLE -> {
                             if (containerRowIndex % 2 == 0) {
-                                -dp(9)   // 1. i 3. red ulijevo
+                                -(9.dp(this@MyKeyboardService))   // 1. i 3. red ulijevo
                             } else {
-                                dp(20)    // 2. i 4. red udesno
+                                20.dp(this@MyKeyboardService)    // 2. i 4. red udesno
                             }
                         }
 
@@ -2774,8 +2020,8 @@ class MyKeyboardService : InputMethodService() {
                         savedRowCount == 3 &&
                                 layoutShape == KeyShape.TRIANGLE -> {
                             when (containerRowIndex) {
-                                0, 2 -> -dp(4)   // 1. i 3. red ulijevo
-                                1 -> dp(18)       // 2. red udesno
+                                0, 2 -> -(4.dp(this@MyKeyboardService))   // 1. i 3. red ulijevo
+                                1 -> 18.dp(this@MyKeyboardService)       // 2. red udesno
                                 else -> 0
                             }
                         }
@@ -2784,9 +2030,9 @@ class MyKeyboardService : InputMethodService() {
                         savedRowCount == 4 &&
                                 (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
                             if (containerRowIndex % 2 == 0) {
-                                -dp(5)
+                                -(5.dp(this@MyKeyboardService))
                             } else {
-                                dp(10)
+                                10.dp(this@MyKeyboardService)
                             }
                         }
 
@@ -2794,9 +2040,9 @@ class MyKeyboardService : InputMethodService() {
                         savedRowCount == 3 &&
                                 (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
                             if (containerRowIndex % 2 == 0) {
-                                -dp(5)
+                                -(5.dp(this@MyKeyboardService))
                             } else {
-                                dp(10)
+                                10.dp(this@MyKeyboardService)
                             }
                         }
 
@@ -2806,7 +2052,7 @@ class MyKeyboardService : InputMethodService() {
                     0
                 }
 
-                val row = LinearLayout(this).apply {
+                val row = LinearLayout(this@MyKeyboardService).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = Gravity.START
                     setPadding(leftPad, vPad, rightPad, vPad)
@@ -2853,10 +2099,10 @@ class MyKeyboardService : InputMethodService() {
                                 0
                             } else {
                                 when (savedRowCount) {
-                                    3 -> dp(1)    // 3-row ostaje kakav je sada
-                                    4 -> -dp(12)   // 4-row stisni redove
-                                    5 -> -dp(12)   // 5-row još malo jače stisni
-                                    else -> dp(1)
+                                    3 -> 1.dp(this@MyKeyboardService)    // 3-row ostaje kakav je sada
+                                    4 -> -(12.dp(this@MyKeyboardService))   // 4-row stisni redove
+                                    5 -> -(12.dp(this@MyKeyboardService))   // 5-row još malo jače stisni
+                                    else -> 1.dp(this@MyKeyboardService)
                                 }
                             }
                         }
@@ -2893,585 +2139,60 @@ class MyKeyboardService : InputMethodService() {
         }
     }
 
-    /* ───────── EDGE OVERLAY ───────── */
+    /* ───────── EDGE OVERLAY (delegated to EdgeOverlayManager) ───────── */
 
     private fun drawLandscapeSideSlots() {
-        overlayLayer.post {
-            if (keyboardContainer.childCount == 0) return@post
-
-            val root = keyboardContainer.getChildAt(0) as? ViewGroup ?: return@post
-            if (root.childCount < 3) return@post
-
-            val leftBlock = root.getChildAt(0) as? ViewGroup ?: return@post
-            val rightBlock = root.getChildAt(2) as? ViewGroup ?: return@post
-
-            val slots = EdgeSlotsStorage.load(this@MyKeyboardService)
-                .filter { it.type != EdgeActionType.NONE }
-
-            val landscapeBindings = if (KeyboardPrefs.getRowCount(this@MyKeyboardService) == 5) {
-                emptyList()
-            } else {
-                activeEdgeBindings(KeyboardPrefs.getRowCount(this@MyKeyboardService))
-            }
-
-            val ovLoc = IntArray(2)
-            overlayLayer.getLocationOnScreen(ovLoc)
-
-            val keySize = landscapeKeySizePx()
-            val rawSideWidthLeft = keySize
-            val rawSideWidthRight = keySize
-
-            val savedRowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
-            val visualRows = edgeRowIndices(leftBlock.childCount)
-
-            fun rowView(block: ViewGroup, rowIndex: Int): View? {
-                if (rowIndex !in 0 until block.childCount) return null
-                return block.getChildAt(rowIndex)
-            }
-
-            fun firstChild(row: View): View? {
-                val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
-                return vg.getChildAt(0)
-            }
-
-            fun lastChild(row: View): View? {
-                val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
-                return vg.getChildAt(vg.childCount - 1)
-            }
-
-            visualRows.forEachIndexed { visualIndex, rowIndex ->
-                val leftRow = rowView(leftBlock, rowIndex)
-                val rightRow = rowView(rightBlock, rowIndex)
-
-                val leftAnchor = leftRow?.let { firstChild(it) }
-                val rightAnchor = rightRow?.let { lastChild(it) }
-
-                if (leftAnchor == null || rightAnchor == null) return@forEachIndexed
-
-                if (
-                    leftAnchor.width <= 0 || leftAnchor.height <= 0 ||
-                    rightAnchor.width <= 0 || rightAnchor.height <= 0
-                ) {
-                    overlayLayer.post { drawLandscapeSideSlots() }
-                    return@post
-                }
-
-                val leftSlot = if (savedRowCount == 5) {
-                    slots.firstOrNull {
-                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
-                                it.side == EdgePos.Side.LEFT
-                    }
-                } else {
-                    landscapeBindings.firstOrNull {
-                        it.visualIndex == visualIndex &&
-                                it.side == EdgePos.Side.LEFT
-                    }?.slot
-                }
-
-                val rightSlot = if (savedRowCount == 5) {
-                    slots.firstOrNull {
-                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
-                                it.side == EdgePos.Side.RIGHT
-                    }
-                } else {
-                    landscapeBindings.firstOrNull {
-                        it.visualIndex == visualIndex &&
-                                it.side == EdgePos.Side.RIGHT
-                    }?.slot
-                }
-
-                val leftLoc = IntArray(2)
-                val rightLoc = IntArray(2)
-
-                leftAnchor.getLocationOnScreen(leftLoc)
-                rightAnchor.getLocationOnScreen(rightLoc)
-
-                val leftAnchorLeft = leftLoc[0] - ovLoc[0]
-                val rightAnchorRight = (rightLoc[0] - ovLoc[0]) + rightAnchor.width
-
-                leftSlot?.let { slot ->
-                    val tuning = sideButtonTuning(
-                        isLandscapeMode = true,
-                        rowCount = savedRowCount,
-                        visualIndex = visualIndex,
-                        side = EdgePos.Side.LEFT,
-                        slotType = slot.type
-                    )
-
-                    val sideW = (rawSideWidthLeft * tuning.widthScale).toInt()
-                        .coerceAtLeast(dp(14))
-
-                    val left = leftAnchorLeft - sideW + dp(tuning.x)
-                    val top = leftLoc[1] - ovLoc[1] + dp(tuning.y)
-
-                    val btn = createSideButtonView(
-                        tagName = "edge_slot_left_$visualIndex",
-                        slot = slot,
-                        tuning = tuning,
-                        isLandscapeMode = true
-                    )
-
-                    val sideH = (leftAnchor.height * tuning.heightScale).toInt()
-                        .coerceAtLeast(dp(18))
-
-                    overlayLayer.addView(
-                        btn,
-                        FrameLayout.LayoutParams(sideW, sideH).apply {
-                            leftMargin = left.coerceIn(
-                                -sideW / 2,
-                                overlayLayer.width - sideW
-                            )
-
-                            topMargin = safeOverlayTop(
-                                requestedTop = top + (leftAnchor.height - sideH) / 2,
-                                childHeight = sideH
-                            )
-                        }
-                    )
-                }
-
-                rightSlot?.let { slot ->
-                    val tuning = sideButtonTuning(
-                        isLandscapeMode = true,
-                        rowCount = savedRowCount,
-                        visualIndex = visualIndex,
-                        side = EdgePos.Side.RIGHT,
-                        slotType = slot.type
-                    )
-
-                    val sideW = (rawSideWidthRight * tuning.widthScale).toInt()
-                        .coerceAtLeast(dp(14))
-
-                    val left = rightAnchorRight - sideW + dp(tuning.x)
-                    val top = rightLoc[1] - ovLoc[1] + dp(tuning.y)
-
-                    val btn = createSideButtonView(
-                        tagName = "edge_slot_right_$visualIndex",
-                        slot = slot,
-                        tuning = tuning,
-                        isLandscapeMode = true
-                    )
-
-                    val sideH = (rightAnchor.height * tuning.heightScale).toInt()
-                        .coerceAtLeast(dp(18))
-
-                    overlayLayer.addView(
-                        btn,
-                        FrameLayout.LayoutParams(sideW, sideH).apply {
-                            leftMargin = left.coerceIn(
-                                0,
-                                overlayLayer.width - sideW
-                            )
-
-                            topMargin = safeOverlayTop(
-                                requestedTop = top + (rightAnchor.height - sideH) / 2,
-                                childHeight = sideH
-                            )
-                        }
-                    )
-                }
-            }
-        }
+        edgeOverlayManager.drawLandscapeSideSlots()
     }
+
     private fun clearEdgeSlots() {
-        val toRemove = mutableListOf<View>()
-
-        for (i in 0 until overlayLayer.childCount) {
-            val v = overlayLayer.getChildAt(i)
-            val tag = v.tag?.toString() ?: continue
-
-            if (
-                tag.startsWith("edge_slot_") ||
-                tag.startsWith("edge_icon_") ||
-                tag.startsWith("landscape_side_btn_") ||
-                tag.startsWith("landscape_side_bg_")
-            ) {
-                toRemove.add(v)
-            }
-        }
-
-        toRemove.forEach { overlayLayer.removeView(it) }
+        edgeOverlayManager.clearEdgeSlots()
     }
 
     private fun drawEdgeSlots() {
-        overlayLayer.post {
-            clearEdgeSlots()
-
-            if (keyboardContainer.childCount == 0) return@post
-            if (overlayLayer.width <= 0 || overlayLayer.height <= 0) {
-                overlayLayer.post { drawEdgeSlots() }
-                return@post
-            }
-
-
-            val liftY = when (KeyboardPrefs.getRowCount(this)) {
-                5 -> dp(2)
-                4 -> dp(12)
-                else -> dp(6)
-            }
-
-            val sizing = computeRowSizing(7, availableKeyboardWidthPx())
-            val keyW = sizing.keyW
-            val totalRows = keyboardContainer.childCount
-
-            val slotW = when (totalRows) {
-                3 -> (keyW * 0.70f).toInt().coerceIn(dp(28), dp(54))
-                4 -> (keyW * 0.70f).toInt().coerceIn(dp(28), dp(56))
-                else -> (keyW * 0.72f).toInt().coerceIn(dp(30), dp(58))
-            }
-
-            val ovLoc = IntArray(2)
-            overlayLayer.getLocationOnScreen(ovLoc)
-
-            fun firstKey(row: View): View? {
-                val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
-                return vg.getChildAt(0)
-            }
-
-            fun lastKey(row: View): View? {
-                val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
-                return vg.getChildAt(vg.childCount - 1)
-            }
-
-            fun addSideButtonAt(
-                tag: String,
-                slot: EdgeSlot,
-                tuning: SideButtonTuning,
-                left: Int,
-                top: Int,
-                width: Int,
-                height: Int
-            ) {
-                val btn = createSideButtonView(
-                    tagName = tag,
-                    slot = slot,
-                    tuning = tuning,
-                    isLandscapeMode = false
-                )
-
-                val sideOutset = when (totalRows) {
-                    5 -> (width * 0.55f).toInt()
-                    4 -> (width * 0.55f).toInt()
-                    3 -> (width * 0.40f).toInt()
-                    else -> (width * 0.14f).toInt()
-                }
-
-                val finalHeight = (height * tuning.heightScale).toInt()
-                    .coerceAtLeast(dp(18))
-
-                overlayLayer.addView(
-                    btn,
-                    FrameLayout.LayoutParams(width, finalHeight).apply {
-                        gravity = Gravity.START
-
-                        leftMargin = left.coerceIn(
-                            -sideOutset,
-                            overlayLayer.width - width + sideOutset
-                        )
-
-                        topMargin = safeOverlayTop(
-                            requestedTop = top + (height - finalHeight) / 2,
-                            childHeight = finalHeight
-                        )
-                    }
-                )
-            }
-
-            if (totalRows == 5) {
-                val visualRows = edgeRowIndices(totalRows)
-                val slots = EdgeSlotsStorage.load(this)
-                    .filter { it.type != EdgeActionType.NONE }
-
-                visualRows.forEachIndexed { visualIndex, rowIndex ->
-                    val row = keyboardContainer.getChildAt(rowIndex) ?: return@forEachIndexed
-                    val first = firstKey(row) ?: return@forEachIndexed
-                    val last = lastKey(row) ?: return@forEachIndexed
-
-                    if (first.width <= 0 || first.height <= 0 || last.width <= 0) {
-                        first.post { drawEdgeSlots() }
-                        return@post
-                    }
-
-                    val firstLoc = IntArray(2)
-                    val lastLoc = IntArray(2)
-
-                    first.getLocationOnScreen(firstLoc)
-                    last.getLocationOnScreen(lastLoc)
-
-                    val rowLeft = firstLoc[0] - ovLoc[0]
-                    val rowRight = lastLoc[0] - ovLoc[0] + last.width
-
-                    val baseTop = safeOverlayTop(
-                        requestedTop = firstLoc[1] - ovLoc[1] - liftY,
-                        childHeight = first.height
-                    )
-
-                    val leftSlot = slots.firstOrNull {
-                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
-                                it.side == EdgePos.Side.LEFT
-                    }
-
-                    val rightSlot = slots.firstOrNull {
-                        (it.index / 2).coerceIn(0, 2) == visualIndex &&
-                                it.side == EdgePos.Side.RIGHT
-                    }
-
-                    leftSlot?.let { slot ->
-                        val tuning = sideButtonTuning(
-                            isLandscapeMode = false,
-                            rowCount = totalRows,
-                            visualIndex = visualIndex,
-                            side = EdgePos.Side.LEFT,
-                            slotType = slot.type
-                        )
-
-                        val width = (slotW * tuning.widthScale).toInt()
-                            .coerceAtLeast(dp(18))
-
-                        addSideButtonAt(
-                            tag = "edge_slot_left_$visualIndex",
-                            slot = slot,
-                            tuning = tuning,
-                            left = rowLeft - width + dp(tuning.x),
-                            top = baseTop + dp(tuning.y),
-                            width = width,
-                            height = first.height
-                        )
-                    }
-
-                    rightSlot?.let { slot ->
-                        val tuning = sideButtonTuning(
-                            isLandscapeMode = false,
-                            rowCount = totalRows,
-                            visualIndex = visualIndex,
-                            side = EdgePos.Side.RIGHT,
-                            slotType = slot.type
-                        )
-
-                        val width = (slotW * tuning.widthScale).toInt()
-                            .coerceAtLeast(dp(18))
-
-                        addSideButtonAt(
-                            tag = "edge_slot_right_$visualIndex",
-                            slot = slot,
-                            tuning = tuning,
-                            left = rowRight + dp(tuning.x),
-                            top = baseTop + dp(tuning.y),
-                            width = width,
-                            height = first.height
-                        )
-                    }
-                }
-
-                return@post
-            }
-
-            val bindings = activeEdgeBindings(totalRows)
-
-            bindings.forEach { binding ->
-                val row = keyboardContainer.getChildAt(binding.visualIndex) ?: return@forEach
-                val first = firstKey(row) ?: return@forEach
-                val last = lastKey(row) ?: return@forEach
-
-                if (first.width <= 0 || first.height <= 0 || last.width <= 0 || last.height <= 0) {
-                    first.post { drawEdgeSlots() }
-                    return@post
-                }
-
-                val firstLoc = IntArray(2)
-                val lastLoc = IntArray(2)
-
-                first.getLocationOnScreen(firstLoc)
-                last.getLocationOnScreen(lastLoc)
-
-                val rowLeft = firstLoc[0] - ovLoc[0]
-                val rowRight = lastLoc[0] - ovLoc[0] + last.width
-
-                val baseTop = safeOverlayTop(
-                    requestedTop = firstLoc[1] - ovLoc[1] - liftY,
-                    childHeight = first.height
-                )
-
-                val tuning = sideButtonTuning(
-                    isLandscapeMode = false,
-                    rowCount = totalRows,
-                    visualIndex = binding.visualIndex,
-                    side = binding.side,
-                    slotType = binding.slot.type
-                )
-
-                val width = (slotW * tuning.widthScale).toInt()
-                    .coerceAtLeast(dp(18))
-
-                val left = if (binding.side == EdgePos.Side.LEFT) {
-                    rowLeft - width + dp(tuning.x)
-                } else {
-                    rowRight + dp(tuning.x)
-                }
-
-                addSideButtonAt(
-                    tag = if (binding.side == EdgePos.Side.LEFT) {
-                        "edge_slot_left_${binding.visualIndex}"
-                    } else {
-                        "edge_slot_right_${binding.visualIndex}"
-                    },
-                    slot = binding.slot,
-                    tuning = tuning,
-                    left = left,
-                    top = baseTop + dp(tuning.y),
-                    width = width,
-                    height = first.height
-                )
-            }
-        }
+        edgeOverlayManager.drawEdgeSlots()
     }
 
-    private fun performEdgeAction(slot: EdgeSlot) {
-        when (slot.type) {
-            EdgeActionType.SHIFT -> toggleShift()
-            EdgeActionType.BACKSPACE -> backspaceOnce()
-            EdgeActionType.ENTER -> sendEnter()
-            EdgeActionType.SPACE -> currentInputConnection?.commitText(" ", 1)
-            EdgeActionType.CHAR -> slot.value?.let { currentInputConnection?.commitText(it, 1) }
-            EdgeActionType.EMOJI_PICKER -> showEmojiPicker()
-            EdgeActionType.NONE -> Unit
-        }
+    /* ───────── EdgeActionCallback Implementation ───────── */
+
+    override fun onToggleShift() {
+        toggleShift()
     }
-    private fun createSideButtonView(
-        tagName: String,
-        slot: EdgeSlot,
-        tuning: SideButtonTuning,
-        isLandscapeMode: Boolean
-    ): FrameLayout {
 
-        // 1. Label deklaracija
-        val label = when (slot.type) {
-            EdgeActionType.SHIFT -> if (isShifted) "⇪" else "⇧"
-            EdgeActionType.BACKSPACE -> "⌫"
-            EdgeActionType.ENTER -> "↵"
-            EdgeActionType.SPACE -> "␣"
-            EdgeActionType.CHAR -> slot.value ?: ""
-            EdgeActionType.EMOJI_PICKER -> "😊"
-            EdgeActionType.NONE -> ""
-        }
+    override fun onBackspaceOnce() {
+        backspaceOnce()
+    }
 
-        // 2. Boje
-        val useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(this)
-        val sideBg = if (useThemeBg) {
-            Color.TRANSPARENT
-        } else {
-            KeyboardPrefs.getSideButtonsBg(this)
-        }
-        val sideTextColor = if (useThemeBg) {
-            themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)  // ← prati temu!
-        } else {
-            KeyboardPrefs.getSideButtonsTextColor(this)
-        }
+    override fun onSendEnter() {
+        sendEnter()
+    }
 
-        // 3. FrameLayout
-        val box = FrameLayout(this).apply {
-            tag = tagName
+    override fun onCommitSpace() {
+        currentInputConnection?.commitText(" ", 1)
+    }
 
-            if (!useThemeBg) {
-                setBackgroundColor(sideBg)
-            } else {
-                setBackgroundColor(Color.TRANSPARENT)
-            }
+    override fun onCommitChar(char: String) {
+        currentInputConnection?.commitText(char, 1)
+    }
 
-            isClickable = true
-            isFocusable = false
-            isFocusableInTouchMode = false
-            isSelected = false
-        }
+    override fun onShowEmojiPicker() {
+        showEmojiPicker()
+    }
 
-        // 4. TextView s label
-        val icon = TextView(this).apply {
-            text = label
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setTextColor(
-                if (slot.type == EdgeActionType.SHIFT && isShifted) {
-                    edgeIconActiveColor(themedCtx)
-                } else {
-                    sideTextColor  // ← ovo bi trebalo pratiti temu
-                }
-            )
+    override fun onScheduleBackspaceHold() {
+        scheduleBackspaceHold()
+    }
 
+    override fun onCancelPendingBackspaceHold() {
+        cancelPendingBackspaceHold()
+    }
 
-            textSize = tuning.iconTextSizeSp ?: when {
-                slot.type == EdgeActionType.SHIFT && isLandscapeMode -> 17f
-                slot.type == EdgeActionType.SHIFT -> 21f
-                isLandscapeMode -> 13.5f
-                else -> 13f
-            }
+    override fun isShifted(): Boolean {
+        return isShifted
+    }
 
-            translationX = dp(tuning.iconX).toFloat()
-            translationY = dp(tuning.iconY).toFloat()
-
-            isFocusable = false
-            isFocusableInTouchMode = false
-            isSelected = false
-        }
-
-        box.addView(
-            icon,
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
-
-        box.setOnTouchListener { view, e ->
-            when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    view.alpha = 0.75f
-
-                    if (slot.type == EdgeActionType.BACKSPACE) {
-                        scheduleBackspaceHold()
-                    }
-
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    view.performClick()
-                    view.alpha = 1f
-
-                    if (slot.type == EdgeActionType.BACKSPACE) {
-                        cancelPendingBackspaceHold()
-
-                        if (isBackspaceHoldRunning()) {
-                            stopBackspaceHold()
-                        } else {
-                            backspaceOnce()
-                        }
-                    } else {
-                        performEdgeAction(slot)
-                    }
-
-                    true
-                }
-
-                MotionEvent.ACTION_CANCEL -> {
-                    view.alpha = 1f
-
-                    if (slot.type == EdgeActionType.BACKSPACE) {
-                        cancelPendingBackspaceHold()
-                        stopBackspaceHold()
-                    }
-
-                    true
-                }
-
-                else -> false
-            }
-        }
-
-        return box
+    override fun onStopBackspaceHold() {
+        stopBackspaceHold()
     }
 
 
@@ -3485,20 +2206,20 @@ class MyKeyboardService : InputMethodService() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(
                 when (savedRowCount) {
-                    3 -> dp(2)
-                    5 -> dp(10)
-                    else -> dp(8)
+                    3 -> 2.dp(this)
+                    5 -> 10.dp(this)
+                    else -> 8.dp(this)
                 },
                 when (savedRowCount) {
-                    4 -> dp(0)
-                    else -> dp(4)
+                    4 -> 0.dp(this)
+                    else -> 4.dp(this)
                 },
                 when (savedRowCount) {
-                    3 -> dp(4)
-                    5 -> dp(6)
-                    else -> dp(8)
+                    3 -> 4.dp(this)
+                    5 -> 6.dp(this)
+                    else -> 8.dp(this)
                 },
-                dp(4)
+                4.dp(this)
             )
             clipChildren = false
             clipToPadding = false
@@ -3515,7 +2236,7 @@ class MyKeyboardService : InputMethodService() {
                 2.2f
             ).apply {
                 if (savedRowCount == 5) {
-                    leftMargin = dp(14)
+                    leftMargin = 14.dp(this@MyKeyboardService)
                 }
             }
         }
@@ -3527,8 +2248,8 @@ class MyKeyboardService : InputMethodService() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                leftMargin = if (savedRowCount == 3) dp(-16) else dp(8)
-                rightMargin = if (savedRowCount == 3) dp(30) else dp(8)
+                leftMargin = if (savedRowCount == 3) -(16.dp(this@MyKeyboardService)) else 8.dp(this@MyKeyboardService)
+                rightMargin = if (savedRowCount == 3) 30.dp(this@MyKeyboardService) else 8.dp(this@MyKeyboardService)
             }
         }
 
@@ -3545,13 +2266,13 @@ class MyKeyboardService : InputMethodService() {
             ).apply {
                 when (savedRowCount) {
                     3 -> {
-                        leftMargin = -dp(24)
-                        rightMargin = dp(0)
+                        leftMargin = -(24.dp(this@MyKeyboardService))
+                        rightMargin = 0.dp(this@MyKeyboardService)
                     }
 
                     5 -> {
-                        leftMargin = dp(0)
-                        rightMargin = dp(14)
+                        leftMargin = 0.dp(this@MyKeyboardService)
+                        rightMargin = 14.dp(this@MyKeyboardService)
                     }
                 }
             }
@@ -3647,34 +2368,34 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 when (savedRowCount) {
-                    3 -> dp(33)
-                    4 -> dp(38)
-                    5 -> dp(36)
-                    else -> dp(42)
+                    3 -> 33.dp(this)
+                    4 -> 38.dp(this)
+                    5 -> 36.dp(this)
+                    else -> 42.dp(this)
                 }
             }
 
             KeyShape.TRIANGLE -> {
                 when (savedRowCount) {
-                    3 -> dp(32)
-                    5 -> dp(34)
-                    else -> dp(40)
+                    3 -> 32.dp(this)
+                    5 -> 34.dp(this)
+                    else -> 40.dp(this)
                 }
             }
 
             KeyShape.CIRCLE -> {
                 when (savedRowCount) {
-                    3 -> dp(32)
-                    5 -> dp(34)
-                    else -> dp(38)
+                    3 -> 32.dp(this)
+                    5 -> 34.dp(this)
+                    else -> 38.dp(this)
                 }
             }
 
             KeyShape.CUBE -> {
                 when (savedRowCount) {
-                    3 -> dp(31)
-                    5 -> dp(33)
-                    else -> dp(35)
+                    3 -> 31.dp(this)
+                    5 -> 33.dp(this)
+                    else -> 35.dp(this)
                 }
             }
         }
@@ -3688,23 +2409,23 @@ class MyKeyboardService : InputMethodService() {
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> {
                 when (savedRowCount) {
-                    5 -> dp(9)
-                    4 -> dp(4) // manje preklapanja = redovi se više razmaknu
+                    5 -> 9.dp(this)
+                    4 -> 4.dp(this) // manje preklapanja = redovi se više razmaknu
                     else -> (keySize * 0.25f).toInt()
                 }
             }
 
             KeyShape.TRIANGLE -> {
-                if (savedRowCount == 5) dp(3)
+                if (savedRowCount == 5) 3.dp(this)
                 else (keySize * 0.18f).toInt()
             }
 
-            KeyShape.CIRCLE -> if (savedRowCount == 5) dp(5) else dp(4)
+            KeyShape.CIRCLE -> if (savedRowCount == 5) 5.dp(this) else 4.dp(this)
             KeyShape.CUBE -> {
                 when (savedRowCount) {
-                    3 -> -dp(2)
-                    5 -> dp(5)
-                    else -> dp(4)
+                    3 -> -(2.dp(this))
+                    5 -> 5.dp(this)
+                    else -> 4.dp(this)
                 }
             }
         }
@@ -3729,13 +2450,13 @@ class MyKeyboardService : InputMethodService() {
             val savedRowCount = KeyboardPrefs.getRowCount(this)
 
             val baseLeftInset = when (savedRowCount) {
-                3 -> dp(18)    // sva 3 reda desno od side buttona
-                4 -> dp(12)
+                3 -> 18.dp(this)    // sva 3 reda desno od side buttona
+                4 -> 12.dp(this)
                 else -> 0
             }
 
             val middleRowExtraRight = when (savedRowCount) {
-                3 -> dp(9)    // samo 2. red još mrvicu desno za centriranje
+                3 -> 9.dp(this)    // samo 2. red još mrvicu desno za centriranje
                 else -> 0
             }
 
@@ -3794,7 +2515,7 @@ class MyKeyboardService : InputMethodService() {
         val halfStep = (keySize / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val baseRightInset = when (savedRowCount) {
-            3 -> dp(14)    // sva 3 desna reda lijevo od side buttona
+            3 -> 14.dp(this)    // sva 3 desna reda lijevo od side buttona
             else -> 0
         }
 
@@ -3900,17 +2621,17 @@ class MyKeyboardService : InputMethodService() {
         val centerRows = cfg.rows
 
         val keySize = when (savedRowCount) {
-            3 -> dp(25)
-            4 -> dp(27)
-            5 -> dp(28)
-            else -> dp(28)
+            3 -> 25.dp(this)
+            4 -> 27.dp(this)
+            5 -> 28.dp(this)
+            else -> 28.dp(this)
         }
 
         val rowGap = when (savedRowCount) {
-            3 -> dp(4)
-            4 -> dp(5)
-            5 -> dp(6)
-            else -> dp(6)
+            3 -> 4.dp(this)
+            4 -> 5.dp(this)
+            5 -> 6.dp(this)
+            else -> 6.dp(this)
         }
 
         centerRows.forEach { rowConfig ->
@@ -3935,7 +2656,14 @@ class MyKeyboardService : InputMethodService() {
                 // Primijeni iste boje kao za obične tipke u glavnom layoutu
                 if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
                     val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-                    if (allSame) {
+                    val useTheme = KeyboardPrefs.getKeysUseTheme(this)
+
+                    if (useTheme) {
+                        // Use custom theme defaults
+                        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                        kv.setTextColor(themeColors.keyText)
+                        kv.customBgColor = themeColors.keyFill
+                    } else if (allSame) {
                         kv.customBgColor = KeyboardPrefs.getKeysBg(this)
                         kv.setTextColor(KeyboardPrefs.getKeysTextColor(this))
                     } else {
@@ -3944,11 +2672,10 @@ class MyKeyboardService : InputMethodService() {
                             kv.customBgColor = individualColors.first
                             kv.setTextColor(individualColors.second)
                         } else {
-                            // Nema individualne boje — fallback na temu
-                            val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-                            val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
-                            kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
-                            kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
+                            // Nema individualne boje — fallback na theme defaults
+                            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                            kv.setTextColor(themeColors.keyText)
+                            kv.customBgColor = themeColors.keyFill
                         }
                     }
                 }
@@ -3957,7 +2684,7 @@ class MyKeyboardService : InputMethodService() {
                     keySize,
                     keySize
                 ).apply {
-                    if (i > 0) leftMargin = dp(4)
+                    if (i > 0) leftMargin = 4.dp(this@MyKeyboardService)
                 }
 
                 rowLayout.addView(kv, lp)
@@ -4229,20 +2956,10 @@ class MyKeyboardService : InputMethodService() {
         var longPressTriggered = false
         var startX = 0f
         var startY = 0f
-        val step = dp(18)
+        val step = 18.dp(this)
         var handledBySwipeUp = false
-        val swipeUpThreshold = dp(26)
-
-        val longPressRunnable = Runnable {
-            if (label in nonBindable) return@Runnable
-            val binds = keyConfig.longPressBindings
-            if (binds.isNotEmpty()) {
-                longPressTriggered = true
-                showLongPressPopup(this, binds)
-                lpSelectedIndex = 0
-                updateLongPressHighlight()
-            }
-        }
+        val swipeUpThreshold = 26.dp(this)
+        var longPressJob: Job? = null
 
         isLongClickable = true
 
@@ -4256,13 +2973,29 @@ class MyKeyboardService : InputMethodService() {
                     hideLongPressPopup()
                     hideEmojiPopup()
 
+                    // Haptic feedback on key press
+                    hapticManager.performHapticFeedback(v)
+
+                    // Show key preview
+                    keyPreviewManager.show(v, label)
+
                     if (label == " ") {
                         handleDualSpaceDown(keyConfig)
                     }
 
-                    mainHandler.removeCallbacks(longPressRunnable)
+                    longPressJob?.cancel()
                     if (label !in nonBindable) {
-                        mainHandler.postDelayed(longPressRunnable, longPressTimeout)
+                        longPressJob = serviceScope.launch {
+                            delay(longPressTimeout)
+                            val binds = keyConfig.longPressBindings
+                            if (binds.isNotEmpty()) {
+                                longPressTriggered = true
+                                keyPreviewManager.hide()
+                                hapticManager.onLongPress()
+                                showLongPressPopup(this@apply, binds)
+                                longPressPopupManager.resetSelection()
+                            }
+                        }
                     }
 
                     inputController.handleTouch(v as TextView, e)
@@ -4285,8 +3018,9 @@ class MyKeyboardService : InputMethodService() {
                         absDy > absDx
                     ) {
                         handledBySwipeUp = true
-                        mainHandler.removeCallbacks(longPressRunnable)
+                        longPressJob?.cancel()
                         hideLongPressPopup()
+                        keyPreviewManager.hide()
                         showEmojiPicker()
                         v.isPressed = false
                         return@setOnTouchListener true
@@ -4306,7 +3040,7 @@ class MyKeyboardService : InputMethodService() {
 
                         if (!swipeText.isNullOrBlank()) {
                             handledBySwipeUp = true
-                            mainHandler.removeCallbacks(longPressRunnable)
+                            longPressJob?.cancel()
                             hideLongPressPopup()
                             currentInputConnection?.commitText(swipeText, 1)
                             v.isPressed = false
@@ -4314,8 +3048,8 @@ class MyKeyboardService : InputMethodService() {
                         }
                     }
 
-                    if (!longPressTriggered && absDx > dp(20) && absDx > absDy * 1.05f) {
-                        mainHandler.removeCallbacks(longPressRunnable)
+                    if (!longPressTriggered && absDx > 20.dp(this) && absDx > absDy * 1.05f) {
+                        longPressJob?.cancel()
                         hideLongPressPopup()
                     }
 
@@ -4332,23 +3066,28 @@ class MyKeyboardService : InputMethodService() {
                             val rx = e.rawX.toInt()
                             val ry = e.rawY.toInt()
                             val newIdx = lpRects.indexOfFirst { it.contains(rx, ry) }
-                            if (newIdx != -1 && newIdx != lpSelectedIndex) {
-                                lpSelectedIndex = newIdx
-                                updateLongPressHighlight()
+                            if (newIdx != -1 && newIdx != longPressPopupManager.getSelectedIndex()) {
+                                longPressPopupManager.setSelectedIndex(newIdx)
                             }
                         }
                     }
 
-                    inputController.handleTouch(v as TextView, e)
+                    // Skip swipe gestures when long press popup is active
+                    if (!longPressTriggered) {
+                        inputController.handleTouch(v as TextView, e)
+                    }
                     true
                 }
 
                 MotionEvent.ACTION_UP -> {
+                    // Hide key preview
+                    keyPreviewManager.hide()
+
                     if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
-                        mainHandler.removeCallbacks(longPressRunnable)
+                        longPressJob?.cancel()
                         return@setOnTouchListener true
                     }
 
@@ -4356,17 +3095,17 @@ class MyKeyboardService : InputMethodService() {
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
-                        mainHandler.removeCallbacks(longPressRunnable)
+                        longPressJob?.cancel()
                         return@setOnTouchListener true
                     }
 
                     v.performClick()
                     v.isSelected = false
                     v.clearFocus()
-                    mainHandler.removeCallbacks(longPressRunnable)
+                    longPressJob?.cancel()
 
                     if (longPressTriggered) {
-                        lpChars.getOrNull(lpSelectedIndex)?.let { ch ->
+                        longPressPopupManager.getSelectedChar()?.let { ch ->
                             currentInputConnection?.commitText(ch, 1)
                         }
                         hideLongPressPopup()
@@ -4395,12 +3134,15 @@ class MyKeyboardService : InputMethodService() {
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
+                    // Hide key preview
+                    keyPreviewManager.hide()
+
                     if (label == " ") {
                         handleDualSpaceUpOrCancel(keyConfig)
                     }
 
                     handledBySwipeUp = false
-                    mainHandler.removeCallbacks(longPressRunnable)
+                    longPressJob?.cancel()
 
                     if (longPressTriggered) {
                         hideLongPressPopup()
@@ -4409,7 +3151,11 @@ class MyKeyboardService : InputMethodService() {
                     v.isPressed = false
                     v.isSelected = false
                     v.clearFocus()
-                    inputController.handleTouch(v as TextView, e)
+
+                    // Skip swipe cleanup when long press popup was shown
+                    if (!longPressTriggered) {
+                        inputController.handleTouch(v as TextView, e)
+                    }
                     true
                 }
 
@@ -4431,19 +3177,25 @@ class MyKeyboardService : InputMethodService() {
 
         // 1. SPACE — uvijek posebno
         if (key.label == " ") {
-            val linked = KeyboardPrefs.isSpaceLinked(this)
-            val c1 = KeyboardPrefs.getSpace1Bg(this)
-            val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
+            val useTheme = KeyboardPrefs.getKeysUseTheme(this)
+            val spaceColor = if (useTheme) {
+                // Use custom theme defaults for space
+                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).spaceFill
+            } else {
+                // Use custom space color prefs
+                val linked = KeyboardPrefs.isSpaceLinked(this)
+                val c1 = KeyboardPrefs.getSpace1Bg(this)
+                val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
 
-            kv.customBgColor = when {
-                isLeftSpace(key) -> c1
-                isRightSpace(key) -> c2
-
-                // fallback za stare layoutove bez markera
-                spaceIndex == 0 -> c1
-                else -> c2
+                when {
+                    isLeftSpace(key) -> c1
+                    isRightSpace(key) -> c2
+                    spaceIndex == 0 -> c1
+                    else -> c2
+                }
             }
 
+            kv.customBgColor = spaceColor
             nextSpaceIndex++
             return nextSpaceIndex
         }
@@ -4477,8 +3229,14 @@ class MyKeyboardService : InputMethodService() {
 
         // 5. OBIČNE TIPKE + "123", "ABC", "abc" — ovdje rješavamo boje
         val allSame = KeyboardPrefs.getKeysAllSameColor(this)
+        val useTheme = KeyboardPrefs.getKeysUseTheme(this)
 
-        if (allSame) {
+        if (useTheme) {
+            // Koristi custom theme defaults
+            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+            kv.setTextColor(themeColors.keyText)
+            kv.customBgColor = themeColors.keyFill
+        } else if (allSame) {
             // Sve iste boje iz prefs
             val keysBg = KeyboardPrefs.getKeysBg(this)
             val keysText = KeyboardPrefs.getKeysTextColor(this)
@@ -4491,16 +3249,233 @@ class MyKeyboardService : InputMethodService() {
                 kv.customBgColor = individualColors.first
                 kv.setTextColor(individualColors.second)
             } else {
-                // NEMA individualne boje — fallback na temu (kao da je allSame)
-                val fallbackText = if (lastIsDark == true) Color.WHITE else Color.BLACK
-                val fallbackBg = if (lastIsDark == true) 0xFF3E3E3E.toInt() else 0xFFE0E0E0.toInt()
-                kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, fallbackText))
-                kv.customBgColor = themeColor(this@MyKeyboardService, R.attr.keyFill, fallbackBg)
+                // NEMA individualne boje — fallback na theme defaults
+                val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
+                kv.setTextColor(themeColors.keyText)
+                kv.customBgColor = themeColors.keyFill
             }
         }
 
         return nextSpaceIndex
     }
+
+    /* ───────── RGB ANIMATION ───────── */
+
+    // RGB Rainbow color calculation - 6 segments × 256 steps = 1536 total steps
+    // Produces smooth transitions: Red→Yellow→Green→Cyan→Blue→Magenta→Red
+    private fun rainbowColor(x: Int): Int {
+        val step = ((x % 1536) + 1536) % 1536  // Handle negative values
+        val segment = step / 256
+        val c = step % 256
+
+        return when (segment) {
+            0 -> Color.rgb(255, c, 0)           // Red to Yellow
+            1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
+            2 -> Color.rgb(0, 255, c)           // Green to Cyan
+            3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
+            4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
+            5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
+            else -> Color.rgb(255, 0, 0)        // Fallback to Red
+        }
+    }
+
+    // Apply brightness to a rainbow color
+    private fun adjustBrightness(color: Int, brightness: Float): Int {
+        val r = ((color shr 16) and 0xFF) * brightness
+        val g = ((color shr 8) and 0xFF) * brightness
+        val b = (color and 0xFF) * brightness
+        return Color.rgb(r.toInt(), g.toInt(), b.toInt())
+    }
+
+    // Create multi-center radial rainbow gradient
+    // 3 centers: first letter row 1, last letter row 2, 3rd letter row 3
+    private fun createRadialRainbowDrawable(startStep: Int, brightness: Float): android.graphics.drawable.Drawable {
+        val numColors = 7
+
+        return object : android.graphics.drawable.Drawable() {
+            private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+            private fun buildColors(phaseOffset: Int): IntArray {
+                val colors = IntArray(numColors)
+                for (i in 0 until numColors) {
+                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
+                    val color = rainbowColor(colorStep)
+                    colors[i] = adjustBrightness(color, brightness)
+                }
+                return colors
+            }
+
+            override fun draw(canvas: android.graphics.Canvas) {
+                val bounds = bounds
+                val w = bounds.width().toFloat()
+                val h = bounds.height().toFloat()
+                val maxDim = maxOf(w, h)
+
+                // 3 center positions (approximate key positions):
+                // Center 1: First letter, row 1 - top left area
+                val cx1 = bounds.left + w * 0.12f
+                val cy1 = bounds.top + h * 0.15f
+                // Center 2: Last letter, row 2 - right middle area
+                val cx2 = bounds.left + w * 0.88f
+                val cy2 = bounds.top + h * 0.42f
+                // Center 3: 3rd letter, row 3 - left-center lower area
+                val cx3 = bounds.left + w * 0.28f
+                val cy3 = bounds.top + h * 0.68f
+
+                val radius = maxDim * 0.9f
+                val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
+
+                // Draw 3 overlapping radial gradients with different phase offsets
+                // Using SCREEN blend mode for additive-like blending
+                paint.xfermode = null
+
+                // First gradient (base layer)
+                val colors1 = buildColors(0)
+                paint.shader = android.graphics.RadialGradient(
+                    cx1, cy1, radius, colors1, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                // Second gradient (blend on top)
+                paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN)
+                val colors2 = buildColors(512)  // Phase offset for variety
+                paint.shader = android.graphics.RadialGradient(
+                    cx2, cy2, radius, colors2, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                // Third gradient (blend on top)
+                val colors3 = buildColors(1024)  // Another phase offset
+                paint.shader = android.graphics.RadialGradient(
+                    cx3, cy3, radius, colors3, positions,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                canvas.drawRect(bounds, paint)
+
+                paint.xfermode = null
+            }
+
+            override fun setAlpha(alpha: Int) { paint.alpha = alpha }
+            override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
+            override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+        }
+    }
+
+    private fun applyRadialRainbow(startStep: Int, brightness: Float) {
+        val drawable1 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable2 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable3 = createRadialRainbowDrawable(startStep, brightness)
+        val drawable4 = createRadialRainbowDrawable(startStep, brightness)
+
+        rootView.background = drawable1
+        overlayLayer.background = drawable2
+        keyboardContainer.background = drawable3
+        window?.window?.setBackgroundDrawable(drawable4)
+    }
+
+    private var rgbStep = 0
+
+    private fun startRgbSmooth() {
+        stopRgbAnimation()
+
+        val speedMs = KeyboardPrefs.getRgbSmoothSpeed(this)
+        val brightness = KeyboardPrefs.getRgbSmoothBrightness(this)
+
+        // Calculate delay per step (1536 steps for full rainbow cycle)
+        val delayPerStep = (speedMs / 1536f).toLong().coerceAtLeast(8L)
+
+        rgbAnimationJob = serviceScope.launch {
+            while (isActive) {
+                rgbStep = (rgbStep + 4) % 1536  // Move through rainbow
+                applyRadialRainbow(rgbStep, brightness)
+                delay(delayPerStep)
+            }
+        }
+    }
+
+    private fun startRgbWild() {
+        stopRgbAnimation()
+
+        val speedMs = KeyboardPrefs.getRgbWildSpeed(this)
+        val brightness = KeyboardPrefs.getRgbWildBrightness(this)
+        val frameInterval = 16L  // ~60fps for smooth animation
+        val transitionDuration = (speedMs * 0.85f).toLong()  // 85% of interval for transition
+
+        // Ease-in-out function for smooth acceleration/deceleration
+        fun easeInOutCubic(t: Float): Float {
+            return if (t < 0.5f) {
+                4f * t * t * t
+            } else {
+                1f - (-2f * t + 2f).let { it * it * it } / 2f
+            }
+        }
+
+        rgbAnimationJob = serviceScope.launch {
+            var startStep = 0
+            var targetStep = rgbRandom.nextInt(1536)
+            var transitionStartTime = System.currentTimeMillis()
+
+            while (isActive) {
+                val now = System.currentTimeMillis()
+                val elapsed = now - transitionStartTime
+
+                // Calculate eased progress
+                val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
+                val easedProgress = easeInOutCubic(rawProgress)
+
+                // Calculate shortest path difference
+                var diff = targetStep - startStep
+                if (diff > 768) diff -= 1536
+                if (diff < -768) diff += 1536
+
+                // Interpolate with easing
+                val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
+
+                applyRadialRainbow(currentStep, brightness)
+
+                // Pick new target when transition completes
+                if (elapsed >= speedMs) {
+                    startStep = targetStep
+                    targetStep = rgbRandom.nextInt(1536)
+                    transitionStartTime = now
+                }
+
+                delay(frameInterval)
+            }
+        }
+    }
+
+    private fun stopRgbAnimation() {
+        rgbAnimationJob?.cancel()
+        rgbAnimationJob = null
+    }
+
+    private fun restoreNormalBackground() {
+        stopRgbAnimation()
+
+        val useTheme = KeyboardPrefs.getBackgroundUseTheme(this)
+        val bg = if (useTheme) {
+            KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).keyboardBg
+        } else {
+            KeyboardPrefs.getBackgroundColor(this)
+        }
+
+        rootView.setBackgroundColor(bg)
+        overlayLayer.setBackgroundColor(bg)
+        keyboardContainer.setBackgroundColor(bg)
+        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
+    }
+
+    private fun startRgbAnimation() {
+        when {
+            KeyboardPrefs.isRgbSmoothEnabled(this) -> startRgbSmooth()
+            KeyboardPrefs.isRgbWildEnabled(this) -> startRgbWild()
+            else -> restoreNormalBackground()
+        }
+    }
+
     /* ───────── INNER CLASSES ───────── */
 
     class CharSelectorAdapter(

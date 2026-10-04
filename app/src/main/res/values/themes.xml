@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base tema (manifest) -->
+    <!-- Base tema (manifest) - uses unified colors that auto-switch -->
     <style name="Theme.AntaraKeyboard.Base" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="keyboardBg">@color/keyboard_bg_light</item>
-        <item name="keyFill">@color/key_fill_light</item>
-        <item name="keyStroke">@color/key_stroke_light</item>
-        <item name="keyText">@color/key_text_light</item>
+        <item name="keyboardBg">@color/keyboard_bg</item>
+        <item name="keyFill">@color/key_fill</item>
+        <item name="keyStroke">@color/key_stroke</item>
+        <item name="keyText">@color/key_text</item>
 
-        <item name="edgeSlotTint">@color/keyboard_bg_light</item>
-        <item name="edgeIconText">@color/key_text_light</item>
+        <item name="edgeSlotTint">@color/keyboard_bg</item>
+        <item name="edgeIconText">@color/key_text</item>
         <item name="edgeIconTextActive">@color/special_fill</item>
 
         <item name="enterFill">@color/special_fill</item>
         <item name="enterText">@color/special_text</item>
 
-        <item name="android:windowBackground">@color/keyboard_bg_light</item>
+        <item name="android:windowBackground">@color/keyboard_bg</item>
     </style>
 
     <!-- Light -->
@@ -58,13 +58,20 @@
     <style name="MainRoundedButton" parent="Widget.AppCompat.Button">
         <item name="android:background">@drawable/main_button_rounded</item>
         <item name="android:backgroundTint">@null</item>
-        <item name="android:textColor">#2A2140</item>
+        <item name="android:textColor">@color/main_button_text</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:minHeight">46dp</item>
-        <item name="android:paddingLeft">14dp</item>
-        <item name="android:paddingRight">14dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="MainSpinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
 </resources>

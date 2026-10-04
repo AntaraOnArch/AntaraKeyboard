@@ -398,11 +398,15 @@ object KeyboardPrefs {
 
     /* ───────── KEYS COLORS ───────── */
     private const val KEYS_ALL_SAME_COLOR = "keys_all_same_color"
+    private const val KEYS_USE_THEME = "keys_use_theme"
     private const val KEYS_BG = "keys_bg"
     private const val KEYS_TEXT_COLOR = "keys_text_color"
 
     fun getKeysAllSameColor(context: Context): Boolean =
         prefs(context).getBoolean(KEYS_ALL_SAME_COLOR, true)
+
+    fun getKeysUseTheme(context: Context): Boolean =
+        prefs(context).getBoolean(KEYS_USE_THEME, true)
 
     fun getKeysBg(context: Context): Int =
         prefs(context).getInt(KEYS_BG, 0xFF3E3E3E.toInt())
@@ -410,11 +414,12 @@ object KeyboardPrefs {
     fun getKeysTextColor(context: Context): Int =
         prefs(context).getInt(KEYS_TEXT_COLOR, 0xFFFFFFFF.toInt())
 
-    fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean) {
+    fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean, useTheme: Boolean = false) {
         prefs(context).edit()
             .putInt(KEYS_BG, bg)
             .putInt(KEYS_TEXT_COLOR, textColor)
             .putBoolean(KEYS_ALL_SAME_COLOR, allSame)
+            .putBoolean(KEYS_USE_THEME, useTheme)
             .apply()
     }
 
@@ -584,6 +589,231 @@ object KeyboardPrefs {
         sp.edit()
             .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
             .remove("long_press_defaults_initialized")
+            .apply()
+    }
+
+    /* ───────── VIBRATION ───────── */
+
+    private const val KEY_VIBRATION_ENABLED = "vibration_enabled"
+
+    fun isVibrationEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_VIBRATION_ENABLED, true)
+
+    fun setVibrationEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+    }
+
+    /* ───────── THEME DEFAULTS ───────── */
+    // Custom default colors for light and dark mode themes
+
+    private const val THEME_DEFAULTS_CUSTOM = "theme_defaults_custom"
+
+    // Light mode defaults
+    private const val THEME_LIGHT_KEY_FILL = "theme_light_key_fill"
+    private const val THEME_LIGHT_KEY_TEXT = "theme_light_key_text"
+    private const val THEME_LIGHT_SPACE_FILL = "theme_light_space_fill"
+    private const val THEME_LIGHT_KEYBOARD_BG = "theme_light_keyboard_bg"
+
+    // Dark mode defaults
+    private const val THEME_DARK_KEY_FILL = "theme_dark_key_fill"
+    private const val THEME_DARK_KEY_TEXT = "theme_dark_key_text"
+    private const val THEME_DARK_SPACE_FILL = "theme_dark_space_fill"
+    private const val THEME_DARK_KEYBOARD_BG = "theme_dark_keyboard_bg"
+
+    // Factory defaults
+    object FactoryDefaults {
+        // Light mode
+        const val LIGHT_KEY_FILL = 0xFFF0F0F0.toInt()
+        const val LIGHT_KEY_TEXT = 0xFF000000.toInt()
+        const val LIGHT_SPACE_FILL = 0xFFD3CAC8.toInt()
+        const val LIGHT_KEYBOARD_BG = 0xFFFFFFFF.toInt()
+
+        // Dark mode
+        const val DARK_KEY_FILL = 0xFF3E3E3E.toInt()
+        const val DARK_KEY_TEXT = 0xFFFFFFFF.toInt()
+        const val DARK_SPACE_FILL = 0xFF4A4A4A.toInt()
+        const val DARK_KEYBOARD_BG = 0xFF000000.toInt()
+    }
+
+    fun hasCustomThemeDefaults(context: Context): Boolean =
+        prefs(context).getBoolean(THEME_DEFAULTS_CUSTOM, false)
+
+    // Light mode getters
+    fun getThemeLightKeyFill(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEY_FILL, FactoryDefaults.LIGHT_KEY_FILL)
+
+    fun getThemeLightKeyText(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEY_TEXT, FactoryDefaults.LIGHT_KEY_TEXT)
+
+    fun getThemeLightSpaceFill(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_SPACE_FILL, FactoryDefaults.LIGHT_SPACE_FILL)
+
+    fun getThemeLightKeyboardBg(context: Context): Int =
+        prefs(context).getInt(THEME_LIGHT_KEYBOARD_BG, FactoryDefaults.LIGHT_KEYBOARD_BG)
+
+    // Dark mode getters
+    fun getThemeDarkKeyFill(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEY_FILL, FactoryDefaults.DARK_KEY_FILL)
+
+    fun getThemeDarkKeyText(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEY_TEXT, FactoryDefaults.DARK_KEY_TEXT)
+
+    fun getThemeDarkSpaceFill(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_SPACE_FILL, FactoryDefaults.DARK_SPACE_FILL)
+
+    fun getThemeDarkKeyboardBg(context: Context): Int =
+        prefs(context).getInt(THEME_DARK_KEYBOARD_BG, FactoryDefaults.DARK_KEYBOARD_BG)
+
+    // Setters
+    fun setThemeLightDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
+        prefs(context).edit()
+            .putInt(THEME_LIGHT_KEY_FILL, keyFill)
+            .putInt(THEME_LIGHT_KEY_TEXT, keyText)
+            .putInt(THEME_LIGHT_SPACE_FILL, spaceFill)
+            .putInt(THEME_LIGHT_KEYBOARD_BG, keyboardBg)
+            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
+            .apply()
+    }
+
+    fun setThemeDarkDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
+        prefs(context).edit()
+            .putInt(THEME_DARK_KEY_FILL, keyFill)
+            .putInt(THEME_DARK_KEY_TEXT, keyText)
+            .putInt(THEME_DARK_SPACE_FILL, spaceFill)
+            .putInt(THEME_DARK_KEYBOARD_BG, keyboardBg)
+            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
+            .apply()
+    }
+
+    fun resetThemeDefaultsToFactory(context: Context) {
+        prefs(context).edit()
+            .remove(THEME_LIGHT_KEY_FILL)
+            .remove(THEME_LIGHT_KEY_TEXT)
+            .remove(THEME_LIGHT_SPACE_FILL)
+            .remove(THEME_LIGHT_KEYBOARD_BG)
+            .remove(THEME_DARK_KEY_FILL)
+            .remove(THEME_DARK_KEY_TEXT)
+            .remove(THEME_DARK_SPACE_FILL)
+            .remove(THEME_DARK_KEYBOARD_BG)
+            .remove(THEME_DEFAULTS_CUSTOM)
+            .apply()
+    }
+
+    // Convenience method to get colors for current mode
+    fun getThemeDefaultsForMode(context: Context, isDark: Boolean): ThemeColors {
+        return if (isDark) {
+            ThemeColors(
+                keyFill = getThemeDarkKeyFill(context),
+                keyText = getThemeDarkKeyText(context),
+                spaceFill = getThemeDarkSpaceFill(context),
+                keyboardBg = getThemeDarkKeyboardBg(context)
+            )
+        } else {
+            ThemeColors(
+                keyFill = getThemeLightKeyFill(context),
+                keyText = getThemeLightKeyText(context),
+                spaceFill = getThemeLightSpaceFill(context),
+                keyboardBg = getThemeLightKeyboardBg(context)
+            )
+        }
+    }
+
+    data class ThemeColors(
+        val keyFill: Int,
+        val keyText: Int,
+        val spaceFill: Int,
+        val keyboardBg: Int
+    )
+
+    /* ───────── RGB SMOOTH ───────── */
+
+    private const val RGB_SMOOTH_ENABLED = "rgb_rainbow_enabled"  // Keep old key for compatibility
+    private const val RGB_SMOOTH_SPEED = "rgb_rainbow_speed"
+    private const val RGB_SMOOTH_SATURATION = "rgb_rainbow_saturation"
+    private const val RGB_SMOOTH_BRIGHTNESS = "rgb_rainbow_brightness"
+
+    // Speed is in milliseconds for full cycle (360 degrees of hue)
+    const val RGB_SPEED_MIN = 2000      // 2 seconds - very fast
+    const val RGB_SPEED_MAX = 60000     // 60 seconds - very slow
+    const val RGB_SPEED_DEFAULT = 10000 // 10 seconds - medium
+
+    fun isRgbSmoothEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(RGB_SMOOTH_ENABLED, false)
+
+    fun setRgbSmoothEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(RGB_SMOOTH_ENABLED, enabled).apply()
+    }
+
+    fun getRgbSmoothSpeed(context: Context): Int =
+        prefs(context).getInt(RGB_SMOOTH_SPEED, RGB_SPEED_DEFAULT)
+
+    fun setRgbSmoothSpeed(context: Context, speedMs: Int) {
+        prefs(context).edit().putInt(RGB_SMOOTH_SPEED, speedMs.coerceIn(RGB_SPEED_MIN, RGB_SPEED_MAX)).apply()
+    }
+
+    fun getRgbSmoothSaturation(context: Context): Float =
+        prefs(context).getFloat(RGB_SMOOTH_SATURATION, 0.7f)
+
+    fun setRgbSmoothSaturation(context: Context, saturation: Float) {
+        prefs(context).edit().putFloat(RGB_SMOOTH_SATURATION, saturation.coerceIn(0.1f, 1.0f)).apply()
+    }
+
+    fun getRgbSmoothBrightness(context: Context): Float =
+        prefs(context).getFloat(RGB_SMOOTH_BRIGHTNESS, 0.3f)
+
+    fun setRgbSmoothBrightness(context: Context, brightness: Float) {
+        prefs(context).edit().putFloat(RGB_SMOOTH_BRIGHTNESS, brightness.coerceIn(0.1f, 1.0f)).apply()
+    }
+
+    /* ───────── RGB WILD ───────── */
+
+    private const val RGB_WILD_ENABLED = "rgb_wild_enabled"
+    private const val RGB_WILD_SPEED = "rgb_wild_speed"
+    private const val RGB_WILD_SATURATION = "rgb_wild_saturation"
+    private const val RGB_WILD_BRIGHTNESS = "rgb_wild_brightness"
+
+    // Wild mode speed - much faster!
+    const val RGB_WILD_SPEED_MIN = 50       // 50ms - insane
+    const val RGB_WILD_SPEED_MAX = 1000     // 1 second - chill wild
+    const val RGB_WILD_SPEED_DEFAULT = 200  // 200ms - aggressive
+
+    fun isRgbWildEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(RGB_WILD_ENABLED, false)
+
+    fun setRgbWildEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(RGB_WILD_ENABLED, enabled).apply()
+    }
+
+    fun getRgbWildSpeed(context: Context): Int =
+        prefs(context).getInt(RGB_WILD_SPEED, RGB_WILD_SPEED_DEFAULT)
+
+    fun setRgbWildSpeed(context: Context, speedMs: Int) {
+        prefs(context).edit().putInt(RGB_WILD_SPEED, speedMs.coerceIn(RGB_WILD_SPEED_MIN, RGB_WILD_SPEED_MAX)).apply()
+    }
+
+    fun getRgbWildSaturation(context: Context): Float =
+        prefs(context).getFloat(RGB_WILD_SATURATION, 1.0f)
+
+    fun setRgbWildSaturation(context: Context, saturation: Float) {
+        prefs(context).edit().putFloat(RGB_WILD_SATURATION, saturation.coerceIn(0.3f, 1.0f)).apply()
+    }
+
+    fun getRgbWildBrightness(context: Context): Float =
+        prefs(context).getFloat(RGB_WILD_BRIGHTNESS, 0.8f)
+
+    fun setRgbWildBrightness(context: Context, brightness: Float) {
+        prefs(context).edit().putFloat(RGB_WILD_BRIGHTNESS, brightness.coerceIn(0.3f, 1.0f)).apply()
+    }
+
+    // Helper to check if any RGB mode is active
+    fun isAnyRgbModeEnabled(context: Context): Boolean =
+        isRgbSmoothEnabled(context) || isRgbWildEnabled(context)
+
+    // Disable all RGB modes
+    fun disableAllRgbModes(context: Context) {
+        prefs(context).edit()
+            .putBoolean(RGB_SMOOTH_ENABLED, false)
+            .putBoolean(RGB_WILD_ENABLED, false)
             .apply()
     }
 }

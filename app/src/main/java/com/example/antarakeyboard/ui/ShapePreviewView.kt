@@ -22,7 +22,7 @@ class ShapePreviewView @JvmOverloads constructor(
         }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
+        color = Color.GRAY  // Always gray regardless of theme
         style = Paint.Style.FILL
     }
 

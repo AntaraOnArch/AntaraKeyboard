@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.example.antarakeyboard.SpecialChars
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyConfig
 import kotlin.math.max
@@ -36,7 +37,7 @@ class LongPressKeyPickerDialog(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(12))
+            setPadding(16.dp(context), 16.dp(context), 16.dp(context), 12.dp(context))
         }
 
         root.addView(TextView(context).apply {
@@ -68,7 +69,7 @@ class LongPressKeyPickerDialog(
                 width = 0
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(dp(4), dp(4), dp(4), dp(4))
+                setMargins(4.dp(context), 4.dp(context), 4.dp(context), 4.dp(context))
             })
         }
 
@@ -103,8 +104,6 @@ class LongPressKeyPickerDialog(
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-    private fun dp(v: Int): Int =
-        (v * context.resources.displayMetrics.density).toInt()
 }
 
 private class LongPressEditDialog(
@@ -121,7 +120,7 @@ private class LongPressEditDialog(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(12))
+            setPadding(16.dp(context), 16.dp(context), 16.dp(context), 12.dp(context))
         }
 
         root.addView(TextView(context).apply {
@@ -159,7 +158,7 @@ private class LongPressEditDialog(
                     width = 0
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
                     columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                    setMargins(dp(4), dp(4), dp(4), dp(4))
+                    setMargins(4.dp(context), 4.dp(context), 4.dp(context), 4.dp(context))
                 })
             }
         }
@@ -225,6 +224,4 @@ private class LongPressEditDialog(
             .show()
     }
 
-    private fun dp(v: Int): Int =
-        (v * context.resources.displayMetrics.density).toInt()
 }

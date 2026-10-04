@@ -2,6 +2,7 @@ package com.example.antarakeyboard.service.input
 
 import android.view.MotionEvent
 import android.widget.TextView
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.service.MyKeyboardService
 import kotlin.math.abs
 
@@ -17,10 +18,6 @@ class KeyInputController(
 
     private enum class SwipeMode {
         DELETE, RESTORE
-    }
-
-    private fun dp(v: Int): Int {
-        return (v * service.resources.displayMetrics.density).toInt()
     }
 
     fun handleTouch(view: TextView, event: MotionEvent): Boolean {
@@ -59,7 +56,7 @@ class KeyInputController(
                 val absDy = abs(dy)
 
                 val horizontalIntent =
-                    absDx > dp(20) && absDx > absDy * 1.05f
+                    absDx > 20.dp(service.resources) && absDx > absDy * 1.05f
 
                 if (horizontalIntent) {
 
@@ -142,7 +139,7 @@ class KeyInputController(
                 val absDx = abs(dx)
                 val absDy = abs(dy)
 
-                if (dy < -dp(24) && absDy > absDx) {
+                if (dy < -24.dp(service.resources) && absDy > absDx) {
 
                     when {
 

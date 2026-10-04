@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.model.KeyShape
@@ -55,7 +56,7 @@ class LayoutEditorBinder(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(14), dp(14), dp(10))
+            setPadding(14.dp(context), 14.dp(context), 14.dp(context), 10.dp(context))
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -66,7 +67,7 @@ class LayoutEditorBinder(
             text = "Set Layout"
             textSize = 18f
             setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, dp(10))
+            setPadding(0, 0, 0, 10.dp(context))
         })
 
         val scroll = ScrollView(context).apply {
@@ -85,11 +86,13 @@ class LayoutEditorBinder(
             )
         )
 
+        // Height follows content; weight lets it shrink (and scroll) when the screen is too short
         root.addView(
             scroll,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                (context.resources.displayMetrics.heightPixels * 0.55f).toInt()
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
             )
         )
 
@@ -103,7 +106,6 @@ class LayoutEditorBinder(
         val userShape = KeyboardPrefs.getShape(context)
 
         val container = keyboardContainer ?: return
-        container.removeAllViews()
 
         keyToView.clear()
         shakingViews.clear()
@@ -112,206 +114,8 @@ class LayoutEditorBinder(
         selectedA = null
         selectedB = null
 
-        val rowCount = KeyboardPrefs.getRowCount(context)
-
-        fun addKeyToRow(
-            row: LinearLayout,
-            key: KeyConfig,
-            pos: KeyPos,
-            width: Int,
-            height: Int,
-            marginH: Int
-        ) {
-            val keyItem = createKeyView(
-                key = key,
-                pos = pos,
-                userShape = userShape
-            )
-
-            row.addView(
-                keyItem,
-                LinearLayout.LayoutParams(width, height).apply {
-                    marginStart = marginH
-                    marginEnd = marginH
-                }
-            )
-        }
-
-        fun buildThreeRowEditorRow(
-            rowIndex: Int,
-            keys: MutableList<KeyConfig>
-        ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
-
-            val keyWidth = dp(34)
-            val keyHeight = dp(44)
-
-            val keyGap = dp(1)
-            val intraPairOverlap = -dp(8)
-            val interPairGap = dp(2)
-
-            val rowW = (keyWidth + keyGap * 2) * 6
-
-            val block = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(0, dp(1), dp(2), dp(1))
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            val topRow = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.START
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            val bottomRow = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.END
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            visibleKeys.take(6).forEachIndexed { keyIndex, key ->
-                addKeyToRow(
-                    row = topRow,
-                    key = key,
-                    pos = KeyPos(rowIndex, keyIndex),
-                    width = keyWidth,
-                    height = keyHeight,
-                    marginH = keyGap
-                )
-            }
-
-            visibleKeys.drop(6).forEachIndexed { i, key ->
-                addKeyToRow(
-                    row = bottomRow,
-                    key = key,
-                    pos = KeyPos(rowIndex, i + 6),
-                    width = keyWidth,
-                    height = keyHeight,
-                    marginH = keyGap
-                )
-            }
-
-            block.addView(
-                topRow,
-                LinearLayout.LayoutParams(
-                    rowW,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-
-            block.addView(
-                bottomRow,
-                LinearLayout.LayoutParams(
-                    rowW,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    topMargin = intraPairOverlap
-                }
-            )
-
-            container.addView(
-                block,
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    gravity = Gravity.CENTER_HORIZONTAL
-                    bottomMargin = interPairGap
-                }
-            )
-        }
-
-        fun buildFiveRowEditorRow(
-            rowIndex: Int,
-            keys: MutableList<KeyConfig>
-        ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
-
-            val maxKeysInAnyRow = cfg.rows.maxOfOrNull { it.keys.size }
-                ?: visibleKeys.size
-
-            val dialogW = (context.resources.displayMetrics.widthPixels * 0.92f).toInt()
-            val availableW = dialogW - dp(28) - dp(8)
-
-            val gap = dp(1)
-
-            val keySize = (
-                    (availableW - (maxKeysInAnyRow * gap * 2)) /
-                            maxKeysInAnyRow.toFloat()
-                    ).toInt().coerceIn(dp(28), dp(32))
-
-            val row = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(3), 0, dp(3))
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            visibleKeys.forEachIndexed { keyIndex, key ->
-                addKeyToRow(
-                    row = row,
-                    key = key,
-                    pos = KeyPos(rowIndex, keyIndex),
-                    width = keySize,
-                    height = keySize,
-                    marginH = gap
-                )
-            }
-
-            container.addView(
-                row,
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-        }
-
-        fun buildDefaultWeightedRow(
-            rowIndex: Int,
-            keys: MutableList<KeyConfig>
-        ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
-
-            val row = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(0, dp(4), 0, dp(4))
-            }
-
-            visibleKeys.forEachIndexed { keyIndex, key ->
-                val keyItem = createKeyView(
-                    key = key,
-                    pos = KeyPos(rowIndex, keyIndex),
-                    userShape = userShape
-                )
-
-                row.addView(
-                    keyItem,
-                    LinearLayout.LayoutParams(0, dp(56), 1f).apply {
-                        marginStart = dp(1)
-                        marginEnd = dp(1)
-                    }
-                )
-            }
-
-            container.addView(row)
-        }
-
-        cfg.rows.forEachIndexed { rowIndex, rowCfg ->
-            when (rowCount) {
-                3 -> buildThreeRowEditorRow(rowIndex, rowCfg.keys)
-                5 -> buildFiveRowEditorRow(rowIndex, rowCfg.keys)
-                else -> buildDefaultWeightedRow(rowIndex, rowCfg.keys)
-            }
+        EditorKeyboardRenderer(context).render(container, cfg) { key, row, col ->
+            createKeyView(key = key, pos = KeyPos(row, col), userShape = userShape)
         }
     }
 
@@ -326,7 +130,7 @@ class LayoutEditorBinder(
         val wrapper = FrameLayout(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(56)
+                56.dp(context)
             )
         }
 
@@ -382,7 +186,7 @@ class LayoutEditorBinder(
                 gravity = Gravity.CENTER
                 setTextColor(0xFFFFFFFF.toInt())
                 setBackgroundColor(0x66000000)
-                setPadding(dp(4), dp(1), dp(4), dp(1))
+                setPadding(4.dp(context), 1.dp(context), 4.dp(context), 1.dp(context))
                 isClickable = true
                 isFocusable = false
 
@@ -401,8 +205,8 @@ class LayoutEditorBinder(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     Gravity.TOP or Gravity.END
                 ).apply {
-                    topMargin = dp(2)
-                    marginEnd = dp(2)
+                    topMargin = 2.dp(context)
+                    marginEnd = 2.dp(context)
                 }
             )
         }
@@ -436,6 +240,8 @@ class LayoutEditorBinder(
     private fun afterLayoutChanged() {
         buildKeyboardUI()
         clearSelection()
+        // Autosave
+        onSaved(cfg)
     }
 
     private fun clearSelection() {
@@ -601,7 +407,7 @@ class LayoutEditorBinder(
 
             v.animate().cancel()
             v.animate()
-                .translationY(-dp(3).toFloat())
+                .translationY(-3.dp(context).toFloat())
                 .setDuration(120)
                 .withEndAction {
                     if (!bounceViews.contains(v)) return@withEndAction
@@ -652,10 +458,6 @@ class LayoutEditorBinder(
 
     fun hasTwoSelected(): Boolean {
         return selectedA != null && selectedB != null
-    }
-
-    private fun dp(v: Int): Int {
-        return (v * context.resources.displayMetrics.density).toInt()
     }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {
