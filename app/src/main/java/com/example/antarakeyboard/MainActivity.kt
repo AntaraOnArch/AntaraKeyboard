@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.view.DragEvent
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -55,8 +56,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var spinnerRowCount: Spinner
     private lateinit var spinnerVibration: Spinner
     private lateinit var spinnerTheme: Spinner
+    private lateinit var btnThemeSettings: Button
     private lateinit var bindLPButton: Button
-    private lateinit var resetLayoutButton: Button
+    private lateinit var spinnerReset: Spinner
+
+    // Autosaving popups (Set layout, Bind long press): section whose "saved" toast is pending
+    private var autosaveDirtySection: String? = null
 
     // Shape options for dropdown
     private val shapeOptions = listOf(
@@ -73,12 +78,15 @@ class MainActivity : AppCompatActivity() {
     private val vibrationOptions = listOf("On", "Off")
 
     // Theme options (Custom added dynamically if user has custom colors)
-    private val baseThemeOptions = listOf("Light", "Dark")
+    private var themeOptions = listOf<String>()
+    private var currentThemePosition = -1
 
     companion object {
-        private const val THEME_LIGHT = 0
-        private const val THEME_DARK = 1
-        private const val THEME_CUSTOM = 2
+        private const val THEME_LIGHT = "Light"
+        private const val THEME_DARK = "Dark"
+        private const val THEME_CUSTOM = "Custom"
+        private const val THEME_RGB_SMOOTH = "RGB Smooth"
+        private const val THEME_RGB_WILD = "RGB Wild"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,9 +146,7 @@ class MainActivity : AppCompatActivity() {
             "Side buttons",
             "Keys",
             "Background",
-            "Edit Theme Defaults",
-            "RGB Smooth",
-            "RGB Wild"
+            "Edit Theme Defaults"
         )
         val colorsAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, colorOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -156,8 +162,6 @@ class MainActivity : AppCompatActivity() {
                     4 -> { showKeysColorDialog(); spinnerColors.setSelection(0) }
                     5 -> { showBackgroundColorDialog(); spinnerColors.setSelection(0) }
                     6 -> { showThemeDefaultsDialog(); spinnerColors.setSelection(0) }
-                    7 -> { showRgbSmoothDialog(); spinnerColors.setSelection(0) }
-                    8 -> { showRgbWildDialog(); spinnerColors.setSelection(0) }
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -165,7 +169,7 @@ class MainActivity : AppCompatActivity() {
 
         preview = findViewById(R.id.preview)
         bindLPButton = findViewById(R.id.bindLPButton)
-        resetLayoutButton = findViewById(R.id.resetLayoutButton)
+        spinnerReset = findViewById(R.id.spinnerReset)
 
         // Setup Key Shape Spinner
         spinnerKeyShape = findViewById(R.id.spinnerKeyShape)
@@ -212,6 +216,8 @@ class MainActivity : AppCompatActivity() {
         spinnerRowCount.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val rowCount = rowCountOptions[position]
+                // Ignore the initial callback and programmatic sync (e.g. after restore)
+                if (rowCount == KeyboardPrefs.getRowCount(this@MainActivity)) return
                 saveDefaultsForRowCount(rowCount)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -241,30 +247,52 @@ class MainActivity : AppCompatActivity() {
 
         // Setup Theme Spinner
         spinnerTheme = findViewById(R.id.spinnerTheme)
+        btnThemeSettings = findViewById(R.id.btnThemeSettings)
+        btnThemeSettings.setOnClickListener {
+            when (themeOptions.getOrNull(currentThemePosition)) {
+                THEME_RGB_SMOOTH -> showRgbSmoothDialog()
+                THEME_RGB_WILD -> showRgbWildDialog()
+                THEME_CUSTOM -> showSavedLayoutsPopup { applied -> if (applied) selectCustomTheme() }
+            }
+        }
         setupThemeSpinner()
 
         bindLPButton.setOnClickListener {
             openLongPressEditorDialog()
         }
 
-        resetLayoutButton.setOnClickListener {
-            val currentRowCount = KeyboardPrefs.getRowCount(this)
-            val currentShape = KeyboardPrefs.getShape(this)
-            val isDarkTheme = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-                .getBoolean("dark_mode", true)
+        // Setup Reset Spinner
+        val resetOptions = listOf("Reset…", "Reset colors", "Reset layout", "Reset all")
+        spinnerReset.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, resetOptions).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerReset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position == 0) return
+                performReset(colors = position != 2, layout = position != 1)
+                spinnerReset.setSelection(0)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
 
-            // NOVO: Spremi trenutni layout kao backup prije reseta
-            val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
-            SavedLayoutStorage.saveCurrentLayout(this, "Backup $timestamp")
+    /**
+     * Reset colors and/or key layout. Long-press bindings and key shape are always preserved.
+     * The current state is saved as a backup in Saved layouts first.
+     */
+    private fun performReset(colors: Boolean, layout: Boolean) {
+        val currentRowCount = KeyboardPrefs.getRowCount(this)
 
-            // Spremi trenutne boje kao custom temu prije reseta
-            saveCurrentColorsAsCustomTheme()
+        // Spremi trenutni layout (i boje) kao backup prije reseta
+        val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
+        SavedLayoutStorage.saveCurrentLayout(this, "Backup $timestamp")
 
-            // 1. Resetiraj horizontal center layout
+        if (layout) {
+            // Resetiraj horizontal center layout
             KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, currentRowCount, defaultHorizontalCenterLayout)
 
-            // 2. Resetiraj glavne layoute na default, ALI zadrži globalne bindove
+            // Resetiraj glavne layoute na default, ALI zadrži globalne bindove
             KeyboardPrefs.clearAlphabetLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.clearNumericLayoutForRowCount(this, currentRowCount)
 
@@ -274,31 +302,40 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.saveAlphabetLayoutForRowCount(this, currentRowCount, alphabetWithBinds)
             KeyboardPrefs.saveNumericLayoutForRowCount(this, currentRowCount, numericWithBinds)
 
+            // Resetiraj side buttons za trenutni broj redova
+            resetSideButtonsForRowCount(currentRowCount)
+        }
+
+        if (colors) {
+            val isDarkTheme = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+                .getBoolean("dark_mode", true)
+
+            // Spremi trenutne boje kao custom temu prije reseta
+            saveCurrentColorsAsCustomTheme()
+
             // Resetiraj SVE boje na default teme
             resetAllColorsToThemeDefault(isDarkTheme)
 
-            // Očisti custom theme flag da tipkovnica koristi default boje
+            // Očisti custom theme flag da tipkovnica koristi default boje, i ugasi RGB
             getSharedPreferences("theme_prefs", MODE_PRIVATE).edit()
                 .putBoolean("use_custom_theme", false)
                 .apply()
+            KeyboardPrefs.setRgbSmoothEnabled(this, false)
+            KeyboardPrefs.setRgbWildEnabled(this, false)
 
-            // Signaliziraj tipkovnici da se recreate
-            val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
-            sendBroadcast(keyboardIntent)
-
-            // 4. Resetiraj side buttons za trenutni broj redova
-            resetSideButtonsForRowCount(currentRowCount)
-
-            // 5. Update UI
-            preview.shape = currentShape
-            val shapeIndex = shapeOptions.indexOfFirst { it.first == currentShape }.coerceAtLeast(0)
-            spinnerKeyShape.setSelection(shapeIndex)
-
-            // 6. Refresh theme spinner (now has Custom option available)
+            // Refresh theme spinner (now has Custom option available)
             setupThemeSpinner()
-
-            Toast.makeText(this, "Layout reset. Previous saved as backup.", Toast.LENGTH_SHORT).show()
         }
+
+        // Signaliziraj tipkovnici da se recreate
+        sendBroadcast(Intent("com.example.antarakeyboard.RECREATE_KEYBOARD"))
+
+        val what = when {
+            colors && layout -> "Layout and colors"
+            colors -> "Colors"
+            else -> "Layout"
+        }
+        Toast.makeText(this, "$what reset. Previous saved as backup.", Toast.LENGTH_SHORT).show()
     }
 
     /* =========================
@@ -1003,7 +1040,6 @@ class MainActivity : AppCompatActivity() {
     private fun showRgbSmoothDialog() {
         val ctx = this
 
-        var enabled = KeyboardPrefs.isRgbSmoothEnabled(ctx)
         var speed = KeyboardPrefs.getRgbSmoothSpeed(ctx)
         var saturation = KeyboardPrefs.getRgbSmoothSaturation(ctx)
         var brightness = KeyboardPrefs.getRgbSmoothBrightness(ctx)
@@ -1012,14 +1048,6 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(24.dp(ctx), 16.dp(ctx), 24.dp(ctx), 8.dp(ctx))
         }
-
-        // Enable checkbox
-        val enableCb = CheckBox(ctx).apply {
-            text = "Enable RGB Smooth Background"
-            isChecked = enabled
-            textSize = 16f
-        }
-        root.addView(enableCb)
 
         // Preview bar with radial rainbow gradient
         val previewBar = View(ctx).apply {
@@ -1179,28 +1207,14 @@ class MainActivity : AppCompatActivity() {
         val previewHandler = android.os.Handler(android.os.Looper.getMainLooper())
         val previewRunnable = object : Runnable {
             override fun run() {
-                if (enabled) {
-                    previewStep = (previewStep + 8) % 1536
-                    updatePreview(previewStep)
-                    previewHandler.postDelayed(this, (speed / 192L).coerceAtLeast(16L))
-                }
+                previewStep = (previewStep + 8) % 1536
+                updatePreview(previewStep)
+                previewHandler.postDelayed(this, (speed / 192L).coerceAtLeast(16L))
             }
         }
 
         // Initialize preview
         updatePreview(0)
-
-        enableCb.setOnCheckedChangeListener { _, isChecked ->
-            enabled = isChecked
-            if (enabled) {
-                // Disable wild mode if enabling smooth
-                KeyboardPrefs.setRgbWildEnabled(ctx, false)
-                previewHandler.post(previewRunnable)
-            } else {
-                previewHandler.removeCallbacks(previewRunnable)
-                updatePreview(0)
-            }
-        }
 
         speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -1231,9 +1245,7 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        if (enabled) {
-            previewHandler.post(previewRunnable)
-        }
+        previewHandler.post(previewRunnable)
 
         val dialog = AlertDialog.Builder(ctx)
             .setTitle("RGB Smooth")
@@ -1243,8 +1255,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setPositiveButton("Save") { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
-                if (enabled) KeyboardPrefs.setRgbWildEnabled(ctx, false)
-                KeyboardPrefs.setRgbSmoothEnabled(ctx, enabled)
                 KeyboardPrefs.setRgbSmoothSpeed(ctx, speed)
                 KeyboardPrefs.setRgbSmoothSaturation(ctx, saturation)
                 KeyboardPrefs.setRgbSmoothBrightness(ctx, brightness)
@@ -1261,7 +1271,6 @@ class MainActivity : AppCompatActivity() {
     private fun showRgbWildDialog() {
         val ctx = this
 
-        var enabled = KeyboardPrefs.isRgbWildEnabled(ctx)
         var speed = KeyboardPrefs.getRgbWildSpeed(ctx)
         var saturation = KeyboardPrefs.getRgbWildSaturation(ctx)
         var brightness = KeyboardPrefs.getRgbWildBrightness(ctx)
@@ -1270,14 +1279,6 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(24.dp(ctx), 16.dp(ctx), 24.dp(ctx), 8.dp(ctx))
         }
-
-        // Enable checkbox
-        val enableCb = CheckBox(ctx).apply {
-            text = "Enable RGB Wild Background"
-            isChecked = enabled
-            textSize = 16f
-        }
-        root.addView(enableCb)
 
         // Preview bar - will flash rapidly with radial gradient
         val previewBar = View(ctx).apply {
@@ -1453,50 +1454,36 @@ class MainActivity : AppCompatActivity() {
 
         val previewRunnable = object : Runnable {
             override fun run() {
-                if (enabled) {
-                    val now = System.currentTimeMillis()
-                    val transitionDuration = (speed * 0.85f).toLong()
-                    val elapsed = now - transitionStartTime
+                val now = System.currentTimeMillis()
+                val transitionDuration = (speed * 0.85f).toLong()
+                val elapsed = now - transitionStartTime
 
-                    // Calculate eased progress
-                    val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
-                    val easedProgress = easeInOutCubic(rawProgress)
+                // Calculate eased progress
+                val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
+                val easedProgress = easeInOutCubic(rawProgress)
 
-                    // Calculate shortest path difference
-                    var diff = targetStep - startStep
-                    if (diff > 768) diff -= 1536
-                    if (diff < -768) diff += 1536
+                // Calculate shortest path difference
+                var diff = targetStep - startStep
+                if (diff > 768) diff -= 1536
+                if (diff < -768) diff += 1536
 
-                    // Interpolate with easing
-                    val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
-                    updatePreview(currentStep)
+                // Interpolate with easing
+                val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
+                updatePreview(currentStep)
 
-                    // Pick new target when transition completes
-                    if (elapsed >= speed) {
-                        startStep = targetStep
-                        targetStep = random.nextInt(1536)
-                        transitionStartTime = now
-                    }
-
-                    previewHandler.postDelayed(this, frameInterval)
+                // Pick new target when transition completes
+                if (elapsed >= speed) {
+                    startStep = targetStep
+                    targetStep = random.nextInt(1536)
+                    transitionStartTime = now
                 }
+
+                previewHandler.postDelayed(this, frameInterval)
             }
         }
 
         // Initialize preview with radial gradient
         previewBar.background = createRadialPreview(0)
-
-        enableCb.setOnCheckedChangeListener { _, isChecked ->
-            enabled = isChecked
-            if (enabled) {
-                // Disable smooth mode if enabling wild
-                KeyboardPrefs.setRgbSmoothEnabled(ctx, false)
-                previewHandler.post(previewRunnable)
-            } else {
-                previewHandler.removeCallbacks(previewRunnable)
-                previewBar.background = createRadialPreview(0)
-            }
-        }
 
         speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -1527,9 +1514,7 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        if (enabled) {
-            previewHandler.post(previewRunnable)
-        }
+        previewHandler.post(previewRunnable)
 
         val dialog = AlertDialog.Builder(ctx)
             .setTitle("RGB Wild")
@@ -1539,8 +1524,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setPositiveButton("Save") { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
-                if (enabled) KeyboardPrefs.setRgbSmoothEnabled(ctx, false)
-                KeyboardPrefs.setRgbWildEnabled(ctx, enabled)
                 KeyboardPrefs.setRgbWildSpeed(ctx, speed)
                 KeyboardPrefs.setRgbWildSaturation(ctx, saturation)
                 KeyboardPrefs.setRgbWildBrightness(ctx, brightness)
@@ -1616,46 +1599,112 @@ class MainActivity : AppCompatActivity() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_longpress_editor)
 
-        val btnTabAlphabet = dialog.findViewById<Button>(R.id.btnTabAlphabetLp)
-        val btnTabNumeric = dialog.findViewById<Button>(R.id.btnTabNumericLp)
-        val btnSave = dialog.findViewById<Button>(R.id.btnSaveLongPressEditor)
+        // Section dropdown
+        val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerLongPressSection)
+        val sectionOptions = listOf("Alphabet long press", "Numeric long press", "My binds")
+        spinnerSection.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
 
         val pageAlphabet = dialog.findViewById<LinearLayout>(R.id.pageAlphabetLp)
         val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumericLp)
+        val pageMyBinds = dialog.findViewById<ScrollView>(R.id.pageMyBindsLp)
+        val myBindsContainer = dialog.findViewById<LinearLayout>(R.id.myBindsContainer)
 
         val currentRowCount = KeyboardPrefs.getRowCount(this)
+        var currentPage = 0
 
-        // Učitaj s globalnim bindovima
+        autosaveDirtySection = null
+
+        // Učitaj s globalnim bindovima; svaka promjena se odmah sprema
         val alphabetBinder = LongPressEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount),
-            titleText = "Bind long press - alphabet"
+            titleText = "Bind long press - alphabet",
+            onChanged = { updated ->
+                KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, currentRowCount, updated)
+                autosaveDirtySection = sectionOptions[0]
+            }
         )
 
         val numericBinder = LongPressEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount),
             titleText = "Bind long press - numeric",
-            lockedLabels = setOf("⇧", "⌫", "↵", "ABC", "abc", " ")
+            lockedLabels = setOf("⇧", "⌫", "↵", "ABC", "abc", " "),
+            onChanged = { updated ->
+                KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, currentRowCount, updated)
+                autosaveDirtySection = sectionOptions[1]
+            }
         )
 
         alphabetBinder.bindInto(pageAlphabet)
         numericBinder.bindInto(pageNumeric)
 
-        fun showPage(page: Int) {
-            pageAlphabet.visibility = if (page == 0) View.VISIBLE else View.GONE
-            pageNumeric.visibility = if (page == 1) View.VISIBLE else View.GONE
+        // My binds: every key with a binding; tap to edit its bindings
+        fun buildMyBindsPage() {
+            myBindsContainer.removeAllViews()
+
+            val groups = listOf(
+                "Alphabet" to alphabetBinder,
+                "Numeric" to numericBinder
+            )
+
+            var anyBound = false
+            groups.forEach { (groupName, binder) ->
+                val keys = binder.boundKeys()
+                if (keys.isEmpty()) return@forEach
+                anyBound = true
+
+                myBindsContainer.addView(TextView(this).apply {
+                    text = groupName
+                    textSize = 16f
+                    setTypeface(typeface, android.graphics.Typeface.BOLD)
+                    setPadding(0, 8.dp(this@MainActivity), 0, 6.dp(this@MainActivity))
+                })
+
+                keys.forEach { key ->
+                    myBindsContainer.addView(Button(this).apply {
+                        text = "${key.label}   →   ${binder.visibleBindings(key).joinToString(" ")}"
+                        isAllCaps = false
+                        gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                        setOnClickListener {
+                            binder.openPicker(key) { buildMyBindsPage() }
+                        }
+                    }, LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply { bottomMargin = 4.dp(this@MainActivity) })
+                }
+            }
+
+            if (!anyBound) {
+                myBindsContainer.addView(TextView(this).apply {
+                    text = "No long-press binds yet"
+                    textSize = 14f
+                    alpha = 0.75f
+                    setPadding(0, 8.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
+                })
+            }
         }
 
-        btnTabAlphabet.setOnClickListener { showPage(0) }
-        btnTabNumeric.setOnClickListener { showPage(1) }
+        fun showPage(page: Int) {
+            currentPage = page
+            pageAlphabet.visibility = if (page == 0) View.VISIBLE else View.GONE
+            pageNumeric.visibility = if (page == 1) View.VISIBLE else View.GONE
+            pageMyBinds.visibility = if (page == 2) View.VISIBLE else View.GONE
+            if (page == 2) buildMyBindsPage()
+        }
 
-        btnSave.setOnClickListener {
-            // Spremi i izvuci u globalni storage
-            KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, currentRowCount, alphabetBinder.getUpdatedConfig())
-            KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, currentRowCount, numericBinder.getUpdatedConfig())
-            Toast.makeText(this, "Long press saved ✅", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
+        spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position != currentPage) showSavedToastIfDirty()
+                showPage(position)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        dialog.setOnDismissListener {
+            showSavedToastIfDirty()
         }
 
         dialog.show()
@@ -1917,6 +1966,18 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun showSavedToastIfDirty() {
+        val section = autosaveDirtySection ?: return
+        autosaveDirtySection = null
+        Toast.makeText(this, "$section saved", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Leaving the app while an autosaving popup is open → confirm the autosave
+        showSavedToastIfDirty()
+    }
+
     private fun openLayoutEditorDialog() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_layout_editor)
@@ -1950,7 +2011,6 @@ class MainActivity : AppCompatActivity() {
 
         // Buttons
         val btnSwapSelected = dialog.findViewById<Button>(R.id.btnSwapSelected)
-        val btnSaveEditor = dialog.findViewById<Button>(R.id.btnSaveEditor)
 
         // Saved layouts
         val savedLayoutsContainer = dialog.findViewById<LinearLayout>(R.id.savedLayoutsContainer)
@@ -1959,12 +2019,18 @@ class MainActivity : AppCompatActivity() {
         val rowCount = KeyboardPrefs.getRowCount(this)
         var currentPage = 0
 
+        autosaveDirtySection = null
+        fun markDirty() {
+            autosaveDirtySection = sectionOptions[currentPage]
+        }
+
         // Layout binders
         val layoutBinder = LayoutEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
                 KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, rowCount, updated)
+                markDirty()
             }
         )
 
@@ -1975,6 +2041,7 @@ class MainActivity : AppCompatActivity() {
             initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
                 KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, rowCount, updated)
+                markDirty()
             },
             lockedLabels = numericLocked,
             onEmptyKeyClick = { key ->
@@ -1982,6 +2049,7 @@ class MainActivity : AppCompatActivity() {
                     key.label = picked
                     key.longPressBindings.remove("__USER_EMPTY__")
                     numericBinder.bindInto(numericEditorContainer)
+                    numericBinder.saveExternally()
                 }
             },
             allowClearKeys = true
@@ -1993,6 +2061,7 @@ class MainActivity : AppCompatActivity() {
             initial = KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(this, rowCount),
             onSaved = { updated: KeyboardConfig ->
                 KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, rowCount, updated)
+                markDirty()
             },
             lockedLabels = emptySet(),
             onEmptyKeyClick = { key ->
@@ -2000,6 +2069,7 @@ class MainActivity : AppCompatActivity() {
                     key.label = picked
                     key.longPressBindings.remove("__USER_EMPTY__")
                     horizontalBinder.bindInto(horizontalEditorContainer)
+                    horizontalBinder.saveExternally()
                 }
             },
             allowClearKeys = true
@@ -2009,7 +2079,7 @@ class MainActivity : AppCompatActivity() {
         numericBinder.bindInto(numericEditorContainer)
         horizontalBinder.bindInto(horizontalEditorContainer)
 
-        val saveSideButtons = setupSideButtonsPage(pageSideButtons)
+        setupSideButtonsPage(pageSideButtons) { markDirty() }
 
         // Emoji picker settings
         var emojiButtonOrder = EmojiPickerStorage.getButtonOrder(this).toMutableList()
@@ -2035,7 +2105,11 @@ class MainActivity : AppCompatActivity() {
             tabsSpinner.setSelection(EmojiPickerStorage.TabsPosition.entries.indexOf(emojiTabsPosition))
             tabsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    emojiTabsPosition = EmojiPickerStorage.TabsPosition.entries[position]
+                    val picked = EmojiPickerStorage.TabsPosition.entries[position]
+                    if (picked == emojiTabsPosition) return
+                    emojiTabsPosition = picked
+                    EmojiPickerStorage.setTabsPosition(this@MainActivity, emojiTabsPosition)
+                    markDirty()
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
@@ -2059,7 +2133,11 @@ class MainActivity : AppCompatActivity() {
             sideSpinner.setSelection(EmojiPickerStorage.ButtonsSide.entries.indexOf(emojiButtonsSide))
             sideSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    emojiButtonsSide = EmojiPickerStorage.ButtonsSide.entries[position]
+                    val picked = EmojiPickerStorage.ButtonsSide.entries[position]
+                    if (picked == emojiButtonsSide) return
+                    emojiButtonsSide = picked
+                    EmojiPickerStorage.setButtonsSide(this@MainActivity, emojiButtonsSide)
+                    markDirty()
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
@@ -2075,15 +2153,85 @@ class MainActivity : AppCompatActivity() {
             }
             emojiPickerContainer.addView(orderLabel)
 
-            emojiButtonOrder.forEachIndexed { index, action ->
-                val btn = Button(this).apply {
-                    text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
-                    isAllCaps = false
-                }
-                emojiPickerContainer.addView(btn, LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply { bottomMargin = 4.dp(this@MainActivity) })
+            val orderContainer = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
             }
+            emojiPickerContainer.addView(orderContainer)
+
+            fun rebuildOrder() {
+                orderContainer.removeAllViews()
+
+                emojiButtonOrder.forEachIndexed { index, action ->
+                    val btn = Button(this).apply {
+                        text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
+                        isAllCaps = false
+                        tag = index
+
+                        setOnLongClickListener { v ->
+                            val data = ClipData.newPlainText("fromIndex", index.toString())
+                            val shadow = View.DragShadowBuilder(v)
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                                v.startDragAndDrop(data, shadow, null, 0)
+                            } else {
+                                @Suppress("DEPRECATION")
+                                v.startDrag(data, shadow, null, 0)
+                            }
+                            true
+                        }
+
+                        setOnDragListener { v, e ->
+                            when (e.action) {
+                                DragEvent.ACTION_DRAG_STARTED -> {
+                                    e.clipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true
+                                }
+
+                                DragEvent.ACTION_DRAG_ENTERED -> {
+                                    v.alpha = 0.65f
+                                    true
+                                }
+
+                                DragEvent.ACTION_DRAG_EXITED -> {
+                                    v.alpha = 1f
+                                    true
+                                }
+
+                                DragEvent.ACTION_DROP -> {
+                                    v.alpha = 1f
+
+                                    val from = e.clipData?.getItemAt(0)?.text?.toString()?.toIntOrNull()
+                                        ?: return@setOnDragListener true
+                                    val to = (v.tag as? Int) ?: return@setOnDragListener true
+                                    if (from == to) return@setOnDragListener true
+
+                                    // Move dragged button to the drop position
+                                    val moved = emojiButtonOrder.removeAt(from)
+                                    emojiButtonOrder.add(to, moved)
+
+                                    // Autosave
+                                    EmojiPickerStorage.saveButtonOrder(this@MainActivity, emojiButtonOrder)
+                                    markDirty()
+
+                                    // Rebuild after the drag finishes dispatching
+                                    v.post { rebuildOrder() }
+                                    true
+                                }
+
+                                DragEvent.ACTION_DRAG_ENDED -> {
+                                    v.alpha = 1f
+                                    true
+                                }
+
+                                else -> true
+                            }
+                        }
+                    }
+                    orderContainer.addView(btn, LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply { bottomMargin = 4.dp(this@MainActivity) })
+                }
+            }
+
+            rebuildOrder()
         }
 
         // Show page function
@@ -2103,6 +2251,7 @@ class MainActivity : AppCompatActivity() {
 
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position != currentPage) showSavedToastIfDirty()
                 showPage(position)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -2122,49 +2271,16 @@ class MainActivity : AppCompatActivity() {
                     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                         if (position == 0) return
                         val selectedLayout = SavedLayoutStorage.getSavedLayouts(this@MainActivity)[position - 1]
-                        AlertDialog.Builder(this@MainActivity)
-                            .setTitle(selectedLayout.name)
-                            .setItems(arrayOf("Preview", "Restore", "Rename", "Delete")) { _, which ->
-                                when (which) {
-                                    0 -> { // Preview
-                                        showSavedLayoutPreview(selectedLayout)
-                                    }
-                                    1 -> { // Restore
-                                        AlertDialog.Builder(this@MainActivity)
-                                            .setTitle("Restore layout")
-                                            .setMessage("This will replace your current layout and colors.")
-                                            .setPositiveButton("Restore") { _, _ ->
-                                                SavedLayoutStorage.restoreLayout(this@MainActivity, selectedLayout)
-                                                sendBroadcast(Intent("com.example.antarakeyboard.RECREATE_KEYBOARD"))
-                                                preview.shape = KeyboardPrefs.getShape(this@MainActivity)
-                                                spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this@MainActivity) }.coerceAtLeast(0))
-                                                spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this@MainActivity)).coerceAtLeast(0))
-                                                Toast.makeText(this@MainActivity, "Layout restored!", Toast.LENGTH_SHORT).show()
-                                                dialog.dismiss()
-                                            }
-                                            .setNegativeButton("Cancel", null)
-                                            .show()
-                                    }
-                                    2 -> { // Rename
-                                        val input = android.widget.EditText(this@MainActivity).apply { setText(selectedLayout.name); selectAll() }
-                                        AlertDialog.Builder(this@MainActivity).setTitle("Rename").setView(input)
-                                            .setPositiveButton("Save") { _, _ ->
-                                                SavedLayoutStorage.renameLayout(this@MainActivity, selectedLayout.id, input.text.toString().trim())
-                                                refreshSavedLayoutsSpinner()
-                                            }.setNegativeButton("Cancel", null).show()
-                                    }
-                                    3 -> { // Delete
-                                        AlertDialog.Builder(this@MainActivity).setTitle("Delete?")
-                                            .setPositiveButton("Delete") { _, _ ->
-                                                SavedLayoutStorage.deleteLayout(this@MainActivity, selectedLayout.id)
-                                                refreshSavedLayoutsSpinner()
-                                            }.setNegativeButton("Cancel", null).show()
-                                    }
-                                }
-                                spinnerSavedLayouts.setSelection(0)
-                            }
-                            .setOnCancelListener { spinnerSavedLayouts.setSelection(0) }
-                            .show()
+                        showSavedLayoutActions(
+                            savedLayout = selectedLayout,
+                            onListChanged = { refreshSavedLayoutsSpinner() },
+                            onRestored = {
+                                // Restore replaced everything; skip the "saved" toast
+                                autosaveDirtySection = null
+                                dialog.dismiss()
+                            },
+                            onClosed = { spinnerSavedLayouts.setSelection(0) }
+                        )
                     }
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
@@ -2184,26 +2300,14 @@ class MainActivity : AppCompatActivity() {
             if (!swapped) Toast.makeText(this, "Select 2 keys", Toast.LENGTH_SHORT).show()
         }
 
-        btnSaveEditor.setOnClickListener {
-            when (currentPage) {
-                0 -> { layoutBinder.saveExternally(); Toast.makeText(this, "Alphabet saved", Toast.LENGTH_SHORT).show() }
-                1 -> { numericBinder.saveExternally(); Toast.makeText(this, "Numeric saved", Toast.LENGTH_SHORT).show() }
-                2 -> { saveSideButtons(); Toast.makeText(this, "Side buttons saved", Toast.LENGTH_SHORT).show() }
-                3 -> { horizontalBinder.saveExternally(); Toast.makeText(this, "Horizontal saved", Toast.LENGTH_SHORT).show() }
-                4 -> {
-                    EmojiPickerStorage.saveButtonOrder(this, emojiButtonOrder)
-                    EmojiPickerStorage.setTabsPosition(this, emojiTabsPosition)
-                    EmojiPickerStorage.setButtonsSide(this, emojiButtonsSide)
-                    Toast.makeText(this, "Emoji settings saved", Toast.LENGTH_SHORT).show()
-                }
-            }
-            dialog.dismiss()
+        dialog.setOnDismissListener {
+            showSavedToastIfDirty()
         }
 
         dialog.show()
         dialog.window?.setLayout(
             (resources.displayMetrics.widthPixels * 0.94f).toInt(),
-            (resources.displayMetrics.heightPixels * 0.9f).toInt()
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
         showPage(0)
     }
@@ -2458,7 +2562,7 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
 
-    private fun setupSideButtonsPage(container: LinearLayout): () -> Unit {
+    private fun setupSideButtonsPage(container: LinearLayout, onChanged: () -> Unit) {
         container.removeAllViews()
 
         val selectedRowCount = KeyboardPrefs.getRowCount(this)
@@ -2536,6 +2640,11 @@ class MainActivity : AppCompatActivity() {
             return item.toIntOrNull()
         }
 
+        fun persist() {
+            EdgeSlotsStorage.save(this, slots)
+            onChanged()
+        }
+
         fun rebuild() {
             grid.removeAllViews()
 
@@ -2564,6 +2673,7 @@ class MainActivity : AppCompatActivity() {
                             val normalized = fixSlotPosition(index, normalizeSlot(newSlot))
                             enforceNoDuplicates(slots, index, normalized)
                             slots[index] = normalized
+                            persist()
                             rebuild()
                         }
                     }
@@ -2603,6 +2713,7 @@ class MainActivity : AppCompatActivity() {
                                 slots[from] = fixSlotPosition(from, slots[from])
                                 slots[to] = fixSlotPosition(to, slots[to])
 
+                                persist()
                                 rebuild()
                                 true
                             }
@@ -2645,10 +2756,6 @@ class MainActivity : AppCompatActivity() {
         container.addView(title)
         container.addView(hint)
         container.addView(grid)
-
-        return {
-            EdgeSlotsStorage.save(this, slots)
-        }
     }
 
     private fun fixedSideForRowCount(rowCount: Int, index: Int): EdgePos.Side {
@@ -2686,11 +2793,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupThemeSpinner() {
-        val hasCustom = hasCustomColors()
-        val themeOptions = if (hasCustom) {
-            baseThemeOptions + "Custom"
-        } else {
-            baseThemeOptions
+        themeOptions = buildList {
+            add(THEME_LIGHT)
+            add(THEME_DARK)
+            if (hasCustomColors() || SavedLayoutStorage.getSavedLayouts(this@MainActivity).isNotEmpty()) add(THEME_CUSTOM)
+            add(THEME_RGB_SMOOTH)
+            add(THEME_RGB_WILD)
         }
 
         val themeAdapter = ArrayAdapter(
@@ -2707,25 +2815,77 @@ class MainActivity : AppCompatActivity() {
         val isDark = prefs.getBoolean("dark_mode", true)
         val isCustom = prefs.getBoolean("use_custom_theme", false)
 
-        val currentSelection = when {
-            isCustom && hasCustom -> THEME_CUSTOM
+        val currentTheme = when {
+            KeyboardPrefs.isRgbSmoothEnabled(this) -> THEME_RGB_SMOOTH
+            KeyboardPrefs.isRgbWildEnabled(this) -> THEME_RGB_WILD
+            isCustom && THEME_CUSTOM in themeOptions -> THEME_CUSTOM
             isDark -> THEME_DARK
             else -> THEME_LIGHT
         }
-        spinnerTheme.setSelection(currentSelection)
+        currentThemePosition = themeOptions.indexOf(currentTheme)
+        spinnerTheme.setSelection(currentThemePosition)
+        updateThemeSettingsButton()
 
         spinnerTheme.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                applyThemeSelection(position)
+                // Ignore the initial callback fired for the already-active theme
+                if (position == currentThemePosition) return
+                val previousPosition = currentThemePosition
+                currentThemePosition = position
+
+                if (themeOptions[position] == THEME_CUSTOM) {
+                    // Custom = pick one of the saved layouts; nothing picked → back to previous theme
+                    showSavedLayoutsPopup { applied ->
+                        if (applied) {
+                            selectCustomTheme()
+                        } else {
+                            currentThemePosition = previousPosition
+                            spinnerTheme.setSelection(previousPosition)
+                        }
+                        updateThemeSettingsButton()
+                    }
+                    return
+                }
+
+                applyThemeSelection(themeOptions[position])
+                updateThemeSettingsButton()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
-    private fun applyThemeSelection(position: Int) {
+    /** Mark the custom theme active (the colors themselves were applied by the saved-layouts popup). */
+    private fun selectCustomTheme() {
+        getSharedPreferences("theme_prefs", MODE_PRIVATE).edit()
+            .putBoolean("use_custom_theme", true)
+            .apply()
+        KeyboardPrefs.setRgbSmoothEnabled(this, false)
+        KeyboardPrefs.setRgbWildEnabled(this, false)
+    }
+
+    /** Button under the Theme dropdown: RGB settings for RGB themes, Saved layouts for Custom. */
+    private fun updateThemeSettingsButton() {
+        when (themeOptions.getOrNull(currentThemePosition)) {
+            THEME_RGB_SMOOTH, THEME_RGB_WILD -> {
+                btnThemeSettings.text = "RGB settings"
+                btnThemeSettings.visibility = View.VISIBLE
+            }
+            THEME_CUSTOM -> {
+                btnThemeSettings.text = "Saved layouts"
+                btnThemeSettings.visibility = View.VISIBLE
+            }
+            else -> btnThemeSettings.visibility = View.GONE
+        }
+    }
+
+    private fun applyThemeSelection(theme: String) {
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
 
-        when (position) {
+        // Selecting an RGB theme activates it; any other theme turns RGB off
+        KeyboardPrefs.setRgbSmoothEnabled(this, theme == THEME_RGB_SMOOTH)
+        KeyboardPrefs.setRgbWildEnabled(this, theme == THEME_RGB_WILD)
+
+        when (theme) {
             THEME_LIGHT -> {
                 prefs.edit()
                     .putBoolean("dark_mode", false)
@@ -2740,13 +2900,9 @@ class MainActivity : AppCompatActivity() {
                     .apply()
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             }
-            THEME_CUSTOM -> {
-                // Load custom colors from saved custom theme
-                prefs.edit()
-                    .putBoolean("use_custom_theme", true)
-                    .apply()
-                loadCustomThemeColors()
-            }
+            THEME_CUSTOM -> selectCustomTheme()
+            THEME_RGB_SMOOTH -> showRgbSmoothDialog()
+            THEME_RGB_WILD -> showRgbWildDialog()
         }
     }
 
@@ -2799,6 +2955,147 @@ class MainActivity : AppCompatActivity() {
         // Signal keyboard to recreate
         val keyboardIntent = Intent("com.example.antarakeyboard.RECREATE_KEYBOARD")
         sendBroadcast(keyboardIntent)
+    }
+
+    /** Preview / Restore / Rename / Delete menu for one saved layout. */
+    private fun showSavedLayoutActions(
+        savedLayout: SavedLayoutStorage.SavedLayout,
+        onListChanged: () -> Unit,
+        onRestored: () -> Unit,
+        onClosed: () -> Unit = {}
+    ) {
+        AlertDialog.Builder(this)
+            .setTitle(savedLayout.name)
+            .setItems(arrayOf("Preview", "Restore", "Rename", "Delete")) { _, which ->
+                when (which) {
+                    0 -> showSavedLayoutPreview(savedLayout)
+                    1 -> {
+                        AlertDialog.Builder(this)
+                            .setTitle("Restore layout")
+                            .setMessage("This will replace your current layout and colors.")
+                            .setPositiveButton("Restore") { _, _ ->
+                                restoreSavedLayout(savedLayout)
+                                onRestored()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                    2 -> {
+                        val input = android.widget.EditText(this).apply { setText(savedLayout.name); selectAll() }
+                        AlertDialog.Builder(this).setTitle("Rename").setView(input)
+                            .setPositiveButton("Save") { _, _ ->
+                                SavedLayoutStorage.renameLayout(this, savedLayout.id, input.text.toString().trim())
+                                onListChanged()
+                            }.setNegativeButton("Cancel", null).show()
+                    }
+                    3 -> {
+                        AlertDialog.Builder(this).setTitle("Delete?")
+                            .setPositiveButton("Delete") { _, _ ->
+                                SavedLayoutStorage.deleteLayout(this, savedLayout.id)
+                                onListChanged()
+                            }.setNegativeButton("Cancel", null).show()
+                    }
+                }
+                onClosed()
+            }
+            .setOnCancelListener { onClosed() }
+            .show()
+    }
+
+    private fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout) {
+        SavedLayoutStorage.restoreLayout(this, savedLayout)
+        sendBroadcast(Intent("com.example.antarakeyboard.RECREATE_KEYBOARD"))
+        preview.shape = KeyboardPrefs.getShape(this)
+        spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this) }.coerceAtLeast(0))
+        spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this)).coerceAtLeast(0))
+        Toast.makeText(this, "Layout restored!", Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Popup opened from Theme → Custom: lists all saved layouts (and the last custom colors).
+     * [onDone] gets true if something was applied, false if the popup was just closed.
+     */
+    private fun showSavedLayoutsPopup(onDone: (applied: Boolean) -> Unit) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        var applied = false
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(16.dp(this), 16.dp(this), 16.dp(this), 16.dp(this))
+            setBackgroundColor(getColor(R.color.main_app_bg))
+        }
+        root.addView(TextView(this).apply {
+            text = "Saved layouts"
+            textSize = 18f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, 12.dp(this@MainActivity))
+        })
+
+        val scroll = ScrollView(this)
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        scroll.addView(list)
+        root.addView(scroll, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+        ))
+
+        fun addEntry(title: String, subtitle: String, onClick: () -> Unit) {
+            list.addView(Button(this).apply {
+                text = "$title\n$subtitle"
+                isAllCaps = false
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setOnClickListener { onClick() }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 4.dp(this@MainActivity) })
+        }
+
+        fun rebuildList() {
+            list.removeAllViews()
+
+            if (hasCustomColors()) {
+                addEntry("Last custom colors", "Colors only") {
+                    loadCustomThemeColors()
+                    Toast.makeText(this, "Custom colors applied", Toast.LENGTH_SHORT).show()
+                    applied = true
+                    dialog.dismiss()
+                }
+            }
+
+            val savedLayouts = SavedLayoutStorage.getSavedLayouts(this)
+            savedLayouts.forEach { saved ->
+                addEntry(
+                    saved.name,
+                    "${saved.rowCount} rows • ${saved.keyShape.lowercase()} • ${SavedLayoutStorage.formatTimestamp(saved.timestamp)}"
+                ) {
+                    showSavedLayoutActions(
+                        savedLayout = saved,
+                        onListChanged = { rebuildList() },
+                        onRestored = {
+                            applied = true
+                            dialog.dismiss()
+                        }
+                    )
+                }
+            }
+
+            if (list.childCount == 0) {
+                list.addView(TextView(this).apply {
+                    text = "No saved layouts yet"
+                    alpha = 0.75f
+                    setPadding(0, 8.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
+                })
+            }
+        }
+        rebuildList()
+
+        dialog.setContentView(root)
+        dialog.setOnDismissListener { onDone(applied) }
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
     }
 
     private fun showSavedLayoutPreview(savedLayout: SavedLayoutStorage.SavedLayout) {

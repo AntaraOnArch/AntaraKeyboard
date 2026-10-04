@@ -1,43 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?attr/keyboardBg">
+    android:background="@color/main_app_bg">
 
-    <!-- TABOVI -->
-    <LinearLayout
+    <!-- Section dropdown -->
+    <Spinner
+        android:id="@+id/spinnerLongPressSection"
+        style="@style/MainSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnTabAlphabetLp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Alphabet"
-            android:textAllCaps="false" />
-
-        <Space
-            android:layout_width="8dp"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/btnTabNumericLp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Numeric"
-            android:textAllCaps="false" />
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <!-- SADRŽAJ -->
     <FrameLayout
         android:id="@+id/longPressContentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_marginTop="16dp">
 
         <LinearLayout
@@ -52,15 +33,19 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone" />
-    </FrameLayout>
 
-    <!-- SAVE -->
-    <Button
-        android:id="@+id/btnSaveLongPressEditor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Spremi"
-        android:textAllCaps="false" />
+        <ScrollView
+            android:id="@+id/pageMyBindsLp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/myBindsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+    </FrameLayout>
 
 </LinearLayout>

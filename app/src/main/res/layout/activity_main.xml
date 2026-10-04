@@ -124,14 +124,12 @@
                 android:layout_width="12dp"
                 android:layout_height="wrap_content" />
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/resetLayoutButton"
-                style="@style/MainRoundedButton"
+            <Spinner
+                android:id="@+id/spinnerReset"
+                style="@style/MainSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Reset Layout"
-                app:textAllCaps="false" />
+                android:layout_weight="1" />
         </LinearLayout>
 
         <!-- Colors dropdown -->
@@ -181,6 +179,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
+
+        <!-- Shown only while an RGB or Custom theme is active -->
+        <Button
+            android:id="@+id/btnThemeSettings"
+            style="@style/MainRoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:textAllCaps="false" />
 
     </LinearLayout>
 </ScrollView>

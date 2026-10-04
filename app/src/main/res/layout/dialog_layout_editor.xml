@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@color/main_app_bg">
@@ -17,14 +17,14 @@
     <FrameLayout
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginTop="16dp">
 
         <LinearLayout
             android:id="@+id/pageLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
@@ -39,14 +39,14 @@
             <FrameLayout
                 android:id="@+id/layoutEditorContainer"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/pageSideButtons"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -62,14 +62,14 @@
             <FrameLayout
                 android:id="@+id/sideButtonsEditorContainer"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/pageNumeric"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -85,14 +85,14 @@
             <FrameLayout
                 android:id="@+id/numericEditorContainer"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/pageHorizontalCenter"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -108,14 +108,14 @@
             <FrameLayout
                 android:id="@+id/horizontalEditorContainer"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
 
         <ScrollView
             android:id="@+id/pageEmojiPicker"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:visibility="gone">
 
             <LinearLayout
@@ -164,14 +164,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Swap selected"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btnSaveEditor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Save"
             android:textAllCaps="false" />
     </LinearLayout>
 

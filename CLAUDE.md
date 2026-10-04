@@ -50,18 +50,21 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 4. **Key shape** dropdown – with shape preview.
 5. **Keyboard rows** dropdown – 3 / 4 / 5.
 6. **Bind long press** – popup for binding long-press characters (tabs below).
-7. **Reset layout** – see [Reset layout](#reset-layout).
+7. **Reset** dropdown – Reset colors / Reset layout / Reset all; see [Reset](#reset).
 8. **Colors** – popup for coloring every part of the keyboard (tabs below).
-9. **Theme** dropdown – Light / Dark, plus user-saved custom themes (see [Themes](#themes)).
+9. **Theme** dropdown – Light / Dark, user-saved custom themes, RGB Smooth / RGB Wild (see [Themes](#themes)).
 
-**All popups share a uniform look** (same styling, header, tab buttons, spacing). New dialogs must follow the same style.
+**All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
 ### Set layout popup
+
+All tabs autosave; there is no Save button. A single "<Section> saved" toast is shown when the user switches to another tab, closes the popup, or leaves the app — only if something changed in that tab (never per individual edit).
 
 #### Layout (opened by default)
 - Arranges the letter keys across rows.
 - **Swap**: select two keys, then press the **Swap** button at the bottom of the popup to exchange their positions.
 - **Drag and drop** one key onto another also swaps them.
+- Autosave.
 
 #### Emoji
 - Configures the emoji picker's **category slider position**: top / bottom / left / right.
@@ -97,14 +100,21 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 Lets the user bind any special letter or emoji to a key's long press.
 
-- **Alphabet** tab – long-press bindings for letter keys.
-- **Numeric** tab – same rules as Alphabet.
+- Section is chosen from a **dropdown** (same style as Set layout):
+  - **Alphabet** – long-press bindings for letter keys.
+  - **Numeric** – same rules as Alphabet.
+  - **My binds** – list of every key (alphabet and numeric) that has at least one binding, with its bound characters; tapping one opens the character picker to edit it.
+- Keyboard preview is rendered exactly like the Set layout editor (shared `ui/EditorKeyboardRenderer.kt`); a small badge shows how many characters are bound to each key.
+- Tapping a key opens an **emoji-picker-style character picker**: category tabs (special-character groups, all Latin / Cyrillic special letters from `LongPressPresets`, extra symbols from the default layouts, emoji categories), a grid where tapping toggles a binding, and a strip of currently bound characters (tap to remove). Both special characters and **emoji** can be bound.
 - **Protected keys – nothing can be bound** on: either **Space**, **123** (switch to numeric), **Enter**.
-- Autosave.
+- Autosave (no Save button); one "<Section> saved" toast on section switch, closing the popup, or leaving the app.
 
-### Reset layout
-- Restores: OS-theme default (dark/light) colors, default letter positions, default side buttons.
-- **Preserved** (NOT reset): long-press bindings and the selected key shape.
+### Reset
+Dropdown with three options; each first saves the current state as a "Backup <time>" in Saved layouts.
+- **Reset colors** – OS-theme default (dark/light) colors; turns RGB themes off.
+- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons.
+- **Reset all** – both of the above.
+- **Preserved** (never reset): long-press bindings and the selected key shape.
 
 ### Colors popup
 Every sub-section autosaves.
@@ -115,11 +125,12 @@ Every sub-section autosaves.
 | **Enter** | Background color + icon color |
 | **Side buttons** | Background color + icon color |
 | **Keys** | Letter (text) color + background color |
-| **Background** | Default by theme / manual Dark or Light / user-profile custom color / RGB rainbow / transparent |
+| **Background** | Default by theme / manual Dark or Light / user-profile custom color / transparent |
 
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode.
-- If the user has picked any custom color(s), their custom combination is saved and appears in the same dropdown as a user "theme" so it can be re-selected later.
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. Restoring makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, a **Saved layouts** button below the dropdown reopens the popup.
+- **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (speed / saturation / brightness). Selecting any other theme turns RGB off. While an RGB theme is active, an **RGB settings** button appears below the dropdown to reopen that popup.
 
 ### Keyboard gestures (on the keyboard)
 - Swipe up on a letter → capital letter.
