@@ -1,5 +1,7 @@
 package com.example.antarakeyboard.data
 
+import com.example.antarakeyboard.R
+import androidx.annotation.StringRes
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -27,16 +29,16 @@ object EmojiPickerStorage {
         SPACE
     }
 
-    enum class TabsPosition(val displayName: String) {
-        LEFT("Left"),
-        RIGHT("Right"),
-        TOP("Top"),
-        BOTTOM("Bottom")
+    enum class TabsPosition(@param:StringRes val labelRes: Int) {
+        LEFT(R.string.emoji_pos_left),
+        RIGHT(R.string.emoji_pos_right),
+        TOP(R.string.emoji_pos_top),
+        BOTTOM(R.string.emoji_pos_bottom)
     }
 
-    enum class ButtonsSide(val displayName: String) {
-        LEFT("Left"),
-        RIGHT("Right")
+    enum class ButtonsSide(@param:StringRes val labelRes: Int) {
+        LEFT(R.string.emoji_pos_left),
+        RIGHT(R.string.emoji_pos_right)
     }
 
     private val gson = Gson()
@@ -136,11 +138,12 @@ object EmojiPickerStorage {
     /**
      * Get display name for button action (for settings UI)
      */
-    fun getButtonDisplayName(action: EmojiButtonAction): String {
+    @StringRes
+    fun getButtonDisplayName(action: EmojiButtonAction): Int {
         return when (action) {
-            EmojiButtonAction.CLOSE -> "Close"
-            EmojiButtonAction.BACKSPACE -> "Backspace"
-            EmojiButtonAction.SPACE -> "Space"
+            EmojiButtonAction.CLOSE -> R.string.emoji_btn_close
+            EmojiButtonAction.BACKSPACE -> R.string.emoji_btn_backspace
+            EmojiButtonAction.SPACE -> R.string.emoji_btn_space
         }
     }
 

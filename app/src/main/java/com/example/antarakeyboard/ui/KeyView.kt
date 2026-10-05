@@ -166,35 +166,36 @@ class KeyView @JvmOverloads constructor(
 
     private fun getAccessibleDescription(label: String?): String {
         if (label.isNullOrEmpty()) return ""
-        return when (label) {
-            "⇧" -> "Shift"
-            "⌫" -> "Backspace"
-            "↵" -> "Enter"
-            "123" -> "Numbers"
-            "ABC", "abc" -> "Letters"
-            " " -> "Space"
-            "." -> "Period"
-            "," -> "Comma"
-            "?" -> "Question mark"
-            "!" -> "Exclamation mark"
-            "@" -> "At sign"
-            "#" -> "Hash"
-            "$" -> "Dollar"
-            "%" -> "Percent"
-            "&" -> "Ampersand"
-            "*" -> "Asterisk"
-            "(" -> "Open parenthesis"
-            ")" -> "Close parenthesis"
-            "-" -> "Minus"
-            "+" -> "Plus"
-            "=" -> "Equals"
-            "/" -> "Slash"
-            ":" -> "Colon"
-            ";" -> "Semicolon"
-            "'" -> "Apostrophe"
-            "\"" -> "Quote"
-            else -> if (label.length == 1) "Key $label" else label
+        val res = when (label) {
+            "⇧" -> R.string.a11y_shift
+            "⌫" -> R.string.a11y_backspace
+            "↵" -> R.string.a11y_enter
+            "123" -> R.string.a11y_numbers
+            "ABC", "abc" -> R.string.a11y_letters
+            " " -> R.string.a11y_space
+            "." -> R.string.a11y_period
+            "," -> R.string.a11y_comma
+            "?" -> R.string.a11y_question
+            "!" -> R.string.a11y_exclamation
+            "@" -> R.string.a11y_at
+            "#" -> R.string.a11y_hash
+            "\$" -> R.string.a11y_dollar
+            "%" -> R.string.a11y_percent
+            "&" -> R.string.a11y_ampersand
+            "*" -> R.string.a11y_asterisk
+            "(" -> R.string.a11y_open_paren
+            ")" -> R.string.a11y_close_paren
+            "-" -> R.string.a11y_minus
+            "+" -> R.string.a11y_plus
+            "=" -> R.string.a11y_equals
+            "/" -> R.string.a11y_slash
+            ":" -> R.string.a11y_colon
+            ";" -> R.string.a11y_semicolon
+            "'" -> R.string.a11y_apostrophe
+            "\"" -> R.string.a11y_quote
+            else -> return if (label.length == 1) context.getString(R.string.a11y_key, label) else label
         }
+        return context.getString(res)
     }
 
     override fun setPressed(pressed: Boolean) {

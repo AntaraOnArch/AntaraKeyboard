@@ -142,7 +142,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
-- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. Preview lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. Preview shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
 - **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (speed / saturation / brightness). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
@@ -166,7 +166,13 @@ All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isC
 - **Enter** uses `sendKeyChar('\n')`: runs the editor's action (Search, Send, Go, Done…) unless the field has no action or sets `IME_FLAG_NO_ENTER_ACTION`, then inserts a newline.
 - **Backspace / swipe delete** remove the selection if there is one, otherwise one grapheme cluster (`android.icu.text.BreakIterator`), so emoji, flags and combining marks are never split. Swipe restore re-inserts whole graphemes. Editors that expose no text get a `KEYCODE_DEL` key event.
 - **Field type** (`service/InputTypes.kt`): number / phone / date fields open on the numeric layout; password fields disable the key preview.
-- Keyboard UI strings live in `res/values/strings.xml` (English).
+
+### Strings and translations
+- Every user-visible text is a resource: English in `res/values/strings.xml` (default), Croatian in `res/values-hr/strings.xml`. Android picks the language from the device settings. Never hard-code UI text; add the string to **both** files (lint flags missing translations).
+- Use format arguments (`%1$s`, `%1$d`) instead of concatenation, and `R.plurals` for counts (`rows_count`; Croatian has one / few / other).
+- Internal ids stay untranslated constants and are shown through a label function (theme ids → `themeLabel()`, key shapes → `shapeLabel()`); enums carry a `@StringRes` (`EmojiCategory.nameRes`, `EmojiPickerStorage.TabsPosition.labelRes`).
+- Letters, symbols, sample alphabets and color/value formats (`rgb(...)`, hex) are not translated.
+- Dates use the device locale (`SavedLayoutStorage.formatTimestamp`). Key accessibility labels (`KeyView.getAccessibleDescription`) are translated too.
 
 ### Side buttons (edge slots)
 Actions available per slot (`EdgeActionType`): Shift, Backspace, Enter, Space, Char (any special character), Emoji picker, None. When Shift or Backspace is placed on a side button, that key is hidden from the main layout (replaced by an `__EDGE_GHOST__` placeholder in `EdgeKeyManager`). Enter stays in both places. The side (left/right) of each slot is fixed per row count (`EdgeSlotsStorage.fixedSideForIndex`). Slots are stored per row count.
@@ -181,7 +187,6 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 
 ### Known gaps (code vs spec)
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
-- **Main app strings** are still hard-coded in `MainActivity` (English). Keyboard strings are already in `strings.xml`.
 - **RGB Smooth / RGB Wild settings popups** still use `AlertDialog` with Save/Cancel.
 
 **Target SDK**: 36 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11

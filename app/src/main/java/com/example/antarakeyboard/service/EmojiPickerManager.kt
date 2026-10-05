@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.service
 
+import androidx.annotation.StringRes
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -32,34 +33,34 @@ import kotlinx.coroutines.withContext
  */
 enum class EmojiCategory(
     val icon: String,
-    val displayName: String,
+    @param:StringRes val nameRes: Int,
     val emojisProvider: () -> List<String>
 ) {
-    RECENT("🕐", "Recent", { emptyList() }), // Populated dynamically
-    SMILEYS("😀", "Smileys & People", { EmojiData.smileys + EmojiData.hearts }),
-    GESTURES("👋", "Gestures & Body", { EmojiData.gestures + EmojiData.body }),
-    PEOPLE("👨", "People", { EmojiData.people + EmojiData.fantasy + EmojiData.activities }),
-    ANIMALS("🐱", "Animals & Nature", {
+    RECENT("🕐", R.string.emoji_cat_recent, { emptyList() }), // Populated dynamically
+    SMILEYS("😀", R.string.emoji_cat_smileys, { EmojiData.smileys + EmojiData.hearts }),
+    GESTURES("👋", R.string.emoji_cat_gestures, { EmojiData.gestures + EmojiData.body }),
+    PEOPLE("👨", R.string.emoji_cat_people, { EmojiData.people + EmojiData.fantasy + EmojiData.activities }),
+    ANIMALS("🐱", R.string.emoji_cat_animals, {
         EmojiData.mammals + EmojiData.birds + EmojiData.reptilesAndMythicalAnimals +
                 EmojiData.seaAnimals + EmojiData.insectsAndSmallAnimals + EmojiData.plantsAndFlowers
     }),
-    FOOD("🍔", "Food & Drink", {
+    FOOD("🍔", R.string.emoji_cat_food, {
         EmojiData.fruits + EmojiData.vegetables + EmojiData.breadAndBreakfast +
                 EmojiData.meatAndFastFood + EmojiData.cookedFood + EmojiData.sweets + EmojiData.drinks
     }),
-    TRAVEL("🚗", "Travel & Places", { EmojiData.travelAndPlaces + EmojiData.transport }),
-    ACTIVITIES("⚽", "Activities", { EmojiData.celebrations + EmojiData.sports + EmojiData.games + EmojiData.artsAndCrafts }),
-    OBJECTS("💡", "Objects", {
+    TRAVEL("🚗", R.string.emoji_cat_travel, { EmojiData.travelAndPlaces + EmojiData.transport }),
+    ACTIVITIES("⚽", R.string.emoji_cat_activities, { EmojiData.celebrations + EmojiData.sports + EmojiData.games + EmojiData.artsAndCrafts }),
+    OBJECTS("💡", R.string.emoji_cat_objects, {
         EmojiData.soundAndMusic + EmojiData.phonesAndComputers + EmojiData.lightsAndBooks +
                 EmojiData.moneyAndMail + EmojiData.writingAndOffice + EmojiData.locksAndTools +
                 EmojiData.scienceAndMedicine + EmojiData.household + EmojiData.clothing
     }),
-    SYMBOLS("❤️", "Symbols", {
+    SYMBOLS("❤️", R.string.emoji_cat_symbols, {
         EmojiData.publicSymbols + EmojiData.arrows + EmojiData.religionAndZodiac +
                 EmojiData.mediaControls + EmojiData.extraSymbols + EmojiData.keycaps +
                 EmojiData.buttonSymbols + EmojiData.geometricShapes
     }),
-    FLAGS("🏳️", "Flags", { EmojiData.flags })
+    FLAGS("🏳️", R.string.emoji_cat_flags, { EmojiData.flags })
 }
 
 /**
@@ -497,7 +498,7 @@ class EmojiPickerManager(
         val titleView = parent.findViewWithTag<TextView>("category_title")
 
         // Update title
-        titleView?.text = category.displayName
+        titleView?.text = context.getString(category.nameRes)
 
         // Clear existing emojis
         container.removeAllViews()

@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.ui
 
+import com.example.antarakeyboard.R
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Typeface
@@ -64,7 +65,7 @@ class LayoutEditorBinder(
         }
 
         root.addView(TextView(context).apply {
-            text = "Set Layout"
+            text = context.getString(R.string.main_set_layout)
             textSize = 18f
             setTypeface(typeface, Typeface.BOLD)
             setPadding(0, 0, 0, 10.dp(context))

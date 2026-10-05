@@ -214,7 +214,8 @@ object SavedLayoutStorage {
      * Format timestamp for display
      */
     fun formatTimestamp(timestamp: Long): String {
-        val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
-        return sdf.format(java.util.Date(timestamp))
+        // Date/time order and separators follow the device locale
+        val format = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+        return format.format(java.util.Date(timestamp))
     }
 }

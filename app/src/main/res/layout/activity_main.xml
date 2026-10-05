@@ -22,7 +22,7 @@
             android:gravity="center"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="Antara Keyboard"
+            android:text="@string/app_title"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Enable"
+                android:text="@string/main_enable"
                 app:textAllCaps="false" />
 
             <Space
@@ -51,7 +51,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Choose"
+                android:text="@string/main_choose"
                 app:textAllCaps="false" />
         </LinearLayout>
 
@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Set Layout"
+            android:text="@string/main_set_layout"
             app:textAllCaps="false" />
 
         <!-- Key shape -->
@@ -71,7 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Key shape"
+            android:text="@string/main_key_shape"
             android:textSize="18sp" />
 
         <Spinner
@@ -94,7 +94,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Keyboard rows"
+            android:text="@string/main_keyboard_rows"
             android:textSize="18sp" />
 
         <Spinner
@@ -117,7 +117,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Bind LongPress"
+                android:text="@string/main_bind_long_press"
                 app:textAllCaps="false" />
 
             <Space
@@ -139,7 +139,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:text="Colors"
+            android:text="@string/main_colors"
             app:textAllCaps="false" />
 
         <!-- Vibration toggle -->
@@ -148,7 +148,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Vibration feedback"
+            android:text="@string/main_vibration"
             android:textSize="18sp" />
 
         <Spinner
@@ -164,7 +164,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Theme"
+            android:text="@string/main_theme"
             android:textSize="18sp" />
 
         <com.example.antarakeyboard.ui.ReselectSpinner

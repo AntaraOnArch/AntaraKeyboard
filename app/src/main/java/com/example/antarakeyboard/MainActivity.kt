@@ -67,23 +67,24 @@ class MainActivity : AppCompatActivity() {
 
     // Shape options for dropdown
     private val shapeOptions = listOf(
-        KeyShape.HEX to "Hexagon",
-        KeyShape.TRIANGLE to "Triangle",
-        KeyShape.CIRCLE to "Circle",
-        KeyShape.CUBE to "Cube"
+        KeyShape.HEX to R.string.shape_hexagon,
+        KeyShape.TRIANGLE to R.string.shape_triangle,
+        KeyShape.CIRCLE to R.string.shape_circle,
+        KeyShape.CUBE to R.string.shape_cube
     )
 
     // Row count options for dropdown
     private val rowCountOptions = listOf(3, 4, 5)
 
     // Vibration options
-    private val vibrationOptions = listOf("On", "Off")
+    private val vibrationOptions = listOf(R.string.option_on, R.string.option_off)
 
     // Theme options (Custom added dynamically if user has custom colors)
     private var themeOptions = listOf<String>()
     private var currentThemePosition = -1
 
     companion object {
+        // Internal theme ids (shown through themeLabel)
         private const val THEME_LIGHT = "Light"
         private const val THEME_DARK = "Dark"
         private const val THEME_TRANSPARENT = "Transparent"
@@ -152,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         val shapeAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            shapeOptions.map { it.second }
+            shapeOptions.map { getString(it.second) }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -179,7 +180,7 @@ class MainActivity : AppCompatActivity() {
         val rowCountAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            rowCountOptions.map { "$it rows" }
+            rowCountOptions.map { rowsLabel(it) }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -204,7 +205,7 @@ class MainActivity : AppCompatActivity() {
         val vibrationAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            vibrationOptions
+            vibrationOptions.map { getString(it) }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -232,7 +233,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Setup Reset Spinner
-        val resetOptions = listOf("Reset…", "Reset colors", "Reset layout", "Reset all")
+        val resetOptions = listOf(
+            R.string.reset_hint, R.string.reset_colors, R.string.reset_layout, R.string.reset_all
+        ).map { getString(it) }
         spinnerReset.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, resetOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -255,7 +258,7 @@ class MainActivity : AppCompatActivity() {
 
         // Spremi trenutni layout (i boje) kao backup prije reseta
         val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
-        SavedLayoutStorage.saveCurrentLayout(this, "Backup $timestamp")
+        SavedLayoutStorage.saveCurrentLayout(this, getString(R.string.backup_name, timestamp))
 
         if (layout) {
             // Resetiraj horizontal center layout
@@ -296,12 +299,12 @@ class MainActivity : AppCompatActivity() {
 
         // The keyboard re-reads all prefs in onStartInputView, so no signal is needed
 
-        val what = when {
-            colors && layout -> "Layout and colors"
-            colors -> "Colors"
-            else -> "Layout"
+        val message = when {
+            colors && layout -> R.string.reset_done_all
+            colors -> R.string.reset_done_colors
+            else -> R.string.reset_done_layout
         }
-        Toast.makeText(this, "$what reset. Previous saved as backup.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     /* =========================
@@ -393,12 +396,12 @@ class MainActivity : AppCompatActivity() {
 
     // Section name shown in the dropdown → name used in the "<name> saved" toast
     private val colorSections = listOf(
-        "Space" to "Space colors",
-        "Enter" to "Enter colors",
-        "Side buttons" to "Side buttons colors",
-        "Keys" to "Keys colors",
-        "Background" to "Background",
-        "Theme defaults" to "Theme defaults"
+        R.string.colors_section_space to R.string.colors_saved_space,
+        R.string.colors_section_enter to R.string.colors_saved_enter,
+        R.string.colors_section_side to R.string.colors_saved_side,
+        R.string.colors_section_keys to R.string.colors_saved_keys,
+        R.string.colors_section_background to R.string.colors_section_background,
+        R.string.colors_section_theme_defaults to R.string.colors_section_theme_defaults
     )
 
     /**
@@ -415,7 +418,7 @@ class MainActivity : AppCompatActivity() {
         spinnerSection.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            colorSections.map { it.first }
+            colorSections.map { getString(it.first) }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -426,7 +429,7 @@ class MainActivity : AppCompatActivity() {
         fun showSection(index: Int) {
             currentSection = index
             page.removeAllViews()
-            val markDirty = { autosaveDirtySection = colorSections[index].second }
+            val markDirty = { autosaveDirtySection = getString(colorSections[index].second) }
             when (index) {
                 0 -> buildSpaceColorsPage(page, markDirty)
                 1 -> buildEnterColorsPage(page, markDirty)
@@ -506,12 +509,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         lateinit var b2: Button
-        val b1 = colorButton("Space 1", c1) { picked ->
+        val b1 = colorButton(getString(R.string.color_space_1), c1) { picked ->
             c1 = picked
             if (linked) setSwatch(b2, picked)
             save()
         }
-        b2 = colorButton("Space 2", c2) { picked ->
+        b2 = colorButton(getString(R.string.color_space_2), c2) { picked ->
             c2 = picked
             if (linked) {
                 c1 = picked
@@ -521,7 +524,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cb = CheckBox(this).apply {
-            text = "Both space keys same color"
+            text = getString(R.string.color_space_linked)
             isChecked = linked
             setOnCheckedChangeListener { _, isChecked ->
                 linked = isChecked
@@ -539,12 +542,12 @@ class MainActivity : AppCompatActivity() {
         var bg = KeyboardPrefs.getEnterBg(this)
         var icon = KeyboardPrefs.getEnterIcon(this)
 
-        page.addSpaced(colorButton("Background", bg) { picked ->
+        page.addSpaced(colorButton(getString(R.string.color_background), bg) { picked ->
             bg = picked
             KeyboardPrefs.setEnterColors(this, bg, icon)
             onChanged()
         })
-        page.addSpaced(colorButton("Icon color", icon) { picked ->
+        page.addSpaced(colorButton(getString(R.string.color_icon), icon) { picked ->
             icon = picked
             KeyboardPrefs.setEnterColors(this, bg, icon)
             onChanged()
@@ -561,13 +564,13 @@ class MainActivity : AppCompatActivity() {
             onChanged()
         }
 
-        val bgBtn = colorButton("Background", bg) { picked -> bg = picked; save() }
-        val textBtn = colorButton("Icon color", textColor) { picked -> textColor = picked; save() }
+        val bgBtn = colorButton(getString(R.string.color_background), bg) { picked -> bg = picked; save() }
+        val textBtn = colorButton(getString(R.string.color_icon), textColor) { picked -> textColor = picked; save() }
         bgBtn.isEnabled = !useThemeBg
         textBtn.isEnabled = !useThemeBg
 
         val cb = CheckBox(this).apply {
-            text = "Use theme colors"
+            text = getString(R.string.color_use_theme)
             isChecked = useThemeBg
             setOnCheckedChangeListener { _, isChecked ->
                 useThemeBg = isChecked
@@ -596,8 +599,8 @@ class MainActivity : AppCompatActivity() {
 
         // "All keys same color": one background + text color
         val allSameContainer = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        allSameContainer.addSpaced(colorButton("Background", bg) { picked -> bg = picked; save() })
-        allSameContainer.addSpaced(colorButton("Text color", textColor) { picked -> textColor = picked; save() })
+        allSameContainer.addSpaced(colorButton(getString(R.string.color_background), bg) { picked -> bg = picked; save() })
+        allSameContainer.addSpaced(colorButton(getString(R.string.color_text), textColor) { picked -> textColor = picked; save() })
 
         // Per-key colors: tap a key to edit it
         val individualContainer = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -644,7 +647,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cbAllSame = CheckBox(this).apply {
-            text = "All keys same color"
+            text = getString(R.string.color_all_keys_same)
             isChecked = allSame
             isEnabled = !useTheme
             setOnCheckedChangeListener { _, isChecked ->
@@ -655,7 +658,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val cbTheme = CheckBox(this).apply {
-            text = "Use theme colors"
+            text = getString(R.string.color_use_theme)
             isChecked = useTheme
             setOnCheckedChangeListener { _, isChecked ->
                 useTheme = isChecked
@@ -705,10 +708,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         root.addSpaced(preview)
-        root.addSpaced(colorButton("Background", bg) { picked -> bg = picked; save() })
-        root.addSpaced(colorButton("Text color", textColor) { picked -> textColor = picked; save() })
+        root.addSpaced(colorButton(getString(R.string.color_background), bg) { picked -> bg = picked; save() })
+        root.addSpaced(colorButton(getString(R.string.color_text), textColor) { picked -> textColor = picked; save() })
         root.addSpaced(Button(this).apply {
-            text = "Use default for this key"
+            text = getString(R.string.color_key_use_default)
             isAllCaps = false
             setOnClickListener {
                 KeyboardPrefs.clearKeyIndividualColors(this@MainActivity, keyLabel)
@@ -727,15 +730,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildBackgroundColorsPage(page: LinearLayout, onChanged: () -> Unit) {
         val modes = listOf(
-            KeyboardPrefs.BackgroundMode.THEME to "Default by theme",
-            KeyboardPrefs.BackgroundMode.DARK to "Dark",
-            KeyboardPrefs.BackgroundMode.LIGHT to "Light",
-            KeyboardPrefs.BackgroundMode.CUSTOM to "Custom color"
+            KeyboardPrefs.BackgroundMode.THEME to getString(R.string.bg_mode_theme),
+            KeyboardPrefs.BackgroundMode.DARK to getString(R.string.bg_mode_dark),
+            KeyboardPrefs.BackgroundMode.LIGHT to getString(R.string.bg_mode_light),
+            KeyboardPrefs.BackgroundMode.CUSTOM to getString(R.string.bg_mode_custom)
             // Transparent is chosen in the Theme dropdown
         )
         val currentMode = KeyboardPrefs.getBackgroundMode(this)
 
-        val customBtn = colorButton("Custom color", KeyboardPrefs.getBackgroundColor(this)) { picked ->
+        val customBtn = colorButton(getString(R.string.bg_mode_custom), KeyboardPrefs.getBackgroundColor(this)) { picked ->
             KeyboardPrefs.setBackgroundColor(this, picked, useTheme = false)
             onChanged()
         }
@@ -791,27 +794,27 @@ class MainActivity : AppCompatActivity() {
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         }
 
-        page.addSpaced(header("Light mode defaults"))
-        page.addSpaced(colorButton("Key fill", lightKeyFill) { lightKeyFill = it; saveLight() })
-        page.addSpaced(colorButton("Key text", lightKeyText) { lightKeyText = it; saveLight() })
-        page.addSpaced(colorButton("Space fill", lightSpaceFill) { lightSpaceFill = it; saveLight() })
-        page.addSpaced(colorButton("Background", lightKeyboardBg) { lightKeyboardBg = it; saveLight() })
+        page.addSpaced(header(getString(R.string.theme_defaults_light)))
+        page.addSpaced(colorButton(getString(R.string.color_key_fill), lightKeyFill) { lightKeyFill = it; saveLight() })
+        page.addSpaced(colorButton(getString(R.string.color_key_text), lightKeyText) { lightKeyText = it; saveLight() })
+        page.addSpaced(colorButton(getString(R.string.color_space_fill), lightSpaceFill) { lightSpaceFill = it; saveLight() })
+        page.addSpaced(colorButton(getString(R.string.color_background), lightKeyboardBg) { lightKeyboardBg = it; saveLight() })
 
-        page.addSpaced(header("Dark mode defaults"))
-        page.addSpaced(colorButton("Key fill", darkKeyFill) { darkKeyFill = it; saveDark() })
-        page.addSpaced(colorButton("Key text", darkKeyText) { darkKeyText = it; saveDark() })
-        page.addSpaced(colorButton("Space fill", darkSpaceFill) { darkSpaceFill = it; saveDark() })
-        page.addSpaced(colorButton("Background", darkKeyboardBg) { darkKeyboardBg = it; saveDark() })
+        page.addSpaced(header(getString(R.string.theme_defaults_dark)))
+        page.addSpaced(colorButton(getString(R.string.color_key_fill), darkKeyFill) { darkKeyFill = it; saveDark() })
+        page.addSpaced(colorButton(getString(R.string.color_key_text), darkKeyText) { darkKeyText = it; saveDark() })
+        page.addSpaced(colorButton(getString(R.string.color_space_fill), darkSpaceFill) { darkSpaceFill = it; saveDark() })
+        page.addSpaced(colorButton(getString(R.string.color_background), darkKeyboardBg) { darkKeyboardBg = it; saveDark() })
 
         page.addSpaced(Button(this).apply {
-            text = "Reset to factory"
+            text = getString(R.string.reset_factory)
             isAllCaps = false
             setOnClickListener {
                 AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Reset to factory")
-                    .setMessage("Reset all theme default colors to factory values?")
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Reset") { _, _ ->
+                    .setTitle(R.string.reset_factory)
+                    .setMessage(R.string.reset_factory_message)
+                    .setNegativeButton(R.string.action_cancel, null)
+                    .setPositiveButton(R.string.action_reset) { _, _ ->
                         KeyboardPrefs.resetThemeDefaultsToFactory(this@MainActivity)
                         page.removeAllViews()
                         buildThemeDefaultsPage(page, onChanged)
@@ -848,7 +851,7 @@ class MainActivity : AppCompatActivity() {
 
         // Speed label
         val speedLabel = TextView(ctx).apply {
-            text = "Speed: ${speed / 1000}s per cycle"
+            text = getString(R.string.rgb_speed_seconds, speed / 1000)
             textSize = 14f
             setPadding(0, 12.dp(ctx), 0, 4.dp(ctx))
         }
@@ -861,7 +864,7 @@ class MainActivity : AppCompatActivity() {
         root.addView(speedSeekBar)
 
         val speedHint = TextView(ctx).apply {
-            text = "Fast ← → Slow"
+            text = getString(R.string.rgb_fast_slow)
             textSize = 12f
             gravity = android.view.Gravity.CENTER
             setTextColor(0xFF888888.toInt())
@@ -870,7 +873,7 @@ class MainActivity : AppCompatActivity() {
 
         // Saturation
         val satLabel = TextView(ctx).apply {
-            text = "Saturation: ${(saturation * 100).toInt()}%"
+            text = getString(R.string.rgb_saturation, (saturation * 100).toInt())
             textSize = 14f
             setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
         }
@@ -884,7 +887,7 @@ class MainActivity : AppCompatActivity() {
 
         // Brightness
         val brightLabel = TextView(ctx).apply {
-            text = "Brightness: ${(brightness * 100).toInt()}%"
+            text = getString(R.string.rgb_brightness, (brightness * 100).toInt())
             textSize = 14f
             setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
         }
@@ -1004,7 +1007,7 @@ class MainActivity : AppCompatActivity() {
         speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 speed = progress + KeyboardPrefs.RGB_SPEED_MIN
-                speedLabel.text = "Speed: ${speed / 1000}s per cycle"
+                speedLabel.text = getString(R.string.rgb_speed_seconds, speed / 1000)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -1013,7 +1016,7 @@ class MainActivity : AppCompatActivity() {
         satSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 saturation = progress / 100f
-                satLabel.text = "Saturation: ${progress}%"
+                satLabel.text = getString(R.string.rgb_saturation, progress)
                 updatePreview(previewStep)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -1023,7 +1026,7 @@ class MainActivity : AppCompatActivity() {
         brightSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 brightness = progress / 100f
-                brightLabel.text = "Brightness: ${progress}%"
+                brightLabel.text = getString(R.string.rgb_brightness, progress)
                 updatePreview(previewStep)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -1033,17 +1036,17 @@ class MainActivity : AppCompatActivity() {
         previewHandler.post(previewRunnable)
 
         val dialog = AlertDialog.Builder(ctx)
-            .setTitle("RGB Smooth")
+            .setTitle(R.string.theme_rgb_smooth)
             .setView(root)
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(R.string.action_cancel) { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
             }
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(R.string.action_save) { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
                 KeyboardPrefs.setRgbSmoothSpeed(ctx, speed)
                 KeyboardPrefs.setRgbSmoothSaturation(ctx, saturation)
                 KeyboardPrefs.setRgbSmoothBrightness(ctx, brightness)
-                Toast.makeText(ctx, "RGB Smooth settings saved", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, getString(R.string.rgb_settings_saved, getString(R.string.theme_rgb_smooth)), Toast.LENGTH_SHORT).show()
             }
             .setOnDismissListener {
                 previewHandler.removeCallbacks(previewRunnable)
@@ -1079,7 +1082,7 @@ class MainActivity : AppCompatActivity() {
 
         // Speed label
         val speedLabel = TextView(ctx).apply {
-            text = "Speed: ${speed}ms"
+            text = getString(R.string.rgb_speed_ms, speed)
             textSize = 14f
             setPadding(0, 12.dp(ctx), 0, 4.dp(ctx))
         }
@@ -1092,7 +1095,7 @@ class MainActivity : AppCompatActivity() {
         root.addView(speedSeekBar)
 
         val speedHint = TextView(ctx).apply {
-            text = "Insane ← → Chill"
+            text = getString(R.string.rgb_insane_chill)
             textSize = 12f
             gravity = android.view.Gravity.CENTER
             setTextColor(0xFF888888.toInt())
@@ -1101,7 +1104,7 @@ class MainActivity : AppCompatActivity() {
 
         // Saturation
         val satLabel = TextView(ctx).apply {
-            text = "Saturation: ${(saturation * 100).toInt()}%"
+            text = getString(R.string.rgb_saturation, (saturation * 100).toInt())
             textSize = 14f
             setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
         }
@@ -1115,7 +1118,7 @@ class MainActivity : AppCompatActivity() {
 
         // Brightness
         val brightLabel = TextView(ctx).apply {
-            text = "Brightness: ${(brightness * 100).toInt()}%"
+            text = getString(R.string.rgb_brightness, (brightness * 100).toInt())
             textSize = 14f
             setPadding(0, 16.dp(ctx), 0, 4.dp(ctx))
         }
@@ -1273,7 +1276,7 @@ class MainActivity : AppCompatActivity() {
         speedSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 speed = progress + KeyboardPrefs.RGB_WILD_SPEED_MIN
-                speedLabel.text = "Speed: ${speed}ms"
+                speedLabel.text = getString(R.string.rgb_speed_ms, speed)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -1282,7 +1285,7 @@ class MainActivity : AppCompatActivity() {
         satSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 saturation = 0.3f + (progress / 100f)
-                satLabel.text = "Saturation: ${(saturation * 100).toInt()}%"
+                satLabel.text = getString(R.string.rgb_saturation, (saturation * 100).toInt())
                 previewBar.background = createRadialPreview(startStep)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -1292,7 +1295,7 @@ class MainActivity : AppCompatActivity() {
         brightSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 brightness = 0.3f + (progress / 100f)
-                brightLabel.text = "Brightness: ${(brightness * 100).toInt()}%"
+                brightLabel.text = getString(R.string.rgb_brightness, (brightness * 100).toInt())
                 previewBar.background = createRadialPreview(startStep)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -1302,17 +1305,17 @@ class MainActivity : AppCompatActivity() {
         previewHandler.post(previewRunnable)
 
         val dialog = AlertDialog.Builder(ctx)
-            .setTitle("RGB Wild")
+            .setTitle(R.string.theme_rgb_wild)
             .setView(root)
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(R.string.action_cancel) { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
             }
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(R.string.action_save) { _, _ ->
                 previewHandler.removeCallbacks(previewRunnable)
                 KeyboardPrefs.setRgbWildSpeed(ctx, speed)
                 KeyboardPrefs.setRgbWildSaturation(ctx, saturation)
                 KeyboardPrefs.setRgbWildBrightness(ctx, brightness)
-                Toast.makeText(ctx, "RGB Wild settings saved", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, getString(R.string.rgb_settings_saved, getString(R.string.theme_rgb_wild)), Toast.LENGTH_SHORT).show()
             }
             .setOnDismissListener {
                 previewHandler.removeCallbacks(previewRunnable)
@@ -1386,7 +1389,9 @@ class MainActivity : AppCompatActivity() {
 
         // Section dropdown
         val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerLongPressSection)
-        val sectionOptions = listOf("Alphabet long press", "Numeric long press", "My binds")
+        val sectionOptions = listOf(
+            R.string.lp_section_alphabet, R.string.lp_section_numeric, R.string.lp_section_my_binds
+        ).map { getString(it) }
         spinnerSection.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -1405,7 +1410,7 @@ class MainActivity : AppCompatActivity() {
         val alphabetBinder = LongPressEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount),
-            titleText = "Bind long press - alphabet",
+            titleText = getString(R.string.lp_title_alphabet),
             onChanged = { updated ->
                 KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, currentRowCount, updated)
                 autosaveDirtySection = sectionOptions[0]
@@ -1415,7 +1420,7 @@ class MainActivity : AppCompatActivity() {
         val numericBinder = LongPressEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount),
-            titleText = "Bind long press - numeric",
+            titleText = getString(R.string.lp_title_numeric),
             lockedLabels = setOf("⇧", "⌫", "↵", "ABC", "abc", " "),
             onChanged = { updated ->
                 KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, currentRowCount, updated)
@@ -1431,8 +1436,8 @@ class MainActivity : AppCompatActivity() {
             myBindsContainer.removeAllViews()
 
             val groups = listOf(
-                "Alphabet" to alphabetBinder,
-                "Numeric" to numericBinder
+                getString(R.string.lp_group_alphabet) to alphabetBinder,
+                getString(R.string.lp_group_numeric) to numericBinder
             )
 
             var anyBound = false
@@ -1464,7 +1469,7 @@ class MainActivity : AppCompatActivity() {
 
             if (!anyBound) {
                 myBindsContainer.addView(TextView(this).apply {
-                    text = "No long-press binds yet"
+                    text = getString(R.string.lp_no_binds)
                     textSize = 14f
                     alpha = 0.75f
                     setPadding(0, 8.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
@@ -1545,7 +1550,7 @@ class MainActivity : AppCompatActivity() {
         all.addAll(SpecialChars.ALL)
 
         AlertDialog.Builder(this)
-            .setTitle("Pick a character")
+            .setTitle(R.string.pick_character)
             .setItems(all.toTypedArray()) { _, which ->
                 val picked = all[which]
                 onPicked(if (picked == "∅") "" else picked)
@@ -1563,12 +1568,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         val actions = listOf(
-            EdgeActionType.SHIFT to "⇧ Shift",
-            EdgeActionType.BACKSPACE to "⌫ Backspace",
-            EdgeActionType.ENTER to "↵ Enter",
-            EdgeActionType.SPACE to "␣ Space",
-            EdgeActionType.EMOJI_PICKER to "😊 Emoji picker",
-            EdgeActionType.NONE to "None"
+            EdgeActionType.SHIFT to getString(R.string.edge_shift),
+            EdgeActionType.BACKSPACE to getString(R.string.edge_backspace),
+            EdgeActionType.ENTER to getString(R.string.edge_enter),
+            EdgeActionType.SPACE to getString(R.string.edge_space),
+            EdgeActionType.EMOJI_PICKER to getString(R.string.edge_emoji),
+            EdgeActionType.NONE to getString(R.string.edge_none)
         )
 
         val actionsRow = LinearLayout(this).apply {
@@ -1589,7 +1594,7 @@ class MainActivity : AppCompatActivity() {
         root.addView(actionsRow)
 
         root.addView(TextView(this).apply {
-            text = "Special chars"
+            text = getString(R.string.edge_special_chars)
             setPadding(0, 10.dp(this), 0, 6.dp(this))
         })
 
@@ -1628,9 +1633,9 @@ class MainActivity : AppCompatActivity() {
         )
 
         AlertDialog.Builder(this)
-            .setTitle("Choose side button")
+            .setTitle(R.string.edge_choose_title)
             .setView(root)
-            .setNegativeButton("Close", null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -1641,7 +1646,7 @@ class MainActivity : AppCompatActivity() {
     private fun showSavedToastIfDirty() {
         val section = autosaveDirtySection ?: return
         autosaveDirtySection = null
-        Toast.makeText(this, "$section saved", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.section_saved, section), Toast.LENGTH_SHORT).show()
     }
 
     override fun onStop() {
@@ -1657,12 +1662,12 @@ class MainActivity : AppCompatActivity() {
         // Section dropdown
         val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerSection)
         val sectionOptions = listOf(
-            "Alphabet Layout",
-            "Numeric Layout",
-            "Side Buttons",
-            "Horizontal Center",
-            "Emoji Picker Settings"
-        )
+            R.string.layout_section_alphabet,
+            R.string.layout_section_numeric,
+            R.string.layout_section_side,
+            R.string.layout_section_horizontal,
+            R.string.layout_section_emoji
+        ).map { getString(it) }
         val sectionAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -1763,14 +1768,14 @@ class MainActivity : AppCompatActivity() {
 
             // Tabs position
             val tabsLabel = TextView(this).apply {
-                text = "Category tabs position"
+                text = getString(R.string.emoji_tabs_position)
                 textSize = 16f
                 setPadding(0, 0, 0, 8.dp(this))
             }
             emojiPickerContainer.addView(tabsLabel)
 
             val tabsSpinner = Spinner(this)
-            val tabsOptions = EmojiPickerStorage.TabsPosition.entries.map { it.displayName }
+            val tabsOptions = EmojiPickerStorage.TabsPosition.entries.map { getString(it.labelRes) }
             tabsSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, tabsOptions).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
@@ -1791,14 +1796,14 @@ class MainActivity : AppCompatActivity() {
 
             // Buttons side
             val sideLabel = TextView(this).apply {
-                text = "Action buttons side"
+                text = getString(R.string.emoji_buttons_side)
                 textSize = 16f
                 setPadding(0, 0, 0, 8.dp(this))
             }
             emojiPickerContainer.addView(sideLabel)
 
             val sideSpinner = Spinner(this)
-            val sideOptions = EmojiPickerStorage.ButtonsSide.entries.map { it.displayName }
+            val sideOptions = EmojiPickerStorage.ButtonsSide.entries.map { getString(it.labelRes) }
             sideSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sideOptions).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
@@ -1819,7 +1824,7 @@ class MainActivity : AppCompatActivity() {
 
             // Button order
             val orderLabel = TextView(this).apply {
-                text = "Button order (long press to drag)"
+                text = getString(R.string.emoji_button_order)
                 textSize = 16f
                 setPadding(0, 0, 0, 8.dp(this))
             }
@@ -1835,7 +1840,7 @@ class MainActivity : AppCompatActivity() {
 
                 emojiButtonOrder.forEachIndexed { index, action ->
                     val btn = Button(this).apply {
-                        text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${EmojiPickerStorage.getButtonDisplayName(action)}"
+                        text = "${index + 1}. ${EmojiPickerStorage.getButtonLabel(action)} ${getString(EmojiPickerStorage.getButtonDisplayName(action))}"
                         isAllCaps = false
                         tag = index
 
@@ -1934,8 +1939,8 @@ class MainActivity : AppCompatActivity() {
             val savedLayouts = SavedLayoutStorage.getSavedLayouts(this)
             if (savedLayouts.isNotEmpty()) {
                 savedLayoutsContainer.visibility = View.VISIBLE
-                val layoutNames = mutableListOf("-- Saved layouts (${savedLayouts.size}) --")
-                layoutNames.addAll(savedLayouts.map { "${it.name} (${it.rowCount} rows)" })
+                val layoutNames = mutableListOf(getString(R.string.saved_layouts_header, savedLayouts.size))
+                layoutNames.addAll(savedLayouts.map { getString(R.string.saved_layout_entry, it.name, rowsLabel(it.rowCount)) })
                 spinnerSavedLayouts.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, layoutNames).apply {
                     setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 }
@@ -1969,7 +1974,7 @@ class MainActivity : AppCompatActivity() {
                 3 -> horizontalBinder.swapSelectedExternally()
                 else -> false
             }
-            if (!swapped) Toast.makeText(this, "Select 2 keys", Toast.LENGTH_SHORT).show()
+            if (!swapped) Toast.makeText(this, R.string.select_two_keys, Toast.LENGTH_SHORT).show()
         }
 
         dialog.setOnDismissListener {
@@ -2069,7 +2074,7 @@ class MainActivity : AppCompatActivity() {
 
         // Brightness slider
         val brightnessLabel = TextView(this).apply {
-            text = "Brightness"
+            text = getString(R.string.color_picker_brightness)
             textSize = 14f
             setPadding(0, 12.dp(this), 0, 4.dp(this))
         }
@@ -2134,7 +2139,7 @@ class MainActivity : AppCompatActivity() {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clip = ClipData.newPlainText("hex", hexInput.text.toString())
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
             }
         })
         inputsRow.addView(hexRow)
@@ -2153,7 +2158,7 @@ class MainActivity : AppCompatActivity() {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clip = ClipData.newPlainText("hsl", hslInput.text.toString())
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
             }
         })
         inputsRow.addView(hslRow)
@@ -2172,7 +2177,7 @@ class MainActivity : AppCompatActivity() {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clip = ClipData.newPlainText("rgb", rgbInput.text.toString())
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
             }
         })
         inputsRow.addView(rgbRow)
@@ -2185,11 +2190,11 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(title)
             .setView(ScrollView(this).apply { addView(root) })
-            .setPositiveButton("Done") { _, _ ->
+            .setPositiveButton(R.string.action_done) { _, _ ->
                 val finalColor = Color.HSVToColor(floatArrayOf(currentHue, currentSat, currentVal))
                 onPicked(finalColor)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -2229,16 +2234,16 @@ class MainActivity : AppCompatActivity() {
         val selectedRowCount = KeyboardPrefs.getRowCount(this)
 
         val title = TextView(this).apply {
-            text = "Set side buttons"
+            text = getString(R.string.side_title)
             textSize = 18f
             setPadding(0, 0, 0, 10.dp(this))
         }
 
         val hint = TextView(this).apply {
             text = when (selectedRowCount) {
-                4 -> "4-row: row1 right, row2 left, row3 right, row4 left"
-                3 -> "3-row preview mode"
-                else -> "5-row: 3 lijeva + 3 desna side buttona"
+                4 -> getString(R.string.side_hint_4)
+                3 -> getString(R.string.side_hint_3)
+                else -> getString(R.string.side_hint_5)
             }
             textSize = 13f
             alpha = 0.75f
@@ -2313,16 +2318,11 @@ class MainActivity : AppCompatActivity() {
                 val btn = Button(this).apply {
                     text = when (selectedRowCount) {
                         4 -> {
-                            val rowLabel = when (index) {
-                                0 -> "R1"
-                                1 -> "R2"
-                                2 -> "R3"
-                                else -> "R4"
-                            }
-                            "$rowLabel • ${slot.label.ifBlank { "None" }}"
+                            val rowLabel = getString(R.string.side_row_label, index.coerceAtMost(3) + 1)
+                            "$rowLabel • ${slot.label.ifBlank { getString(R.string.edge_none) }}"
                         }
 
-                        else -> slot.label.ifBlank { "None" }
+                        else -> slot.label.ifBlank { getString(R.string.edge_none) }
                     }
 
                     isAllCaps = false
@@ -2469,7 +2469,7 @@ class MainActivity : AppCompatActivity() {
         val themeAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            themeOptions
+            themeOptions.map { themeLabel(it) }
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
@@ -2524,6 +2524,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Translated name for a theme id (the ids themselves are internal constants). */
+    private fun themeLabel(theme: String): String = getString(
+        when (theme) {
+            THEME_LIGHT -> R.string.theme_light
+            THEME_DARK -> R.string.theme_dark
+            THEME_TRANSPARENT -> R.string.theme_transparent
+            THEME_CUSTOM -> R.string.theme_custom
+            THEME_RGB_SMOOTH -> R.string.theme_rgb_smooth
+            else -> R.string.theme_rgb_wild
+        }
+    )
+
+    /** Translated key shape name. */
+    private fun shapeLabel(shapeName: String): String {
+        val shape = runCatching { KeyShape.valueOf(shapeName) }.getOrNull()
+        val res = shapeOptions.firstOrNull { it.first == shape }?.second ?: return shapeName.lowercase()
+        return getString(res)
+    }
+
+    private fun rowsLabel(rows: Int): String = resources.getQuantityString(R.plurals.rows_count, rows, rows)
+
     /** Popup for the active theme: Saved layouts for Custom, settings for RGB themes. */
     private fun openThemeSettings() {
         when (themeOptions.getOrNull(currentThemePosition)) {
@@ -2544,11 +2565,11 @@ class MainActivity : AppCompatActivity() {
     private fun updateThemeSettingsButton() {
         when (themeOptions.getOrNull(currentThemePosition)) {
             THEME_RGB_SMOOTH, THEME_RGB_WILD -> {
-                btnThemeSettings.text = "RGB settings"
+                btnThemeSettings.text = getString(R.string.theme_btn_rgb_settings)
                 btnThemeSettings.visibility = View.VISIBLE
             }
             THEME_CUSTOM -> {
-                btnThemeSettings.text = "Saved layouts"
+                btnThemeSettings.text = getString(R.string.theme_btn_saved_layouts)
                 btnThemeSettings.visibility = View.VISIBLE
             }
             else -> btnThemeSettings.visibility = View.GONE
@@ -2642,34 +2663,36 @@ class MainActivity : AppCompatActivity() {
     ) {
         AlertDialog.Builder(this)
             .setTitle(savedLayout.name)
-            .setItems(arrayOf("Preview", "Restore", "Rename", "Delete")) { _, which ->
+            .setItems(arrayOf(
+                R.string.action_preview, R.string.action_restore, R.string.action_rename, R.string.action_delete
+            ).map { getString(it) }.toTypedArray()) { _, which ->
                 when (which) {
                     0 -> showSavedLayoutPreview(savedLayout, onApplied = onRestored)
                     1 -> {
                         AlertDialog.Builder(this)
-                            .setTitle("Restore layout")
-                            .setMessage("This will replace your current layout and colors.")
-                            .setPositiveButton("Restore") { _, _ ->
+                            .setTitle(R.string.restore_layout_title)
+                            .setMessage(R.string.restore_layout_message)
+                            .setPositiveButton(R.string.action_restore) { _, _ ->
                                 restoreSavedLayout(savedLayout)
                                 onRestored()
                             }
-                            .setNegativeButton("Cancel", null)
+                            .setNegativeButton(R.string.action_cancel, null)
                             .show()
                     }
                     2 -> {
                         val input = android.widget.EditText(this).apply { setText(savedLayout.name); selectAll() }
-                        AlertDialog.Builder(this).setTitle("Rename").setView(input)
-                            .setPositiveButton("Save") { _, _ ->
+                        AlertDialog.Builder(this).setTitle(R.string.action_rename).setView(input)
+                            .setPositiveButton(R.string.action_save) { _, _ ->
                                 SavedLayoutStorage.renameLayout(this, savedLayout.id, input.text.toString().trim())
                                 onListChanged()
-                            }.setNegativeButton("Cancel", null).show()
+                            }.setNegativeButton(R.string.action_cancel, null).show()
                     }
                     3 -> {
-                        AlertDialog.Builder(this).setTitle("Delete?")
-                            .setPositiveButton("Delete") { _, _ ->
+                        AlertDialog.Builder(this).setTitle(R.string.delete_confirm)
+                            .setPositiveButton(R.string.action_delete) { _, _ ->
                                 SavedLayoutStorage.deleteLayout(this, savedLayout.id)
                                 onListChanged()
-                            }.setNegativeButton("Cancel", null).show()
+                            }.setNegativeButton(R.string.action_cancel, null).show()
                     }
                 }
                 onClosed()
@@ -2683,7 +2706,7 @@ class MainActivity : AppCompatActivity() {
         preview.shape = KeyboardPrefs.getShape(this)
         spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this) }.coerceAtLeast(0))
         spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this)).coerceAtLeast(0))
-        Toast.makeText(this, "Layout restored!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.layout_restored, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -2701,7 +2724,7 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(getColor(R.color.main_app_bg))
         }
         root.addView(TextView(this).apply {
-            text = "Saved layouts"
+            text = getString(R.string.saved_layouts_title)
             textSize = 18f
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, 12.dp(this@MainActivity))
@@ -2729,9 +2752,9 @@ class MainActivity : AppCompatActivity() {
             list.removeAllViews()
 
             if (hasCustomColors()) {
-                addEntry("Last custom colors", "Colors only") {
+                addEntry(getString(R.string.last_custom_colors), getString(R.string.colors_only)) {
                     loadCustomThemeColors()
-                    Toast.makeText(this, "Custom colors applied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, R.string.custom_colors_applied, Toast.LENGTH_SHORT).show()
                     applied = true
                     dialog.dismiss()
                 }
@@ -2741,7 +2764,7 @@ class MainActivity : AppCompatActivity() {
             savedLayouts.forEach { saved ->
                 addEntry(
                     saved.name,
-                    "${saved.rowCount} rows • ${saved.keyShape.lowercase()} • ${SavedLayoutStorage.formatTimestamp(saved.timestamp)}"
+                    getString(R.string.saved_layout_subtitle, rowsLabel(saved.rowCount), shapeLabel(saved.keyShape), SavedLayoutStorage.formatTimestamp(saved.timestamp))
                 ) {
                     showSavedLayoutActions(
                         savedLayout = saved,
@@ -2756,7 +2779,7 @@ class MainActivity : AppCompatActivity() {
 
             if (list.childCount == 0) {
                 list.addView(TextView(this).apply {
-                    text = "No saved layouts yet"
+                    text = getString(R.string.no_saved_layouts)
                     alpha = 0.75f
                     setPadding(0, 8.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
                 })
@@ -2811,9 +2834,19 @@ class MainActivity : AppCompatActivity() {
         }
         root.addView(titleText)
 
+        // Transparent background can't be seen in the preview, so say it explicitly
+        if (!savedLayout.backgroundUseTheme && Color.alpha(savedLayout.backgroundColor) == 0) {
+            root.addView(TextView(this).apply {
+                text = getString(R.string.transparent_background)
+                textSize = 13f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setPadding(0, 0, 0, 8.dp(this@MainActivity))
+            })
+        }
+
         // Info section
         val infoText = TextView(this).apply {
-            text = "Shape: ${savedLayout.keyShape} | Rows: ${savedLayout.rowCount}\nSaved: ${SavedLayoutStorage.formatTimestamp(savedLayout.timestamp)}"
+            text = getString(R.string.preview_info, shapeLabel(savedLayout.keyShape), savedLayout.rowCount, SavedLayoutStorage.formatTimestamp(savedLayout.timestamp))
             textSize = 12f
             setPadding(0, 0, 0, 12.dp(this))
         }
@@ -2821,7 +2854,7 @@ class MainActivity : AppCompatActivity() {
 
         // Colors section
         val colorsLabel = TextView(this).apply {
-            text = "Colors (tap to edit):"
+            text = getString(R.string.preview_colors_label)
             textSize = 14f
             setTypeface(null, android.graphics.Typeface.BOLD)
         }
@@ -2920,17 +2953,17 @@ class MainActivity : AppCompatActivity() {
             return swatch
         }
 
-        addColorSwatch(currentKeyFill, "Keys") { currentKeyFill = it }
-        addColorSwatch(currentKeyText, "Text") { currentKeyText = it }
-        addColorSwatch(currentSpaceBg, "Space") { currentSpaceBg = it }
-        addColorSwatch(currentEnterBg, "Enter") { currentEnterBg = it }
-        addColorSwatch(currentBgColor, "Bg") { currentBgColor = it }
+        addColorSwatch(currentKeyFill, getString(R.string.swatch_keys)) { currentKeyFill = it }
+        addColorSwatch(currentKeyText, getString(R.string.swatch_text)) { currentKeyText = it }
+        addColorSwatch(currentSpaceBg, getString(R.string.swatch_space)) { currentSpaceBg = it }
+        addColorSwatch(currentEnterBg, getString(R.string.swatch_enter)) { currentEnterBg = it }
+        addColorSwatch(currentBgColor, getString(R.string.swatch_bg)) { currentBgColor = it }
 
         root.addView(colorsRow)
 
         // Layout preview section
         val layoutLabel = TextView(this).apply {
-            text = "Layout preview:"
+            text = getString(R.string.preview_layout_label)
             textSize = 14f
             setTypeface(null, android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, 8.dp(this))
@@ -2967,7 +3000,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         val applyColorsBtn = Button(this).apply {
-            text = "Apply Colors"
+            text = getString(R.string.apply_colors)
             isAllCaps = false
             setOnClickListener {
                 // Keep the edits in the saved entry, then apply its colors to the keyboard
@@ -2982,14 +3015,14 @@ class MainActivity : AppCompatActivity() {
                     currentBgColor
                 )
                 SavedLayoutStorage.applyColors(this@MainActivity, editedLayout())
-                Toast.makeText(this@MainActivity, "Colors applied!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, R.string.colors_applied, Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 onApplied()
             }
         }
 
         val restoreBtn = Button(this).apply {
-            text = "Restore Layout"
+            text = getString(R.string.restore_layout_button)
             isAllCaps = false
             setOnClickListener {
                 restoreSavedLayout(editedLayout())
@@ -2999,7 +3032,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val closeBtn = Button(this).apply {
-            text = "Close"
+            text = getString(R.string.action_close)
             isAllCaps = false
             setOnClickListener { dialog.dismiss() }
         }

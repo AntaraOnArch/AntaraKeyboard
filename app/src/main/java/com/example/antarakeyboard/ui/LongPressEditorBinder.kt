@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.ui
 
+import com.example.antarakeyboard.R
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
@@ -43,18 +44,18 @@ class LongPressEditorBinder(
 
     private val pickerCategories: List<PickerCategory> by lazy {
         listOf(
-            PickerCategory("á", "Diacritics") { SpecialChars.DIACRITICS },
-            PickerCategory("ł", "Latin letters") { LongPressPresets.allLatinLetters() },
-            PickerCategory("ж", "Cyrillic letters") { LongPressPresets.allCyrillicLetters() },
-            PickerCategory("€", "Currency") { SpecialChars.CURRENCY },
-            PickerCategory("@", "Symbols") { (SpecialChars.SYMBOLS + extraLayoutSymbols()).distinct() },
-            PickerCategory("( )", "Brackets") { SpecialChars.BRACKETS },
-            PickerCategory("…", "Punctuation") { SpecialChars.PUNCTUATION },
-            PickerCategory("±", "Math") { SpecialChars.MATH },
-            PickerCategory("→", "Arrows") { SpecialChars.ARROWS }
+            PickerCategory("á", context.getString(R.string.lp_cat_diacritics)) { SpecialChars.DIACRITICS },
+            PickerCategory("ł", context.getString(R.string.lp_cat_latin)) { LongPressPresets.allLatinLetters() },
+            PickerCategory("ж", context.getString(R.string.lp_cat_cyrillic)) { LongPressPresets.allCyrillicLetters() },
+            PickerCategory("€", context.getString(R.string.lp_cat_currency)) { SpecialChars.CURRENCY },
+            PickerCategory("@", context.getString(R.string.lp_cat_symbols)) { (SpecialChars.SYMBOLS + extraLayoutSymbols()).distinct() },
+            PickerCategory("( )", context.getString(R.string.lp_cat_brackets)) { SpecialChars.BRACKETS },
+            PickerCategory("…", context.getString(R.string.lp_cat_punctuation)) { SpecialChars.PUNCTUATION },
+            PickerCategory("±", context.getString(R.string.lp_cat_math)) { SpecialChars.MATH },
+            PickerCategory("→", context.getString(R.string.lp_cat_arrows)) { SpecialChars.ARROWS }
         ) + EmojiCategory.entries
             .filter { it != EmojiCategory.RECENT }
-            .map { PickerCategory(it.icon, it.displayName, it.emojisProvider) }
+            .map { PickerCategory(it.icon, context.getString(it.nameRes), it.emojisProvider) }
     }
 
     /** Symbols used in the default numeric / horizontal layouts that SpecialChars doesn't list. */
@@ -244,7 +245,7 @@ class LongPressEditorBinder(
             setPadding(8.dp(context), 0, 0, 4.dp(context))
         }
         header.addView(TextView(context).apply {
-            text = "Long press: ${key.label}"
+            text = context.getString(R.string.lp_editor_title, key.label)
             textSize = 16f
             setTypeface(typeface, Typeface.BOLD)
             setTextColor(PopupColors.TEXT_PRIMARY)
@@ -335,7 +336,7 @@ class LongPressEditorBinder(
             val bound = key.longPressBindings.filterNot { isMarker(it) }
             if (bound.isEmpty()) {
                 boundRow.addView(TextView(context).apply {
-                    text = "Nothing bound – tap characters below"
+                    text = context.getString(R.string.lp_nothing_bound)
                     textSize = 13f
                     setTextColor(PopupColors.TEXT_HINT)
                     setPadding(6.dp(context), 0, 6.dp(context), 0)
