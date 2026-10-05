@@ -169,12 +169,4 @@ object EdgeSlotsStorage {
         save(ctx, defaultSlots(rowCount))
     }
 
-    fun resetAll(ctx: Context) {
-        val sp = ctx.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
-        sp.edit()
-            .remove(keyForRowCount(3))
-            .remove(keyForRowCount(4))
-            .remove(keyForRowCount(5))
-            .apply()
-    }
 }

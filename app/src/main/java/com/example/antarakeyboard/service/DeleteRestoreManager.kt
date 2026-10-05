@@ -1,6 +1,8 @@
 package com.example.antarakeyboard.service
 
 import android.content.Context
+import android.icu.text.BreakIterator
+import android.view.KeyEvent
 import android.view.inputmethod.InputConnection
 import android.view.ViewConfiguration
 import com.example.antarakeyboard.extensions.dp
@@ -19,6 +21,11 @@ class DeleteRestoreManager(
     private val scope: CoroutineScope,
     private val inputConnectionProvider: () -> InputConnection?
 ) {
+    private companion object {
+        // Long enough for the longest emoji ZWJ sequences
+        const val GRAPHEME_LOOKBEHIND = 32
+    }
+
     private var deleteRepeatJob: Job? = null
     private var restoreRepeatJob: Job? = null
     private var backspaceHoldJob: Job? = null
@@ -85,13 +92,28 @@ class DeleteRestoreManager(
 
     /* ───────── DELETE/RESTORE ONE CHAR ───────── */
 
-    private fun deleteOneForSwipe() {
-        val ic = inputConnectionProvider() ?: return
-        val before = ic.getTextBeforeCursor(1, 0)?.toString().orEmpty()
-        if (before.isEmpty()) return
+    /**
+     * Deletes the selection if there is one, otherwise one user-perceived character
+     * (grapheme cluster: emoji, flags, letters with combining marks stay whole).
+     * Returns false when there was nothing known to delete.
+     */
+    private fun deleteOneForSwipe(): Boolean {
+        val ic = inputConnectionProvider() ?: return false
 
-        appendDeletedChar(before)
-        ic.deleteSurroundingText(1, 0)
+        val selected = ic.getSelectedText(0)
+        if (!selected.isNullOrEmpty()) {
+            appendDeletedChar(selected.toString())
+            ic.commitText("", 1)
+            return true
+        }
+
+        val before = ic.getTextBeforeCursor(GRAPHEME_LOOKBEHIND, 0)?.toString().orEmpty()
+        if (before.isEmpty()) return false
+
+        val last = lastGrapheme(before)
+        appendDeletedChar(last)
+        ic.deleteSurroundingText(last.length, 0)
+        return true
     }
 
     private fun restoreOneForSwipe() {
@@ -99,9 +121,9 @@ class DeleteRestoreManager(
         if (lastDeletedText.isEmpty()) return
         if (restoreProgressIndex >= lastDeletedText.length) return
 
-        val ch = lastDeletedText[restoreProgressIndex].toString()
-        ic.commitText(ch, 1)
-        restoreProgressIndex++
+        val end = nextGraphemeEnd(lastDeletedText, restoreProgressIndex)
+        ic.commitText(lastDeletedText.substring(restoreProgressIndex, end), 1)
+        restoreProgressIndex = end
 
         if (restoreProgressIndex >= lastDeletedText.length) {
             lastDeletedText = ""
@@ -230,8 +252,30 @@ class DeleteRestoreManager(
 
     fun backspaceOnce() {
         beginDeleteBatch()
-        deleteOneForSwipe()
+        if (!deleteOneForSwipe()) {
+            // Editors that don't expose their text (e.g. terminals) still get a DEL key
+            inputConnectionProvider()?.let { ic ->
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
+            }
+        }
         finishDeleteBatch()
+    }
+
+    /* ───────── GRAPHEMES ───────── */
+
+    private fun lastGrapheme(text: String): String {
+        val it = BreakIterator.getCharacterInstance()
+        it.setText(text)
+        val start = it.preceding(text.length).takeIf { pos -> pos != BreakIterator.DONE } ?: 0
+        return text.substring(start)
+    }
+
+    private fun nextGraphemeEnd(text: String, from: Int): Int {
+        val it = BreakIterator.getCharacterInstance()
+        it.setText(text)
+        val end = it.following(from)
+        return if (end == BreakIterator.DONE) text.length else end
     }
 
     /* ───────── RESET ───────── */

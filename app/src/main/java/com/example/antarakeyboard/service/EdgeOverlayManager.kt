@@ -44,7 +44,6 @@ class EdgeOverlayManager(
     private val overlayLayerProvider: () -> FrameLayout,
     private val keyboardContainerProvider: () -> LinearLayout,
     private val themedCtxProvider: () -> Context,
-    private val isDarkModeProvider: () -> Boolean,
     private val landscapeKeySizePxProvider: () -> Int,
     private val availableKeyboardWidthPxProvider: () -> Int,
     private val computeRowSizingProvider: (count: Int, availW: Int) -> RowSizing,

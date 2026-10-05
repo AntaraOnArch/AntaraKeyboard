@@ -2,4 +2,24 @@
     <string name="app_name">AntaraKeyboard</string>
     <string name="subtype_label">AntaraKeyboard</string>
 
+    <!-- Keyboard: script picker (hold both space keys) -->
+    <string name="script_picker_title">Choose script</string>
+    <string name="script_picker_close">Close</string>
+    <string name="script_latin">Latin</string>
+    <string name="script_latin_sample">a, b, c + á, č, ć, š, ž…</string>
+    <string name="script_serbian_cyrillic">Serbian Cyrillic</string>
+    <string name="script_serbian_cyrillic_sample">а, б, в, љ, њ, ђ, ћ…</string>
+    <string name="script_bulgarian_cyrillic">Bulgarian Cyrillic</string>
+    <string name="script_bulgarian_cyrillic_sample">а, б, в, ж, ч, ш, щ, ъ…</string>
+    <string name="script_russian_cyrillic">Russian Cyrillic</string>
+    <string name="script_russian_cyrillic_sample">а, б, в, ж, ч, ш, щ, ы, э…</string>
+    <string name="script_ukrainian_cyrillic">Ukrainian Cyrillic</string>
+    <string name="script_ukrainian_cyrillic_sample">а, б, в, ґ, є, і, ї…</string>
+    <string name="script_macedonian_cyrillic">Macedonian Cyrillic</string>
+    <string name="script_macedonian_cyrillic_sample">а, б, в, ѓ, ќ, љ, њ, џ…</string>
+
+    <!-- Keyboard: emoji picker -->
+    <string name="emoji_loading">Loading…</string>
+    <string name="emoji_no_recent">No recent emojis</string>
+    <string name="emoji_empty_category">No emojis in this category</string>
 </resources>

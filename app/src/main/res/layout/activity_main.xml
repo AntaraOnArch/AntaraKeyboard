@@ -132,21 +132,15 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <!-- Colors dropdown -->
-        <TextView
-            android:id="@+id/tvColors"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Colors"
-            android:textSize="18sp" />
-
-        <Spinner
-            android:id="@+id/spinnerColors"
-            style="@style/MainSpinner"
+        <!-- Colors popup -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnColors"
+            style="@style/MainRoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="14dp"
+            android:text="Colors"
+            app:textAllCaps="false" />
 
         <!-- Vibration toggle -->
         <TextView
@@ -173,7 +167,7 @@
             android:text="Theme"
             android:textSize="18sp" />
 
-        <Spinner
+        <com.example.antarakeyboard.ui.ReselectSpinner
             android:id="@+id/spinnerTheme"
             style="@style/MainSpinner"
             android:layout_width="match_parent"

@@ -15,13 +15,14 @@ import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import com.example.antarakeyboard.EmojiData
+import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EmojiPickerStorage
 import com.example.antarakeyboard.data.EmojiPickerStorage.EmojiButtonAction
 import com.example.antarakeyboard.data.EmojiPickerStorage.TabsPosition
 import com.example.antarakeyboard.data.EmojiPickerStorage.ButtonsSide
 import com.example.antarakeyboard.extensions.dp
-import com.example.antarakeyboard.ui.PopupColors
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,8 +84,21 @@ class EmojiPickerManager(
     private val context: Context,
     private val overlayLayerProvider: () -> FrameLayout,
     private val scope: CoroutineScope,
-    private val callback: EmojiPickerCallback
+    private val callback: EmojiPickerCallback,
+    /** Resolved from the active theme / Colors settings each time the picker opens. */
+    private val colorsProvider: () -> Colors
 ) {
+    data class Colors(
+        val background: Int,
+        val panel: Int,
+        val button: Int,
+        val text: Int,
+        val hint: Int
+    )
+
+    private var colors = Colors(0xFF1E1E1E.toInt(), 0xFF2A2A2A.toInt(), 0xFF3A3A3A.toInt(), Color.WHITE, 0x88FFFFFF.toInt())
+    private var loadJob: Job? = null
+
     private var popup: PopupWindow? = null
     private var currentCategory: EmojiCategory = EmojiCategory.SMILEYS
     private var categoryTabs: Map<EmojiCategory, View> = emptyMap()
@@ -96,6 +110,7 @@ class EmojiPickerManager(
 
     fun show(keyboardHeight: Int) {
         hide()
+        colors = colorsProvider()
 
         val overlayLayer = overlayLayerProvider()
         val screenWidth = context.resources.displayMetrics.widthPixels
@@ -141,6 +156,8 @@ class EmojiPickerManager(
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setOnDismissListener {
                 popup = null
+                loadJob?.cancel()
+                loadJob = null
                 loadedCategories.clear()
             }
         }
@@ -169,7 +186,7 @@ class EmojiPickerManager(
     ): View {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
-            setBackgroundColor(PopupColors.POPUP_BG)
+            setBackgroundColor(colors.background)
             clipChildren = false
             clipToPadding = false
         }
@@ -227,7 +244,7 @@ class EmojiPickerManager(
     ): View {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(PopupColors.POPUP_BG)
+            setBackgroundColor(colors.background)
             clipChildren = false
             clipToPadding = false
         }
@@ -274,7 +291,7 @@ class EmojiPickerManager(
     private fun createCategoryTabsVertical(width: Int, height: Int): View {
         val scroll = ScrollView(context).apply {
             isVerticalScrollBarEnabled = false
-            setBackgroundColor(PopupColors.CONTAINER_BG)
+            setBackgroundColor(colors.panel)
         }
 
         val container = LinearLayout(context).apply {
@@ -316,7 +333,7 @@ class EmojiPickerManager(
     private fun createCategoryTabsHorizontal(height: Int): View {
         val scroll = HorizontalScrollView(context).apply {
             isHorizontalScrollBarEnabled = false
-            setBackgroundColor(PopupColors.CONTAINER_BG)
+            setBackgroundColor(colors.panel)
         }
 
         val container = LinearLayout(context).apply {
@@ -362,7 +379,7 @@ class EmojiPickerManager(
         val titleView = TextView(context).apply {
             tag = "category_title"
             textSize = 12f
-            setTextColor(PopupColors.TEXT_SECONDARY)
+            setTextColor(colors.hint)
             setPadding(8.dp(context), 4.dp(context), 8.dp(context), 4.dp(context))
         }
         container.addView(titleView)
@@ -408,7 +425,7 @@ class EmojiPickerManager(
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setBackgroundColor(PopupColors.CONTAINER_BG)
+            setBackgroundColor(colors.panel)
             setPadding(4.dp(context), 8.dp(context), 4.dp(context), 8.dp(context))
         }
 
@@ -437,8 +454,8 @@ class EmojiPickerManager(
                 EmojiButtonAction.SPACE -> 16f
             }
             gravity = Gravity.CENTER
-            setTextColor(PopupColors.TEXT_PRIMARY)
-            setBackgroundColor(PopupColors.BUTTON_BG)
+            setTextColor(colors.text)
+            setBackgroundColor(colors.button)
 
             setOnClickListener {
                 when (action) {
@@ -487,16 +504,17 @@ class EmojiPickerManager(
 
         // Show loading indicator
         val loadingView = TextView(context).apply {
-            text = "Loading..."
+            text = context.getString(R.string.emoji_loading)
             textSize = 14f
-            setTextColor(PopupColors.TEXT_HINT)
+            setTextColor(colors.hint)
             gravity = Gravity.CENTER
             setPadding(20.dp(context), 20.dp(context), 20.dp(context), 20.dp(context))
         }
         container.addView(loadingView)
 
-        // Load emojis asynchronously
-        scope.launch {
+        // Load emojis asynchronously; a newer category selection cancels this load
+        loadJob?.cancel()
+        loadJob = scope.launch {
             val emojis = withContext(Dispatchers.Default) {
                 if (category == EmojiCategory.RECENT) {
                     EmojiPickerStorage.getRecentEmojis(context)
@@ -511,12 +529,12 @@ class EmojiPickerManager(
                 if (emojis.isEmpty()) {
                     val emptyView = TextView(context).apply {
                         text = if (category == EmojiCategory.RECENT) {
-                            "No recent emojis"
+                            context.getString(R.string.emoji_no_recent)
                         } else {
-                            "No emojis in this category"
+                            context.getString(R.string.emoji_empty_category)
                         }
                         textSize = 14f
-                        setTextColor(PopupColors.TEXT_HINT)
+                        setTextColor(colors.hint)
                         gravity = Gravity.CENTER
                         setPadding(20.dp(context), 40.dp(context), 20.dp(context), 40.dp(context))
                     }

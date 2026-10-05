@@ -43,5 +43,7 @@
     <!-- Dark mode colors (for explicit dark theme reference) -->
     <color name="keyboard_bg_dark">#FF000000</color>
     <color name="key_fill_dark">#FF3E3E3E</color>
+    <color name="key_fill_pressed_dark">#FF585858</color>
+    <color name="key_stroke_dark">#FF1A1A1A</color>
     <color name="key_text_dark">#FFFFFFFF</color>
 </resources>

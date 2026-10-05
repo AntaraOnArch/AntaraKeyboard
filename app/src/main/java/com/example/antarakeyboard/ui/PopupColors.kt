@@ -15,8 +15,4 @@ object PopupColors {
     const val TEXT_PRIMARY = 0xFFFFFFFF.toInt()
     const val TEXT_SECONDARY = 0xAAFFFFFF.toInt()
     const val TEXT_HINT = 0x88FFFFFF.toInt()
-
-    // Preview/highlight
-    const val PREVIEW_BG = 0xFFFFFFFF.toInt()
-    const val PREVIEW_TEXT = 0xFF000000.toInt()
 }

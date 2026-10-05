@@ -81,7 +81,8 @@ object SavedLayoutStorage {
             edgeSlotsJson = gson.toJson(EdgeSlotsStorage.load(context)),
             keyFill = KeyboardPrefs.getKeysBg(context),
             keyText = KeyboardPrefs.getKeysTextColor(context),
-            backgroundColor = KeyboardPrefs.getBackgroundColor(context),
+            // Dark / Light / Transparent are stored as their resolved color
+            backgroundColor = KeyboardPrefs.resolveKeyboardBackground(context, PrefsManager.isDarkMode(context)),
             backgroundUseTheme = KeyboardPrefs.getBackgroundUseTheme(context),
             space1Bg = KeyboardPrefs.getSpace1Bg(context),
             space2Bg = KeyboardPrefs.getSpace2Bg(context),
@@ -141,7 +142,11 @@ object SavedLayoutStorage {
         val edgeSlots: List<EdgeSlot> = gson.fromJson(savedLayout.edgeSlotsJson, edgeSlotsType)
         EdgeSlotsStorage.save(context, edgeSlots)
 
-        // Restore colors
+        applyColors(context, savedLayout)
+    }
+
+    /** Applies only the colors of a saved layout to the keyboard (layout and shape stay as they are). */
+    fun applyColors(context: Context, savedLayout: SavedLayout) {
         KeyboardPrefs.setKeysColors(context, savedLayout.keyFill, savedLayout.keyText, true)
         KeyboardPrefs.setBackgroundColor(context, savedLayout.backgroundColor, savedLayout.backgroundUseTheme)
         KeyboardPrefs.setSpaceColors(context, savedLayout.space1Bg, savedLayout.space2Bg, savedLayout.spaceLinked)

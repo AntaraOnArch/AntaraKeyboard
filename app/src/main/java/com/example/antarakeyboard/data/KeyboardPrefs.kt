@@ -18,7 +18,6 @@ object KeyboardPrefs {
 
     private const val PREFS_NAME = "keyboard_prefs"
 
-    private const val KEY_SCALE = "key_scale"
     private const val KEY_SHAPE = "key_shape"
     private const val LONG_PRESS_DEFAULTS_VERSION = 4
     private const val KEY_LONG_PRESS_DEFAULTS_VERSION = "long_press_defaults_version"
@@ -38,7 +37,6 @@ object KeyboardPrefs {
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_4 = "horizontal_center_layout_4"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_5 = "horizontal_center_layout_5"
 
-    private const val KEY_HEIGHT_PX = "key_height_px"
 
     private const val SPACE_LINKED = "space_linked"
     private const val SPACE1_BG = "space1_bg"
@@ -49,38 +47,12 @@ object KeyboardPrefs {
 
     private const val KEY_ROW_COUNT = "row_count"
 
-    private const val KEY_EDGE_MODE = "edge_mode"
-    private const val KEY_EDGE_MODE_3 = "edge_mode_3"
-    private const val KEY_EDGE_MODE_4 = "edge_mode_4"
-    private const val KEY_EDGE_MODE_5 = "edge_mode_5"
     private const val KEY_SELECTED_LONG_PRESS_PRESET = "selected_long_press_preset"
 
     private val gson = Gson()
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    /* ───────── KEY HEIGHT ───────── */
-
-    fun getKeyHeightPx(context: Context): Int =
-        prefs(context).getInt(KEY_HEIGHT_PX, 0)
-
-    fun setKeyHeightPx(context: Context, px: Int) {
-        prefs(context).edit().putInt(KEY_HEIGHT_PX, px).apply()
-    }
-
-    fun clearKeyHeightPx(context: Context) {
-        prefs(context).edit().remove(KEY_HEIGHT_PX).apply()
-    }
-
-    /* ───────── SCALE ───────── */
-
-    fun getScale(context: Context): Float =
-        prefs(context).getFloat(KEY_SCALE, 1.0f)
-
-    fun setScale(context: Context, scale: Float) {
-        prefs(context).edit().putFloat(KEY_SCALE, scale).apply()
-    }
 
     /* ───────── SHAPE ───────── */
 
@@ -104,10 +76,6 @@ object KeyboardPrefs {
 
     fun setRowCount(context: Context, rowCount: Int) {
         prefs(context).edit().putInt(KEY_ROW_COUNT, rowCount).apply()
-    }
-
-    fun clearRowCount(context: Context) {
-        prefs(context).edit().remove(KEY_ROW_COUNT).apply()
     }
 
     /* ───────── DEFAULT LAYOUTS ───────── */
@@ -194,49 +162,6 @@ object KeyboardPrefs {
         prefs(context).edit().remove(key).apply()
     }
 
-    // STARI KLJUČEVI - zadržani za kompatibilnost, ali se ne koriste za nove save-ove
-    @Deprecated("Koristi saveAlphabetLayoutForRowCount")
-    fun saveLayout(context: Context, layout: KeyboardConfig) {
-        val rowCount = getRowCount(context)
-        saveAlphabetLayoutForRowCount(context, rowCount, layout)
-    }
-
-    @Deprecated("Koristi loadAlphabetLayoutForRowCount")
-    fun loadLayout(context: Context): KeyboardConfig {
-        val rowCount = getRowCount(context)
-        return loadAlphabetLayoutForRowCount(context, rowCount)
-    }
-
-    @Deprecated("Koristi clearAlphabetLayoutForRowCount")
-    fun clearLayout(context: Context) {
-        val rowCount = getRowCount(context)
-        clearAlphabetLayoutForRowCount(context, rowCount)
-    }
-
-    /* ───────── EDGE MODE ───────── */
-
-    fun edgeKeyForRowCount(rowCount: Int): String {
-        return when (rowCount) {
-            3 -> KEY_EDGE_MODE_3
-            4 -> KEY_EDGE_MODE_4
-            5 -> KEY_EDGE_MODE_5
-            else -> KEY_EDGE_MODE_3
-        }
-    }
-
-    fun getEdgeModeKey(context: Context): String {
-        val rowCount = getRowCount(context)
-        return edgeKeyForRowCount(rowCount)
-    }
-
-    fun setEdgeModeKey(context: Context, key: String) {
-        prefs(context).edit().putString(KEY_EDGE_MODE, key).apply()
-    }
-
-    fun getSavedEdgeModeKey(context: Context): String {
-        return prefs(context).getString(KEY_EDGE_MODE, getEdgeModeKey(context))
-            ?: getEdgeModeKey(context)
-    }
 
     /* ───────── NUMERIC LAYOUT ───────── */
 
@@ -272,25 +197,6 @@ object KeyboardPrefs {
         prefs(context).edit().remove(key).apply()
     }
 
-    // STARI KLJUČEVI - zadržani za kompatibilnost
-    @Deprecated("Koristi saveNumericLayoutForRowCount")
-    fun saveNumericLayout(context: Context, config: KeyboardConfig) {
-        val rowCount = getRowCount(context)
-        saveNumericLayoutForRowCount(context, rowCount, config)
-    }
-
-    @Deprecated("Koristi loadNumericLayoutForRowCount")
-    fun loadNumericLayout(context: Context): KeyboardConfig {
-        val rowCount = getRowCount(context)
-        return loadNumericLayoutForRowCount(context, rowCount)
-    }
-
-    @Deprecated("Koristi clearNumericLayoutForRowCount")
-    fun clearNumericLayout(context: Context) {
-        val rowCount = getRowCount(context)
-        clearNumericLayoutForRowCount(context, rowCount)
-    }
-
     /* ───────── HORIZONTAL CENTER LAYOUT ───────── */
 
     private fun horizontalCenterLayoutKeyForRowCount(rowCount: Int): String {
@@ -322,25 +228,6 @@ object KeyboardPrefs {
     fun clearHorizontalCenterLayoutForRowCount(context: Context, rowCount: Int) {
         val key = horizontalCenterLayoutKeyForRowCount(rowCount)
         prefs(context).edit().remove(key).apply()
-    }
-
-    // STARI KLJUČEVI
-    @Deprecated("Koristi saveHorizontalCenterLayoutForRowCount")
-    fun saveHorizontalCenterLayout(context: Context, config: KeyboardConfig) {
-        val rowCount = getRowCount(context)
-        saveHorizontalCenterLayoutForRowCount(context, rowCount, config)
-    }
-
-    @Deprecated("Koristi loadHorizontalCenterLayoutForRowCount")
-    fun loadHorizontalCenterLayout(context: Context): KeyboardConfig {
-        val rowCount = getRowCount(context)
-        return loadHorizontalCenterLayoutForRowCount(context, rowCount)
-    }
-
-    @Deprecated("Koristi clearHorizontalCenterLayoutForRowCount")
-    fun clearHorizontalCenterLayout(context: Context) {
-        val rowCount = getRowCount(context)
-        clearHorizontalCenterLayoutForRowCount(context, rowCount)
     }
 
     /* ───────── SPACE COLORS ───────── */
@@ -470,8 +357,38 @@ object KeyboardPrefs {
         prefs(context).edit()
             .putInt(BACKGROUND_COLOR, color)
             .putBoolean(BACKGROUND_USE_THEME, useTheme)
+            .putString(BACKGROUND_MODE, (if (useTheme) BackgroundMode.THEME else BackgroundMode.CUSTOM).name)
             .apply()
     }
+
+    /** Keyboard background source chosen in Colors → Background. */
+    enum class BackgroundMode { THEME, DARK, LIGHT, CUSTOM, TRANSPARENT }
+
+    private const val BACKGROUND_MODE = "background_mode"
+
+    fun getBackgroundMode(context: Context): BackgroundMode {
+        val stored = prefs(context).getString(BACKGROUND_MODE, null)
+            ?.let { name -> runCatching { BackgroundMode.valueOf(name) }.getOrNull() }
+        // Older installs only have the use-theme flag
+        return stored ?: if (getBackgroundUseTheme(context)) BackgroundMode.THEME else BackgroundMode.CUSTOM
+    }
+
+    fun setBackgroundMode(context: Context, mode: BackgroundMode) {
+        prefs(context).edit()
+            .putString(BACKGROUND_MODE, mode.name)
+            .putBoolean(BACKGROUND_USE_THEME, mode == BackgroundMode.THEME)
+            .apply()
+    }
+
+    /** The color the keyboard background is drawn with (transparent for [BackgroundMode.TRANSPARENT]). */
+    fun resolveKeyboardBackground(context: Context, isDark: Boolean): Int =
+        when (getBackgroundMode(context)) {
+            BackgroundMode.THEME -> getThemeDefaultsForMode(context, isDark).keyboardBg
+            BackgroundMode.DARK -> getThemeDarkKeyboardBg(context)
+            BackgroundMode.LIGHT -> getThemeLightKeyboardBg(context)
+            BackgroundMode.CUSTOM -> getBackgroundColor(context)
+            BackgroundMode.TRANSPARENT -> 0x00000000
+        }
 
     /* ───────── ENTER COLORS ───────── */
 
