@@ -34,6 +34,18 @@ android {
         }
     }
 
+    bundle {
+        language {
+            // In-app language choice needs every translation installed, not only the device's
+            enableSplit = false
+        }
+    }
+
+    androidResources {
+        // locales_config.xml from the values-* folders → system "App languages" on Android 13+
+        generateLocaleConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.view.ContextThemeWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +103,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private val OVERLAP_RATIO = 0.18f
 
     private var lastIsDark: Boolean? = null
+    private var lastAppLanguage: String? = null
     private var targetKeyboardHeightPx: Int = 0
 
     lateinit var inputController: KeyInputController
@@ -140,8 +142,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             R.style.Theme_AntaraKeyboard_Light
         }
 
-        themedCtx = ContextThemeWrapper(this, themeRes)
+        themedCtx = ContextThemeWrapper(localizedContext(), themeRes)
         lastIsDark = isDark
+        lastAppLanguage = PrefsManager.getAppLanguage(this)
 
         rootView = layoutInflater.cloneInContext(themedCtx)
             .inflate(R.layout.keyboard_view, null)
@@ -244,7 +247,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         )
 
         emojiPickerManager = EmojiPickerManager(
-            context = this,
+            // Localized context: category names follow the app language
+            context = themedCtx,
             overlayLayerProvider = { overlayLayer },
             scope = serviceScope,
             callback = object : EmojiPickerCallback {
@@ -342,9 +346,12 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         val isDarkNow = PrefsManager.isDarkMode(this)
 
-        if (lastIsDark != null && lastIsDark != isDarkNow) {
+        val languageChanged = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
+            lastAppLanguage != null && lastAppLanguage != PrefsManager.getAppLanguage(this)
+
+        if ((lastIsDark != null && lastIsDark != isDarkNow) || languageChanged) {
             lastIsDark = isDarkNow
-            // New themed views; the rest of this method then configures them
+            // New themed / localized views; the rest of this method then configures them
             recreateInputView()
         }
         lastIsDark = isDarkNow
@@ -408,6 +415,18 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         // Cancel all coroutines
         serviceScope.cancel()
         super.onDestroy()
+    }
+
+    /**
+     * Context whose resources use the app language. Android 13+ applies per-app locales to the
+     * whole process (and calls onConfigurationChanged), so only older versions need the override.
+     */
+    private fun localizedContext(): Context {
+        val tag = PrefsManager.getAppLanguage(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || tag.isEmpty()) return this
+        val config = Configuration(resources.configuration)
+        config.setLocale(Locale.forLanguageTag(tag))
+        return createConfigurationContext(config)
     }
 
     /** Dismisses popups and stops jobs owned by the current input view, if one exists. */
@@ -646,7 +665,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
 
         val title = TextView(themedCtx).apply {
-            text = getString(R.string.script_picker_title)
+            text = themedCtx.getString(R.string.script_picker_title)
             textSize = 18f
             setTextColor(popupText)
             gravity = Gravity.CENTER
@@ -681,42 +700,42 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val macedonianCyrId = View.generateViewId()
 
         val latinRadio = makeRadioButton(
-            titleText = getString(R.string.script_latin),
-            subtitleText = getString(R.string.script_latin_sample)
+            titleText = themedCtx.getString(R.string.script_latin),
+            subtitleText = themedCtx.getString(R.string.script_latin_sample)
         ).apply {
             id = latinId
         }
 
         val serbianCyrRadio = makeRadioButton(
-            titleText = getString(R.string.script_serbian_cyrillic),
-            subtitleText = getString(R.string.script_serbian_cyrillic_sample)
+            titleText = themedCtx.getString(R.string.script_serbian_cyrillic),
+            subtitleText = themedCtx.getString(R.string.script_serbian_cyrillic_sample)
         ).apply {
             id = serbianCyrId
         }
 
         val bulgarianCyrRadio = makeRadioButton(
-            titleText = getString(R.string.script_bulgarian_cyrillic),
-            subtitleText = getString(R.string.script_bulgarian_cyrillic_sample)
+            titleText = themedCtx.getString(R.string.script_bulgarian_cyrillic),
+            subtitleText = themedCtx.getString(R.string.script_bulgarian_cyrillic_sample)
         ).apply {
             id = bulgarianCyrId
         }
 
         val russianCyrRadio = makeRadioButton(
-            titleText = getString(R.string.script_russian_cyrillic),
-            subtitleText = getString(R.string.script_russian_cyrillic_sample)
+            titleText = themedCtx.getString(R.string.script_russian_cyrillic),
+            subtitleText = themedCtx.getString(R.string.script_russian_cyrillic_sample)
         ).apply {
             id = russianCyrId
         }
         val ukrainianCyrRadio = makeRadioButton(
-            titleText = getString(R.string.script_ukrainian_cyrillic),
-            subtitleText = getString(R.string.script_ukrainian_cyrillic_sample)
+            titleText = themedCtx.getString(R.string.script_ukrainian_cyrillic),
+            subtitleText = themedCtx.getString(R.string.script_ukrainian_cyrillic_sample)
         ).apply {
             id = ukrainianCyrId
         }
 
         val macedonianCyrRadio = makeRadioButton(
-            titleText = getString(R.string.script_macedonian_cyrillic),
-            subtitleText = getString(R.string.script_macedonian_cyrillic_sample)
+            titleText = themedCtx.getString(R.string.script_macedonian_cyrillic),
+            subtitleText = themedCtx.getString(R.string.script_macedonian_cyrillic_sample)
         ).apply {
             id = macedonianCyrId
         }
@@ -793,7 +812,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
 
         val closeBtn = TextView(themedCtx).apply {
-            text = getString(R.string.script_picker_close)
+            text = themedCtx.getString(R.string.script_picker_close)
             textSize = 14f
             setTextColor(popupText)
             gravity = Gravity.CENTER

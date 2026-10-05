@@ -40,6 +40,7 @@ This section is the authoritative description of intended behavior. When changin
 | Key shape | Hexagon, Triangle, Circle, Cube | Main app – **Key shape** dropdown (with live preview) |
 | Script / alphabet | Latin; Cyrillic: Serbian, Bulgarian, Russian, Ukrainian, Macedonian | On the keyboard itself – **long-press BOTH space keys for 4 seconds** → popup menu |
 | Vibration feedback | On / Off | Main app – **Vibration feedback** dropdown |
+| App language | System default or any translation | Main app – **Language** dropdown; Android 13+ also in system Settings → Apps → Antara → Language |
 
 Everything that depends on layout (Set layout editors, long-press bindings, side buttons, numeric layout) automatically adapts to the currently selected row count and key shape.
 
@@ -59,7 +60,8 @@ In screen order (`res/layout/activity_main.xml`):
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Colors** – popup for coloring every part of the keyboard (sections below).
 8. **Vibration feedback** dropdown – On / Off.
-9. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
+9. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
+10. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
 
 **All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
@@ -168,8 +170,13 @@ All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isC
 - **Field type** (`service/InputTypes.kt`): number / phone / date fields open on the numeric layout; password fields disable the key preview.
 
 ### Strings and translations
-- Every user-visible text is a resource: English in `res/values/strings.xml` (default), Croatian in `res/values-hr/strings.xml`. Android picks the language from the device settings. Never hard-code UI text; add the string to **both** files (lint flags missing translations).
-- Use format arguments (`%1$s`, `%1$d`) instead of concatenation, and `R.plurals` for counts (`rows_count`; Croatian has one / few / other).
+- Every user-visible text is a resource. English in `res/values/strings.xml` is the default; Android picks the language from the device settings.
+- Translations (34): bg, be, bs, ca, cs, da, de, el, es, et, fi, fr, ga, hr, hu, is, it, lt, lv, mk, mt, nb, nl, pl, pt, ro, ru, sk, sl, sq, sr (Cyrillic), `b+sr+Latn` (Serbian Latin, a transliteration of `sr`), sv, uk.
+- `app_name` is translated too and written in the language's own script (e.g. "Антара клавиатура", "Πληκτρολόγιο Αντάρα"); it is the launcher label, the IME name in system settings and the main screen title.
+- **App language** (per-app locale): the Language dropdown calls `AppCompatDelegate.setApplicationLocales` and stores the tag in `PrefsManager.getAppLanguage` (`theme_prefs` → `app_language`, "" = device). Android 13+ applies it system-wide (also to the keyboard service) and lists the languages in system settings via `generateLocaleConfig` (`res/resources.properties` sets the default `en`). Below 13, AppCompat stores it for activities (`AppLocalesMetadataHolderService` in the manifest) and `MyKeyboardService.localizedContext()` applies it to the keyboard, recreating the input view when it changes.
+- **Adding a language:** create `values-<tag>/strings.xml`, add the tag to `AppLanguages.TAGS` (`AppLanguagesTest` fails if they differ). Language splits are disabled in `bundle { language { enableSplit = false } }` so every translation ships for the in-app picker.
+- Never hard-code UI text. A new string goes into **every** `values-*/strings.xml` (lint reports `MissingTranslation`); keep format arguments identical to English.
+- Use format arguments (`%1$s`, `%1$d`) instead of concatenation, and `R.plurals` for counts (`rows_count`). Each language lists its own CLDR quantities (e.g. ru/uk/pl/cs one/few/many/other, sl adds two, lv has zero).
 - Internal ids stay untranslated constants and are shown through a label function (theme ids → `themeLabel()`, key shapes → `shapeLabel()`); enums carry a `@StringRes` (`EmojiCategory.nameRes`, `EmojiPickerStorage.TabsPosition.labelRes`).
 - Letters, symbols, sample alphabets and color/value formats (`rgb(...)`, hex) are not translated.
 - Dates use the device locale (`SavedLayoutStorage.formatTimestamp`). Key accessibility labels (`KeyView.getAccessibleDescription`) are translated too.

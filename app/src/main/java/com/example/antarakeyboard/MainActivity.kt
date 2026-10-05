@@ -29,6 +29,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.os.LocaleListCompat
+import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
@@ -222,6 +224,8 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        setupLanguageSpinner()
+
         // Setup Theme Spinner
         spinnerTheme = findViewById(R.id.spinnerTheme)
         btnThemeSettings = findViewById(R.id.btnThemeSettings)
@@ -244,6 +248,39 @@ class MainActivity : AppCompatActivity() {
                 if (position == 0) return
                 performReset(colors = position != 2, layout = position != 1)
                 spinnerReset.setSelection(0)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    /**
+     * App language: "System default" plus every translation, each named in its own language.
+     * AppCompat applies it (system per-app language on Android 13+, stored by AppCompat below 13)
+     * and recreates the activity; the keyboard service picks it up on its next start.
+     */
+    private fun setupLanguageSpinner() {
+        val spinner = findViewById<Spinner>(R.id.spinnerLanguage)
+        val tags = listOf("") + AppLanguages.TAGS
+        val labels = tags.map { tag ->
+            if (tag.isEmpty()) getString(R.string.language_system_default) else AppLanguages.nativeName(tag)
+        }
+        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        val appLocales = AppCompatDelegate.getApplicationLocales()
+        val current = if (appLocales.isEmpty) "" else AppLanguages.match(appLocales[0]?.toLanguageTag()) ?: ""
+        spinner.setSelection(tags.indexOf(current).coerceAtLeast(0))
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val tag = tags[position]
+                if (tag == current) return
+                PrefsManager.setAppLanguage(this@MainActivity, tag)
+                AppCompatDelegate.setApplicationLocales(
+                    if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList()
+                    else LocaleListCompat.forLanguageTags(tag)
+                )
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
