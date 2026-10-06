@@ -132,6 +132,36 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
+        <!-- Settings export / import (JSON file) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnExportSettings"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/main_export"
+                app:textAllCaps="false" />
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnImportSettings"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/main_import"
+                app:textAllCaps="false" />
+        </LinearLayout>
+
         <!-- Colors popup -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnColors"

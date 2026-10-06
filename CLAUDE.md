@@ -58,10 +58,11 @@ In screen order (`res/layout/activity_main.xml`):
 4. **Key shape** dropdown – with shape preview.
 5. **Keyboard rows** dropdown – 3 / 4 / 5.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
-7. **Colors** – popup for coloring every part of the keyboard (sections below).
-8. **Vibration feedback** dropdown – On / Off.
-9. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
-10. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
+7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
+8. **Colors** – popup for coloring every part of the keyboard (sections below).
+9. **Vibration feedback** dropdown – On / Off.
+10. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
+11. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
 
 **All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
@@ -113,9 +114,11 @@ Lets the user bind any special letter or emoji to a key's long press.
   - **Alphabet** – long-press bindings for letter keys.
   - **Numeric** – same rules as Alphabet.
   - **My binds** – list of every key (alphabet and numeric) that has at least one binding, with its bound characters; tapping one opens the character picker to edit it.
+  - **Custom text** – choose Letters or Numbers, tap a key on the same keyboard preview, type any text (no length limit, e.g. an e-mail address or a whole message) and **Add** it to that key's long press. Below the field, everything bound to the key is listed with ✕ to remove. Uses the same binders as Alphabet / Numeric (`LongPressEditorBinder.renderKeyChooser` / `addBinding` / `removeBinding`), so all sections stay in sync.
 - Keyboard preview is rendered exactly like the Set layout editor (shared `ui/EditorKeyboardRenderer.kt`); a small badge shows how many characters are bound to each key.
 - Tapping a key opens an **emoji-picker-style character picker**: category tabs (special-character groups, all Latin / Cyrillic special letters from `LongPressPresets`, extra symbols from the default layouts, emoji categories), a grid where tapping toggles a binding, and a strip of currently bound characters (tap to remove). Both special characters and **emoji** can be bound.
 - **Protected keys – nothing can be bound** on: either **Space**, **123** (switch to numeric), **Enter**.
+- **Custom text is inserted exactly as typed**: Shift only changes single-character bindings (`shiftedBinding()` in `model/KeyboardConfig.kt`). In the keyboard's long-press popup long text is shrunk/ellipsized in its cell (`KeyView` label fitting) and shown in the preview line above the grid (at most 3 lines, ellipsized). Previews in the editor (bound list, My binds) are shortened the same way; the bound text itself is never cut.
 - Autosave (no Save button); one "<Section> saved" toast on section switch, closing the popup, or leaving the app.
 
 ### Reset
@@ -187,10 +190,17 @@ Actions available per slot (`EdgeActionType`): Shift, Backspace, Enter, Space, C
 ### Landscape
 Letter rows split into left and right halves with the Horizontal "island" in the middle (`buildLandscapeLayout`). The split points per row are hard-coded per row count (`leftLandscapeKeysForRow` / `rightLandscapeKeysForRow`).
 
+### Settings export / import
+- **Export** writes one JSON file through the system "save as" picker (`ActivityResultContracts.CreateDocument`, no storage permission). **Import** reads it through `OpenDocument`, asks for confirmation, saves the current state as a "Backup" in Saved layouts, applies the file, re-applies theme and language, and recreates the screen.
+- Format (`data/SettingsBackup.kt`): `{"format": "antara-keyboard-settings", "version": 1, "exportedAt": …, "data": {"<prefs file>": {"<key>": {"type": "int|long|float|boolean|string|string_set", "value": …}}}}`. It contains **no package or class names**, so backups move between any builds – this is the migration path when the applicationId changes from `com.example…` before release (a new applicationId is a new app with empty settings).
+- Included prefs files: `SettingsBackup.FILES` (keyboard_prefs, theme_prefs, custom_theme_prefs, edge_slots, global_lp_prefs, emoji_picker_prefs, saved_layouts_prefs). **Recent emojis are excluded** (privacy) and are never overwritten by an import.
+- Import replaces each included file completely; files missing from the backup are left alone. Wrong `format`, broken JSON or files over 2 MB are rejected; a higher `version` asks the user to update; unknown files/types are skipped.
+- **When adding a new SharedPreferences file, add it to `SettingsBackup.FILES`.** If a stored key or value changes meaning, bump `SettingsBackup.VERSION` and migrate older files in `decode()`.
+
 ### Privacy
 - No `INTERNET` permission; only `VIBRATE`.
 - No cloud backup (`allowBackup="false"`, `res/xml/backup_rules.xml` and `data_extraction_rules.xml` exclude everything from cloud backup). Direct device-to-device transfer keeps settings.
-- Nothing typed is stored. The only text kept is the in-memory swipe-restore buffer and the recent-emoji list.
+- Nothing typed is stored. The only text kept is the in-memory swipe-restore buffer and the recent-emoji list (which is left out of settings exports).
 
 ### Known gaps (code vs spec)
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
@@ -257,7 +267,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults and the protected keys of the default layouts. Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages` and `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 

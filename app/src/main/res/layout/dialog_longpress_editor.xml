@@ -46,6 +46,20 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
         </ScrollView>
+
+        <!-- Custom text: pick a key, bind any typed text to its long press -->
+        <ScrollView
+            android:id="@+id/pageCustomTextLp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/customTextContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
     </FrameLayout>
 
 </LinearLayout>

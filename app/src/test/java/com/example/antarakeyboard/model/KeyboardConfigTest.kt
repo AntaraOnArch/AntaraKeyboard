@@ -47,4 +47,14 @@ class KeyboardConfigTest {
         cfg.addLongPress("missing", "x")
         assertEquals(listOf("č"), cfg.findKey("c")?.longPressBindings)
     }
+
+    @Test
+    fun shiftChangesSingleCharactersOnly() {
+        assertEquals("Č", shiftedBinding("č"))
+        assertEquals("€", shiftedBinding("€"))
+        assertEquals("😀", shiftedBinding("😀"))
+        // Custom text keeps exactly what the user typed
+        assertEquals("ime.prezime@mail.com", shiftedBinding("ime.prezime@mail.com"))
+        assertEquals("lol", shiftedBinding("lol"))
+    }
 }

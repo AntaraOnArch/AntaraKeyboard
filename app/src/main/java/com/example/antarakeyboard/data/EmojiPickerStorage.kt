@@ -15,8 +15,8 @@ import com.google.gson.reflect.TypeToken
  */
 object EmojiPickerStorage {
 
-    private const val PREFS_NAME = "emoji_picker_prefs"
-    private const val KEY_RECENT_EMOJIS = "recent_emojis"
+    const val PREFS_NAME = "emoji_picker_prefs"
+    const val KEY_RECENT_EMOJIS = "recent_emojis"
     private const val KEY_BUTTON_ORDER = "button_order"
     private const val KEY_TABS_POSITION = "tabs_position"
     private const val KEY_BUTTONS_SIDE = "buttons_side"

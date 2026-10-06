@@ -292,7 +292,15 @@ class LongPressPopupManager(
             child.scaleY = if (idx == lpSelectedIndex) 1.06f else 1f
         }
 
-        lpPreviewTv?.text = lpChars.getOrNull(lpSelectedIndex) ?: ""
+        val selected = lpChars.getOrNull(lpSelectedIndex) ?: ""
+        lpPreviewTv?.apply {
+            text = selected
+            // Custom text can be long: smaller preview, wrapped to a few lines
+            textSize = if (selected.length > 12) 16f else 26f
+            // Preview only: very long custom text is cut here, the whole text is still typed
+            maxLines = 3
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
     }
 
     fun moveLpSelection(dx: Int, dy: Int) {

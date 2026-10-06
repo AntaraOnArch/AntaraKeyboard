@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken
  */
 object SavedLayoutStorage {
 
-    private const val PREFS_NAME = "saved_layouts_prefs"
+    const val PREFS_NAME = "saved_layouts_prefs"
     private const val KEY_SAVED_LAYOUTS = "saved_layouts"
     private const val MAX_SAVED_LAYOUTS = 5
 
@@ -94,6 +94,12 @@ object SavedLayoutStorage {
             sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(context)
         )
 
+        addLayout(context, savedLayout)
+        return savedLayout
+    }
+
+    /** Puts [savedLayout] first in the list, keeping at most [MAX_SAVED_LAYOUTS]. */
+    fun addLayout(context: Context, savedLayout: SavedLayout) {
         val layouts = getSavedLayouts(context).toMutableList()
 
         // Add new layout at the beginning
@@ -107,8 +113,6 @@ object SavedLayoutStorage {
         prefs(context).edit()
             .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
             .apply()
-
-        return savedLayout
     }
 
     /**

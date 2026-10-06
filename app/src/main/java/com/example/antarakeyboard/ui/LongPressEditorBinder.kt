@@ -144,6 +144,39 @@ class LongPressEditorBinder(
         showLongPressPickerForKey(key, onClosed)
     }
 
+    /** Re-renders this binder's own preview (badges) after bindings changed elsewhere. */
+    fun refresh() = buildKeyboardUI()
+
+    /** Keys that can get long-press bindings (not locked, not empty, not space). */
+    fun isBindable(key: KeyConfig): Boolean = key.label !in lockedLabels && key.label.isNotBlank()
+
+    /**
+     * Renders the same keyboard into [container] for choosing a key (Custom text section).
+     * [selected] is highlighted; tapping a key calls [onKeyClick] instead of opening the picker.
+     */
+    fun renderKeyChooser(container: LinearLayout, selected: KeyConfig?, onKeyClick: (KeyConfig) -> Unit) {
+        val userShape = KeyboardPrefs.getShape(context)
+        EditorKeyboardRenderer(context).render(container, cfg) { key, _, _ ->
+            createKeyView(key, userShape, selected = key === selected, onClick = onKeyClick)
+        }
+    }
+
+    /** Binds [text] to [key]'s long press (autosaved). False if blank or already bound. */
+    fun addBinding(key: KeyConfig, text: String): Boolean {
+        if (text.isBlank() || text in key.longPressBindings) return false
+        key.longPressBindings.add(text)
+        onChanged(cfg)
+        buildKeyboardUI()
+        return true
+    }
+
+    fun removeBinding(key: KeyConfig, text: String) {
+        if (key.longPressBindings.remove(text)) {
+            onChanged(cfg)
+            buildKeyboardUI()
+        }
+    }
+
     private fun buildKeyboardUI() {
         val userShape = KeyboardPrefs.getShape(context)
         val container = keyboardContainer ?: return
@@ -154,7 +187,12 @@ class LongPressEditorBinder(
         }
     }
 
-    private fun createKeyView(key: KeyConfig, userShape: KeyShape): View {
+    private fun createKeyView(
+        key: KeyConfig,
+        userShape: KeyShape,
+        selected: Boolean = false,
+        onClick: ((KeyConfig) -> Unit)? = null
+    ): View {
         val locked = key.label in lockedLabels
         val empty = key.label.isBlank() && key.label != " "
         val boundCount = key.longPressBindings.count { !isMarker(it) }
@@ -171,7 +209,7 @@ class LongPressEditorBinder(
             shape = userShape
             isSpecial = (key.label == "↵")
             setTextColor(0xFFFFFFFF.toInt())
-            customBgColor = 0xFF111111.toInt()
+            customBgColor = if (selected) 0xFF4A5A8A.toInt() else 0xFF111111.toInt()
 
             alpha = when {
                 locked -> 0.55f
@@ -181,7 +219,7 @@ class LongPressEditorBinder(
 
             setOnClickListener {
                 if (!locked && !empty) {
-                    showLongPressPickerForKey(key)
+                    if (onClick != null) onClick(key) else showLongPressPickerForKey(key)
                 }
             }
         }

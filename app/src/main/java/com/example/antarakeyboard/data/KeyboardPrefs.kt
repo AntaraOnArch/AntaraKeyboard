@@ -16,7 +16,7 @@ import com.google.gson.Gson
 
 object KeyboardPrefs {
 
-    private const val PREFS_NAME = "keyboard_prefs"
+    const val PREFS_NAME = "keyboard_prefs"
 
     private const val KEY_SHAPE = "key_shape"
     private const val LONG_PRESS_DEFAULTS_VERSION = 4

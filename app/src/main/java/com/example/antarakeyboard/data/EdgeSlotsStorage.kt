@@ -7,7 +7,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 object EdgeSlotsStorage {
-    private const val SP_NAME = "edge_slots"
+    const val SP_NAME = "edge_slots"
 
     private fun keyForRowCount(rowCount: Int): String {
         return when (normalizeRowCount(rowCount)) {

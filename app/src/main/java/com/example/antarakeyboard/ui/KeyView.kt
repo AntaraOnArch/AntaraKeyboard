@@ -5,6 +5,8 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.text.TextPaint
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
@@ -117,7 +119,7 @@ class KeyView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
     }
 
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
         isFakeBoldText = false
     }
@@ -410,6 +412,19 @@ class KeyView @JvmOverloads constructor(
 
         textPaint.textSize = sizeSp * resources.displayMetrics.scaledDensity
 
+        // Long labels (custom long-press text): shrink to fit, then ellipsize
+        val maxW = (r - l) * 0.84f
+        val fullW = textPaint.measureText(label)
+        if (fullW > maxW && fullW > 0f) {
+            val minPx = MIN_LABEL_SP * resources.displayMetrics.scaledDensity
+            textPaint.textSize = maxOf(minPx, textPaint.textSize * maxW / fullW)
+        }
+        val drawnLabel = if (textPaint.measureText(label) > maxW) {
+            TextUtils.ellipsize(label, textPaint, maxW, TextUtils.TruncateAt.END).toString()
+        } else {
+            label
+        }
+
         val baseCx = (l + r) * 0.5f
         val cx = when (shape) {
             KeyShape.HEX_HALF_LEFT -> baseCx + (r - l) * 0.10f
@@ -421,7 +436,7 @@ class KeyView @JvmOverloads constructor(
         val fm = textPaint.fontMetrics
         val baseline = cy - (fm.ascent + fm.descent) / 2f
 
-        canvas.drawText(label, cx, baseline, textPaint)
+        canvas.drawText(drawnLabel, cx, baseline, textPaint)
     }
 
     private fun buildShapePath(p: Path, l: Float, t: Float, r: Float, b: Float) {
@@ -574,4 +589,9 @@ class KeyView @JvmOverloads constructor(
     }
 
     private fun dpF(v: Float): Float = v.dpF(resources)
+
+    private companion object {
+        // Smallest size a long label shrinks to before it is ellipsized
+        const val MIN_LABEL_SP = 8f
+    }
 }

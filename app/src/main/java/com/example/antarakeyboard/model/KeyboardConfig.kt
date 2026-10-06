@@ -36,6 +36,13 @@ fun KeyboardConfig.addLongPress(keyLabel: String, char: String) {
         key.longPressBindings.add(char)
     }
 }
+/**
+ * Long-press binding shown/typed while Shift is on: single characters follow Shift,
+ * longer custom text is always inserted exactly as the user wrote it.
+ */
+fun shiftedBinding(binding: String): String =
+    if (binding.codePointCount(0, binding.length) == 1) binding.uppercase() else binding
+
 fun KeyConfig.isSpaceLeftMarked(): Boolean {
     return label == " " && longPressBindings.contains(KeyMarkers.SPACE_LEFT)
 }

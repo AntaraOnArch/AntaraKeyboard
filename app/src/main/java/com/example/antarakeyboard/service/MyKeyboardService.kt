@@ -39,6 +39,7 @@ import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyConfig
+import com.example.antarakeyboard.model.shiftedBinding
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.service.input.KeyInputController
@@ -2623,7 +2624,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
 
             val newBinds = if (isLetterKey) {
-                k.longPressBindings.map { it.uppercase() }.toMutableList()
+                k.longPressBindings.map { shiftedBinding(it) }.toMutableList()
             } else {
                 k.longPressBindings.toMutableList()
             }

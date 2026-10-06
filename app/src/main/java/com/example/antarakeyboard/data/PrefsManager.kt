@@ -8,7 +8,10 @@ import android.content.SharedPreferences
  */
 object PrefsManager {
 
-    private const val PREFS_THEME = "theme_prefs"
+    const val PREFS_THEME = "theme_prefs"
+
+    /** "Last custom colors" kept by the main app (Theme → Custom). */
+    const val PREFS_CUSTOM_THEME = "custom_theme_prefs"
     private const val KEY_DARK_MODE = "dark_mode"
     private const val KEY_USE_CUSTOM_THEME = "use_custom_theme"
     private const val KEY_APP_LANGUAGE = "app_language"

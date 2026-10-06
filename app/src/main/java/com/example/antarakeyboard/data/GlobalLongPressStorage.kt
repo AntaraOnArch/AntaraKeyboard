@@ -7,7 +7,7 @@ import com.google.gson.reflect.TypeToken
 
 object GlobalLongPressStorage {
 
-    private const val PREFS_NAME = "global_lp_prefs"
+    const val PREFS_NAME = "global_lp_prefs"
     private const val KEY_ALPHABET_BINDS = "global_alphabet_binds"
     private const val KEY_NUMERIC_BINDS = "global_numeric_binds"
 

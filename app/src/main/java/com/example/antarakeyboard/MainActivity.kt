@@ -30,6 +30,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.os.LocaleListCompat
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import com.example.antarakeyboard.data.SettingsBackup
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
@@ -63,6 +69,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnThemeSettings: Button
     private lateinit var bindLPButton: Button
     private lateinit var spinnerReset: Spinner
+
+    // Settings export / import through the system file picker (no storage permission needed)
+    private val exportSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            if (uri != null) exportSettingsTo(uri)
+        }
+
+    private val importSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) readSettingsFrom(uri)
+        }
 
     // Autosaving popups (Set layout, Bind long press): section whose "saved" toast is pending
     private var autosaveDirtySection: String? = null
@@ -226,6 +243,15 @@ class MainActivity : AppCompatActivity() {
 
         setupLanguageSpinner()
 
+        findViewById<Button>(R.id.btnExportSettings).setOnClickListener {
+            val date = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date())
+            exportSettingsLauncher.launch("antara-keyboard-settings-$date.json")
+        }
+        findViewById<Button>(R.id.btnImportSettings).setOnClickListener {
+            // Many file managers report .json as octet-stream or plain text
+            importSettingsLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
+        }
+
         // Setup Theme Spinner
         spinnerTheme = findViewById(R.id.spinnerTheme)
         btnThemeSettings = findViewById(R.id.btnThemeSettings)
@@ -251,6 +277,73 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
+
+    private fun exportSettingsTo(uri: Uri) {
+        val ok = runCatching {
+            val json = SettingsBackup.export(this)
+            contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+        }.isSuccess
+        Toast.makeText(this, if (ok) R.string.export_done else R.string.export_failed, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun readSettingsFrom(uri: Uri) {
+        val json = runCatching {
+            contentResolver.openInputStream(uri)!!.use { input ->
+                // Bounded read: a wrongly picked huge file must not fill memory
+                val out = java.io.ByteArrayOutputStream()
+                val chunk = ByteArray(8192)
+                while (true) {
+                    val n = input.read(chunk)
+                    if (n < 0) break
+                    out.write(chunk, 0, n)
+                    if (out.size() > SettingsBackup.MAX_FILE_BYTES) return@use null
+                }
+                out.toString("UTF-8")
+            }
+        }.getOrNull()
+
+        when (val result = json?.let { SettingsBackup.decode(it) } ?: SettingsBackup.DecodeResult.NotABackup) {
+            SettingsBackup.DecodeResult.NotABackup ->
+                Toast.makeText(this, R.string.import_invalid, Toast.LENGTH_LONG).show()
+            SettingsBackup.DecodeResult.NewerVersion ->
+                Toast.makeText(this, R.string.import_newer, Toast.LENGTH_LONG).show()
+            is SettingsBackup.DecodeResult.Ok ->
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.import_confirm_title)
+                    .setMessage(R.string.import_confirm_message)
+                    .setNegativeButton(R.string.action_cancel, null)
+                    .setPositiveButton(R.string.import_action) { _, _ -> importSettings(result.data) }
+                    .show()
+        }
+    }
+
+    /** Applies an imported backup; the current state is kept as a "Backup" in Saved layouts. */
+    private fun importSettings(data: Map<String, Map<String, Any>>) {
+        val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
+        val backup = SavedLayoutStorage.saveCurrentLayout(this, getString(R.string.backup_name, timestamp))
+
+        val ok = runCatching { SettingsBackup.apply(this, data) }.isSuccess
+        if (!ok) {
+            Toast.makeText(this, R.string.import_failed, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // The import replaced Saved layouts too; put the pre-import backup back on top
+        SavedLayoutStorage.addLayout(this, backup)
+        Toast.makeText(this, R.string.import_done, Toast.LENGTH_LONG).show()
+
+        // Theme and language come from the imported file; rebuild the screen with them
+        AppCompatDelegate.setDefaultNightMode(
+            if (PrefsManager.isDarkMode(this)) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
+        val language = PrefsManager.getAppLanguage(this)
+        AppCompatDelegate.setApplicationLocales(
+            if (language.isEmpty()) LocaleListCompat.getEmptyLocaleList()
+            else LocaleListCompat.forLanguageTags(language)
+        )
+        recreate()
     }
 
     /**
@@ -1427,7 +1520,8 @@ class MainActivity : AppCompatActivity() {
         // Section dropdown
         val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerLongPressSection)
         val sectionOptions = listOf(
-            R.string.lp_section_alphabet, R.string.lp_section_numeric, R.string.lp_section_my_binds
+            R.string.lp_section_alphabet, R.string.lp_section_numeric,
+            R.string.lp_section_my_binds, R.string.lp_section_custom
         ).map { getString(it) }
         spinnerSection.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -1437,6 +1531,8 @@ class MainActivity : AppCompatActivity() {
         val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumericLp)
         val pageMyBinds = dialog.findViewById<ScrollView>(R.id.pageMyBindsLp)
         val myBindsContainer = dialog.findViewById<LinearLayout>(R.id.myBindsContainer)
+        val pageCustomText = dialog.findViewById<ScrollView>(R.id.pageCustomTextLp)
+        val customTextContainer = dialog.findViewById<LinearLayout>(R.id.customTextContainer)
 
         val currentRowCount = KeyboardPrefs.getRowCount(this)
         var currentPage = 0
@@ -1493,6 +1589,9 @@ class MainActivity : AppCompatActivity() {
                 keys.forEach { key ->
                     myBindsContainer.addView(Button(this).apply {
                         text = "${key.label}   →   ${binder.visibleBindings(key).joinToString(" ")}"
+                        // Long custom text: preview only, full text stays bound
+                        maxLines = 3
+                        ellipsize = android.text.TextUtils.TruncateAt.END
                         isAllCaps = false
                         gravity = Gravity.START or Gravity.CENTER_VERTICAL
                         setOnClickListener {
@@ -1514,12 +1613,129 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Custom text: choose Letters / Numbers, tap a key, type any text and bind it
+        var customUseNumeric = false
+        var customSelected: com.example.antarakeyboard.model.KeyConfig? = null
+
+        fun buildCustomTextPage() {
+            customTextContainer.removeAllViews()
+            val binder = if (customUseNumeric) numericBinder else alphabetBinder
+            val gap = 8.dp(this)
+
+            val group = android.widget.RadioGroup(this).apply {
+                orientation = android.widget.RadioGroup.HORIZONTAL
+            }
+            val rbLetters = android.widget.RadioButton(this).apply {
+                id = View.generateViewId()
+                text = getString(R.string.lp_group_alphabet)
+                isChecked = !customUseNumeric
+            }
+            val rbNumbers = android.widget.RadioButton(this).apply {
+                id = View.generateViewId()
+                text = getString(R.string.lp_group_numeric)
+                isChecked = customUseNumeric
+            }
+            group.addView(rbLetters)
+            group.addView(rbNumbers)
+            group.setOnCheckedChangeListener { _, checkedId ->
+                customUseNumeric = checkedId == rbNumbers.id
+                customSelected = null
+                buildCustomTextPage()
+            }
+            customTextContainer.addView(group)
+
+            customTextContainer.addView(TextView(this).apply {
+                text = getString(R.string.lp_custom_choose_key)
+                alpha = 0.75f
+                setPadding(0, gap, 0, gap / 2)
+            })
+
+            val preview = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            binder.renderKeyChooser(preview, customSelected) { key ->
+                if (binder.isBindable(key)) {
+                    customSelected = key
+                    buildCustomTextPage()
+                }
+            }
+            customTextContainer.addView(preview)
+
+            val key = customSelected ?: return
+
+            customTextContainer.addView(TextView(this).apply {
+                text = getString(R.string.lp_custom_text_for, key.label)
+                textSize = 16f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setPadding(0, gap * 2, 0, gap / 2)
+            })
+
+            val input = android.widget.EditText(this).apply {
+                hint = getString(R.string.lp_custom_hint)
+                // No length limit; long text is only shortened where it is previewed
+                isSingleLine = true
+            }
+            customTextContainer.addView(input, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+
+            customTextContainer.addView(Button(this).apply {
+                text = getString(R.string.lp_custom_add)
+                isAllCaps = false
+                setOnClickListener {
+                    // Inserted exactly as typed (spaces included); only blank text is refused
+                    val text = input.text.toString()
+                    if (text.isBlank()) return@setOnClickListener
+                    if (binder.addBinding(key, text)) {
+                        autosaveDirtySection = sectionOptions[3]
+                        buildCustomTextPage()
+                    } else {
+                        Toast.makeText(this@MainActivity, R.string.lp_custom_already, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = Gravity.END })
+
+            // Everything currently bound to this key; ✕ removes it
+            val bindings = binder.visibleBindings(key)
+            if (bindings.isNotEmpty()) {
+                customTextContainer.addView(TextView(this).apply {
+                    text = getString(R.string.lp_custom_bound)
+                    alpha = 0.75f
+                    setPadding(0, gap, 0, gap / 2)
+                })
+            }
+            bindings.forEach { binding ->
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                }
+                row.addView(TextView(this).apply {
+                    text = binding
+                    textSize = 15f
+                    maxLines = 2
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                row.addView(Button(this).apply {
+                    text = "✕"
+                    contentDescription = getString(R.string.action_delete)
+                    setOnClickListener {
+                        binder.removeBinding(key, binding)
+                        autosaveDirtySection = sectionOptions[3]
+                        buildCustomTextPage()
+                    }
+                })
+                customTextContainer.addView(row)
+            }
+        }
+
         fun showPage(page: Int) {
             currentPage = page
             pageAlphabet.visibility = if (page == 0) View.VISIBLE else View.GONE
             pageNumeric.visibility = if (page == 1) View.VISIBLE else View.GONE
             pageMyBinds.visibility = if (page == 2) View.VISIBLE else View.GONE
+            pageCustomText.visibility = if (page == 3) View.VISIBLE else View.GONE
             if (page == 2) buildMyBindsPage()
+            if (page == 3) buildCustomTextPage()
         }
 
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -2646,12 +2862,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun hasCustomColors(): Boolean {
         // Check if user has saved custom theme colors
-        val prefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsManager.PREFS_CUSTOM_THEME, MODE_PRIVATE)
         return prefs.getBoolean("has_custom_theme", false)
     }
 
     private fun saveCurrentColorsAsCustomTheme() {
-        val customPrefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+        val customPrefs = getSharedPreferences(PrefsManager.PREFS_CUSTOM_THEME, MODE_PRIVATE)
 
         // Save current keyboard colors as custom theme
         customPrefs.edit()
@@ -2669,7 +2885,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadCustomThemeColors() {
-        val customPrefs = getSharedPreferences("custom_theme_prefs", MODE_PRIVATE)
+        val customPrefs = getSharedPreferences(PrefsManager.PREFS_CUSTOM_THEME, MODE_PRIVATE)
 
         if (!customPrefs.getBoolean("has_custom_theme", false)) return
 
