@@ -6,6 +6,8 @@
     <string name="main_set_layout">Uredi raspored</string>
     <string name="main_key_shape">Oblik tipki</string>
     <string name="main_keyboard_rows">Broj redova</string>
+    <string name="main_key_height">Visina tipki: %1$d%%</string>
+    <string name="main_row_spacing">Razmak između redova: %1$s</string>
     <string name="main_bind_long_press">Dugi pritisak</string>
     <string name="main_colors">Boje</string>
     <string name="main_vibration">Vibracija</string>

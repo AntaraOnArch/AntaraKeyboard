@@ -6,6 +6,8 @@
     <string name="main_set_layout">Redaguoti išdėstymą</string>
     <string name="main_key_shape">Klavišų forma</string>
     <string name="main_keyboard_rows">Klaviatūros eilutės</string>
+    <string name="main_key_height">Klavišų aukštis: %1$d %%</string>
+    <string name="main_row_spacing">Tarpas tarp eilučių: %1$s</string>
     <string name="main_bind_long_press">Ilgas paspaudimas</string>
     <string name="main_colors">Spalvos</string>
     <string name="main_vibration">Vibravimas</string>

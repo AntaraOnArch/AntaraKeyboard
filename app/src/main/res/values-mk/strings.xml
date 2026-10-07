@@ -6,6 +6,8 @@
     <string name="main_set_layout">Уреди распоред</string>
     <string name="main_key_shape">Облик на копчињата</string>
     <string name="main_keyboard_rows">Редови на тастатурата</string>
+    <string name="main_key_height">Висина на копчињата: %1$d%%</string>
+    <string name="main_row_spacing">Растојание меѓу редовите: %1$s</string>
     <string name="main_bind_long_press">Долго притискање</string>
     <string name="main_colors">Бои</string>
     <string name="main_vibration">Вибрација</string>

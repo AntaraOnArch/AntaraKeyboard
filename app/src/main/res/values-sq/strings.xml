@@ -6,6 +6,8 @@
     <string name="main_set_layout">Modifiko paraqitjen</string>
     <string name="main_key_shape">Forma e tasteve</string>
     <string name="main_keyboard_rows">Rreshtat e tastierës</string>
+    <string name="main_key_height">Lartësia e tasteve: %1$d%%</string>
+    <string name="main_row_spacing">Hapësira mes rreshtave: %1$s</string>
     <string name="main_bind_long_press">Shtypje e gjatë</string>
     <string name="main_colors">Ngjyrat</string>
     <string name="main_vibration">Dridhja</string>

@@ -6,6 +6,8 @@
     <string name="main_set_layout">Kiosztás szerkesztése</string>
     <string name="main_key_shape">Billentyűforma</string>
     <string name="main_keyboard_rows">Billentyűsorok</string>
+    <string name="main_key_height">Billentyűmagasság: %1$d%%</string>
+    <string name="main_row_spacing">Sorköz: %1$s</string>
     <string name="main_bind_long_press">Hosszú nyomás</string>
     <string name="main_colors">Színek</string>
     <string name="main_vibration">Rezgés</string>

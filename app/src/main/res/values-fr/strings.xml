@@ -6,6 +6,8 @@
     <string name="main_set_layout">Modifier la disposition</string>
     <string name="main_key_shape">Forme des touches</string>
     <string name="main_keyboard_rows">Rangées du clavier</string>
+    <string name="main_key_height">Hauteur des touches : %1$d %%</string>
+    <string name="main_row_spacing">Espacement des rangées : %1$s</string>
     <string name="main_bind_long_press">Appui long</string>
     <string name="main_colors">Couleurs</string>
     <string name="main_vibration">Vibration</string>

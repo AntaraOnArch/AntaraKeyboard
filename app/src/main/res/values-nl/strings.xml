@@ -6,6 +6,8 @@
     <string name="main_set_layout">Indeling bewerken</string>
     <string name="main_key_shape">Toetsvorm</string>
     <string name="main_keyboard_rows">Toetsenbordrijen</string>
+    <string name="main_key_height">Toetshoogte: %1$d%%</string>
+    <string name="main_row_spacing">Rijafstand: %1$s</string>
     <string name="main_bind_long_press">Lang indrukken</string>
     <string name="main_colors">Kleuren</string>
     <string name="main_vibration">Trillen</string>

@@ -54,6 +54,30 @@ object KeyboardPrefs {
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    /* ───────── KEY SIZE ───────── */
+
+    private const val KEY_SCALE = "key_scale"
+
+    /** Key size factor from the main app slider (1.0 = default size). */
+    fun getKeyScale(context: Context): Float =
+        prefs(context).getFloat(KEY_SCALE, 1f)
+
+    fun setKeyScale(context: Context, scale: Float) {
+        prefs(context).edit().putFloat(KEY_SCALE, scale).apply()
+    }
+
+    /* ───────── ROW SPACING ───────── */
+
+    private const val KEY_ROW_SPACING_DP = "row_spacing_dp"
+
+    /** Extra vertical space between rows in dp from the main app slider (0 = default). */
+    fun getRowSpacingDp(context: Context): Int =
+        prefs(context).getInt(KEY_ROW_SPACING_DP, 0)
+
+    fun setRowSpacingDp(context: Context, dp: Int) {
+        prefs(context).edit().putInt(KEY_ROW_SPACING_DP, dp).apply()
+    }
+
     /* ───────── SHAPE ───────── */
 
     fun getShape(context: Context): KeyShape {

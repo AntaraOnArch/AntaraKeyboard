@@ -6,6 +6,8 @@
     <string name="main_set_layout">Cuir leagan amach in eagar</string>
     <string name="main_key_shape">Cruth na n-eochracha</string>
     <string name="main_keyboard_rows">Sraitheanna an mhéarchláir</string>
+    <string name="main_key_height">Airde na n-eochracha: %1$d%%</string>
+    <string name="main_row_spacing">Spás idir sraitheanna: %1$s</string>
     <string name="main_bind_long_press">Brú fada</string>
     <string name="main_colors">Dathanna</string>
     <string name="main_vibration">Creathadh</string>

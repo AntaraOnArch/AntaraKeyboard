@@ -6,6 +6,8 @@
     <string name="main_set_layout">Editează aranjamentul</string>
     <string name="main_key_shape">Forma tastelor</string>
     <string name="main_keyboard_rows">Rândurile tastaturii</string>
+    <string name="main_key_height">Înălțimea tastelor: %1$d%%</string>
+    <string name="main_row_spacing">Spațiu între rânduri: %1$s</string>
     <string name="main_bind_long_press">Apăsare lungă</string>
     <string name="main_colors">Culori</string>
     <string name="main_vibration">Vibrație</string>

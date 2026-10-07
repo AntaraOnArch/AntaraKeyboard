@@ -6,6 +6,8 @@
     <string name="main_set_layout">Rediger oppsett</string>
     <string name="main_key_shape">Tasteform</string>
     <string name="main_keyboard_rows">Tastaturrader</string>
+    <string name="main_key_height">Tastehøyde: %1$d %%</string>
+    <string name="main_row_spacing">Radavstand: %1$s</string>
     <string name="main_bind_long_press">Langt trykk</string>
     <string name="main_colors">Farger</string>
     <string name="main_vibration">Vibrering</string>

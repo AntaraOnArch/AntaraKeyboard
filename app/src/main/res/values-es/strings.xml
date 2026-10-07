@@ -6,6 +6,8 @@
     <string name="main_set_layout">Editar distribución</string>
     <string name="main_key_shape">Forma de las teclas</string>
     <string name="main_keyboard_rows">Filas del teclado</string>
+    <string name="main_key_height">Altura de las teclas: %1$d %%</string>
+    <string name="main_row_spacing">Espacio entre filas: %1$s</string>
     <string name="main_bind_long_press">Pulsación larga</string>
     <string name="main_colors">Colores</string>
     <string name="main_vibration">Vibración</string>

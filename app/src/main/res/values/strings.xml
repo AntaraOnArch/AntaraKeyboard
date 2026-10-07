@@ -8,6 +8,8 @@
     <string name="main_set_layout">Set layout</string>
     <string name="main_key_shape">Key shape</string>
     <string name="main_keyboard_rows">Keyboard rows</string>
+    <string name="main_key_height">Key height: %1$d%%</string>
+    <string name="main_row_spacing">Row spacing: %1$s</string>
     <string name="main_bind_long_press">Bind long press</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibration feedback</string>

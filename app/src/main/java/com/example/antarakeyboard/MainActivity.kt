@@ -33,6 +33,8 @@ import androidx.core.os.LocaleListCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import com.example.antarakeyboard.data.SettingsBackup
+import com.example.antarakeyboard.service.KeyScale
+import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -219,6 +221,9 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        setupKeySizeSlider()
+        setupRowSpacingSlider()
+
         // Setup Vibration Spinner
         spinnerVibration = findViewById(R.id.spinnerVibration)
         val vibrationAdapter = ArrayAdapter(
@@ -277,6 +282,71 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
+
+    /**
+     * Key height slider: 60 %–150 % in 5 % steps. Only key height changes (keyboard height
+     * follows). Saved while dragging; the keyboard applies it the next time it opens.
+     */
+    private fun setupKeySizeSlider() {
+        val label = findViewById<TextView>(R.id.tvKeySize)
+        val seek = findViewById<SeekBar>(R.id.seekKeySize)
+        val minPercent = (KeyScale.MIN * 100).roundToInt()
+        val maxPercent = (KeyScale.MAX * 100).roundToInt()
+        val step = 5
+
+        fun percentAt(progress: Int) = minPercent + progress * step
+
+        seek.max = (maxPercent - minPercent) / step
+        val current = (KeyboardPrefs.getKeyScale(this) * 100).roundToInt()
+        seek.progress = ((current - minPercent) / step).coerceIn(0, seek.max)
+        label.text = getString(R.string.main_key_height, percentAt(seek.progress))
+
+        seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val percent = percentAt(progress)
+                label.text = getString(R.string.main_key_height, percent)
+                if (fromUser) KeyboardPrefs.setKeyScale(this@MainActivity, percent / 100f)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    /**
+     * Row spacing slider: −8 dp … +16 dp in 1 dp steps (0 = tuned default). Adds vertical space
+     * between rows only. Saved while dragging; the keyboard applies it the next time it opens.
+     */
+    private fun setupRowSpacingSlider() {
+        val label = findViewById<TextView>(R.id.tvRowSpacing)
+        val seek = findViewById<SeekBar>(R.id.seekRowSpacing)
+        val min = KeyScale.ROW_SPACING_MIN_DP
+
+        fun dpAt(progress: Int) = min + progress
+        fun showLabel(dp: Int) {
+            // Signed value, e.g. "+4 dp" / "−2 dp" / "0 dp"
+            val value = when {
+                dp > 0 -> "+$dp dp"
+                dp < 0 -> "−${-dp} dp"
+                else -> "0 dp"
+            }
+            label.text = getString(R.string.main_row_spacing, value)
+        }
+
+        seek.max = KeyScale.ROW_SPACING_MAX_DP - min
+        val current = KeyScale.clampRowSpacing(KeyboardPrefs.getRowSpacingDp(this))
+        seek.progress = current - min
+        showLabel(current)
+
+        seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val dp = dpAt(progress)
+                showLabel(dp)
+                if (fromUser) KeyboardPrefs.setRowSpacingDp(this@MainActivity, dp)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun exportSettingsTo(uri: Uri) {

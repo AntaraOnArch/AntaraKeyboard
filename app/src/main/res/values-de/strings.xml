@@ -6,6 +6,8 @@
     <string name="main_set_layout">Layout bearbeiten</string>
     <string name="main_key_shape">Tastenform</string>
     <string name="main_keyboard_rows">Tastaturreihen</string>
+    <string name="main_key_height">Tastenhöhe: %1$d %%</string>
+    <string name="main_row_spacing">Zeilenabstand: %1$s</string>
     <string name="main_bind_long_press">Langes Drücken</string>
     <string name="main_colors">Farben</string>
     <string name="main_vibration">Vibration</string>

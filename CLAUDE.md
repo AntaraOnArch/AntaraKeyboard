@@ -38,6 +38,8 @@ This section is the authoritative description of intended behavior. When changin
 |--------|--------|--------------------|
 | Row count | 3, 4 or 5 rows | Main app – **Keyboard rows** dropdown |
 | Key shape | Hexagon, Triangle, Circle, Cube | Main app – **Key shape** dropdown (with live preview) |
+| Key height | 60 %–150 % (5 % steps, default 100 %) | Main app – **Key height** slider |
+| Row spacing | −8 dp … +16 dp (1 dp steps, default 0) | Main app – **Row spacing** slider |
 | Script / alphabet | Latin; Cyrillic: Serbian, Bulgarian, Russian, Ukrainian, Macedonian | On the keyboard itself – **long-press BOTH space keys for 4 seconds** → popup menu |
 | Vibration feedback | On / Off | Main app – **Vibration feedback** dropdown |
 | App language | System default or any translation | Main app – **Language** dropdown; Android 13+ also in system Settings → Apps → Antara → Language |
@@ -48,6 +50,10 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 **Key shape note:** with 3 rows, `HEX` is drawn as `HEX_TALL` (`effectiveShape()`).
 
+**Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. Landscape uses the same mechanism. The keyboard height follows (measured from content). 3-row portrait triangles are drawn 1.5× taller at 100 % (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`, applied in `keyHeightStretch()`).
+
+**Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `landscapeRowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
+
 ### Main app buttons
 
 In screen order (`res/layout/activity_main.xml`):
@@ -56,7 +62,7 @@ In screen order (`res/layout/activity_main.xml`):
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
 4. **Key shape** dropdown – with shape preview.
-5. **Keyboard rows** dropdown – 3 / 4 / 5.
+5. **Keyboard rows** dropdown – 3 / 4 / 5, followed by the **Key height** and **Row spacing** sliders.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
 8. **Colors** – popup for coloring every part of the keyboard (sections below).
@@ -126,7 +132,7 @@ Dropdown with three options; each first saves the current state as a "Backup <ti
 - **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. The pre-reset colors are also kept as "Last custom colors".
 - **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons.
 - **Reset all** – both of the above.
-- **Preserved** (never reset): long-press bindings and the selected key shape.
+- **Preserved** (never reset): long-press bindings, the selected key shape, key height and row spacing.
 - Reset layout only touches the **current row count**.
 - Saved layouts keep at most **5** entries (`SavedLayoutStorage.MAX_SAVED_LAYOUTS`); the oldest is dropped, so repeated resets can push out user-saved layouts.
 

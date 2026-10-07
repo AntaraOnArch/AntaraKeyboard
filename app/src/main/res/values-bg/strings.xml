@@ -6,6 +6,8 @@
     <string name="main_set_layout">Редактиране на подредбата</string>
     <string name="main_key_shape">Форма на клавишите</string>
     <string name="main_keyboard_rows">Редове на клавиатурата</string>
+    <string name="main_key_height">Височина на клавишите: %1$d%%</string>
+    <string name="main_row_spacing">Разстояние между редовете: %1$s</string>
     <string name="main_bind_long_press">Дълго натискане</string>
     <string name="main_colors">Цветове</string>
     <string name="main_vibration">Вибрация</string>

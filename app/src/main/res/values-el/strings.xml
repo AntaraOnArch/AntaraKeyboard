@@ -6,6 +6,8 @@
     <string name="main_set_layout">Επεξεργασία διάταξης</string>
     <string name="main_key_shape">Σχήμα πλήκτρων</string>
     <string name="main_keyboard_rows">Σειρές πληκτρολογίου</string>
+    <string name="main_key_height">Ύψος πλήκτρων: %1$d%%</string>
+    <string name="main_row_spacing">Απόσταση σειρών: %1$s</string>
     <string name="main_bind_long_press">Παρατεταμένο πάτημα</string>
     <string name="main_colors">Χρώματα</string>
     <string name="main_vibration">Δόνηση</string>

@@ -6,6 +6,8 @@
     <string name="main_set_layout">Editja t-tqassim</string>
     <string name="main_key_shape">Forma taċ-ċwievet</string>
     <string name="main_keyboard_rows">Ringieli tat-tastiera</string>
+    <string name="main_key_height">Għoli taċ-ċwievet: %1$d%%</string>
+    <string name="main_row_spacing">Spazju bejn ir-ringieli: %1$s</string>
     <string name="main_bind_long_press">Għafsa twila</string>
     <string name="main_colors">Kuluri</string>
     <string name="main_vibration">Vibrazzjoni</string>

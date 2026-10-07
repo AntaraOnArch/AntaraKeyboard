@@ -1387,7 +1387,64 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val triOverlapY: Int
     )
 
+    /**
+     * Row sizing with the key height slider applied (see [baseRowSizing] for the tuned defaults).
+     * The keys themselves grow ([KeyView.heightStretch]); sizes and row spacing stay as tuned.
+     * Only the honeycomb overlap grows with the hexagon tips so the rows stay interlocked.
+     */
     private fun computeRowSizing(count: Int, availW: Int): RowSizing {
+        val base = baseRowSizing(count, availW)
+        val f = keyHeightStretch()
+        if (f == 1f || base.overlapPx == 0) return base
+
+        val shape = effectiveShape()
+        val hexHeight = when (shape) {
+            KeyShape.HEX -> minOf(base.keyW, base.keyH) * 0.96f
+            KeyShape.HEX_TALL -> base.keyH * 0.96f
+            else -> return base
+        }
+        return base.copy(overlapPx = KeyScale.honeycombOverlap(base.overlapPx, hexHeight, f))
+    }
+
+    /** Key height factor from the main app slider (1 = tuned default). */
+    private fun keyHeightFactor(): Float = KeyScale.clamp(KeyboardPrefs.getKeyScale(this))
+
+    /**
+     * Height stretch the keys are drawn with: the slider factor times the layout's own default.
+     * 3-row portrait triangles are taller by default (what used to be 150 % on the slider).
+     */
+    private fun keyHeightStretch(): Float {
+        val layoutDefault = if (
+            !isLandscape() &&
+            currentShape == KeyShape.TRIANGLE &&
+            KeyboardPrefs.getRowCount(this) == 3
+        ) {
+            KeyScale.THREE_ROW_TRIANGLE_DEFAULT
+        } else {
+            1f
+        }
+        return keyHeightFactor() * layoutDefault
+    }
+
+    /** Extra vertical space between rows from the row spacing slider (px, may be negative). */
+    private fun rowSpacingPx(): Int =
+        KeyScale.clampRowSpacing(KeyboardPrefs.getRowSpacingDp(this)).dp(this)
+
+    /**
+     * Whether keys are drawn square (KeyView.forceSquare). Only portrait triangles
+     * and the 3-row portrait cube use their own height; HEX_TALL is never squared.
+     */
+    private fun keysForcedSquare(): Boolean {
+        val shape = effectiveShape()
+        if (shape == KeyShape.HEX_TALL) return false
+        val allowNonSquare = !isLandscape() && (
+            shape == KeyShape.TRIANGLE ||
+                (KeyboardPrefs.getRowCount(this) == 3 && shape == KeyShape.CUBE)
+            )
+        return !allowNonSquare
+    }
+
+    private fun baseRowSizing(count: Int, availW: Int): RowSizing {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val layoutShape = currentShape
 
@@ -1947,7 +2004,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         }
 
                         else -> 0
-                    }
+                    } + rowSpacingPx()  // row spacing slider (0 = tuned default)
                 }
 
                 keyboardContainer.addView(row, lpRow)
@@ -2202,6 +2259,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
         }
     }
+    /**
+     * Landscape row overlap (used as a negative top margin). Hexagon rows overlap more as their
+     * tips grow with the key height slider; the row spacing slider adds space between rows.
+     */
+    private fun landscapeRowOverlapScaled(keySize: Int): Int {
+        val base = landscapeRowOverlapPx(keySize)
+        val overlap = when (currentShape) {
+            KeyShape.HEX, KeyShape.HEX_TALL, KeyShape.HEX_HALF_LEFT, KeyShape.HEX_HALF_RIGHT ->
+                KeyScale.honeycombOverlap(base, keySize * 0.96f, keyHeightStretch())
+            else -> base
+        }
+        return overlap - rowSpacingPx()
+    }
+
     private fun landscapeKeySizePx(): Int {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
@@ -2275,7 +2346,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
     private fun buildLandscapeLeftLetters(container: LinearLayout) {
         val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapPx(keySize)
+        val rowOverlap = landscapeRowOverlapScaled(keySize)
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
 
@@ -2353,7 +2424,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
     private fun buildLandscapeRightLetters(container: LinearLayout) {
         val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapPx(keySize)
+        val rowOverlap = landscapeRowOverlapScaled(keySize)
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(this)
@@ -2738,19 +2809,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         isAllCaps = false
         shape = activeShape
 
-// Samo 3-row portrait CUBE smije koristiti punu zadanu visinu.
-// Inače KeyView zadržava kvadrat i ignorira dodatni keyH.
-        val allowNonSquareShape =
-            !isLandscape() &&
-                    (
-                            activeShape == KeyShape.TRIANGLE ||
-                                    (
-                                            rowCount == 3 &&
-                                                    activeShape == KeyShape.CUBE
-                                            )
-                            )
-
-        forceSquare = !allowNonSquareShape
+        forceSquare = keysForcedSquare()
+        // Key height slider: the key draws its shape taller/shorter and grows by that much
+        heightStretch = keyHeightStretch()
 
         isSpecial = (label == "↵")
         gravity = Gravity.CENTER

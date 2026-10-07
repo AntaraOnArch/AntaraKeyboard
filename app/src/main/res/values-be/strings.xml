@@ -6,6 +6,8 @@
     <string name="main_set_layout">Змяніць раскладку</string>
     <string name="main_key_shape">Форма клавіш</string>
     <string name="main_keyboard_rows">Рады клавіятуры</string>
+    <string name="main_key_height">Вышыня клавіш: %1$d%%</string>
+    <string name="main_row_spacing">Адлегласць паміж радамі: %1$s</string>
     <string name="main_bind_long_press">Доўгае націсканне</string>
     <string name="main_colors">Колеры</string>
     <string name="main_vibration">Вібрацыя</string>

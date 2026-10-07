@@ -6,6 +6,8 @@
     <string name="main_set_layout">Muokkaa asettelua</string>
     <string name="main_key_shape">Näppäinten muoto</string>
     <string name="main_keyboard_rows">Näppäinrivit</string>
+    <string name="main_key_height">Näppäinkorkeus: %1$d %%</string>
+    <string name="main_row_spacing">Rivien väli: %1$s</string>
     <string name="main_bind_long_press">Pitkä painallus</string>
     <string name="main_colors">Värit</string>
     <string name="main_vibration">Värinä</string>

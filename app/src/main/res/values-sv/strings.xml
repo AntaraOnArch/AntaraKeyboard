@@ -6,6 +6,8 @@
     <string name="main_set_layout">Redigera layout</string>
     <string name="main_key_shape">Tangentform</string>
     <string name="main_keyboard_rows">Tangentbordsrader</string>
+    <string name="main_key_height">Tangenthöjd: %1$d %%</string>
+    <string name="main_row_spacing">Radavstånd: %1$s</string>
     <string name="main_bind_long_press">Långt tryck</string>
     <string name="main_colors">Färger</string>
     <string name="main_vibration">Vibration</string>

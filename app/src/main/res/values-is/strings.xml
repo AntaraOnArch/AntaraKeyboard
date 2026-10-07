@@ -6,6 +6,8 @@
     <string name="main_set_layout">Breyta uppsetningu</string>
     <string name="main_key_shape">Lögun lykla</string>
     <string name="main_keyboard_rows">Raðir lyklaborðs</string>
+    <string name="main_key_height">Hæð lykla: %1$d%%</string>
+    <string name="main_row_spacing">Bil milli raða: %1$s</string>
     <string name="main_bind_long_press">Langt ýtt</string>
     <string name="main_colors">Litir</string>
     <string name="main_vibration">Titringur</string>

@@ -6,6 +6,8 @@
     <string name="main_set_layout">Edytuj układ</string>
     <string name="main_key_shape">Kształt klawiszy</string>
     <string name="main_keyboard_rows">Rzędy klawiatury</string>
+    <string name="main_key_height">Wysokość klawiszy: %1$d%%</string>
+    <string name="main_row_spacing">Odstęp między rzędami: %1$s</string>
     <string name="main_bind_long_press">Długie naciśnięcie</string>
     <string name="main_colors">Kolory</string>
     <string name="main_vibration">Wibracje</string>

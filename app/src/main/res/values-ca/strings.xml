@@ -6,6 +6,8 @@
     <string name="main_set_layout">Edita la disposició</string>
     <string name="main_key_shape">Forma de les tecles</string>
     <string name="main_keyboard_rows">Files del teclat</string>
+    <string name="main_key_height">Alçada de les tecles: %1$d %%</string>
+    <string name="main_row_spacing">Espai entre files: %1$s</string>
     <string name="main_bind_long_press">Pulsació llarga</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibració</string>

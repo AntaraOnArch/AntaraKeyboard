@@ -6,6 +6,8 @@
     <string name="main_set_layout">Muuda paigutust</string>
     <string name="main_key_shape">Klahvide kuju</string>
     <string name="main_keyboard_rows">Klaviatuuri read</string>
+    <string name="main_key_height">Klahvide kõrgus: %1$d%%</string>
+    <string name="main_row_spacing">Ridade vahe: %1$s</string>
     <string name="main_bind_long_press">Pikk vajutus</string>
     <string name="main_colors">Värvid</string>
     <string name="main_vibration">Vibreerimine</string>

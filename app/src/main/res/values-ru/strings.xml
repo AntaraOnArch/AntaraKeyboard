@@ -6,6 +6,8 @@
     <string name="main_set_layout">Изменить раскладку</string>
     <string name="main_key_shape">Форма клавиш</string>
     <string name="main_keyboard_rows">Ряды клавиатуры</string>
+    <string name="main_key_height">Высота клавиш: %1$d %%</string>
+    <string name="main_row_spacing">Расстояние между рядами: %1$s</string>
     <string name="main_bind_long_press">Долгое нажатие</string>
     <string name="main_colors">Цвета</string>
     <string name="main_vibration">Вибрация</string>

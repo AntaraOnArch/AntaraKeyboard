@@ -6,6 +6,8 @@
     <string name="main_set_layout">Upraviť rozloženie</string>
     <string name="main_key_shape">Tvar klávesov</string>
     <string name="main_keyboard_rows">Rady klávesnice</string>
+    <string name="main_key_height">Výška klávesov: %1$d %%</string>
+    <string name="main_row_spacing">Medzera medzi radmi: %1$s</string>
     <string name="main_bind_long_press">Dlhé stlačenie</string>
     <string name="main_colors">Farby</string>
     <string name="main_vibration">Vibrácie</string>

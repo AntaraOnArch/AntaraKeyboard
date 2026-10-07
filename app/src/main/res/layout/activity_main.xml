@@ -104,6 +104,34 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
+        <!-- Key height (keyboard height follows) -->
+        <TextView
+            android:id="@+id/tvKeySize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/seekKeySize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <!-- Vertical space between rows -->
+        <TextView
+            android:id="@+id/tvRowSpacing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textSize="18sp" />
+
+        <SeekBar
+            android:id="@+id/seekRowSpacing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
         <!-- Bind + Reset -->
         <LinearLayout
             android:layout_width="match_parent"

@@ -2,6 +2,7 @@ package com.example.antarakeyboard.ui
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
@@ -50,6 +51,21 @@ class KeyView @JvmOverloads constructor(
         }
 
     var manualLabelSizeSp: Float? = null
+
+    /**
+     * Key height slider factor. The drawn shape gets taller/shorter by this factor and the view
+     * grows by exactly the shape's growth, so the space around the shape (row spacing) stays.
+     */
+    var heightStretch: Float = 1f
+        set(value) {
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
+        }
+
+    /** Box height before [heightStretch] (from onMeasure); shapes are built in this box. */
+    private var baseBoxHeight = 0
         set(value) {
             if (field == value) return
             field = value
@@ -143,6 +159,7 @@ class KeyView @JvmOverloads constructor(
     private val overlayPath = Path()
 
     private val path = Path()
+    private val stretchMatrix = Matrix()
 
 
     init {
@@ -239,16 +256,42 @@ class KeyView @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        if (!forceSquare) return
+        var w = measuredWidth
+        var h = measuredHeight
 
         // HEX_TALL mora smjeti ostati viši od širine.
         // Inače LayoutParams height iz MyKeyboardService nema nikakav efekt.
-        if (shape == KeyShape.HEX_TALL) {
-            return
+        if (forceSquare && shape != KeyShape.HEX_TALL) {
+            val s = min(w, h)
+            w = s
+            h = s
         }
 
-        val s = min(measuredWidth, measuredHeight)
-        setMeasuredDimension(s, s)
+        baseBoxHeight = h
+        if (heightStretch != 1f) {
+            h = (h + baseShapeHeight(w.toFloat(), h.toFloat()) * (heightStretch - 1f))
+                .toInt().coerceAtLeast(1)
+        }
+
+        if (w != measuredWidth || h != measuredHeight) setMeasuredDimension(w, h)
+    }
+
+    /** Height of the drawn shape inside a w×h box at 100 % (see the build* functions). */
+    private fun baseShapeHeight(w: Float, h: Float): Float = when (shape) {
+        KeyShape.HEX -> min(w, h) * 0.96f
+        KeyShape.HEX_TALL -> h * 0.96f
+        KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
+        KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
+        KeyShape.CIRCLE,
+        KeyShape.HEX_HALF_LEFT,
+        KeyShape.HEX_HALF_RIGHT -> h
+    }
+
+    /** Shapes whose proportions are fixed: built at 100 % and stretched vertically afterwards. */
+    private fun stretchesByTransform(): Boolean = when (shape) {
+        KeyShape.HEX, KeyShape.HEX_TALL, KeyShape.TRIANGLE -> true
+        // Circle, cube and half-hexes already fill whatever box they get
+        else -> false
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -291,7 +334,16 @@ class KeyView @JvmOverloads constructor(
         }
 
         path.reset()
-        buildShapePath(path, l, t, r, b)
+        if (heightStretch != 1f && stretchesByTransform() && baseBoxHeight > 0) {
+            // Build the 100 % shape in the original box, centered, then stretch it vertically
+            val cy = h * 0.5f
+            val halfBase = baseBoxHeight * 0.5f - inset
+            buildShapePath(path, l, cy - halfBase, r, cy + halfBase)
+            stretchMatrix.setScale(1f, heightStretch, w * 0.5f, cy)
+            path.transform(stretchMatrix)
+        } else {
+            buildShapePath(path, l, t, r, b)
+        }
 
         if (!hideFill) {
             canvas.drawPath(path, fill)

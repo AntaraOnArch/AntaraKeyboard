@@ -6,6 +6,8 @@
     <string name="main_set_layout">Rediģēt izkārtojumu</string>
     <string name="main_key_shape">Taustiņu forma</string>
     <string name="main_keyboard_rows">Tastatūras rindas</string>
+    <string name="main_key_height">Taustiņu augstums: %1$d%%</string>
+    <string name="main_row_spacing">Atstarpe starp rindām: %1$s</string>
     <string name="main_bind_long_press">Ilgā nospiešana</string>
     <string name="main_colors">Krāsas</string>
     <string name="main_vibration">Vibrācija</string>

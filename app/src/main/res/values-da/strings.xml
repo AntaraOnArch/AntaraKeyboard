@@ -6,6 +6,8 @@
     <string name="main_set_layout">Redigér layout</string>
     <string name="main_key_shape">Tasteform</string>
     <string name="main_keyboard_rows">Tastaturrækker</string>
+    <string name="main_key_height">Tastehøjde: %1$d %%</string>
+    <string name="main_row_spacing">Rækkeafstand: %1$s</string>
     <string name="main_bind_long_press">Langt tryk</string>
     <string name="main_colors">Farver</string>
     <string name="main_vibration">Vibration</string>
