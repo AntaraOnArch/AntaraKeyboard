@@ -13,6 +13,7 @@
     <string name="main_bind_long_press">Bind long press</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibration feedback</string>
+    <string name="main_suggestions">Word suggestions</string>
     <string name="main_export">Export settings</string>
     <string name="main_import">Import settings</string>
     <string name="export_done">Settings exported</string>
@@ -24,6 +25,11 @@
     <string name="import_confirm_title">Import settings?</string>
     <string name="import_confirm_message">This replaces your current layouts, colors and settings. They are saved as a backup first.</string>
     <string name="import_action">Import</string>
+    <string name="main_about">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Antara Keyboard has no internet access and collects nothing. Everything you type and all settings stay on your device, unless you export them yourself.</string>
+    <string name="about_licenses">Open-source licenses</string>
+    <string name="about_licenses_hint">Tap an entry to read its license.</string>
     <string name="main_language">Language</string>
     <string name="language_system_default">System default</string>
     <string name="main_theme">Theme</string>

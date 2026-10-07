@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Brú fada</string>
     <string name="main_colors">Dathanna</string>
     <string name="main_vibration">Creathadh</string>
+    <string name="main_suggestions">Moltaí focal</string>
     <string name="main_export">Easpórtáil socruithe</string>
     <string name="main_import">Iompórtáil socruithe</string>
     <string name="export_done">Socruithe easpórtáilte</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Iompórtáil socruithe?</string>
     <string name="import_confirm_message">Cuirfidh sé seo in ionad do leaganacha amach, dathanna agus socruithe reatha. Sábháiltear cúltaca ar dtús.</string>
     <string name="import_action">Iompórtáil</string>
+    <string name="main_about">Maidir leis</string>
+    <string name="about_version">Leagan %1$s</string>
+    <string name="about_privacy">Níl rochtain idirlín ag Méarchlár Antara agus ní bhailíonn sé faic. Fanann gach rud a chlóscríobhann tú agus gach socrú ar do ghléas, mura n-easpórtálann tú féin iad.</string>
+    <string name="about_licenses">Ceadúnais foinse oscailte</string>
+    <string name="about_licenses_hint">Tapáil iontráil chun a ceadúnas a léamh.</string>
     <string name="main_language">Teanga</string>
     <string name="language_system_default">Teanga an chórais</string>
     <string name="main_theme">Téama</string>

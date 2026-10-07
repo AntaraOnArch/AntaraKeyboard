@@ -216,6 +216,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
+        <!-- Word suggestions strip -->
+        <TextView
+            android:id="@+id/tvSuggestions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/main_suggestions"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/spinnerSuggestions"
+            style="@style/MainSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
         <!-- App language -->
         <TextView
             android:id="@+id/tvLanguage"
@@ -256,6 +272,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
+            app:textAllCaps="false" />
+
+        <!-- About & open-source licenses -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnAbout"
+            style="@style/MainRoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/main_about"
             app:textAllCaps="false" />
 
     </LinearLayout>

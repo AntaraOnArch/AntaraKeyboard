@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Дуги притисак</string>
     <string name="main_colors">Боје</string>
     <string name="main_vibration">Вибрација</string>
+    <string name="main_suggestions">Предлози речи</string>
     <string name="main_export">Извези подешавања</string>
     <string name="main_import">Увези подешавања</string>
     <string name="export_done">Подешавања су извезена</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Увести подешавања?</string>
     <string name="import_confirm_message">Ово замењује тренутне распореде, боје и подешавања. Пре тога се чувају као копија.</string>
     <string name="import_action">Увези</string>
+    <string name="main_about">О апликацији</string>
+    <string name="about_version">Верзија %1$s</string>
+    <string name="about_privacy">Антара тастатура нема приступ интернету и ништа не прикупља. Све што куцате и сва подешавања остају на вашем уређају, осим ако их сами не извезете.</string>
+    <string name="about_licenses">Лиценце отвореног кода</string>
+    <string name="about_licenses_hint">Додирните ставку за текст лиценце.</string>
     <string name="main_language">Језик</string>
     <string name="language_system_default">Језик система</string>
     <string name="main_theme">Тема</string>

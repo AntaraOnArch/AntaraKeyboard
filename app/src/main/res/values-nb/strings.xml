@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Langt trykk</string>
     <string name="main_colors">Farger</string>
     <string name="main_vibration">Vibrering</string>
+    <string name="main_suggestions">Ordforslag</string>
     <string name="main_export">Eksporter innstillinger</string>
     <string name="main_import">Importer innstillinger</string>
     <string name="export_done">Innstillinger eksportert</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importere innstillinger?</string>
     <string name="import_confirm_message">Dette erstatter nåværende oppsett, farger og innstillinger. De lagres først som sikkerhetskopi.</string>
     <string name="import_action">Importer</string>
+    <string name="main_about">Om appen</string>
+    <string name="about_version">Versjon %1$s</string>
+    <string name="about_privacy">Antara tastatur har ikke internettilgang og samler ikke inn noe. Alt du skriver og alle innstillinger blir på enheten din, med mindre du eksporterer dem selv.</string>
+    <string name="about_licenses">Lisenser for åpen kildekode</string>
+    <string name="about_licenses_hint">Trykk på en oppføring for å lese lisensen.</string>
     <string name="main_language">Språk</string>
     <string name="language_system_default">Systemspråk</string>
     <string name="main_theme">Tema</string>

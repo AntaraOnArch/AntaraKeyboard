@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Langt ýtt</string>
     <string name="main_colors">Litir</string>
     <string name="main_vibration">Titringur</string>
+    <string name="main_suggestions">Orðatillögur</string>
     <string name="main_export">Flytja út stillingar</string>
     <string name="main_import">Flytja inn stillingar</string>
     <string name="export_done">Stillingar fluttar út</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Flytja inn stillingar?</string>
     <string name="import_confirm_message">Þetta kemur í stað núverandi uppsetninga, lita og stillinga. Fyrst er vistað afrit.</string>
     <string name="import_action">Flytja inn</string>
+    <string name="main_about">Um forritið</string>
+    <string name="about_version">Útgáfa %1$s</string>
+    <string name="about_privacy">Antara lyklaborð hefur engan netaðgang og safnar engu. Allt sem þú skrifar og allar stillingar haldast á tækinu þínu, nema þú flytjir þær út sjálf(ur).</string>
+    <string name="about_licenses">Opnar hugbúnaðarleyfisveitingar</string>
+    <string name="about_licenses_hint">Ýttu á færslu til að lesa leyfið.</string>
     <string name="main_language">Tungumál</string>
     <string name="language_system_default">Tungumál kerfis</string>
     <string name="main_theme">Þema</string>

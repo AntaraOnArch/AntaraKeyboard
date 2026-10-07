@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Pulsació llarga</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibració</string>
+    <string name="main_suggestions">Suggeriments de paraules</string>
     <string name="main_export">Exporta la configuració</string>
     <string name="main_import">Importa la configuració</string>
     <string name="export_done">S\'ha exportat la configuració</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Vols importar la configuració?</string>
     <string name="import_confirm_message">Això substituirà les disposicions, els colors i la configuració actuals. Abans es desa una còpia.</string>
     <string name="import_action">Importa</string>
+    <string name="main_about">Quant a</string>
+    <string name="about_version">Versió %1$s</string>
+    <string name="about_privacy">El Teclat Antara no té accés a Internet i no recull res. Tot el que escrius i tota la configuració es queden al teu dispositiu, tret que els exportis tu.</string>
+    <string name="about_licenses">Llicències de codi obert</string>
+    <string name="about_licenses_hint">Toca una entrada per llegir-ne la llicència.</string>
     <string name="main_language">Idioma</string>
     <string name="language_system_default">Idioma del sistema</string>
     <string name="main_theme">Tema</string>

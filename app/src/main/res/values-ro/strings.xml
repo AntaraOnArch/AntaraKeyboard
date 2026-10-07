@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Apăsare lungă</string>
     <string name="main_colors">Culori</string>
     <string name="main_vibration">Vibrație</string>
+    <string name="main_suggestions">Sugestii de cuvinte</string>
     <string name="main_export">Exportă setările</string>
     <string name="main_import">Importă setările</string>
     <string name="export_done">Setări exportate</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Imporți setările?</string>
     <string name="import_confirm_message">Aranjamentele, culorile și setările actuale vor fi înlocuite. Înainte se salvează o copie.</string>
     <string name="import_action">Importă</string>
+    <string name="main_about">Despre</string>
+    <string name="about_version">Versiunea %1$s</string>
+    <string name="about_privacy">Tastatura Antara nu are acces la internet și nu colectează nimic. Tot ce scrii și toate setările rămân pe dispozitivul tău, dacă nu le exporți singur.</string>
+    <string name="about_licenses">Licențe open source</string>
+    <string name="about_licenses_hint">Atinge o intrare pentru a citi licența.</string>
     <string name="main_language">Limbă</string>
     <string name="language_system_default">Limba sistemului</string>
     <string name="main_theme">Temă</string>

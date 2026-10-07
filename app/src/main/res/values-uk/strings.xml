@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Довге натискання</string>
     <string name="main_colors">Кольори</string>
     <string name="main_vibration">Вібрація</string>
+    <string name="main_suggestions">Підказки слів</string>
     <string name="main_export">Експорт налаштувань</string>
     <string name="main_import">Імпорт налаштувань</string>
     <string name="export_done">Налаштування експортовано</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Імпортувати налаштування?</string>
     <string name="import_confirm_message">Поточні розкладки, кольори й налаштування буде замінено. Спершу їх збережуть як копію.</string>
     <string name="import_action">Імпорт</string>
+    <string name="main_about">Про застосунок</string>
+    <string name="about_version">Версія %1$s</string>
+    <string name="about_privacy">Антара клавіатура не має доступу до інтернету й нічого не збирає. Усе, що ви вводите, і всі налаштування залишаються на вашому пристрої, якщо ви самі їх не експортуєте.</string>
+    <string name="about_licenses">Ліцензії відкритого ПЗ</string>
+    <string name="about_licenses_hint">Торкніться пункту, щоб прочитати ліцензію.</string>
     <string name="main_language">Мова</string>
     <string name="language_system_default">Мова системи</string>
     <string name="main_theme">Тема</string>

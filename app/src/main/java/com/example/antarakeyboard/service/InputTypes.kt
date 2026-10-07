@@ -24,6 +24,24 @@ object InputTypes {
         }
     }
 
+    fun allowsSuggestions(info: EditorInfo?): Boolean = allowsSuggestions(info?.inputType ?: 0)
+
+    /**
+     * Word suggestions only make sense in normal text: not in passwords, numbers, e-mail
+     * addresses or URLs, and not where the app asks for none (TYPE_TEXT_FLAG_NO_SUGGESTIONS).
+     */
+    fun allowsSuggestions(inputType: Int): Boolean {
+        if (inputType and InputType.TYPE_MASK_CLASS != InputType.TYPE_CLASS_TEXT) return false
+        if (inputType and InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS != 0) return false
+        if (isPassword(inputType)) return false
+        return when (inputType and InputType.TYPE_MASK_VARIATION) {
+            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_URI -> false
+            else -> true
+        }
+    }
+
     fun prefersNumeric(inputType: Int): Boolean {
         return when (inputType and InputType.TYPE_MASK_CLASS) {
             InputType.TYPE_CLASS_NUMBER,

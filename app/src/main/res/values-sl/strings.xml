@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Dolg pritisk</string>
     <string name="main_colors">Barve</string>
     <string name="main_vibration">Vibriranje</string>
+    <string name="main_suggestions">Predlogi besed</string>
     <string name="main_export">Izvozi nastavitve</string>
     <string name="main_import">Uvozi nastavitve</string>
     <string name="export_done">Nastavitve izvožene</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Uvozim nastavitve?</string>
     <string name="import_confirm_message">S tem zamenjate trenutne postavitve, barve in nastavitve. Prej se shrani kopija.</string>
     <string name="import_action">Uvozi</string>
+    <string name="main_about">O aplikaciji</string>
+    <string name="about_version">Različica %1$s</string>
+    <string name="about_privacy">Tipkovnica Antara nima dostopa do interneta in ničesar ne zbira. Vse, kar natipkate, in vse nastavitve ostanejo v vaši napravi, razen če jih sami izvozite.</string>
+    <string name="about_licenses">Odprtokodne licence</string>
+    <string name="about_licenses_hint">Tapnite element, da preberete licenco.</string>
     <string name="main_language">Jezik</string>
     <string name="language_system_default">Sistemski jezik</string>
     <string name="main_theme">Tema</string>

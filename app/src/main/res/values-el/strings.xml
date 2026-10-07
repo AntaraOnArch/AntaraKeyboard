@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Παρατεταμένο πάτημα</string>
     <string name="main_colors">Χρώματα</string>
     <string name="main_vibration">Δόνηση</string>
+    <string name="main_suggestions">Προτάσεις λέξεων</string>
     <string name="main_export">Εξαγωγή ρυθμίσεων</string>
     <string name="main_import">Εισαγωγή ρυθμίσεων</string>
     <string name="export_done">Οι ρυθμίσεις εξήχθησαν</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Εισαγωγή ρυθμίσεων;</string>
     <string name="import_confirm_message">Θα αντικατασταθούν οι τρέχουσες διατάξεις, τα χρώματα και οι ρυθμίσεις. Πρώτα αποθηκεύεται αντίγραφο.</string>
     <string name="import_action">Εισαγωγή</string>
+    <string name="main_about">Σχετικά</string>
+    <string name="about_version">Έκδοση %1$s</string>
+    <string name="about_privacy">Το Πληκτρολόγιο Αντάρα δεν έχει πρόσβαση στο διαδίκτυο και δεν συλλέγει τίποτα. Ό,τι πληκτρολογείτε και όλες οι ρυθμίσεις μένουν στη συσκευή σας, εκτός αν τις εξαγάγετε εσείς.</string>
+    <string name="about_licenses">Άδειες ανοιχτού κώδικα</string>
+    <string name="about_licenses_hint">Πατήστε μια καταχώριση για να διαβάσετε την άδεια.</string>
     <string name="main_language">Γλώσσα</string>
     <string name="language_system_default">Γλώσσα συστήματος</string>
     <string name="main_theme">Θέμα</string>

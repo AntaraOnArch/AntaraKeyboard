@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Toque longo</string>
     <string name="main_colors">Cores</string>
     <string name="main_vibration">Vibração</string>
+    <string name="main_suggestions">Sugestões de palavras</string>
     <string name="main_export">Exportar definições</string>
     <string name="main_import">Importar definições</string>
     <string name="export_done">Definições exportadas</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importar definições?</string>
     <string name="import_confirm_message">Isto substitui as disposições, cores e definições atuais. Antes é guardada uma cópia.</string>
     <string name="import_action">Importar</string>
+    <string name="main_about">Acerca de</string>
+    <string name="about_version">Versão %1$s</string>
+    <string name="about_privacy">O Teclado Antara não tem acesso à Internet e não recolhe nada. Tudo o que escreve e todas as definições ficam no seu dispositivo, a menos que as exporte.</string>
+    <string name="about_licenses">Licenças de código aberto</string>
+    <string name="about_licenses_hint">Toque numa entrada para ler a licença.</string>
     <string name="main_language">Idioma</string>
     <string name="language_system_default">Idioma do sistema</string>
     <string name="main_theme">Tema</string>

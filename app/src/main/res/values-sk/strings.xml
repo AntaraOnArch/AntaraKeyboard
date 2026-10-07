@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Dlhé stlačenie</string>
     <string name="main_colors">Farby</string>
     <string name="main_vibration">Vibrácie</string>
+    <string name="main_suggestions">Návrhy slov</string>
     <string name="main_export">Exportovať nastavenia</string>
     <string name="main_import">Importovať nastavenia</string>
     <string name="export_done">Nastavenia exportované</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importovať nastavenia?</string>
     <string name="import_confirm_message">Týmto nahradíte aktuálne rozloženia, farby a nastavenia. Najprv sa uloží záloha.</string>
     <string name="import_action">Importovať</string>
+    <string name="main_about">O aplikácii</string>
+    <string name="about_version">Verzia %1$s</string>
+    <string name="about_privacy">Klávesnica Antara nemá prístup na internet a nič nezhromažďuje. Všetko, čo napíšete, a všetky nastavenia zostávajú vo vašom zariadení, pokiaľ ich sami neexportujete.</string>
+    <string name="about_licenses">Licencie open source</string>
+    <string name="about_licenses_hint">Ťuknutím na položku zobrazíte licenciu.</string>
     <string name="main_language">Jazyk</string>
     <string name="language_system_default">Jazyk systému</string>
     <string name="main_theme">Motív</string>

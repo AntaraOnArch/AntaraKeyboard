@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Dugi pritisak</string>
     <string name="main_colors">Boje</string>
     <string name="main_vibration">Vibracija</string>
+    <string name="main_suggestions">Prijedlozi riječi</string>
     <string name="main_export">Izvezi postavke</string>
     <string name="main_import">Uvezi postavke</string>
     <string name="export_done">Postavke su izvezene</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Uvesti postavke?</string>
     <string name="import_confirm_message">Ovo zamjenjuje trenutne rasporede, boje i postavke. Prije toga se čuvaju kao kopija.</string>
     <string name="import_action">Uvezi</string>
+    <string name="main_about">O aplikaciji</string>
+    <string name="about_version">Verzija %1$s</string>
+    <string name="about_privacy">Antara tastatura nema pristup internetu i ništa ne prikuplja. Sve što kucate i sve postavke ostaju na vašem uređaju, osim ako ih sami ne izvezete.</string>
+    <string name="about_licenses">Licence otvorenog koda</string>
+    <string name="about_licenses_hint">Dodirnite stavku za tekst licence.</string>
     <string name="main_language">Jezik</string>
     <string name="language_system_default">Jezik sistema</string>
     <string name="main_theme">Tema</string>

@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Доўгае націсканне</string>
     <string name="main_colors">Колеры</string>
     <string name="main_vibration">Вібрацыя</string>
+    <string name="main_suggestions">Падказкі слоў</string>
     <string name="main_export">Экспарт налад</string>
     <string name="main_import">Імпарт налад</string>
     <string name="export_done">Налады экспартаваны</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Імпартаваць налады?</string>
     <string name="import_confirm_message">Бягучыя раскладкі, колеры і налады будуць заменены. Спачатку яны захаваюцца як копія.</string>
     <string name="import_action">Імпарт</string>
+    <string name="main_about">Пра праграму</string>
+    <string name="about_version">Версія %1$s</string>
+    <string name="about_privacy">Антара клавіятура не мае доступу да інтэрнэту і нічога не збірае. Усё, што вы ўводзіце, і ўсе налады застаюцца на вашай прыладзе, калі вы самі іх не экспартуеце.</string>
+    <string name="about_licenses">Ліцэнзіі адкрытага ПЗ</string>
+    <string name="about_licenses_hint">Націсніце на пункт, каб прачытаць ліцэнзію.</string>
     <string name="main_language">Мова</string>
     <string name="language_system_default">Мова сістэмы</string>
     <string name="main_theme">Тэма</string>

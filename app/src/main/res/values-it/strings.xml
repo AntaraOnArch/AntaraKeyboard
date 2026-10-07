@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Pressione prolungata</string>
     <string name="main_colors">Colori</string>
     <string name="main_vibration">Vibrazione</string>
+    <string name="main_suggestions">Suggerimenti di parole</string>
     <string name="main_export">Esporta impostazioni</string>
     <string name="main_import">Importa impostazioni</string>
     <string name="export_done">Impostazioni esportate</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importare le impostazioni?</string>
     <string name="import_confirm_message">Layout, colori e impostazioni attuali verranno sostituiti. Prima viene salvato un backup.</string>
     <string name="import_action">Importa</string>
+    <string name="main_about">Informazioni</string>
+    <string name="about_version">Versione %1$s</string>
+    <string name="about_privacy">La Tastiera Antara non ha accesso a Internet e non raccoglie nulla. Tutto ciò che scrivi e tutte le impostazioni restano sul tuo dispositivo, a meno che non le esporti tu.</string>
+    <string name="about_licenses">Licenze open source</string>
+    <string name="about_licenses_hint">Tocca una voce per leggerne la licenza.</string>
     <string name="main_language">Lingua</string>
     <string name="language_system_default">Lingua di sistema</string>
     <string name="main_theme">Tema</string>

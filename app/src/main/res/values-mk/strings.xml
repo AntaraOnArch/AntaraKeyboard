@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Долго притискање</string>
     <string name="main_colors">Бои</string>
     <string name="main_vibration">Вибрација</string>
+    <string name="main_suggestions">Предлози за зборови</string>
     <string name="main_export">Извези поставки</string>
     <string name="main_import">Увези поставки</string>
     <string name="export_done">Поставките се извезени</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Да се увезат поставките?</string>
     <string name="import_confirm_message">Ова ги заменува тековните распореди, бои и поставки. Претходно се зачувува копија.</string>
     <string name="import_action">Увези</string>
+    <string name="main_about">За апликацијата</string>
+    <string name="about_version">Верзија %1$s</string>
+    <string name="about_privacy">Антара тастатура нема пристап до интернет и ништо не собира. Сè што пишувате и сите поставки остануваат на вашиот уред, освен ако самите не ги извезете.</string>
+    <string name="about_licenses">Лиценци со отворен код</string>
+    <string name="about_licenses_hint">Допрете ставка за да ја прочитате лиценцата.</string>
     <string name="main_language">Јазик</string>
     <string name="language_system_default">Јазик на системот</string>
     <string name="main_theme">Тема</string>

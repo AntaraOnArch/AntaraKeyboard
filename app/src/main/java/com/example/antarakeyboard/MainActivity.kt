@@ -33,6 +33,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import com.example.antarakeyboard.data.SettingsBackup
+import com.example.antarakeyboard.data.OpenSourceLicenses
 import com.example.antarakeyboard.service.KeyScale
 import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
@@ -247,6 +248,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupLanguageSpinner()
+        setupSuggestionsSpinner()
+
+        findViewById<Button>(R.id.btnAbout).setOnClickListener { showAboutDialog() }
 
         findViewById<Button>(R.id.btnExportSettings).setOnClickListener {
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date())
@@ -414,6 +418,140 @@ class MainActivity : AppCompatActivity() {
             else LocaleListCompat.forLanguageTags(language)
         )
         recreate()
+    }
+
+    /** About popup: version, privacy statement and the open-source licenses (same popup style). */
+    private fun showAboutDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val pad = 16.dp(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(getColor(R.color.main_app_bg))
+        }
+
+        root.addView(TextView(this).apply {
+            text = getString(R.string.app_name)
+            textSize = 20f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_version, appVersionName())
+            alpha = 0.75f
+            setPadding(0, 2.dp(this@MainActivity), 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_privacy)
+            textSize = 15f
+            setPadding(0, 0, 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_licenses)
+            textSize = 16f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_licenses_hint)
+            alpha = 0.75f
+            setPadding(0, 2.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
+        })
+
+        OpenSourceLicenses.ENTRIES.forEach { entry ->
+            root.addView(Button(this).apply {
+                text = "${entry.name}\n${entry.licenseName}"
+                isAllCaps = false
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setOnClickListener { showLicenseDialog(entry) }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 4.dp(this@MainActivity) })
+        }
+
+        // Scrolls only when the screen is too short (wrap content like every popup)
+        dialog.setContentView(ScrollView(this).apply { addView(root) })
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    /** Full license text of one component (from assets/licenses/). */
+    private fun showLicenseDialog(entry: OpenSourceLicenses.Entry) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val pad = 16.dp(this)
+        val licenseText = runCatching {
+            assets.open("licenses/${entry.licenseAsset}").bufferedReader().use { it.readText() }
+        }.getOrDefault(entry.licenseName)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(getColor(R.color.main_app_bg))
+        }
+        root.addView(TextView(this).apply {
+            text = entry.name
+            textSize = 18f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = "${entry.copyright}\n${entry.url}"
+            alpha = 0.75f
+            setTextIsSelectable(true)
+            setPadding(0, 4.dp(this@MainActivity), 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = licenseText
+            textSize = 12f
+            typeface = android.graphics.Typeface.MONOSPACE
+            setTextIsSelectable(true)
+        })
+        root.addView(Button(this).apply {
+            text = getString(R.string.action_close)
+            isAllCaps = false
+            setOnClickListener { dialog.dismiss() }
+        }, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { gravity = Gravity.END; topMargin = pad })
+
+        dialog.setContentView(ScrollView(this).apply { addView(root) })
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    private fun appVersionName(): String = runCatching {
+        val info = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0)
+        }
+        info.versionName
+    }.getOrNull().orEmpty()
+
+    /** Word suggestions above the keyboard: On / Off (off by default), like vibration. */
+    private fun setupSuggestionsSpinner() {
+        val spinner = findViewById<Spinner>(R.id.spinnerSuggestions)
+        spinner.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            vibrationOptions.map { getString(it) }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinner.setSelection(if (KeyboardPrefs.isSuggestionsEnabled(this)) 0 else 1)
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, position == 0)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
 
     /**

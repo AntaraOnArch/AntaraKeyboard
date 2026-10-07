@@ -1,0 +1,15 @@
+Word suggestion dictionaries
+
+The word lists in this app are derived from FrequencyWords by Hermit Dave
+(https://github.com/hermitdave/FrequencyWords), which builds frequency lists
+from the OpenSubtitles 2018 corpus (http://opus.nlpl.eu/OpenSubtitles2018.php).
+
+They are licensed under the Creative Commons Attribution-ShareAlike 4.0
+International License (CC BY-SA 4.0):
+https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+Changes made for this app: words lowercased, entries that are not words removed,
+lists limited to about 50,000 words per language, Serbian Latin and Cyrillic
+entries merged and transliterated into both scripts.
+
+The adapted word lists are shared under the same license (CC BY-SA 4.0).

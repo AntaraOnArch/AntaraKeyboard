@@ -55,6 +55,9 @@ import kotlin.math.roundToInt
 import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.ScriptMapper
+import com.example.antarakeyboard.service.suggest.SuggestionController
+import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
+import com.example.antarakeyboard.service.suggest.WordSuggester
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import java.util.Locale
@@ -69,6 +72,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     // A redraw requested while one is in progress runs right after it instead of being dropped
     private var pendingRedraw = false
     private var isPasswordInput = false
+
+    // Word suggestions: strip above the keys; the dictionary survives input view recreation
+    private val suggestionController by lazy {
+        SuggestionController(this, serviceScope) { refreshSuggestions() }
+    }
+    private lateinit var suggestionStrip: LinearLayout
+    private var suggestionsOn = false
+    private var suggestionsAllowedInField = false
     private var lastBottomInsetPx: Int = 0
 
     private var currentKeyboardConfig: KeyboardConfig = defaultKeyboardLayout
@@ -123,6 +134,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpacePickerWasShown = false
 
     private val DUAL_SPACE_HOLD_MS = 4000L
+
+    private val SUGGESTION_COUNT = 3
+    private val SUGGESTION_LOOKBEHIND = 48
 
     // RGB animation
     private var rgbAnimationJob: Job? = null
@@ -195,6 +209,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             ViewGroup.LayoutParams.WRAP_CONTENT,
             Gravity.BOTTOM
         )
+
+        // Suggestion strip sits above the rows, outside keyboardContainer (whose children
+        // must all be key rows – the side-button overlay relies on that)
+        suggestionStrip = createSuggestionStrip()
+        overlayLayer.addView(
+            suggestionStrip,
+            0,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                suggestionStripHeightPx(),
+                Gravity.TOP
+            )
+        )
+        updateSuggestionStrip()
 
         inputController = KeyInputController(this)
 
@@ -340,6 +368,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         isPasswordInput = InputTypes.isPassword(info)
         keyPreviewManager.setEnabled(!isPasswordInput)
 
+        // Word suggestions (main app switch); nothing in passwords, numbers, e-mails or URLs
+        suggestionsOn = KeyboardPrefs.isSuggestionsEnabled(this)
+        suggestionsAllowedInField = InputTypes.allowsSuggestions(info)
+        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
+        else suggestionController.release()
+        updateSuggestionStrip()
+
         KeyboardPrefs.ensureDefaultLongPress(this)
 
         // Refresh vibration preference
@@ -398,6 +433,113 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         resetTransientState()
+        if (::suggestionStrip.isInitialized) showSuggestions(emptyList())
+    }
+
+    override fun onUpdateSelection(
+        oldSelStart: Int,
+        oldSelEnd: Int,
+        newSelStart: Int,
+        newSelEnd: Int,
+        candidatesStart: Int,
+        candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        // Every typed key, delete, suggestion and cursor move ends up here
+        refreshSuggestions()
+    }
+
+    /* ───────── WORD SUGGESTIONS ───────── */
+
+    private fun suggestionStripHeightPx(): Int = 38.dp(this)
+
+    /** Dictionary for the current keyboard script and app/device language. */
+    private fun currentSuggestionDictionary(): String? {
+        val language = PrefsManager.getAppLanguage(this).ifEmpty { Locale.getDefault().toLanguageTag() }
+        return SuggestionDictionaries.forKeyboard(KeyboardPrefs.getSelectedLongPressPreset(this), language)
+    }
+
+    private fun createSuggestionStrip(): LinearLayout = LinearLayout(themedCtx).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        tag = "suggestion_strip"
+
+        repeat(SUGGESTION_COUNT) { index ->
+            if (index > 0) {
+                addView(View(themedCtx), LinearLayout.LayoutParams(1.dp(this@MyKeyboardService), 18.dp(this@MyKeyboardService)))
+            }
+            addView(
+                TextView(themedCtx).apply {
+                    gravity = Gravity.CENTER
+                    textSize = 16f
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setPadding(4.dp(this@MyKeyboardService), 0, 4.dp(this@MyKeyboardService), 0)
+                    setOnClickListener { view ->
+                        val suggestion = (view as TextView).text?.toString().orEmpty()
+                        if (suggestion.isNotEmpty()) {
+                            hapticManager.performHapticFeedback(view)
+                            applySuggestion(suggestion)
+                        }
+                    }
+                },
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            )
+        }
+    }
+
+    /**
+     * Shows the strip only when suggestions are on and the field allows them; fields that ask
+     * for none (passwords, numbers, e-mail, URL, TYPE_TEXT_FLAG_NO_SUGGESTIONS) get no strip.
+     * Recolors it to match the keys.
+     */
+    private fun updateSuggestionStrip() {
+        if (!::suggestionStrip.isInitialized) return
+        suggestionStrip.visibility =
+            if (suggestionsOn && suggestionsAllowedInField) View.VISIBLE else View.GONE
+        val text = emojiPickerColors().text
+        for (i in 0 until suggestionStrip.childCount) {
+            when (val child = suggestionStrip.getChildAt(i)) {
+                is TextView -> child.setTextColor(text)
+                else -> child.setBackgroundColor(androidx.core.graphics.ColorUtils.setAlphaComponent(text, 0x40))
+            }
+        }
+        refreshSuggestions()
+    }
+
+    private fun refreshSuggestions() {
+        if (!::suggestionStrip.isInitialized || !suggestionsOn) return
+        val word = if (suggestionsAllowedInField) currentTypedWord() else ""
+        showSuggestions(if (word.isEmpty()) emptyList() else suggestionController.suggest(word))
+    }
+
+    private fun showSuggestions(words: List<String>) {
+        var slot = 0
+        for (i in 0 until suggestionStrip.childCount) {
+            val view = suggestionStrip.getChildAt(i) as? TextView ?: continue
+            view.text = words.getOrNull(slot).orEmpty()
+            slot++
+        }
+    }
+
+    /** The word right before the cursor (empty with a selection or inside a word). */
+    private fun currentTypedWord(): String {
+        val ic = currentInputConnection ?: return ""
+        if (!ic.getSelectedText(0).isNullOrEmpty()) return ""
+        val before = ic.getTextBeforeCursor(SUGGESTION_LOOKBEHIND, 0) ?: return ""
+        val after = ic.getTextAfterCursor(1, 0) ?: ""
+        return WordSuggester.currentWord(before, after)
+    }
+
+    /** Replaces the word being typed with [suggestion] and adds a space. */
+    private fun applySuggestion(suggestion: String) {
+        val ic = currentInputConnection ?: return
+        val typed = currentTypedWord()
+        ic.beginBatchEdit()
+        if (typed.isNotEmpty()) ic.deleteSurroundingText(typed.length, 0)
+        ic.commitText("$suggestion ", 1)
+        ic.endBatchEdit()
+        deleteRestoreManager.clearRestoreBuffer()
     }
 
     override fun onWindowHidden() {
@@ -930,6 +1072,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         resetDualSpaceHoldState()
         hideLanguagePresetPopup()
+        // Another script types another language: switch the suggestion dictionary too
+        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
         redrawKeyboard()
     }
 
@@ -1129,8 +1273,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
          * Ne dodajemo umjetni minTarget ni extraBottomSafety jer su oni
          * stvarali prazan prostor gore.
          */
+        val stripH = if (::suggestionStrip.isInitialized && suggestionStrip.visibility == View.VISIBLE) {
+            suggestionStripHeightPx()
+        } else {
+            0
+        }
         val desiredHeight =
             contentH +
+                    stripH +
                     overlayLayer.paddingTop +
                     overlayLayer.paddingBottom
 

@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Ilgā nospiešana</string>
     <string name="main_colors">Krāsas</string>
     <string name="main_vibration">Vibrācija</string>
+    <string name="main_suggestions">Vārdu ieteikumi</string>
     <string name="main_export">Eksportēt iestatījumus</string>
     <string name="main_import">Importēt iestatījumus</string>
     <string name="export_done">Iestatījumi eksportēti</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Vai importēt iestatījumus?</string>
     <string name="import_confirm_message">Tiks aizstāti pašreizējie izkārtojumi, krāsas un iestatījumi. Vispirms tiek saglabāts dublējums.</string>
     <string name="import_action">Importēt</string>
+    <string name="main_about">Par lietotni</string>
+    <string name="about_version">Versija %1$s</string>
+    <string name="about_privacy">Antara tastatūrai nav piekļuves internetam, un tā neko nevāc. Viss, ko rakstāt, un visi iestatījumi paliek jūsu ierīcē, ja vien jūs tos paši neeksportējat.</string>
+    <string name="about_licenses">Atvērtā pirmkoda licences</string>
+    <string name="about_licenses_hint">Pieskarieties ierakstam, lai lasītu licenci.</string>
     <string name="main_language">Valoda</string>
     <string name="language_system_default">Sistēmas valoda</string>
     <string name="main_theme">Motīvs</string>

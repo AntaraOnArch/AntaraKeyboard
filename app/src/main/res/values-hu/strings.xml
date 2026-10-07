@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Hosszú nyomás</string>
     <string name="main_colors">Színek</string>
     <string name="main_vibration">Rezgés</string>
+    <string name="main_suggestions">Szójavaslatok</string>
     <string name="main_export">Beállítások exportálása</string>
     <string name="main_import">Beállítások importálása</string>
     <string name="export_done">Beállítások exportálva</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importálja a beállításokat?</string>
     <string name="import_confirm_message">Ez lecseréli a jelenlegi kiosztásokat, színeket és beállításokat. Előtte mentés készül.</string>
     <string name="import_action">Importálás</string>
+    <string name="main_about">Névjegy</string>
+    <string name="about_version">Verzió: %1$s</string>
+    <string name="about_privacy">Az Antara billentyűzet nem fér hozzá az internethez, és semmit sem gyűjt. Minden, amit begépel, és minden beállítás az eszközén marad, hacsak nem exportálja őket.</string>
+    <string name="about_licenses">Nyílt forráskódú licencek</string>
+    <string name="about_licenses_hint">Koppintson egy elemre a licenc elolvasásához.</string>
     <string name="main_language">Nyelv</string>
     <string name="language_system_default">Rendszer nyelve</string>
     <string name="main_theme">Téma</string>

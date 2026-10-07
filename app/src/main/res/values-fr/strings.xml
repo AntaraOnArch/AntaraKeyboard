@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Appui long</string>
     <string name="main_colors">Couleurs</string>
     <string name="main_vibration">Vibration</string>
+    <string name="main_suggestions">Suggestions de mots</string>
     <string name="main_export">Exporter les réglages</string>
     <string name="main_import">Importer les réglages</string>
     <string name="export_done">Réglages exportés</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importer les réglages ?</string>
     <string name="import_confirm_message">Vos dispositions, couleurs et réglages actuels seront remplacés. Ils sont d\'abord sauvegardés.</string>
     <string name="import_action">Importer</string>
+    <string name="main_about">À propos</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Le Clavier Antara n\'a pas accès à Internet et ne collecte rien. Tout ce que vous saisissez et tous les réglages restent sur votre appareil, sauf si vous les exportez vous-même.</string>
+    <string name="about_licenses">Licences open source</string>
+    <string name="about_licenses_hint">Touchez un élément pour lire sa licence.</string>
     <string name="main_language">Langue</string>
     <string name="language_system_default">Langue du système</string>
     <string name="main_theme">Thème</string>

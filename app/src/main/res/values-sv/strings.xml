@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Långt tryck</string>
     <string name="main_colors">Färger</string>
     <string name="main_vibration">Vibration</string>
+    <string name="main_suggestions">Ordförslag</string>
     <string name="main_export">Exportera inställningar</string>
     <string name="main_import">Importera inställningar</string>
     <string name="export_done">Inställningar exporterade</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Importera inställningar?</string>
     <string name="import_confirm_message">Detta ersätter dina nuvarande layouter, färger och inställningar. De sparas först som säkerhetskopia.</string>
     <string name="import_action">Importera</string>
+    <string name="main_about">Om appen</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Antara tangentbord har ingen internetåtkomst och samlar inte in något. Allt du skriver och alla inställningar stannar på din enhet, om du inte själv exporterar dem.</string>
+    <string name="about_licenses">Licenser för öppen källkod</string>
+    <string name="about_licenses_hint">Tryck på en post för att läsa licensen.</string>
     <string name="main_language">Språk</string>
     <string name="language_system_default">Systemets språk</string>
     <string name="main_theme">Tema</string>

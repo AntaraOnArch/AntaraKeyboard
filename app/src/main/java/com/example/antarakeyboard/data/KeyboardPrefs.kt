@@ -533,6 +533,18 @@ object KeyboardPrefs {
             .apply()
     }
 
+    /* ───────── WORD SUGGESTIONS ───────── */
+
+    private const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
+
+    /** Word suggestion strip above the keyboard (off by default). */
+    fun isSuggestionsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, false)
+
+    fun setSuggestionsEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, enabled).apply()
+    }
+
     /* ───────── VIBRATION ───────── */
 
     private const val KEY_VIBRATION_ENABLED = "vibration_enabled"

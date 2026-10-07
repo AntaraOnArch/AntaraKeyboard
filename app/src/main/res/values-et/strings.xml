@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Pikk vajutus</string>
     <string name="main_colors">Värvid</string>
     <string name="main_vibration">Vibreerimine</string>
+    <string name="main_suggestions">Sõnasoovitused</string>
     <string name="main_export">Ekspordi seaded</string>
     <string name="main_import">Impordi seaded</string>
     <string name="export_done">Seaded eksporditud</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Kas importida seaded?</string>
     <string name="import_confirm_message">See asendab praegused paigutused, värvid ja seaded. Need salvestatakse enne varukoopiana.</string>
     <string name="import_action">Impordi</string>
+    <string name="main_about">Teave</string>
+    <string name="about_version">Versioon %1$s</string>
+    <string name="about_privacy">Antara klaviatuuril pole internetiühendust ja see ei kogu midagi. Kõik, mida kirjutad, ja kõik seaded jäävad sinu seadmesse, kui sa neid ise ei ekspordi.</string>
+    <string name="about_licenses">Avatud lähtekoodiga litsentsid</string>
+    <string name="about_licenses_hint">Litsentsi lugemiseks puuduta kirjet.</string>
     <string name="main_language">Keel</string>
     <string name="language_system_default">Süsteemi keel</string>
     <string name="main_theme">Teema</string>

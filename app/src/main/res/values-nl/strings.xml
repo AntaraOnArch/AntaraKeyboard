@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Lang indrukken</string>
     <string name="main_colors">Kleuren</string>
     <string name="main_vibration">Trillen</string>
+    <string name="main_suggestions">Woordsuggesties</string>
     <string name="main_export">Instellingen exporteren</string>
     <string name="main_import">Instellingen importeren</string>
     <string name="export_done">Instellingen geëxporteerd</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Instellingen importeren?</string>
     <string name="import_confirm_message">Dit vervangt je huidige indelingen, kleuren en instellingen. Die worden eerst als back-up opgeslagen.</string>
     <string name="import_action">Importeren</string>
+    <string name="main_about">Over</string>
+    <string name="about_version">Versie %1$s</string>
+    <string name="about_privacy">Antara Toetsenbord heeft geen internettoegang en verzamelt niets. Alles wat je typt en alle instellingen blijven op je apparaat, tenzij je ze zelf exporteert.</string>
+    <string name="about_licenses">Opensourcelicenties</string>
+    <string name="about_licenses_hint">Tik op een item om de licentie te lezen.</string>
     <string name="main_language">Taal</string>
     <string name="language_system_default">Systeemtaal</string>
     <string name="main_theme">Thema</string>

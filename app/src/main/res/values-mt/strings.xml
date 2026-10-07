@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Għafsa twila</string>
     <string name="main_colors">Kuluri</string>
     <string name="main_vibration">Vibrazzjoni</string>
+    <string name="main_suggestions">Suġġerimenti tal-kliem</string>
     <string name="main_export">Esporta s-settings</string>
     <string name="main_import">Importa s-settings</string>
     <string name="export_done">Is-settings ġew esportati</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Timporta s-settings?</string>
     <string name="import_confirm_message">Dan jissostitwixxi t-tqassimiet, il-kuluri u s-settings attwali. L-ewwel jiġi salvat backup.</string>
     <string name="import_action">Importa</string>
+    <string name="main_about">Dwar l-app</string>
+    <string name="about_version">Verżjoni %1$s</string>
+    <string name="about_privacy">It-Tastiera Antara m\'għandhiex aċċess għall-internet u ma tiġbor xejn. Dak kollu li tikteb u s-settings kollha jibqgħu fuq it-tagħmir tiegħek, sakemm ma tesportahomx int.</string>
+    <string name="about_licenses">Liċenzji open source</string>
+    <string name="about_licenses_hint">Ittappja entrata biex taqra l-liċenzja.</string>
     <string name="main_language">Lingwa</string>
     <string name="language_system_default">Lingwa tas-sistema</string>
     <string name="main_theme">Tema</string>

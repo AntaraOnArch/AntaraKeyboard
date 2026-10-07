@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Долгое нажатие</string>
     <string name="main_colors">Цвета</string>
     <string name="main_vibration">Вибрация</string>
+    <string name="main_suggestions">Подсказки слов</string>
     <string name="main_export">Экспорт настроек</string>
     <string name="main_import">Импорт настроек</string>
     <string name="export_done">Настройки экспортированы</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Импортировать настройки?</string>
     <string name="import_confirm_message">Текущие раскладки, цвета и настройки будут заменены. Сначала они сохранятся как копия.</string>
     <string name="import_action">Импорт</string>
+    <string name="main_about">О приложении</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_privacy">Антара клавиатура не имеет доступа к интернету и ничего не собирает. Всё, что вы вводите, и все настройки остаются на вашем устройстве, если вы сами их не экспортируете.</string>
+    <string name="about_licenses">Лицензии открытого ПО</string>
+    <string name="about_licenses_hint">Нажмите на пункт, чтобы прочитать лицензию.</string>
     <string name="main_language">Язык</string>
     <string name="language_system_default">Язык системы</string>
     <string name="main_theme">Тема</string>

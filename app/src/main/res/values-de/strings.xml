@@ -11,6 +11,7 @@
     <string name="main_bind_long_press">Langes Drücken</string>
     <string name="main_colors">Farben</string>
     <string name="main_vibration">Vibration</string>
+    <string name="main_suggestions">Wortvorschläge</string>
     <string name="main_export">Einstellungen exportieren</string>
     <string name="main_import">Einstellungen importieren</string>
     <string name="export_done">Einstellungen exportiert</string>
@@ -22,6 +23,11 @@
     <string name="import_confirm_title">Einstellungen importieren?</string>
     <string name="import_confirm_message">Dies ersetzt deine aktuellen Layouts, Farben und Einstellungen. Sie werden vorher als Sicherung gespeichert.</string>
     <string name="import_action">Importieren</string>
+    <string name="main_about">Über die App</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Antara Tastatur hat keinen Internetzugriff und sammelt nichts. Alles, was du tippst, und alle Einstellungen bleiben auf deinem Gerät, außer du exportierst sie selbst.</string>
+    <string name="about_licenses">Open-Source-Lizenzen</string>
+    <string name="about_licenses_hint">Tippe auf einen Eintrag, um die Lizenz zu lesen.</string>
     <string name="main_language">Sprache</string>
     <string name="language_system_default">Systemstandard</string>
     <string name="main_theme">Design</string>
