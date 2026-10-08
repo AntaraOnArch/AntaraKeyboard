@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritiska tecken</string>
     <string name="lp_cat_latin">Latinska bokstäver</string>
     <string name="lp_cat_cyrillic">Kyrilliska bokstäver</string>
+    <string name="lp_cat_greek">Grekiska bokstäver</string>
     <string name="lp_cat_currency">Valutor</string>
     <string name="lp_cat_symbols">Symboler</string>
     <string name="lp_cat_brackets">Parenteser</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Citattecken</string>
     <string name="a11y_key">Tangent %1$s</string>
-    <string name="script_picker_title">Välj skriftsystem</string>
-    <string name="script_picker_close">Stäng</string>
-    <string name="script_latin">Latinskt</string>
-    <string name="script_serbian_cyrillic">Serbisk kyrillisk</string>
-    <string name="script_bulgarian_cyrillic">Bulgarisk kyrillisk</string>
-    <string name="script_russian_cyrillic">Rysk kyrillisk</string>
-    <string name="script_ukrainian_cyrillic">Ukrainsk kyrillisk</string>
-    <string name="script_macedonian_cyrillic">Makedonsk kyrillisk</string>
     <string name="emoji_loading">Läser in…</string>
     <string name="emoji_no_recent">Inga senaste emoji</string>
     <string name="emoji_empty_category">Inga emoji i den här kategorin</string>

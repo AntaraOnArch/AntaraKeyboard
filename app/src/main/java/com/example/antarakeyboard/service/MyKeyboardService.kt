@@ -55,6 +55,8 @@ import kotlin.math.roundToInt
 import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.ScriptMapper
+import com.example.antarakeyboard.data.AppLanguageSettings
+import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.service.suggest.SuggestionController
 import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
 import com.example.antarakeyboard.service.suggest.WordSuggester
@@ -787,6 +789,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         languagePresetPopup = null
     }
 
+    /**
+     * Dual-space picker: the same language choice as the main app (System default + every
+     * translation, each in its own language). Choosing one sets the app language and the
+     * keyboard script that goes with it (Cyrillic languages type Cyrillic).
+     */
     private fun showLanguagePresetPopup() {
         hideLongPressPopup()
         hideEmojiPopup()
@@ -803,215 +810,67 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val popupBg = pickerColors.panel
         val popupText = pickerColors.text
 
-        val selectedPreset = KeyboardPrefs.getSelectedLongPressPreset(this)
-
         val root = LinearLayout(themedCtx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(20.dp(this), 18.dp(this), 20.dp(this), 14.dp(this))
             setBackgroundColor(popupBg)
         }
 
-        val title = TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.script_picker_title)
+        root.addView(TextView(themedCtx).apply {
+            text = themedCtx.getString(R.string.main_language)
             textSize = 18f
             setTextColor(popupText)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(0, 0, 0, 14.dp(this))
-        }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        val radioGroup = RadioGroup(themedCtx).apply {
-            orientation = RadioGroup.VERTICAL
-        }
+        val tags = listOf("") + AppLanguages.TAGS
+        val current = AppLanguageSettings.selectedTag(this).let { AppLanguages.match(it) ?: "" }
 
-        fun makeRadioButton(
-            titleText: String,
-            subtitleText: String
-        ): RadioButton {
-            return RadioButton(themedCtx).apply {
-                text = "$titleText\n$subtitleText"
-                textSize = 15f
+        val radioGroup = RadioGroup(themedCtx).apply { orientation = RadioGroup.VERTICAL }
+        val idToTag = HashMap<Int, String>()
+        tags.forEach { tag ->
+            val id = View.generateViewId()
+            idToTag[id] = tag
+            radioGroup.addView(RadioButton(themedCtx).apply {
+                this.id = id
+                text = if (tag.isEmpty()) themedCtx.getString(R.string.language_system_default)
+                else AppLanguages.nativeName(tag)
+                textSize = 16f
                 setTextColor(popupText)
-                includeFontPadding = true
-                setPadding(0, 8.dp(this), 0, 8.dp(this))
-                isClickable = true
+                setPadding(0, 6.dp(this), 0, 6.dp(this))
                 isFocusable = false
-            }
+            }, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
-
-        val latinId = View.generateViewId()
-        val serbianCyrId = View.generateViewId()
-        val bulgarianCyrId = View.generateViewId()
-        val russianCyrId = View.generateViewId()
-        val ukrainianCyrId = View.generateViewId()
-        val macedonianCyrId = View.generateViewId()
-
-        val latinRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_latin),
-            subtitleText = themedCtx.getString(R.string.script_latin_sample)
-        ).apply {
-            id = latinId
-        }
-
-        val serbianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_serbian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_serbian_cyrillic_sample)
-        ).apply {
-            id = serbianCyrId
-        }
-
-        val bulgarianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_bulgarian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_bulgarian_cyrillic_sample)
-        ).apply {
-            id = bulgarianCyrId
-        }
-
-        val russianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_russian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_russian_cyrillic_sample)
-        ).apply {
-            id = russianCyrId
-        }
-        val ukrainianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_ukrainian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_ukrainian_cyrillic_sample)
-        ).apply {
-            id = ukrainianCyrId
-        }
-
-        val macedonianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_macedonian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_macedonian_cyrillic_sample)
-        ).apply {
-            id = macedonianCyrId
-        }
-
-        radioGroup.addView(
-            latinRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            serbianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            bulgarianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            russianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-        radioGroup.addView(
-            ukrainianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            macedonianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val initialCheckedId = when (selectedPreset) {
-            LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrId
-            LongPressPresets.PRESET_BULGARIAN_CYRILLIC -> bulgarianCyrId
-            LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrId
-            LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrId
-            LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrId
-            else -> latinId
-        }
-
-        radioGroup.check(initialCheckedId)
+        idToTag.entries.firstOrNull { it.value == current }?.let { radioGroup.check(it.key) }
 
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val presetId = when (checkedId) {
-                serbianCyrId -> LongPressPresets.PRESET_SERBIAN_CYRILLIC
-                bulgarianCyrId -> LongPressPresets.PRESET_BULGARIAN_CYRILLIC
-                russianCyrId -> LongPressPresets.PRESET_RUSSIAN_CYRILLIC
-                ukrainianCyrId -> LongPressPresets.PRESET_UKRAINIAN_CYRILLIC
-                macedonianCyrId -> LongPressPresets.PRESET_MACEDONIAN_CYRILLIC
-                else -> LongPressPresets.PRESET_LATIN
-            }
-
-            applyLongPressPresetAndRefresh(presetId)
+            val tag = idToTag[checkedId] ?: return@setOnCheckedChangeListener
+            applyLanguageFromPicker(tag)
         }
 
-        val closeBtn = TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.script_picker_close)
+        val scroll = ScrollView(themedCtx).apply {
+            isFillViewport = false
+            addView(radioGroup, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+        root.addView(scroll, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            (resources.displayMetrics.heightPixels * 0.46f).toInt()
+        ))
+
+        root.addView(TextView(themedCtx).apply {
+            text = themedCtx.getString(R.string.action_close)
             textSize = 14f
             setTextColor(popupText)
             gravity = Gravity.CENTER
             setPadding(8.dp(this), 16.dp(this), 8.dp(this), 0)
             isClickable = true
             isFocusable = false
-            setOnClickListener {
-                hideLanguagePresetPopup()
-            }
-        }
+            setOnClickListener { hideLanguagePresetPopup() }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        root.addView(
-            title,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-        val scroll = ScrollView(themedCtx).apply {
-            isFillViewport = false
-
-            addView(
-                radioGroup,
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-        }
-
-        root.addView(
-            scroll,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                (resources.displayMetrics.heightPixels * 0.46f).toInt()
-            )
-        )
-
-        root.addView(
-            closeBtn,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val popup = PopupWindow(
-            root,
-            popupWidth,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        ).apply {
+        val popup = PopupWindow(root, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             isFocusable = true
             isClippingEnabled = false
@@ -1019,44 +878,30 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setOnDismissListener {
                 languagePresetPopup = null
-
                 if (!leftSpaceHeld && !rightSpaceHeld) {
                     dualSpacePickerWasShown = false
                 }
             }
         }
-
         languagePresetPopup = popup
 
-        /*
-         * Gravity.CENTER je sigurniji od ručnog x/y računanja.
-         * U IME-u ovo je najstabilniji modal bez rušenja.
-         */
+        // showAtLocation in an IME is relative to the rootView window: convert screen Y to local Y
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
-
         val rootLoc = IntArray(2)
         rootView.getLocationOnScreen(rootLoc)
+        val localX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
+        val localY = (screenH * 0.105f).toInt().coerceAtLeast(54.dp(this)) - rootLoc[1]
 
-        val desiredScreenX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
+        popup.showAtLocation(rootView, Gravity.NO_GRAVITY, localX, localY)
+    }
 
-// Ovo je pozicija crvenog kvadrata sa screenshota.
-// Smanji na 0.08f ako želiš još više gore.
-// Povećaj na 0.14f ako želiš malo niže.
-        val desiredScreenY = (screenH * 0.105f).toInt()
-            .coerceAtLeast(54.dp(this))
-
-// showAtLocation kod IME-a radi relativno prema rootView prozoru,
-// zato screen Y pretvaramo u lokalni Y.
-        val localX = desiredScreenX
-        val localY = desiredScreenY - rootLoc[1]
-
-        popup.showAtLocation(
-            rootView,
-            Gravity.NO_GRAVITY,
-            localX,
-            localY
-        )
+    /** Language chosen on the keyboard: same effect as the main app's Language dropdown. */
+    private fun applyLanguageFromPicker(tag: String) {
+        AppLanguageSettings.select(this, tag)
+        applyLongPressPresetAndRefresh(KeyboardPrefs.getSelectedLongPressPreset(this))
+        // New language for the keyboard's own texts (Android 13+ also sends a configuration change)
+        overlayLayer.post { recreateInputView() }
     }
 
     private fun applyLongPressPresetAndRefresh(presetId: String) {
@@ -3092,7 +2937,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     val absDy = kotlin.math.abs(dy)
 
                     // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
-                    val horizontalSwipe = inputController.isHorizontalSwipeActive()
+                    val horizontalSwipe = inputController.isHorizontalSwipeActive(v as TextView)
 
                     // 123 swipe-up => emoji samo na 4/5 row alphabet layoutu
                     if (!longPressTriggered &&
@@ -3160,8 +3005,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         }
                     }
 
-                    // Skip swipe gestures when long press popup is active
-                    if (!longPressTriggered) {
+                    // Skip swipe gestures when long press popup is active, and while both space
+                    // keys are held (dual-space script/language picker) – that is no swipe
+                    if (!longPressTriggered && !(leftSpaceHeld && rightSpaceHeld)) {
                         inputController.handleTouch(v as TextView, e)
                     }
                     true

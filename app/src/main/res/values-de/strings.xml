@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritika</string>
     <string name="lp_cat_latin">Lateinische Buchstaben</string>
     <string name="lp_cat_cyrillic">Kyrillische Buchstaben</string>
+    <string name="lp_cat_greek">Griechische Buchstaben</string>
     <string name="lp_cat_currency">Währungen</string>
     <string name="lp_cat_symbols">Symbole</string>
     <string name="lp_cat_brackets">Klammern</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostroph</string>
     <string name="a11y_quote">Anführungszeichen</string>
     <string name="a11y_key">Taste %1$s</string>
-    <string name="script_picker_title">Schrift wählen</string>
-    <string name="script_picker_close">Schließen</string>
-    <string name="script_latin">Lateinisch</string>
-    <string name="script_serbian_cyrillic">Serbisch kyrillisch</string>
-    <string name="script_bulgarian_cyrillic">Bulgarisch kyrillisch</string>
-    <string name="script_russian_cyrillic">Russisch kyrillisch</string>
-    <string name="script_ukrainian_cyrillic">Ukrainisch kyrillisch</string>
-    <string name="script_macedonian_cyrillic">Mazedonisch kyrillisch</string>
     <string name="emoji_loading">Wird geladen…</string>
     <string name="emoji_no_recent">Keine zuletzt verwendeten Emojis</string>
     <string name="emoji_empty_category">Keine Emojis in dieser Kategorie</string>

@@ -37,4 +37,18 @@ class AppLanguagesTest {
         assertNull(AppLanguages.match(""))
         assertNull(AppLanguages.match(null))
     }
+
+    @Test
+    fun languageDecidesTheKeyboardScript() {
+        assertEquals(LongPressPresets.PRESET_SERBIAN_CYRILLIC, AppLanguages.scriptPresetFor("sr"))
+        assertEquals(LongPressPresets.PRESET_LATIN, AppLanguages.scriptPresetFor("sr-Latn"))
+        assertEquals(LongPressPresets.PRESET_MACEDONIAN_CYRILLIC, AppLanguages.scriptPresetFor("mk-MK"))
+        assertEquals(LongPressPresets.PRESET_RUSSIAN_CYRILLIC, AppLanguages.scriptPresetFor("ru"))
+        assertEquals(LongPressPresets.PRESET_RUSSIAN_CYRILLIC, AppLanguages.scriptPresetFor("be"))
+        assertEquals(LongPressPresets.PRESET_UKRAINIAN_CYRILLIC, AppLanguages.scriptPresetFor("uk"))
+        assertEquals(LongPressPresets.PRESET_BULGARIAN_CYRILLIC, AppLanguages.scriptPresetFor("bg"))
+        assertEquals(LongPressPresets.PRESET_LATIN, AppLanguages.scriptPresetFor("hr-HR"))
+        assertEquals(LongPressPresets.PRESET_LATIN, AppLanguages.scriptPresetFor("de"))
+        assertEquals(LongPressPresets.PRESET_GREEK, AppLanguages.scriptPresetFor("el-GR"))
+    }
 }

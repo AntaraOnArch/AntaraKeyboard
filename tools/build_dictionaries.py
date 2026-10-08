@@ -21,7 +21,7 @@ URL = "https://raw.githubusercontent.com/hermitdave/FrequencyWords/{commit}/cont
 OUT = os.path.join("app", "src", "main", "assets", "dictionaries")
 
 # Output file -> source language
-SIMPLE = {"en": "en", "hr": "hr", "bs": "bs", "de": "de", "ru": "ru"}
+SIMPLE = {"en": "en", "hr": "hr", "bs": "bs", "de": "de", "ru": "ru", "el": "el"}
 
 LAT_TO_CYR = [("lj", "љ"), ("nj", "њ"), ("dž", "џ")] + [(a, b) for a, b in zip(
     "abvgdđežzijklmnoprstćufhcčš", "абвгдђежзијклмнопрстћуфхцчш")]

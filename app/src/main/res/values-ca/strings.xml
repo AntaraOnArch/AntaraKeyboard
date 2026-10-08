@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diacrítics</string>
     <string name="lp_cat_latin">Lletres llatines</string>
     <string name="lp_cat_cyrillic">Lletres ciríl·liques</string>
+    <string name="lp_cat_greek">Lletres gregues</string>
     <string name="lp_cat_currency">Monedes</string>
     <string name="lp_cat_symbols">Símbols</string>
     <string name="lp_cat_brackets">Parèntesis</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apòstrof</string>
     <string name="a11y_quote">Cometes</string>
     <string name="a11y_key">Tecla %1$s</string>
-    <string name="script_picker_title">Tria l\'alfabet</string>
-    <string name="script_picker_close">Tanca</string>
-    <string name="script_latin">Llatí</string>
-    <string name="script_serbian_cyrillic">Ciríl·lic serbi</string>
-    <string name="script_bulgarian_cyrillic">Ciríl·lic búlgar</string>
-    <string name="script_russian_cyrillic">Ciríl·lic rus</string>
-    <string name="script_ukrainian_cyrillic">Ciríl·lic ucraïnès</string>
-    <string name="script_macedonian_cyrillic">Ciríl·lic macedoni</string>
     <string name="emoji_loading">S\'està carregant…</string>
     <string name="emoji_no_recent">No hi ha emojis recents</string>
     <string name="emoji_empty_category">No hi ha emojis en aquesta categoria</string>

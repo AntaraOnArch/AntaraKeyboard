@@ -30,6 +30,16 @@ class ScriptMapperTest {
     }
 
     @Test
+    fun greekUsesTheStandardGreekLayout() {
+        val greek = LongPressPresets.PRESET_GREEK
+        assertEquals("α", ScriptMapper.map(greek, "a"))
+        assertEquals("Ψ", ScriptMapper.map(greek, "C"))
+        assertEquals("θ", ScriptMapper.map(greek, "u"))
+        assertEquals("ς", ScriptMapper.map(greek, "w"))
+        assertEquals("Ω", ScriptMapper.map(greek, "V"))
+    }
+
+    @Test
     fun nonLettersAndMultiCharLabelsAreUnchanged() {
         val serbian = LongPressPresets.PRESET_SERBIAN_CYRILLIC
         assertEquals("1", ScriptMapper.map(serbian, "1"))

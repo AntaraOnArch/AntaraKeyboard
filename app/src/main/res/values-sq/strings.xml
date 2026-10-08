@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritikë</string>
     <string name="lp_cat_latin">Shkronja latine</string>
     <string name="lp_cat_cyrillic">Shkronja cirilike</string>
+    <string name="lp_cat_greek">Shkronja greke</string>
     <string name="lp_cat_currency">Monedha</string>
     <string name="lp_cat_symbols">Simbole</string>
     <string name="lp_cat_brackets">Kllapa</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Thonjëza</string>
     <string name="a11y_key">Tasti %1$s</string>
-    <string name="script_picker_title">Zgjidh alfabetin</string>
-    <string name="script_picker_close">Mbyll</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Cirilik serb</string>
-    <string name="script_bulgarian_cyrillic">Cirilik bullgar</string>
-    <string name="script_russian_cyrillic">Cirilik rus</string>
-    <string name="script_ukrainian_cyrillic">Cirilik ukrainas</string>
-    <string name="script_macedonian_cyrillic">Cirilik maqedonas</string>
     <string name="emoji_loading">Po ngarkohet…</string>
     <string name="emoji_no_recent">Asnjë emoji i fundit</string>
     <string name="emoji_empty_category">Asnjë emoji në këtë kategori</string>

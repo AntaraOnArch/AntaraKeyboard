@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritische tekens</string>
     <string name="lp_cat_latin">Latijnse letters</string>
     <string name="lp_cat_cyrillic">Cyrillische letters</string>
+    <string name="lp_cat_greek">Griekse letters</string>
     <string name="lp_cat_currency">Valuta</string>
     <string name="lp_cat_symbols">Symbolen</string>
     <string name="lp_cat_brackets">Haakjes</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Aanhalingsteken</string>
     <string name="a11y_key">Toets %1$s</string>
-    <string name="script_picker_title">Schrift kiezen</string>
-    <string name="script_picker_close">Sluiten</string>
-    <string name="script_latin">Latijn</string>
-    <string name="script_serbian_cyrillic">Servisch cyrillisch</string>
-    <string name="script_bulgarian_cyrillic">Bulgaars cyrillisch</string>
-    <string name="script_russian_cyrillic">Russisch cyrillisch</string>
-    <string name="script_ukrainian_cyrillic">Oekraïens cyrillisch</string>
-    <string name="script_macedonian_cyrillic">Macedonisch cyrillisch</string>
     <string name="emoji_loading">Laden…</string>
     <string name="emoji_no_recent">Geen recente emoji</string>
     <string name="emoji_empty_category">Geen emoji in deze categorie</string>

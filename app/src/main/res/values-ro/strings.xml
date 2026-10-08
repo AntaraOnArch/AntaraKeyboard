@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diacritice</string>
     <string name="lp_cat_latin">Litere latine</string>
     <string name="lp_cat_cyrillic">Litere chirilice</string>
+    <string name="lp_cat_greek">Litere grecești</string>
     <string name="lp_cat_currency">Monede</string>
     <string name="lp_cat_symbols">Simboluri</string>
     <string name="lp_cat_brackets">Paranteze</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Ghilimele</string>
     <string name="a11y_key">Tasta %1$s</string>
-    <string name="script_picker_title">Alege alfabetul</string>
-    <string name="script_picker_close">Închide</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Chirilic sârbesc</string>
-    <string name="script_bulgarian_cyrillic">Chirilic bulgar</string>
-    <string name="script_russian_cyrillic">Chirilic rusesc</string>
-    <string name="script_ukrainian_cyrillic">Chirilic ucrainean</string>
-    <string name="script_macedonian_cyrillic">Chirilic macedonean</string>
     <string name="emoji_loading">Se încarcă…</string>
     <string name="emoji_no_recent">Niciun emoji recent</string>
     <string name="emoji_empty_category">Niciun emoji în această categorie</string>

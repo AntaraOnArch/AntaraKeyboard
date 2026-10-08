@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritiskās zīmes</string>
     <string name="lp_cat_latin">Latīņu burti</string>
     <string name="lp_cat_cyrillic">Kirilicas burti</string>
+    <string name="lp_cat_greek">Grieķu burti</string>
     <string name="lp_cat_currency">Valūtas</string>
     <string name="lp_cat_symbols">Simboli</string>
     <string name="lp_cat_brackets">Iekavas</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrofs</string>
     <string name="a11y_quote">Pēdiņas</string>
     <string name="a11y_key">Taustiņš %1$s</string>
-    <string name="script_picker_title">Izvēlieties rakstību</string>
-    <string name="script_picker_close">Aizvērt</string>
-    <string name="script_latin">Latīņu</string>
-    <string name="script_serbian_cyrillic">Serbu kirilica</string>
-    <string name="script_bulgarian_cyrillic">Bulgāru kirilica</string>
-    <string name="script_russian_cyrillic">Krievu kirilica</string>
-    <string name="script_ukrainian_cyrillic">Ukraiņu kirilica</string>
-    <string name="script_macedonian_cyrillic">Maķedoniešu kirilica</string>
     <string name="emoji_loading">Ielādē…</string>
     <string name="emoji_no_recent">Nav neseno emocijzīmju</string>
     <string name="emoji_empty_category">Šajā kategorijā nav emocijzīmju</string>

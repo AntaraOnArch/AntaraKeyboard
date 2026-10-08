@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Διακριτικά</string>
     <string name="lp_cat_latin">Λατινικά γράμματα</string>
     <string name="lp_cat_cyrillic">Κυριλλικά γράμματα</string>
+    <string name="lp_cat_greek">Ελληνικά γράμματα</string>
     <string name="lp_cat_currency">Νομίσματα</string>
     <string name="lp_cat_symbols">Σύμβολα</string>
     <string name="lp_cat_brackets">Παρενθέσεις</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Απόστροφος</string>
     <string name="a11y_quote">Εισαγωγικά</string>
     <string name="a11y_key">Πλήκτρο %1$s</string>
-    <string name="script_picker_title">Επιλογή αλφαβήτου</string>
-    <string name="script_picker_close">Κλείσιμο</string>
-    <string name="script_latin">Λατινικό</string>
-    <string name="script_serbian_cyrillic">Σερβικό κυριλλικό</string>
-    <string name="script_bulgarian_cyrillic">Βουλγαρικό κυριλλικό</string>
-    <string name="script_russian_cyrillic">Ρωσικό κυριλλικό</string>
-    <string name="script_ukrainian_cyrillic">Ουκρανικό κυριλλικό</string>
-    <string name="script_macedonian_cyrillic">Σλαβομακεδονικό κυριλλικό</string>
     <string name="emoji_loading">Φόρτωση…</string>
     <string name="emoji_no_recent">Δεν υπάρχουν πρόσφατα emoji</string>
     <string name="emoji_empty_category">Δεν υπάρχουν emoji σε αυτήν την κατηγορία</string>

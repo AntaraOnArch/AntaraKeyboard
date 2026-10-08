@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Tarkkeet</string>
     <string name="lp_cat_latin">Latinalaiset kirjaimet</string>
     <string name="lp_cat_cyrillic">Kyrilliset kirjaimet</string>
+    <string name="lp_cat_greek">Kreikkalaiset kirjaimet</string>
     <string name="lp_cat_currency">Valuutat</string>
     <string name="lp_cat_symbols">Symbolit</string>
     <string name="lp_cat_brackets">Sulkeet</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Heittomerkki</string>
     <string name="a11y_quote">Lainausmerkki</string>
     <string name="a11y_key">Näppäin %1$s</string>
-    <string name="script_picker_title">Valitse kirjoitusjärjestelmä</string>
-    <string name="script_picker_close">Sulje</string>
-    <string name="script_latin">Latinalainen</string>
-    <string name="script_serbian_cyrillic">Serbian kyrillinen</string>
-    <string name="script_bulgarian_cyrillic">Bulgarian kyrillinen</string>
-    <string name="script_russian_cyrillic">Venäjän kyrillinen</string>
-    <string name="script_ukrainian_cyrillic">Ukrainan kyrillinen</string>
-    <string name="script_macedonian_cyrillic">Makedonian kyrillinen</string>
     <string name="emoji_loading">Ladataan…</string>
     <string name="emoji_no_recent">Ei viimeisimpiä emojeja</string>
     <string name="emoji_empty_category">Tässä luokassa ei ole emojeja</string>

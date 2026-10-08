@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritika</string>
     <string name="lp_cat_latin">Latinské písmená</string>
     <string name="lp_cat_cyrillic">Písmená cyrilike</string>
+    <string name="lp_cat_greek">Grécke písmená</string>
     <string name="lp_cat_currency">Meny</string>
     <string name="lp_cat_symbols">Symboly</string>
     <string name="lp_cat_brackets">Zátvorky</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Úvodzovky</string>
     <string name="a11y_key">Kláves %1$s</string>
-    <string name="script_picker_title">Vyberte písmo</string>
-    <string name="script_picker_close">Zavrieť</string>
-    <string name="script_latin">Latinka</string>
-    <string name="script_serbian_cyrillic">Srbská cyrilika</string>
-    <string name="script_bulgarian_cyrillic">Bulharská cyrilika</string>
-    <string name="script_russian_cyrillic">Ruská cyrilika</string>
-    <string name="script_ukrainian_cyrillic">Ukrajinská cyrilika</string>
-    <string name="script_macedonian_cyrillic">Macedónska cyrilika</string>
     <string name="emoji_loading">Načítava sa…</string>
     <string name="emoji_no_recent">Žiadne nedávne emoji</string>
     <string name="emoji_empty_category">V tejto kategórii nie sú žiadne emoji</string>

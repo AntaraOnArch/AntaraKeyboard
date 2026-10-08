@@ -541,10 +541,7 @@ object KeyboardPrefs {
     }
 
     /** App language, or the device language when the app follows the system. */
-    fun languageTag(context: Context): String =
-        PrefsManager.getAppLanguage(context).ifEmpty {
-            context.resources.configuration.locales[0]?.toLanguageTag() ?: "en"
-        }
+    fun languageTag(context: Context): String = AppLanguageSettings.effectiveTag(context)
 
     /**
      * Switches the keyboard script (dual-space picker). Only the default long-press letters
@@ -585,6 +582,12 @@ object KeyboardPrefs {
         val storedLanguage = sp.getString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, null)
         val version = sp.getInt(KEY_LONG_PRESS_DEFAULTS_VERSION, 0)
 
+        // A changed language (e.g. in Android settings) also brings its keyboard script
+        val newPreset = if (version >= LONG_PRESS_DEFAULTS_VERSION && storedLanguage != language) {
+            AppLanguages.scriptPresetFor(language)
+        } else {
+            preset
+        }
         val oldDefaults: Map<String, Collection<String>> = when {
             version < LONG_PRESS_DEFAULTS_VERSION ->
                 LongPressPresets.withUppercaseSets(LegacyLongPressPresets.allDefaults())
@@ -592,7 +595,7 @@ object KeyboardPrefs {
                 LongPressPresets.defaultsFor(preset, storedLanguage ?: language)
             else -> return
         }
-        val newDefaults = LongPressPresets.defaultsFor(preset, language)
+        val newDefaults = LongPressPresets.defaultsFor(newPreset, language)
 
         GlobalLongPressStorage.saveAlphabetBinds(
             context,
@@ -600,6 +603,7 @@ object KeyboardPrefs {
         )
 
         sp.edit()
+            .putString(KEY_SELECTED_LONG_PRESS_PRESET, newPreset)
             .putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
             .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
             .remove("long_press_defaults_initialized")

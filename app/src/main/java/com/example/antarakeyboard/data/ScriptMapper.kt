@@ -3,7 +3,7 @@ package com.example.antarakeyboard.data
 import java.util.Locale
 
 /**
- * Maps Latin key labels to the selected Cyrillic script. The letter layout stays Latin;
+ * Maps Latin key labels to the selected Cyrillic or Greek script. The letter layout stays Latin;
  * each key's label and typed text go through [map]. q/w/x/y carry script-specific letters
  * that have no Latin counterpart.
  */
@@ -163,12 +163,44 @@ object ScriptMapper {
         "y" to "ы"
     )
 
+    /** Standard Greek layout: u → θ, w → ς, q → ; (the Greek question mark). */
+    private val greekDirectMap = mapOf(
+        "a" to "α",
+        "b" to "β",
+        "c" to "ψ",
+        "d" to "δ",
+        "e" to "ε",
+        "f" to "φ",
+        "g" to "γ",
+        "h" to "η",
+        "i" to "ι",
+        "j" to "ξ",
+        "k" to "κ",
+        "l" to "λ",
+        "m" to "μ",
+        "n" to "ν",
+        "o" to "ο",
+        "p" to "π",
+        "r" to "ρ",
+        "s" to "σ",
+        "t" to "τ",
+        "u" to "θ",
+        "v" to "ω",
+        "x" to "χ",
+        "y" to "υ",
+        "z" to "ζ",
+
+        "q" to ";",
+        "w" to "ς"
+    )
+
     private fun mapForPreset(presetId: String): Map<String, String>? = when (presetId) {
         LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrillicDirectMap
         LongPressPresets.PRESET_BULGARIAN_CYRILLIC -> bulgarianCyrillicDirectMap
         LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrillicDirectMap
         LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrillicDirectMap
         LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrillicDirectMap
+        LongPressPresets.PRESET_GREEK -> greekDirectMap
         else -> null
     }
 

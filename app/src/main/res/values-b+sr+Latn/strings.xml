@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Dijakritici</string>
     <string name="lp_cat_latin">Latinična slova</string>
     <string name="lp_cat_cyrillic">Ćirilična slova</string>
+    <string name="lp_cat_greek">Grčka slova</string>
     <string name="lp_cat_currency">Valute</string>
     <string name="lp_cat_symbols">Simboli</string>
     <string name="lp_cat_brackets">Zagrade</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Navodnik</string>
     <string name="a11y_key">Taster %1$s</string>
-    <string name="script_picker_title">Izaberite pismo</string>
-    <string name="script_picker_close">Zatvori</string>
-    <string name="script_latin">Latinica</string>
-    <string name="script_serbian_cyrillic">Srpska ćirilica</string>
-    <string name="script_bulgarian_cyrillic">Bugarska ćirilica</string>
-    <string name="script_russian_cyrillic">Ruska ćirilica</string>
-    <string name="script_ukrainian_cyrillic">Ukrajinska ćirilica</string>
-    <string name="script_macedonian_cyrillic">Makedonska ćirilica</string>
     <string name="emoji_loading">Učitavanje…</string>
     <string name="emoji_no_recent">Nema nedavnih emodžija</string>
     <string name="emoji_empty_category">Nema emodžija u ovoj kategoriji</string>

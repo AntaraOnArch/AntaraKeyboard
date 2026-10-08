@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Comharthaí idirdhealaitheacha</string>
     <string name="lp_cat_latin">Litreacha Laidineacha</string>
     <string name="lp_cat_cyrillic">Litreacha Coireallacha</string>
+    <string name="lp_cat_greek">Litreacha Gréagacha</string>
     <string name="lp_cat_currency">Airgeadraí</string>
     <string name="lp_cat_symbols">Siombailí</string>
     <string name="lp_cat_brackets">Lúibíní</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Uaschamóg</string>
     <string name="a11y_quote">Comhartha athfhriotail</string>
     <string name="a11y_key">Eochair %1$s</string>
-    <string name="script_picker_title">Roghnaigh aibítir</string>
-    <string name="script_picker_close">Dún</string>
-    <string name="script_latin">Laidineach</string>
-    <string name="script_serbian_cyrillic">Coireallach Seirbise</string>
-    <string name="script_bulgarian_cyrillic">Coireallach Bulgáirise</string>
-    <string name="script_russian_cyrillic">Coireallach Rúisise</string>
-    <string name="script_ukrainian_cyrillic">Coireallach Úcráinise</string>
-    <string name="script_macedonian_cyrillic">Coireallach Macadóinise</string>
     <string name="emoji_loading">Á lódáil…</string>
     <string name="emoji_no_recent">Níl aon emoji le déanaí</string>
     <string name="emoji_empty_category">Níl aon emoji sa chatagóir seo</string>

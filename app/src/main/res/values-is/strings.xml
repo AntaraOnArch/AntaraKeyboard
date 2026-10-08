@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Stafmerki</string>
     <string name="lp_cat_latin">Latneskir stafir</string>
     <string name="lp_cat_cyrillic">Kyrillískir stafir</string>
+    <string name="lp_cat_greek">Grískir stafir</string>
     <string name="lp_cat_currency">Gjaldmiðlar</string>
     <string name="lp_cat_symbols">Tákn</string>
     <string name="lp_cat_brackets">Svigar</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Úrfellingarmerki</string>
     <string name="a11y_quote">Gæsalappir</string>
     <string name="a11y_key">Lykill %1$s</string>
-    <string name="script_picker_title">Veldu stafróf</string>
-    <string name="script_picker_close">Loka</string>
-    <string name="script_latin">Latneskt</string>
-    <string name="script_serbian_cyrillic">Serbneskt kyrillískt</string>
-    <string name="script_bulgarian_cyrillic">Búlgarskt kyrillískt</string>
-    <string name="script_russian_cyrillic">Rússneskt kyrillískt</string>
-    <string name="script_ukrainian_cyrillic">Úkraínskt kyrillískt</string>
-    <string name="script_macedonian_cyrillic">Makedónskt kyrillískt</string>
     <string name="emoji_loading">Hleður…</string>
     <string name="emoji_no_recent">Engar nýlegar tjáknmyndir</string>
     <string name="emoji_empty_category">Engar tjáknmyndir í þessum flokki</string>

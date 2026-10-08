@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Ékezetek</string>
     <string name="lp_cat_latin">Latin betűk</string>
     <string name="lp_cat_cyrillic">Cirill betűk</string>
+    <string name="lp_cat_greek">Görög betűk</string>
     <string name="lp_cat_currency">Pénznemek</string>
     <string name="lp_cat_symbols">Szimbólumok</string>
     <string name="lp_cat_brackets">Zárójelek</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Aposztróf</string>
     <string name="a11y_quote">Idézőjel</string>
     <string name="a11y_key">%1$s billentyű</string>
-    <string name="script_picker_title">Írásrendszer kiválasztása</string>
-    <string name="script_picker_close">Bezárás</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Szerb cirill</string>
-    <string name="script_bulgarian_cyrillic">Bolgár cirill</string>
-    <string name="script_russian_cyrillic">Orosz cirill</string>
-    <string name="script_ukrainian_cyrillic">Ukrán cirill</string>
-    <string name="script_macedonian_cyrillic">Macedón cirill</string>
     <string name="emoji_loading">Betöltés…</string>
     <string name="emoji_no_recent">Nincsenek legutóbbi emodzsik</string>
     <string name="emoji_empty_category">Ebben a kategóriában nincs emodzsi</string>

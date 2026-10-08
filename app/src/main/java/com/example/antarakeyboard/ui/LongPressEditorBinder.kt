@@ -47,6 +47,7 @@ class LongPressEditorBinder(
             PickerCategory("á", context.getString(R.string.lp_cat_diacritics)) { SpecialChars.DIACRITICS },
             PickerCategory("ł", context.getString(R.string.lp_cat_latin)) { LongPressPresets.allLatinLetters() },
             PickerCategory("ж", context.getString(R.string.lp_cat_cyrillic)) { LongPressPresets.allCyrillicLetters() },
+            PickerCategory("ω", context.getString(R.string.lp_cat_greek)) { LongPressPresets.allGreekLetters() },
             PickerCategory("€", context.getString(R.string.lp_cat_currency)) { SpecialChars.CURRENCY },
             PickerCategory("@", context.getString(R.string.lp_cat_symbols)) { (SpecialChars.SYMBOLS + extraLayoutSymbols()).distinct() },
             PickerCategory("( )", context.getString(R.string.lp_cat_brackets)) { SpecialChars.BRACKETS },

@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Дыякрытыка</string>
     <string name="lp_cat_latin">Лацінскія літары</string>
     <string name="lp_cat_cyrillic">Кірыліца</string>
+    <string name="lp_cat_greek">Грэчаскія літары</string>
     <string name="lp_cat_currency">Валюты</string>
     <string name="lp_cat_symbols">Сімвалы</string>
     <string name="lp_cat_brackets">Дужкі</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Апостраф</string>
     <string name="a11y_quote">Двукоссе</string>
     <string name="a11y_key">Клавіша %1$s</string>
-    <string name="script_picker_title">Выберыце алфавіт</string>
-    <string name="script_picker_close">Закрыць</string>
-    <string name="script_latin">Лацініца</string>
-    <string name="script_serbian_cyrillic">Сербская кірыліца</string>
-    <string name="script_bulgarian_cyrillic">Балгарская кірыліца</string>
-    <string name="script_russian_cyrillic">Руская кірыліца</string>
-    <string name="script_ukrainian_cyrillic">Украінская кірыліца</string>
-    <string name="script_macedonian_cyrillic">Македонская кірыліца</string>
     <string name="emoji_loading">Загрузка…</string>
     <string name="emoji_no_recent">Няма нядаўніх эмодзі</string>
     <string name="emoji_empty_category">У гэтай катэгорыі няма эмодзі</string>

@@ -14,6 +14,7 @@ object SuggestionDictionaries {
     fun forKeyboard(scriptPreset: String, languageTag: String): String? = when (scriptPreset) {
         LongPressPresets.PRESET_SERBIAN_CYRILLIC -> "sr_cyrl"
         LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> "ru"
+        LongPressPresets.PRESET_GREEK -> "el"
         LongPressPresets.PRESET_BULGARIAN_CYRILLIC,
         LongPressPresets.PRESET_UKRAINIAN_CYRILLIC,
         LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> null

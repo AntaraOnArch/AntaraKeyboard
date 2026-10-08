@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritiniai ženklai</string>
     <string name="lp_cat_latin">Lotyniškos raidės</string>
     <string name="lp_cat_cyrillic">Kirilicos raidės</string>
+    <string name="lp_cat_greek">Graikiškos raidės</string>
     <string name="lp_cat_currency">Valiutos</string>
     <string name="lp_cat_symbols">Simboliai</string>
     <string name="lp_cat_brackets">Skliaustai</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrofas</string>
     <string name="a11y_quote">Kabutės</string>
     <string name="a11y_key">Klavišas %1$s</string>
-    <string name="script_picker_title">Pasirinkite raštą</string>
-    <string name="script_picker_close">Uždaryti</string>
-    <string name="script_latin">Lotynų</string>
-    <string name="script_serbian_cyrillic">Serbų kirilica</string>
-    <string name="script_bulgarian_cyrillic">Bulgarų kirilica</string>
-    <string name="script_russian_cyrillic">Rusų kirilica</string>
-    <string name="script_ukrainian_cyrillic">Ukrainiečių kirilica</string>
-    <string name="script_macedonian_cyrillic">Makedonų kirilica</string>
     <string name="emoji_loading">Įkeliama…</string>
     <string name="emoji_no_recent">Naujausių jaustukų nėra</string>
     <string name="emoji_empty_category">Šioje kategorijoje jaustukų nėra</string>

@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.antarakeyboard.data.AppLanguages
+import com.example.antarakeyboard.data.AppLanguageSettings
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
@@ -120,6 +121,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val isDark = PrefsManager.isDarkMode(this)
+
+        // Android < 13: a language picked on the keyboard is stored in our prefs only;
+        // apply it to the app (AppCompat recreates the activity once if it differs)
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+            val wanted = PrefsManager.getAppLanguage(this)
+            val applied = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+            if (wanted != applied) {
+                AppCompatDelegate.setApplicationLocales(
+                    if (wanted.isEmpty()) LocaleListCompat.getEmptyLocaleList()
+                    else LocaleListCompat.forLanguageTags(wanted)
+                )
+            }
+        }
 
         AppCompatDelegate.setDefaultNightMode(
             if (isDark) AppCompatDelegate.MODE_NIGHT_YES
@@ -560,25 +574,44 @@ class MainActivity : AppCompatActivity() {
      * AppCompat applies it (system per-app language on Android 13+, stored by AppCompat below 13)
      * and recreates the activity; the keyboard service picks it up on its next start.
      */
+    private val languageTags = listOf("") + AppLanguages.TAGS
+    private var shownLanguageTag = ""
+
+    /** Shows the current app language (it may have been changed from the keyboard). */
+    private fun syncLanguageSpinner() {
+        val current = AppLanguages.match(AppLanguageSettings.selectedTag(this)) ?: ""
+        shownLanguageTag = current
+        findViewById<Spinner>(R.id.spinnerLanguage)
+            .setSelection(languageTags.indexOf(current).coerceAtLeast(0), false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        syncLanguageSpinner()
+    }
+
     private fun setupLanguageSpinner() {
         val spinner = findViewById<Spinner>(R.id.spinnerLanguage)
-        val tags = listOf("") + AppLanguages.TAGS
-        val labels = tags.map { tag ->
+        val labels = languageTags.map { tag ->
             if (tag.isEmpty()) getString(R.string.language_system_default) else AppLanguages.nativeName(tag)
         }
         spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
 
-        val appLocales = AppCompatDelegate.getApplicationLocales()
-        val current = if (appLocales.isEmpty) "" else AppLanguages.match(appLocales[0]?.toLanguageTag()) ?: ""
-        spinner.setSelection(tags.indexOf(current).coerceAtLeast(0))
+        // One shared setting with the keyboard's dual-space language picker. The spinner must
+        // not restore its own old position on recreate (that would re-apply the old language
+        // after the keyboard changed it); onResume syncs it from the setting instead.
+        spinner.isSaveEnabled = false
+        syncLanguageSpinner()
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val tag = tags[position]
-                if (tag == current) return
-                PrefsManager.setAppLanguage(this@MainActivity, tag)
+                val tag = languageTags[position]
+                if (tag == shownLanguageTag) return
+                shownLanguageTag = tag
+                // App language + matching keyboard script (Cyrillic languages type Cyrillic)
+                AppLanguageSettings.select(this@MainActivity, tag)
                 AppCompatDelegate.setApplicationLocales(
                     if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList()
                     else LocaleListCompat.forLanguageTags(tag)

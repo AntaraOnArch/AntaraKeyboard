@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Dijakritiċi</string>
     <string name="lp_cat_latin">Ittri Latini</string>
     <string name="lp_cat_cyrillic">Ittri Ċirilliċi</string>
+    <string name="lp_cat_greek">Ittri Griegi</string>
     <string name="lp_cat_currency">Muniti</string>
     <string name="lp_cat_symbols">Simboli</string>
     <string name="lp_cat_brackets">Parentesi</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrofu</string>
     <string name="a11y_quote">Virgoletti</string>
     <string name="a11y_key">Ċavetta %1$s</string>
-    <string name="script_picker_title">Agħżel l-alfabett</string>
-    <string name="script_picker_close">Agħlaq</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Ċirilliku Serb</string>
-    <string name="script_bulgarian_cyrillic">Ċirilliku Bulgaru</string>
-    <string name="script_russian_cyrillic">Ċirilliku Russu</string>
-    <string name="script_ukrainian_cyrillic">Ċirilliku Ukren</string>
-    <string name="script_macedonian_cyrillic">Ċirilliku Maċedonjan</string>
     <string name="emoji_loading">Qed jitgħabba…</string>
     <string name="emoji_no_recent">L-ebda emoji reċenti</string>
     <string name="emoji_empty_category">L-ebda emoji f\'din il-kategorija</string>

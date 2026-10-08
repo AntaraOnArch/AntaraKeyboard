@@ -101,5 +101,18 @@ class LongPressPresetsTest {
             listOf("ч", "Ж", "😁", "moj tekst", "@", "5"),
             LongPressPresets.visibleFor(LongPressPresets.PRESET_SERBIAN_CYRILLIC, binds)
         )
+        assertEquals(
+            listOf("ά", "Ώ", "😁"),
+            LongPressPresets.visibleFor(LongPressPresets.PRESET_GREEK, listOf("ά", "č", "ч", "Ώ", "😁"))
+        )
+        assertEquals(listOf("č"), LongPressPresets.visibleFor(LongPressPresets.PRESET_LATIN, listOf("č", "ά")))
+    }
+
+    @Test
+    fun greekDefaultsAreAccentedVowels() {
+        val greek = LongPressPresets.defaultsFor(LongPressPresets.PRESET_GREEK, "el")
+        assertEquals(listOf("ά"), greek["a"])
+        assertEquals(listOf("Ί", "Ϊ"), greek["I"])
+        assertTrue("ΐ" in LongPressPresets.allGreekLetters())
     }
 }

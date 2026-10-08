@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Диакритика</string>
     <string name="lp_cat_latin">Латинские буквы</string>
     <string name="lp_cat_cyrillic">Кириллица</string>
+    <string name="lp_cat_greek">Греческие буквы</string>
     <string name="lp_cat_currency">Валюты</string>
     <string name="lp_cat_symbols">Символы</string>
     <string name="lp_cat_brackets">Скобки</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Апостроф</string>
     <string name="a11y_quote">Кавычки</string>
     <string name="a11y_key">Клавиша %1$s</string>
-    <string name="script_picker_title">Выберите алфавит</string>
-    <string name="script_picker_close">Закрыть</string>
-    <string name="script_latin">Латиница</string>
-    <string name="script_serbian_cyrillic">Сербская кириллица</string>
-    <string name="script_bulgarian_cyrillic">Болгарская кириллица</string>
-    <string name="script_russian_cyrillic">Русская кириллица</string>
-    <string name="script_ukrainian_cyrillic">Украинская кириллица</string>
-    <string name="script_macedonian_cyrillic">Македонская кириллица</string>
     <string name="emoji_loading">Загрузка…</string>
     <string name="emoji_no_recent">Нет недавних эмодзи</string>
     <string name="emoji_empty_category">В этой категории нет эмодзи</string>

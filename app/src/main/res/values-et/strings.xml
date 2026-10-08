@@ -120,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakriitikud</string>
     <string name="lp_cat_latin">Ladina tähed</string>
     <string name="lp_cat_cyrillic">Kirillitsa tähed</string>
+    <string name="lp_cat_greek">Kreeka tähed</string>
     <string name="lp_cat_currency">Valuutad</string>
     <string name="lp_cat_symbols">Sümbolid</string>
     <string name="lp_cat_brackets">Sulud</string>
@@ -222,14 +223,6 @@
     <string name="a11y_apostrophe">Ülakoma</string>
     <string name="a11y_quote">Jutumärk</string>
     <string name="a11y_key">Klahv %1$s</string>
-    <string name="script_picker_title">Vali kirjasüsteem</string>
-    <string name="script_picker_close">Sulge</string>
-    <string name="script_latin">Ladina</string>
-    <string name="script_serbian_cyrillic">Serbia kirillitsa</string>
-    <string name="script_bulgarian_cyrillic">Bulgaaria kirillitsa</string>
-    <string name="script_russian_cyrillic">Vene kirillitsa</string>
-    <string name="script_ukrainian_cyrillic">Ukraina kirillitsa</string>
-    <string name="script_macedonian_cyrillic">Makedoonia kirillitsa</string>
     <string name="emoji_loading">Laadimine…</string>
     <string name="emoji_no_recent">Hiljutisi emotikone pole</string>
     <string name="emoji_empty_category">Selles kategoorias pole emotikone</string>

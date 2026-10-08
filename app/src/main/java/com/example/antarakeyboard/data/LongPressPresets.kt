@@ -7,6 +7,7 @@ import java.util.Locale
  *
  * - Latin keyboard: the special letters of the user's language on their base letter
  *   (Croatian c → č ć, German a → ä, …); languages without own letters get common accents.
+ * - Greek keyboard: the accented vowels (ά έ ή ί ϊ ό ύ ϋ ώ) on their vowel key.
  * - Cyrillic keyboard: only the special letters of that script on the matching key
  *   (Serbian c → ч ћ, d → ђ џ, …). Plain letters are not bound: the key already types them
  *   ([ScriptMapper]).
@@ -23,6 +24,7 @@ object LongPressPresets {
     const val PRESET_RUSSIAN_CYRILLIC = "ru_cyrl"
     const val PRESET_UKRAINIAN_CYRILLIC = "uk_cyrl"
     const val PRESET_MACEDONIAN_CYRILLIC = "mk_cyrl"
+    const val PRESET_GREEK = "el"
 
     /**
      * Defaults for a keyboard script preset. [languageTag] (app or device language) decides the
@@ -36,6 +38,7 @@ object LongPressPresets {
                 PRESET_RUSSIAN_CYRILLIC -> RUSSIAN_CYRILLIC
                 PRESET_UKRAINIAN_CYRILLIC -> UKRAINIAN_CYRILLIC
                 PRESET_MACEDONIAN_CYRILLIC -> MACEDONIAN_CYRILLIC
+                PRESET_GREEK -> GREEK
                 else -> latinFor(languageTag)
             }
         )
@@ -61,22 +64,39 @@ object LongPressPresets {
         return lower.map { it.toString() }.flatMap { listOf(it, it.uppercase(Locale.ROOT)) }.distinct()
     }
 
+    /** Greek alphabet with tonos and dialytika (lower + upper case) – for the bind picker. */
+    fun allGreekLetters(): List<String> {
+        val lower = "αβγδεζηθικλμνξοπρσςτυφχψω" + "άέήίόύώϊϋΐΰ"
+        // ς and ΐ ΰ have no single-letter uppercase
+        return lower.map { it.toString() }
+            .flatMap { if (it in setOf("ς", "ΐ", "ΰ")) listOf(it) else listOf(it, it.uppercase(Locale.ROOT)) }
+            .distinct()
+    }
+
     fun isCyrillicPreset(presetId: String): Boolean = presetId in setOf(
         PRESET_SERBIAN_CYRILLIC, PRESET_BULGARIAN_CYRILLIC, PRESET_RUSSIAN_CYRILLIC,
         PRESET_UKRAINIAN_CYRILLIC, PRESET_MACEDONIAN_CYRILLIC
     )
 
+    /** Unicode script the keyboard types with [presetId]. */
+    fun scriptOf(presetId: String): Character.UnicodeScript = when {
+        isCyrillicPreset(presetId) -> Character.UnicodeScript.CYRILLIC
+        presetId == PRESET_GREEK -> Character.UnicodeScript.GREEK
+        else -> Character.UnicodeScript.LATIN
+    }
+
     /**
-     * Long-press entries shown for the active script: the Latin keyboard never offers single
-     * Cyrillic letters and the Cyrillic keyboard never offers single Latin letters.
-     * Custom text, emoji, digits and symbols are shown in both.
+     * Long-press entries shown for the active script: single letters of the other scripts
+     * (Latin, Cyrillic, Greek) are hidden, so each keyboard offers only its own letters.
+     * Custom text, emoji, digits and symbols are shown in all of them.
      */
     fun visibleFor(presetId: String, binds: List<String>): List<String> {
-        val hidden = if (isCyrillicPreset(presetId)) Character.UnicodeScript.LATIN else Character.UnicodeScript.CYRILLIC
+        val own = scriptOf(presetId)
+        val scripts = setOf(Character.UnicodeScript.LATIN, Character.UnicodeScript.CYRILLIC, Character.UnicodeScript.GREEK)
         return binds.filterNot { bind ->
-            bind.codePointCount(0, bind.length) == 1 &&
-                Character.isLetter(bind.codePointAt(0)) &&
-                Character.UnicodeScript.of(bind.codePointAt(0)) == hidden
+            if (bind.codePointCount(0, bind.length) != 1 || !Character.isLetter(bind.codePointAt(0))) return@filterNot false
+            val script = Character.UnicodeScript.of(bind.codePointAt(0))
+            script != own && script in scripts
         }
     }
 
@@ -242,5 +262,13 @@ object LongPressPresets {
     private val BULGARIAN_CYRILLIC = mapOf(
         "a" to listOf("я"), "c" to listOf("ч"), "s" to listOf("ш", "щ"), "u" to listOf("ю"),
         "z" to listOf("ж"), "y" to listOf("ь")
+    )
+
+    /* ───────── GREEK (keys are the Latin labels, see ScriptMapper) ───────── */
+
+    /** Accented vowels (tonos, dialytika) on their vowel key; ς has its own key (w). */
+    private val GREEK = mapOf(
+        "a" to listOf("ά"), "e" to listOf("έ"), "h" to listOf("ή"), "i" to listOf("ί", "ϊ"),
+        "o" to listOf("ό"), "y" to listOf("ύ", "ϋ"), "v" to listOf("ώ")
     )
 }
