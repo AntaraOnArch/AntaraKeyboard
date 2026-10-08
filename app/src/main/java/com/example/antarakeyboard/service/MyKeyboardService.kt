@@ -226,6 +226,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         inputController = KeyInputController(this)
 
+        // Swipe left/right to delete/restore also works on the background between keys
+        overlayLayer.setOnTouchListener(BackgroundSwipeListener())
+
         // Initialize managers
         deleteRestoreManager = DeleteRestoreManager(
             context = this,
@@ -454,10 +457,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private fun suggestionStripHeightPx(): Int = 38.dp(this)
 
     /** Dictionary for the current keyboard script and app/device language. */
-    private fun currentSuggestionDictionary(): String? {
-        val language = PrefsManager.getAppLanguage(this).ifEmpty { Locale.getDefault().toLanguageTag() }
-        return SuggestionDictionaries.forKeyboard(KeyboardPrefs.getSelectedLongPressPreset(this), language)
-    }
+    private fun currentSuggestionDictionary(): String? =
+        SuggestionDictionaries.forKeyboard(
+            KeyboardPrefs.getSelectedLongPressPreset(this),
+            KeyboardPrefs.languageTag(this)
+        )
 
     private fun createSuggestionStrip(): LinearLayout = LinearLayout(themedCtx).apply {
         orientation = LinearLayout.HORIZONTAL
@@ -1079,6 +1083,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
 
     private fun showEmojiPicker() {
+        // A delete/restore swipe must never keep running behind the picker
+        stopSwipeGestures()
         hideLongPressPopup()
         hideEmojiPopup()
 
@@ -1342,6 +1348,70 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         deleteRestoreManager.stopSwipeRestore()
     }
 
+    /**
+     * Delete/restore swipe on the keyboard background (gaps between keys, around the rows),
+     * with the same thresholds as on keys. Touches that start on a key are handled by the key.
+     */
+    private inner class BackgroundSwipeListener : View.OnTouchListener {
+        private var downX = 0f
+        private var downY = 0f
+        private var mode = SwipeMode.NONE
+
+        override fun onTouch(v: View, e: MotionEvent): Boolean {
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = e.rawX
+                    downY = e.rawY
+                    mode = SwipeMode.NONE
+                    hideLongPressPopup()
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = e.rawX - downX
+                    val absDx = kotlin.math.abs(dx)
+                    val absDy = kotlin.math.abs(e.rawY - downY)
+                    if (absDx > 20.dp(this@MyKeyboardService) && absDx > absDy * 1.05f) {
+                        if (dx < 0f) {
+                            if (mode != SwipeMode.DELETE) {
+                                mode = SwipeMode.DELETE
+                                startSwipeDelete(absDx)
+                            } else {
+                                updateSwipeDelete(absDx)
+                            }
+                        } else {
+                            if (mode != SwipeMode.RESTORE) {
+                                mode = SwipeMode.RESTORE
+                                startSwipeRestore(absDx)
+                            } else {
+                                updateSwipeRestore(absDx)
+                            }
+                        }
+                    }
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    stopSwipeGestures()
+                    mode = SwipeMode.NONE
+                    if (e.actionMasked == MotionEvent.ACTION_UP) v.performClick()
+                }
+
+                else -> return false
+            }
+            return true
+        }
+    }
+
+    private enum class SwipeMode { NONE, DELETE, RESTORE }
+
+    /** Stops every running delete/restore swipe and backspace hold. */
+    private fun stopSwipeGestures() {
+        if (!::deleteRestoreManager.isInitialized) return
+        deleteRestoreManager.stopSwipeDelete()
+        deleteRestoreManager.stopSwipeRestore()
+        deleteRestoreManager.stopBackspaceHold()
+        if (::inputController.isInitialized) inputController.reset()
+    }
+
     fun startBackspaceHold() {
         deleteRestoreManager.startBackspaceHold()
     }
@@ -1488,11 +1558,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     /** Emoji picker follows the keyboard: background as surface, regular key colors for buttons. */
     private fun emojiPickerColors(): EmojiPickerManager.Colors {
-        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
         val background = popupSurfaceColor()
-        val useThemeKeys = KeyboardPrefs.getKeysUseTheme(this) || !KeyboardPrefs.getKeysAllSameColor(this)
-        val button = if (useThemeKeys) themeColors.keyFill else KeyboardPrefs.getKeysBg(this)
-        val text = if (useThemeKeys) themeColors.keyText else KeyboardPrefs.getKeysTextColor(this)
+        val (button, text) = keyColors()
 
         return EmojiPickerManager.Colors(
             background = background,
@@ -2363,7 +2430,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             minimumWidth = 0
             manualLabelSizeSp = 22f
 
-            setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, Color.WHITE))
+            setTextColor(keyColors(label).second)
 
             // centralne tipke nemaju split label i nemaju swipe-up alternate
             useSplitLabels = false
@@ -2717,31 +2784,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             rowKeys.forEachIndexed { i, key ->
                 val kv = createCenterTextKey(key.label)
 
-                // Primijeni iste boje kao za obične tipke u glavnom layoutu
+                // Same colors as the regular keys of the main layout
                 if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
-                    val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-                    val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-
-                    if (useTheme) {
-                        // Use custom theme defaults
-                        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                        kv.setTextColor(themeColors.keyText)
-                        kv.customBgColor = themeColors.keyFill
-                    } else if (allSame) {
-                        kv.customBgColor = KeyboardPrefs.getKeysBg(this)
-                        kv.setTextColor(KeyboardPrefs.getKeysTextColor(this))
-                    } else {
-                        val individualColors = KeyboardPrefs.getKeyIndividualColors(this, key.label)
-                        if (individualColors != null) {
-                            kv.customBgColor = individualColors.first
-                            kv.setTextColor(individualColors.second)
-                        } else {
-                            // Nema individualne boje — fallback na theme defaults
-                            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                            kv.setTextColor(themeColors.keyText)
-                            kv.customBgColor = themeColors.keyFill
-                        }
-                    }
+                    val (fill, text) = keyColors(key.label)
+                    kv.customBgColor = fill
+                    kv.setTextColor(text)
                 }
 
                 val lp = LinearLayout.LayoutParams(
@@ -2895,11 +2942,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 isUserEmpty -> {
                     hideCompletely = false
                     alpha = 0.65f
-                    customBgColor = themeColor(
-                        this@MyKeyboardService,
-                        R.attr.keyFill,
-                        0xFF4A4A4A.toInt()
-                    )
+                    customBgColor = keyColors().first
                 }
 
                 else -> {
@@ -2983,26 +3026,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             textSize = if (isLandscape()) 13f else 16f
         }
 
-        setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-            if (lastIsDark == true) Color.WHITE else Color.BLACK))
-
-        //if (label == "↵") {
-        //    customBgColor = KeyboardPrefs.getEnterBg(context)
-        //    setTextColor(KeyboardPrefs.getEnterIcon(context))
-        //}
-
-        if (label == "⇧") {
-            if (isShifted) {
-                text = "⇪"
-                customBgColor = Color.WHITE
-                setTextColor(Color.BLACK)
-            } else {
-                text = "⇧"
-                customBgColor = null
-                setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
-            }
-        }
+        // Final key colors (incl. Shift's active look) are set by applySpecialKeyColors()
+        setTextColor(keyColors(label).second)
 
         val nonBindable = setOf("⇧", "⌫", "↵", "123", "ABC", "abc", " ", "😊")
         val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
@@ -3041,7 +3066,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     if (label !in nonBindable) {
                         longPressJob = serviceScope.launch {
                             delay(longPressTimeout)
-                            val binds = keyConfig.longPressBindings
+                            // Latin keyboard: Latin letters only; Cyrillic keyboard: Cyrillic only
+                            val binds = LongPressPresets.visibleFor(
+                                KeyboardPrefs.getSelectedLongPressPreset(this@MyKeyboardService),
+                                keyConfig.longPressBindings
+                            )
                             if (binds.isNotEmpty()) {
                                 longPressTriggered = true
                                 keyPreviewManager.hide()
@@ -3062,9 +3091,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     val absDx = kotlin.math.abs(dx)
                     val absDy = kotlin.math.abs(dy)
 
+                    // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
+                    val horizontalSwipe = inputController.isHorizontalSwipeActive()
+
                     // 123 swipe-up => emoji samo na 4/5 row alphabet layoutu
                     if (!longPressTriggered &&
                         !handledBySwipeUp &&
+                        !horizontalSwipe &&
                         label == "123" &&
                         rowCount >= 4 &&
                         isAlphabetLayoutActive() &&
@@ -3084,6 +3117,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     // ? swipe-up => !
                     if (!longPressTriggered &&
                         !handledBySwipeUp &&
+                        !horizontalSwipe &&
                         (label == "." || label == "?") &&
                         (v as? KeyView)?.useSplitLabels == true &&
                         dy < -swipeUpThreshold &&
@@ -3138,6 +3172,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     keyPreviewManager.hide()
 
                     if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
+                        stopSwipeGestures()
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
@@ -3146,6 +3181,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     }
 
                     if (handledBySwipeUp) {
+                        stopSwipeGestures()
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
@@ -3218,99 +3254,48 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
     }
 
-    private fun colorLookupLabel(label: String): String {
-        return if (label.length == 1 && label[0].isLetter()) {
-            label.lowercase()
-        } else {
-            label
-        }
-    }
+    /** Regular key colors as drawn (shared rule in [KeyboardPrefs.resolveKeyColors]). */
+    private fun keyColors(label: String? = null): Pair<Int, Int> =
+        KeyboardPrefs.resolveKeyColors(this, lastIsDark == true, label)
 
+    /**
+     * Final colors of every key: space, Enter and Shift have their own colors, every other key
+     * (letters, symbols, ⌫, 😊, 123/ABC) uses the regular key colors. All colors come from the
+     * same resolvers the main app, saved layouts and popups use.
+     */
     private fun applySpecialKeyColors(kv: KeyView, key: KeyConfig, spaceIndex: Int): Int {
-        var nextSpaceIndex = spaceIndex
-
-        // 1. SPACE — uvijek posebno
-        if (key.label == " ") {
-            val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-            val spaceColor = if (useTheme) {
-                // Use custom theme defaults for space
-                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).spaceFill
-            } else {
-                // Use custom space color prefs
-                val linked = KeyboardPrefs.isSpaceLinked(this)
-                val c1 = KeyboardPrefs.getSpace1Bg(this)
-                val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
-
-                when {
-                    isLeftSpace(key) -> c1
-                    isRightSpace(key) -> c2
-                    spaceIndex == 0 -> c1
-                    else -> c2
+        when (key.label) {
+            " " -> {
+                val (left, right) = KeyboardPrefs.resolveSpaceColors(this, lastIsDark == true)
+                kv.customBgColor = when {
+                    isLeftSpace(key) -> left
+                    isRightSpace(key) -> right
+                    spaceIndex == 0 -> left
+                    else -> right
                 }
+                return spaceIndex + 1
             }
 
-            kv.customBgColor = spaceColor
-            nextSpaceIndex++
-            return nextSpaceIndex
-        }
-
-        // 2. ENTER — uvijek posebno
-        if (key.label == "↵") {
-            kv.customBgColor = KeyboardPrefs.getEnterBg(this)
-            kv.setTextColor(KeyboardPrefs.getEnterIcon(this))
-            return nextSpaceIndex
-        }
-
-        // 3. SHIFT — posebno
-        if (key.label == "⇧") {
-            if (isShifted) {
-                kv.text = "⇪"
-                kv.customBgColor = Color.WHITE
-                kv.setTextColor(Color.BLACK)
-            } else {
-                kv.text = "⇧"
-                kv.customBgColor = null
-                kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
+            "↵" -> {
+                kv.customBgColor = KeyboardPrefs.getEnterBg(this)
+                kv.setTextColor(KeyboardPrefs.getEnterIcon(this))
             }
-            return nextSpaceIndex
-        }
 
-        // 4. BACKSPACE, EMOJI — ne diraj, već su postavljeni u createKey
-        if (key.label in setOf("⌫", "😊")) {
-            return nextSpaceIndex
-        }
+            "⇧" -> {
+                // Same colors as every key; an active Shift shows a filled arrow
+                kv.text = if (isShifted) KeyMarkers.SHIFT_ON else KeyMarkers.SHIFT_OFF
+                val (fill, text) = keyColors(key.label)
+                kv.customBgColor = fill
+                kv.setTextColor(text)
+            }
 
-        // 5. OBIČNE TIPKE + "123", "ABC", "abc" — ovdje rješavamo boje
-        val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-        val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-
-        if (useTheme) {
-            // Koristi custom theme defaults
-            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-            kv.setTextColor(themeColors.keyText)
-            kv.customBgColor = themeColors.keyFill
-        } else if (allSame) {
-            // Sve iste boje iz prefs
-            val keysBg = KeyboardPrefs.getKeysBg(this)
-            val keysText = KeyboardPrefs.getKeysTextColor(this)
-            kv.customBgColor = keysBg
-            kv.setTextColor(keysText)
-        } else {
-            // Pokušaj individualne boje
-            val individualColors = KeyboardPrefs.getKeyIndividualColors(this, colorLookupLabel(key.label))
-            if (individualColors != null) {
-                kv.customBgColor = individualColors.first
-                kv.setTextColor(individualColors.second)
-            } else {
-                // NEMA individualne boje — fallback na theme defaults
-                val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                kv.setTextColor(themeColors.keyText)
-                kv.customBgColor = themeColors.keyFill
+            else -> {
+                val (fill, text) = keyColors(key.label)
+                kv.customBgColor = fill
+                kv.setTextColor(text)
             }
         }
-
-        return nextSpaceIndex
+        return spaceIndex
     }
 
     /* ───────── RGB ANIMATION ───────── */

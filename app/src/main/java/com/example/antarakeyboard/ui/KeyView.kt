@@ -13,6 +13,7 @@ import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dpF
+import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.model.KeyShape
 import kotlin.math.min
 
@@ -186,7 +187,7 @@ class KeyView @JvmOverloads constructor(
     private fun getAccessibleDescription(label: String?): String {
         if (label.isNullOrEmpty()) return ""
         val res = when (label) {
-            "⇧" -> R.string.a11y_shift
+            "⇧", KeyMarkers.SHIFT_ON -> R.string.a11y_shift
             "⌫" -> R.string.a11y_backspace
             "↵" -> R.string.a11y_enter
             "123" -> R.string.a11y_numbers
@@ -458,7 +459,7 @@ class KeyView @JvmOverloads constructor(
                 }
             }
 
-            label in setOf("⇧", "⌫", "↵", "123", "ABC", "abc") -> 13f
+            label in setOf("⇧", KeyMarkers.SHIFT_ON, "⌫", "↵", "123", "ABC", "abc") -> 13f
             else -> 12f
         }
 

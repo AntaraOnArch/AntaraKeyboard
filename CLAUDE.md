@@ -47,7 +47,13 @@ This section is the authoritative description of intended behavior. When changin
 
 Everything that depends on layout (Set layout editors, long-press bindings, side buttons, numeric layout) automatically adapts to the currently selected row count and key shape.
 
-**How script selection works:** the letter layout itself stays Latin. Choosing a Cyrillic script (a) maps each Latin key to a Cyrillic letter for both the label and the typed text (`data/ScriptMapper.kt`; q/w/x/y map to script-specific letters such as љ/њ/џ), and (b) replaces the alphabet long-press bindings with that script's preset from `LongPressPresets` (via `KeyboardPrefs.applyLongPressPreset`). Letters with no Latin counterpart are reached through long press. The selected preset is stored as `selected_long_press_preset`. The default (`PRESET_SYSTEM`) picks bindings from the system language.
+**How script selection works:** the letter layout itself stays Latin. Choosing a Cyrillic script maps each Latin key to a Cyrillic letter for both the label and the typed text (`data/ScriptMapper.kt`; q/w/x/y map to script-specific letters such as љ/њ/џ). The selected script is stored as `selected_long_press_preset` (`system`/`latin` = Latin keyboard).
+
+**Default long-press letters** (`data/LongPressPresets.kt`, `defaultsFor(preset, language)`):
+- **Latin keyboard** – the special letters of the app/device language on their base letter (`KeyboardPrefs.languageTag()`; e.g. hr/bs/sr c → č ć, d → đ, s → š, z → ž; de a → ä, s → ß; …, ~30 languages). English and unknown languages get common accents (no symbols). `system` is also Latin, even on a Serbian device.
+- **Cyrillic keyboard** – only that script's special letters on the matching key (Serbian c → ч ћ, d → ђ џ, s → ш, z → ж, l → љ, n → њ; Macedonian, Russian, Ukrainian, Bulgarian likewise). Plain letters are never bound – the key already types them.
+- **Latin gives only Latin, Cyrillic only Cyrillic:** the popup hides single letters of the other script (`LongPressPresets.visibleFor`); custom text, emoji and symbols show in both.
+- **User binds survive:** switching script, a language change, or an app update with new defaults only swaps the default letters (`LongPressPresets.mergeDefaults`); everything the user added stays after them. `KeyboardPrefs.ensureDefaultLongPress()` (on every keyboard open) does the defaults-version migration (v5 removed the old per-letter Cyrillic twins and the big Latin lists, see `LegacyLongPressPresets`) and re-syncs when the language changes (`long_press_defaults_language`).
 
 **Key shape note:** with 3 rows, `HEX` is drawn as `HEX_TALL` (`effectiveShape()`).
 
@@ -132,9 +138,9 @@ Lets the user bind any special letter or emoji to a key's long press.
 ### Reset
 Dropdown with three options; each first saves the current state as a "Backup <time>" in Saved layouts.
 - **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. The pre-reset colors are also kept as "Last custom colors".
-- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons.
+- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons, and the **key height / row spacing sliders back to default**.
 - **Reset all** – both of the above.
-- **Preserved** (never reset): long-press bindings, the selected key shape, key height and row spacing.
+- **Preserved** (never reset): long-press bindings and the selected key shape.
 - Reset layout only touches the **current row count**.
 - Saved layouts keep at most **5** entries (`SavedLayoutStorage.MAX_SAVED_LAYOUTS`); the oldest is dropped, so repeated resets can push out user-saved layouts.
 
@@ -143,30 +149,30 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 
 | Section | Options |
 |---------|---------|
-| **Space** | Each space key colored separately, or both the same color (user's choice) |
+| **Space** | "Use theme colors" (theme space fill), or each space key colored separately / both the same color (`space_use_theme`, independent of the Keys setting) |
 | **Enter** | Background color + icon color |
 | **Side buttons** | "Use theme colors", or a custom background + icon color |
 | **Keys** | "Use theme colors"; otherwise "All keys same color" (one background + text color) or per-key colors (tap a key → small popup; stored as `key_individual_<label>_bg/_text`, letters lowercased; "Use default for this key" clears it) |
 | **Background** | Default by theme / Dark / Light / Custom color (`KeyboardPrefs.BackgroundMode`, resolved by `resolveKeyboardBackground`). Dark and Light use the theme-default backgrounds. Transparent is chosen in the Theme dropdown, not here |
 | **Theme defaults** | Edits the Light and Dark default palettes (key fill, key text, space fill, keyboard background) that "use theme" options fall back to. Factory values are in `KeyboardPrefs.FactoryDefaults` |
 
-**Color resolution on the keyboard** (`applySpecialKeyColors`): Space → theme space fill if keys use the theme, otherwise space 1 / space 2 colors. Enter → Enter colors. Shift → white with black text while shifted. Other keys → theme defaults, the "all same" colors, or per-key colors (falling back to theme defaults).
+**Color resolution – one rule everywhere:** `KeyboardPrefs.resolveKeyColors()` (regular keys: theme defaults / "all same" / per-key with theme fallback) and `KeyboardPrefs.resolveSpaceColors()` are the only place these rules live. The keyboard (`applySpecialKeyColors`, also ⌫, 😊, empty slots and the landscape island), the emoji/script pickers, saved layouts, "Last custom colors" and the Colors pages all use them. Enter uses the Enter colors; Shift uses the regular key colors (active = filled arrow). **Saved layouts and "Last custom colors" store the colors as drawn** (resolved), so restoring looks the same. Colors pages start from the drawn colors when a "use theme" switch is turned off or Background → Custom is chosen, so nothing jumps to an old stored value. Never read `getKeysBg`/`getSpace1Bg`/… directly to draw something.
 
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
-- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. Preview shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. A saved layout also stores the key height and row spacing (`SavedLayout.keyScale` / `rowSpacingDp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
 - **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (speed / saturation / brightness). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
 - Swipe up on a letter → capital letter.
 - Swipe up on `.` → `,` and on `?` → `!` (shown as a small second label on the key).
 - Swipe up on `123` → emoji picker (alphabet layout, 4 and 5 rows only). The `😊` key also opens it.
-- Swipe left → delete text; swipe right → restore deleted text. Speed grows with swipe distance. The restore buffer is cleared when any other text is typed.
+- Swipe left → delete text; swipe right → restore deleted text – on keys **and on the background between/around keys** (`BackgroundSwipeListener` on `overlayLayer`). Speed grows with swipe distance. The restore buffer is cleared when any other text is typed. A running swipe blocks the swipe-up shortcuts (`.`, `?`, `123`→emoji), and opening the emoji picker or any early end of a key gesture stops it (`stopSwipeGestures()`), so deletion can never run on unattended.
 - Hold backspace → repeated delete after the system long-press timeout. Deleted text can be restored with swipe right.
 - Long press → popup grid with bound characters. Slide the finger to choose; lifting commits the highlighted character.
 - Long-press both spaces for 4 s → script/alphabet selection popup.
-- Shift is a one-tap toggle (`⇧` / `⇪`). It resets when the keyboard closes.
+- Shift is a one-tap toggle: outlined arrow `⇧` when off, filled arrow `⬆` when on (`KeyMarkers.SHIFT_OFF/ON`), always in the regular key colors (also on a side button). It resets when the keyboard closes.
 
 ### Keyboard popups
 All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isClippingEnabled = false` so they can extend above the keyboard's top edge (needed for the top row).

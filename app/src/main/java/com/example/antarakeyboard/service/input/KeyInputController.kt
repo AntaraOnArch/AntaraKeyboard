@@ -20,6 +20,15 @@ class KeyInputController(
         DELETE, RESTORE
     }
 
+    /** True while a horizontal delete/restore swipe is running. */
+    fun isHorizontalSwipeActive(): Boolean = horizontalSwipeActive
+
+    /** Forgets the current gesture (the service stops the delete/restore jobs itself). */
+    fun reset() {
+        horizontalSwipeActive = false
+        swipeMode = null
+    }
+
     fun handleTouch(view: TextView, event: MotionEvent): Boolean {
 
         val label = view.text?.toString().orEmpty()

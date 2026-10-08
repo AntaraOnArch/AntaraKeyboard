@@ -1,9 +1,19 @@
 package com.example.antarakeyboard.data
 
-import android.content.Context
-import android.os.Build
 import java.util.Locale
 
+/**
+ * Default long-press letters, keyed by the (Latin) key label.
+ *
+ * - Latin keyboard: the special letters of the user's language on their base letter
+ *   (Croatian c → č ć, German a → ä, …); languages without own letters get common accents.
+ * - Cyrillic keyboard: only the special letters of that script on the matching key
+ *   (Serbian c → ч ћ, d → ђ џ, …). Plain letters are not bound: the key already types them
+ *   ([ScriptMapper]).
+ *
+ * Uppercase keys get the uppercase letters. User-added bindings are kept separately by
+ * [KeyboardPrefs.applyLongPressPreset] when the defaults change.
+ */
 object LongPressPresets {
 
     const val PRESET_SYSTEM = "system"
@@ -14,399 +24,223 @@ object LongPressPresets {
     const val PRESET_UKRAINIAN_CYRILLIC = "uk_cyrl"
     const val PRESET_MACEDONIAN_CYRILLIC = "mk_cyrl"
 
-    fun getForSystemLanguage(context: Context): Map<String, List<String>> {
-        val locale = getSystemLocale(context)
+    /**
+     * Defaults for a keyboard script preset. [languageTag] (app or device language) decides the
+     * letters of the Latin keyboard (PRESET_LATIN and PRESET_SYSTEM both type Latin).
+     */
+    fun defaultsFor(presetId: String, languageTag: String): Map<String, List<String>> =
+        withUppercase(
+            when (presetId) {
+                PRESET_SERBIAN_CYRILLIC -> SERBIAN_CYRILLIC
+                PRESET_BULGARIAN_CYRILLIC -> BULGARIAN_CYRILLIC
+                PRESET_RUSSIAN_CYRILLIC -> RUSSIAN_CYRILLIC
+                PRESET_UKRAINIAN_CYRILLIC -> UKRAINIAN_CYRILLIC
+                PRESET_MACEDONIAN_CYRILLIC -> MACEDONIAN_CYRILLIC
+                else -> latinFor(languageTag)
+            }
+        )
 
-        val preset = when {
-            usesSerbianCyrillic(locale) -> serbianCyrillic()
-            usesBulgarianCyrillic(locale) -> bulgarianCyrillic()
-            usesRussianCyrillic(locale) -> russianCyrillic()
-            usesUkrainianCyrillic(locale) -> ukrainianCyrillic()
-            usesMacedonianCyrillic(locale) -> macedonianCyrillic()
-            usesLatinScript(locale) -> basicLatin()
-            else -> emptyMap()
-        }
+    /** Latin special letters of [languageTag]; common accents for languages without own letters. */
+    fun latinFor(languageTag: String): Map<String, List<String>> {
+        val language = languageTag.substringBefore('-').substringBefore('_').lowercase(Locale.ROOT)
+        return LATIN_BY_LANGUAGE[language] ?: COMMON_LATIN
+    }
 
-        return withUppercase(preset)
-    }
-    fun getById(context: Context, presetId: String): Map<String, List<String>> {
-        return when (presetId) {
-            PRESET_LATIN -> withUppercase(basicLatin())
-            PRESET_SERBIAN_CYRILLIC -> withUppercase(serbianCyrillic())
-            PRESET_BULGARIAN_CYRILLIC -> withUppercase(bulgarianCyrillic())
-            PRESET_RUSSIAN_CYRILLIC -> withUppercase(russianCyrillic())
-            PRESET_UKRAINIAN_CYRILLIC -> withUppercase(ukrainianCyrillic())
-            PRESET_MACEDONIAN_CYRILLIC -> withUppercase(macedonianCyrillic())
-            PRESET_SYSTEM -> getForSystemLanguage(context)
-            else -> getForSystemLanguage(context)
-        }
-    }
-    /** Every special letter bound in the Latin preset (lower + upper case). */
+    /** Every special Latin letter of any language (lower + upper case) – for the bind picker. */
     fun allLatinLetters(): List<String> =
-        withUppercase(basicLatin()).values.flatten().distinct()
+        withUppercase(
+            (LATIN_BY_LANGUAGE.values + COMMON_LATIN)
+                .flatMap { it.entries }
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, lists) -> lists.flatten().distinct() }
+        ).toSortedMap().values.flatten().distinct()
 
-    /** Every Cyrillic letter used by any Cyrillic preset (lower + upper case). */
-    fun allCyrillicLetters(): List<String> =
-        listOf(
-            serbianCyrillic(), bulgarianCyrillic(), russianCyrillic(),
-            ukrainianCyrillic(), macedonianCyrillic()
-        )
-            .flatMap { preset -> withUppercase(preset).let { it.keys + it.values.flatten() } }
-            .filter { s -> s.any { Character.UnicodeBlock.of(it) == Character.UnicodeBlock.CYRILLIC } }
-            .distinct()
+    /** Full alphabets of all supported Cyrillic scripts (lower + upper case) – for the bind picker. */
+    fun allCyrillicLetters(): List<String> {
+        val lower = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" + "ђјљњћџ" + "ѓќѕ" + "ґєії" + "ў"
+        return lower.map { it.toString() }.flatMap { listOf(it, it.uppercase(Locale.ROOT)) }.distinct()
+    }
 
-    private fun getSystemLocale(context: Context): Locale {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            context.resources.configuration.locales[0]
-        } else {
-            @Suppress("DEPRECATION")
-            context.resources.configuration.locale
+    fun isCyrillicPreset(presetId: String): Boolean = presetId in setOf(
+        PRESET_SERBIAN_CYRILLIC, PRESET_BULGARIAN_CYRILLIC, PRESET_RUSSIAN_CYRILLIC,
+        PRESET_UKRAINIAN_CYRILLIC, PRESET_MACEDONIAN_CYRILLIC
+    )
+
+    /**
+     * Long-press entries shown for the active script: the Latin keyboard never offers single
+     * Cyrillic letters and the Cyrillic keyboard never offers single Latin letters.
+     * Custom text, emoji, digits and symbols are shown in both.
+     */
+    fun visibleFor(presetId: String, binds: List<String>): List<String> {
+        val hidden = if (isCyrillicPreset(presetId)) Character.UnicodeScript.LATIN else Character.UnicodeScript.CYRILLIC
+        return binds.filterNot { bind ->
+            bind.codePointCount(0, bind.length) == 1 &&
+                Character.isLetter(bind.codePointAt(0)) &&
+                Character.UnicodeScript.of(bind.codePointAt(0)) == hidden
         }
     }
 
-    private fun usesSerbianCyrillic(locale: Locale): Boolean {
-        val language = locale.language.lowercase(Locale.ROOT)
-        if (language != "sr") return false
+    /**
+     * New long-press binds after the defaults changed (script, language or app update):
+     * [oldDefaults] are removed from [current], [newDefaults] come first, and everything the user
+     * bound themselves (custom text, extra letters, emoji) stays after them in its order.
+     */
+    fun mergeDefaults(
+        current: Map<String, List<String>>,
+        oldDefaults: Map<String, Collection<String>>,
+        newDefaults: Map<String, List<String>>
+    ): Map<String, List<String>> =
+        (current.keys + newDefaults.keys).associateWith { key ->
+            val old = oldDefaults[key].orEmpty()
+            val userBinds = current[key].orEmpty().filter { it !in old }
+            (newDefaults[key].orEmpty() + userBinds).distinct()
+        }.filterValues { it.isNotEmpty() }
 
-        val script = locale.script
-        val tag = locale.toLanguageTag()
-
-        if (script.equals("Latn", ignoreCase = true)) return false
-        if (tag.contains("Latn", ignoreCase = true)) return false
-
-        if (script.equals("Cyrl", ignoreCase = true)) return true
-        if (tag.contains("Cyrl", ignoreCase = true)) return true
-
-        // Ako je srpski, ali script nije eksplicitno naveden,
-        // tretiramo ga kao ćirilicu osim ako gore nije bio Latn.
-        return true
-    }
-
-    private fun usesBulgarianCyrillic(locale: Locale): Boolean {
-        val language = locale.language.lowercase(Locale.ROOT)
-        if (language != "bg") return false
-
-        val script = locale.script
-        val tag = locale.toLanguageTag()
-
-        if (script.equals("Latn", ignoreCase = true)) return false
-        if (tag.contains("Latn", ignoreCase = true)) return false
-
-        return true
-    }
-
-    private fun usesRussianCyrillic(locale: Locale): Boolean {
-        val language = locale.language.lowercase(Locale.ROOT)
-        if (language != "ru") return false
-
-        val script = locale.script
-        val tag = locale.toLanguageTag()
-
-        if (script.equals("Latn", ignoreCase = true)) return false
-        if (tag.contains("Latn", ignoreCase = true)) return false
-
-        return true
-    }
-    private fun usesUkrainianCyrillic(locale: Locale): Boolean {
-        val language = locale.language.lowercase(Locale.ROOT)
-        if (language != "uk") return false
-
-        val script = locale.script
-        val tag = locale.toLanguageTag()
-
-        if (script.equals("Latn", ignoreCase = true)) return false
-        if (tag.contains("Latn", ignoreCase = true)) return false
-
-        return true
-    }
-
-    private fun usesMacedonianCyrillic(locale: Locale): Boolean {
-        val language = locale.language.lowercase(Locale.ROOT)
-        if (language != "mk") return false
-
-        val script = locale.script
-        val tag = locale.toLanguageTag()
-
-        if (script.equals("Latn", ignoreCase = true)) return false
-        if (tag.contains("Latn", ignoreCase = true)) return false
-
-        return true
-    }
-
-    private fun usesLatinScript(locale: Locale): Boolean {
-        val script = locale.script
-
-        if (script.equals("Latn", ignoreCase = true)) {
-            return true
+    /** Same as [withUppercase] for sets (used for the old defaults of the migration). */
+    internal fun withUppercaseSets(source: Map<String, Set<String>>): Map<String, Set<String>> {
+        val result = mutableMapOf<String, Set<String>>()
+        source.forEach { (key, values) ->
+            result[key] = values
+            result[key.uppercase(Locale.ROOT)] = values.map { it.uppercase(Locale.ROOT) }.toSet()
         }
-
-        if (script.isNotBlank() && !script.equals("Latn", ignoreCase = true)) {
-            return false
-        }
-
-        val language = locale.language.lowercase(Locale.ROOT)
-
-        return language in setOf(
-            "hr", "bs",
-            "en", "de", "fr", "it", "es", "pt",
-            "nl", "sv", "no", "da", "fi",
-            "pl", "cs", "sk", "sl",
-            "hu", "ro", "tr",
-            "id", "ms", "vi"
-        )
-    }
-
-    private fun serbianCyrillic(): Map<String, List<String>> {
-        return mapOf(
-            // Latin layout fallback
-            "a" to listOf("а"),
-            "b" to listOf("б"),
-            "v" to listOf("в"),
-            "g" to listOf("г"),
-            "d" to listOf("д", "ђ", "џ"),
-            "e" to listOf("е"),
-            "z" to listOf("з", "ж"),
-            "i" to listOf("и"),
-            "j" to listOf("ј"),
-            "k" to listOf("к"),
-            "l" to listOf("л", "љ"),
-            "m" to listOf("м"),
-            "n" to listOf("н", "њ"),
-            "o" to listOf("о"),
-            "p" to listOf("п"),
-            "r" to listOf("р"),
-            "s" to listOf("с", "ш"),
-            "t" to listOf("т", "ћ"),
-            "u" to listOf("у"),
-            "f" to listOf("ф"),
-            "h" to listOf("х"),
-            "c" to listOf("ц", "ч", "ћ"),
-
-            // Tipke koje postoje na latin layoutu, ali nisu dio srpske latinice
-            "q" to listOf("љ"),
-            "w" to listOf("њ"),
-            "x" to listOf("џ"),
-            "y" to listOf("ј"),
-
-            // Future Cyrillic layout support
-            "л" to listOf("љ"),
-            "н" to listOf("њ"),
-            "д" to listOf("ђ", "џ"),
-            "т" to listOf("ћ"),
-            "ч" to listOf("џ")
-        )
-    }
-
-    private fun bulgarianCyrillic(): Map<String, List<String>> {
-        return mapOf(
-            // Latin layout fallback
-            "a" to listOf("а", "я"),
-            "b" to listOf("б"),
-            "v" to listOf("в"),
-            "g" to listOf("г"),
-            "d" to listOf("д"),
-            "e" to listOf("е"),
-            "z" to listOf("з", "ж"),
-            "i" to listOf("и", "й"),
-            "j" to listOf("й"),
-            "k" to listOf("к"),
-            "l" to listOf("л"),
-            "m" to listOf("м"),
-            "n" to listOf("н"),
-            "o" to listOf("о"),
-            "p" to listOf("п"),
-            "r" to listOf("р"),
-            "s" to listOf("с", "ш", "щ"),
-            "t" to listOf("т"),
-            "u" to listOf("у", "ю"),
-            "f" to listOf("ф"),
-            "h" to listOf("х"),
-            "c" to listOf("ц", "ч"),
-
-            // Dodatne tipke za bugarska slova bez čistog latin para
-            "q" to listOf("я"),
-            "w" to listOf("ш", "щ"),
-            "x" to listOf("х", "ь"),
-            "y" to listOf("ъ", "ь"),
-
-            // Future Cyrillic layout support
-            "з" to listOf("ж"),
-            "ц" to listOf("ч"),
-            "с" to listOf("ш", "щ"),
-            "у" to listOf("ю"),
-            "а" to listOf("я"),
-            "и" to listOf("й"),
-            "ъ" to listOf("ь")
-        )
-    }
-
-    private fun russianCyrillic(): Map<String, List<String>> {
-        return mapOf(
-            // Latin layout fallback
-            "a" to listOf("а", "я"),
-            "b" to listOf("б"),
-            "v" to listOf("в"),
-            "g" to listOf("г"),
-            "d" to listOf("д"),
-            "e" to listOf("е", "ё", "э"),
-            "z" to listOf("з", "ж"),
-            "i" to listOf("и"),
-            "j" to listOf("й"),
-            "k" to listOf("к"),
-            "l" to listOf("л"),
-            "m" to listOf("м"),
-            "n" to listOf("н"),
-            "o" to listOf("о"),
-            "p" to listOf("п"),
-            "r" to listOf("р"),
-            "s" to listOf("с", "ш", "щ"),
-            "t" to listOf("т"),
-            "u" to listOf("у", "ю"),
-            "f" to listOf("ф"),
-            "h" to listOf("х"),
-            "c" to listOf("ц", "ч"),
-
-            // Dodatne tipke za ruska slova bez čistog latin para
-            "q" to listOf("я"),
-            "w" to listOf("ш", "щ"),
-            "x" to listOf("х", "ь"),
-            "y" to listOf("ы", "ъ", "ь"),
-
-            // Future Cyrillic layout support
-            "е" to listOf("ё", "э"),
-            "з" to listOf("ж"),
-            "ц" to listOf("ч"),
-            "с" to listOf("ш", "щ"),
-            "у" to listOf("ю"),
-            "а" to listOf("я"),
-            "ы" to listOf("ъ", "ь"),
-            "х" to listOf("ь")
-        )
-    }
-
-    private fun ukrainianCyrillic(): Map<String, List<String>> {
-        return mapOf(
-            // Latin layout fallback
-            "a" to listOf("а", "я"),
-            "b" to listOf("б"),
-            "v" to listOf("в"),
-            "g" to listOf("г", "ґ"),
-            "d" to listOf("д"),
-            "e" to listOf("е", "є"),
-            "z" to listOf("з", "ж"),
-            "i" to listOf("і", "и", "ї"),
-            "j" to listOf("й", "ї"),
-            "k" to listOf("к"),
-            "l" to listOf("л"),
-            "m" to listOf("м"),
-            "n" to listOf("н"),
-            "o" to listOf("о"),
-            "p" to listOf("п"),
-            "r" to listOf("р"),
-            "s" to listOf("с", "ш", "щ"),
-            "t" to listOf("т"),
-            "u" to listOf("у", "ю"),
-            "f" to listOf("ф"),
-            "h" to listOf("х"),
-            "c" to listOf("ц", "ч"),
-
-            // Dodatne tipke za ukrajinska slova bez čistog latin para
-            "q" to listOf("я"),
-            "w" to listOf("ш", "щ"),
-            "x" to listOf("х", "ь"),
-            "y" to listOf("и", "й"),
-
-            // Future Cyrillic layout support
-            "г" to listOf("ґ"),
-            "е" to listOf("є"),
-            "і" to listOf("ї"),
-            "и" to listOf("й"),
-            "з" to listOf("ж"),
-            "ц" to listOf("ч"),
-            "с" to listOf("ш", "щ"),
-            "у" to listOf("ю"),
-            "а" to listOf("я"),
-            "х" to listOf("ь")
-        )
-    }
-
-
-    private fun macedonianCyrillic(): Map<String, List<String>> {
-        return mapOf(
-            // Latin layout fallback
-            "a" to listOf("а"),
-            "b" to listOf("б"),
-            "v" to listOf("в"),
-            "g" to listOf("г", "ѓ"),
-            "d" to listOf("д", "џ"),
-            "e" to listOf("е"),
-            "z" to listOf("з", "ж", "ѕ"),
-            "i" to listOf("и"),
-            "j" to listOf("ј"),
-            "k" to listOf("к", "ќ"),
-            "l" to listOf("л", "љ"),
-            "m" to listOf("м"),
-            "n" to listOf("н", "њ"),
-            "o" to listOf("о"),
-            "p" to listOf("п"),
-            "r" to listOf("р"),
-            "s" to listOf("с", "ш"),
-            "t" to listOf("т"),
-            "u" to listOf("у"),
-            "f" to listOf("ф"),
-            "h" to listOf("х"),
-            "c" to listOf("ц", "ч"),
-
-            // Dodatne tipke za makedonska slova bez čistog latin para
-            "q" to listOf("љ"),
-            "w" to listOf("њ"),
-            "x" to listOf("џ"),
-            "y" to listOf("ѕ"),
-
-            // Future Cyrillic layout support
-            "г" to listOf("ѓ"),
-            "к" to listOf("ќ"),
-            "з" to listOf("ж", "ѕ"),
-            "д" to listOf("џ"),
-            "л" to listOf("љ"),
-            "н" to listOf("њ"),
-            "ц" to listOf("ч"),
-            "с" to listOf("ш")
-        )
-    }
-    private fun basicLatin(): Map<String, List<String>> {
-        return mapOf(
-            "a" to listOf("á", "à", "â", "ä", "ã", "å", "ā", "æ"),
-            "c" to listOf("ç", "č", "ć", "℃", "ℂ", "₡", "ⓒ"),
-            "d" to listOf("đ", "ď"),
-            "e" to listOf("é", "è", "ê", "ë", "ē", "ė", "ę"),
-            "g" to listOf("ĝ", "ğ", "ġ"),
-            "h" to listOf("ĥ", "ȟ", "ḣ", "ḥ", "ḧ", "ḩ", "ḫ", "ẖ"),
-            "i" to listOf("í", "ì", "î", "ï", "ī", "į"),
-            "j" to listOf("ĵ", "ǰ", "ɉ"),
-            "k" to listOf("ķ", "ǩ", "ḱ", "ḳ", "ḵ", "ꝁ"),
-            "l" to listOf("ĺ", "ļ", "ľ", "ŀ", "ł"),
-            "n" to listOf("ñ", "ń", "ņ", "ň", "ŉ", "ǹ"),
-            "o" to listOf("ó", "ò", "ô", "ö", "õ", "ø", "ō"),
-            "r" to listOf("ŕ", "ŗ", "ř", "ȑ", "ȓ", "ɍ"),
-            "s" to listOf("ß", "š", "ṡ", "ṧ", "ṥ", "ṣ", "ṩ", "ş"),
-            "t" to listOf("ť", "ţ", "ŧ", "ƭ", "ƫ", "ț", "ȶ", "ṫ", "ṭ"),
-            "u" to listOf("ú", "ù", "û", "ü", "ū", "µ", "ŭ", "ů", "ű", "ų"),
-            "y" to listOf("ý", "ÿ"),
-            "z" to listOf("ž", "ź", "ż", "ƶ", "ẑ", "ẓ", "ẕ")
-        )
+        return result
     }
 
     private fun withUppercase(source: Map<String, List<String>>): Map<String, List<String>> {
         val result = mutableMapOf<String, List<String>>()
-
         source.forEach { (key, values) ->
             result[key] = values
-            result[key.uppercase(Locale.ROOT)] = values.map {
-                it.uppercase(Locale.ROOT)
-            }
+            result[key.uppercase(Locale.ROOT)] = values.map { it.uppercase(Locale.ROOT) }
         }
-
         return result
     }
+
+    /* ───────── LATIN, PER LANGUAGE ───────── */
+
+    private val SOUTH_SLAVIC_LATIN = mapOf(
+        "c" to listOf("č", "ć"), "d" to listOf("đ"), "s" to listOf("š"), "z" to listOf("ž")
+    )
+
+    private val LATIN_BY_LANGUAGE: Map<String, Map<String, List<String>>> = mapOf(
+        "hr" to SOUTH_SLAVIC_LATIN,
+        "bs" to SOUTH_SLAVIC_LATIN,
+        "sr" to SOUTH_SLAVIC_LATIN,
+        "sl" to mapOf("c" to listOf("č"), "s" to listOf("š"), "z" to listOf("ž")),
+        "de" to mapOf("a" to listOf("ä"), "o" to listOf("ö"), "u" to listOf("ü"), "s" to listOf("ß")),
+        "fr" to mapOf(
+            "a" to listOf("à", "â", "æ"), "c" to listOf("ç"), "e" to listOf("é", "è", "ê", "ë"),
+            "i" to listOf("î", "ï"), "o" to listOf("ô", "œ"), "u" to listOf("ù", "û", "ü"), "y" to listOf("ÿ")
+        ),
+        "es" to mapOf(
+            "a" to listOf("á"), "e" to listOf("é"), "i" to listOf("í"), "n" to listOf("ñ"),
+            "o" to listOf("ó"), "u" to listOf("ú", "ü")
+        ),
+        "it" to mapOf(
+            "a" to listOf("à"), "e" to listOf("è", "é"), "i" to listOf("ì"), "o" to listOf("ò"), "u" to listOf("ù")
+        ),
+        "pt" to mapOf(
+            "a" to listOf("á", "à", "â", "ã"), "c" to listOf("ç"), "e" to listOf("é", "ê"),
+            "i" to listOf("í"), "o" to listOf("ó", "ô", "õ"), "u" to listOf("ú")
+        ),
+        "ca" to mapOf(
+            "a" to listOf("à"), "c" to listOf("ç"), "e" to listOf("è", "é"), "i" to listOf("í", "ï"),
+            "o" to listOf("ò", "ó"), "u" to listOf("ú", "ü")
+        ),
+        "pl" to mapOf(
+            "a" to listOf("ą"), "c" to listOf("ć"), "e" to listOf("ę"), "l" to listOf("ł"),
+            "n" to listOf("ń"), "o" to listOf("ó"), "s" to listOf("ś"), "z" to listOf("ż", "ź")
+        ),
+        "cs" to mapOf(
+            "a" to listOf("á"), "c" to listOf("č"), "d" to listOf("ď"), "e" to listOf("é", "ě"),
+            "i" to listOf("í"), "n" to listOf("ň"), "o" to listOf("ó"), "r" to listOf("ř"),
+            "s" to listOf("š"), "t" to listOf("ť"), "u" to listOf("ú", "ů"), "y" to listOf("ý"), "z" to listOf("ž")
+        ),
+        "sk" to mapOf(
+            "a" to listOf("á", "ä"), "c" to listOf("č"), "d" to listOf("ď"), "e" to listOf("é"),
+            "i" to listOf("í"), "l" to listOf("ĺ", "ľ"), "n" to listOf("ň"), "o" to listOf("ó", "ô"),
+            "r" to listOf("ŕ"), "s" to listOf("š"), "t" to listOf("ť"), "u" to listOf("ú"),
+            "y" to listOf("ý"), "z" to listOf("ž")
+        ),
+        "hu" to mapOf(
+            "a" to listOf("á"), "e" to listOf("é"), "i" to listOf("í"),
+            "o" to listOf("ó", "ö", "ő"), "u" to listOf("ú", "ü", "ű")
+        ),
+        "ro" to mapOf("a" to listOf("ă", "â"), "i" to listOf("î"), "s" to listOf("ș"), "t" to listOf("ț")),
+        "nl" to mapOf("e" to listOf("é", "ë"), "i" to listOf("ï"), "o" to listOf("ö")),
+        "sv" to mapOf("a" to listOf("å", "ä"), "o" to listOf("ö")),
+        "fi" to mapOf("a" to listOf("ä", "å"), "o" to listOf("ö")),
+        "da" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
+        "nb" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
+        "no" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
+        "is" to mapOf(
+            "a" to listOf("á", "æ"), "d" to listOf("ð"), "e" to listOf("é"), "i" to listOf("í"),
+            "o" to listOf("ó", "ö"), "t" to listOf("þ"), "u" to listOf("ú"), "y" to listOf("ý")
+        ),
+        "et" to mapOf(
+            "a" to listOf("ä"), "o" to listOf("õ", "ö"), "u" to listOf("ü"), "s" to listOf("š"), "z" to listOf("ž")
+        ),
+        "lv" to mapOf(
+            "a" to listOf("ā"), "c" to listOf("č"), "e" to listOf("ē"), "g" to listOf("ģ"),
+            "i" to listOf("ī"), "k" to listOf("ķ"), "l" to listOf("ļ"), "n" to listOf("ņ"),
+            "s" to listOf("š"), "u" to listOf("ū"), "z" to listOf("ž")
+        ),
+        "lt" to mapOf(
+            "a" to listOf("ą"), "c" to listOf("č"), "e" to listOf("ę", "ė"), "i" to listOf("į"),
+            "s" to listOf("š"), "u" to listOf("ų", "ū"), "z" to listOf("ž")
+        ),
+        "sq" to mapOf("c" to listOf("ç"), "e" to listOf("ë")),
+        "mt" to mapOf(
+            "a" to listOf("à"), "c" to listOf("ċ"), "e" to listOf("è"), "g" to listOf("ġ"),
+            "h" to listOf("ħ"), "i" to listOf("ì"), "o" to listOf("ò"), "u" to listOf("ù"), "z" to listOf("ż")
+        ),
+        "ga" to mapOf(
+            "a" to listOf("á"), "e" to listOf("é"), "i" to listOf("í"), "o" to listOf("ó"), "u" to listOf("ú")
+        ),
+        "tr" to mapOf(
+            "c" to listOf("ç"), "g" to listOf("ğ"), "i" to listOf("ı"), "o" to listOf("ö"),
+            "s" to listOf("ş"), "u" to listOf("ü")
+        )
+    )
+
+    /** English and languages without own letters: the most common European accents. */
+    private val COMMON_LATIN = mapOf(
+        "a" to listOf("á", "à", "â", "ä", "ã", "å", "æ"),
+        "c" to listOf("ç", "č", "ć"),
+        "d" to listOf("đ"),
+        "e" to listOf("é", "è", "ê", "ë"),
+        "i" to listOf("í", "ì", "î", "ï"),
+        "n" to listOf("ñ"),
+        "o" to listOf("ó", "ò", "ô", "ö", "õ", "ø", "œ"),
+        "s" to listOf("š", "ß"),
+        "u" to listOf("ú", "ù", "û", "ü"),
+        "y" to listOf("ý", "ÿ"),
+        "z" to listOf("ž")
+    )
+
+    /* ───────── CYRILLIC, PER SCRIPT (keys are the Latin labels) ───────── */
+
+    private val SERBIAN_CYRILLIC = mapOf(
+        "c" to listOf("ч", "ћ"), "d" to listOf("ђ", "џ"), "s" to listOf("ш"),
+        "z" to listOf("ж"), "l" to listOf("љ"), "n" to listOf("њ")
+    )
+
+    private val MACEDONIAN_CYRILLIC = mapOf(
+        "c" to listOf("ч"), "d" to listOf("џ"), "g" to listOf("ѓ"), "k" to listOf("ќ"),
+        "s" to listOf("ш"), "z" to listOf("ж", "ѕ"), "l" to listOf("љ"), "n" to listOf("њ")
+    )
+
+    private val RUSSIAN_CYRILLIC = mapOf(
+        "a" to listOf("я"), "c" to listOf("ч"), "e" to listOf("ё", "э"), "s" to listOf("ш", "щ"),
+        "u" to listOf("ю"), "z" to listOf("ж"), "x" to listOf("ъ")
+    )
+
+    private val UKRAINIAN_CYRILLIC = mapOf(
+        "a" to listOf("я"), "c" to listOf("ч"), "e" to listOf("є"), "g" to listOf("ґ"),
+        "i" to listOf("ї"), "s" to listOf("ш", "щ"), "u" to listOf("ю"), "z" to listOf("ж")
+    )
+
+    private val BULGARIAN_CYRILLIC = mapOf(
+        "a" to listOf("я"), "c" to listOf("ч"), "s" to listOf("ш", "щ"), "u" to listOf("ю"),
+        "z" to listOf("ж"), "y" to listOf("ь")
+    )
 }

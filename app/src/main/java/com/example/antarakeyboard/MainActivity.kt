@@ -51,6 +51,7 @@ import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.ui.ColorWheelView
+import com.example.antarakeyboard.ui.KeyView
 import com.example.antarakeyboard.ui.LayoutEditorBinder
 import com.example.antarakeyboard.ui.LongPressEditorBinder
 import com.example.antarakeyboard.ui.ReselectSpinner
@@ -615,6 +616,11 @@ class MainActivity : AppCompatActivity() {
 
             // Resetiraj side buttons za trenutni broj redova
             resetSideButtonsForRowCount(currentRowCount)
+
+            // Key height and row spacing sliders back to default
+            KeyboardPrefs.resetKeySizing(this)
+            setupKeySizeSlider()
+            setupRowSpacingSlider()
         }
 
         if (colors) {
@@ -669,10 +675,8 @@ class MainActivity : AppCompatActivity() {
             getColor(R.color.keyboard_bg_light)
         }
 
-        // 1. Space colors — iz tvorničkih defaulta teme
-        val spaceFill = if (isDark) KeyboardPrefs.FactoryDefaults.DARK_SPACE_FILL
-            else KeyboardPrefs.FactoryDefaults.LIGHT_SPACE_FILL
-        KeyboardPrefs.setSpaceColors(this, spaceFill, spaceFill, true)
+        // 1. Space follows the theme again (its own colors stay stored for later)
+        KeyboardPrefs.setSpaceUseTheme(this, true)
 
         // opcionalno: počisti eventualni stari individual zapis za " "
         KeyboardPrefs.clearKeyIndividualColors(this, " ")
@@ -836,9 +840,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildSpaceColorsPage(page: LinearLayout, onChanged: () -> Unit) {
+        var useTheme = KeyboardPrefs.getSpaceUseTheme(this)
         var linked = KeyboardPrefs.isSpaceLinked(this)
-        var c1 = KeyboardPrefs.getSpace1Bg(this)
-        var c2 = KeyboardPrefs.getSpace2Bg(this)
+        // Start from what is drawn now, so switching off "use theme" keeps the look
+        val (drawn1, drawn2) = KeyboardPrefs.resolveSpaceColors(this, PrefsManager.isDarkMode(this))
+        var c1 = drawn1
+        var c2 = drawn2
 
         fun save() {
             if (linked) c2 = c1
@@ -864,6 +871,7 @@ class MainActivity : AppCompatActivity() {
         val cb = CheckBox(this).apply {
             text = getString(R.string.color_space_linked)
             isChecked = linked
+            isEnabled = !useTheme
             setOnCheckedChangeListener { _, isChecked ->
                 linked = isChecked
                 if (linked) setSwatch(b2, c1)
@@ -871,9 +879,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        fun updateEnabled() {
+            cb.isEnabled = !useTheme
+            b1.isEnabled = !useTheme
+            b2.isEnabled = !useTheme
+        }
+
+        val cbTheme = CheckBox(this).apply {
+            text = getString(R.string.color_use_theme)
+            isChecked = useTheme
+            setOnCheckedChangeListener { _, isChecked ->
+                useTheme = isChecked
+                if (isChecked) KeyboardPrefs.setSpaceUseTheme(this@MainActivity, true) else save()
+                updateEnabled()
+                onChanged()
+            }
+        }
+
+        page.addSpaced(cbTheme)
         page.addSpaced(cb)
         page.addSpaced(b1)
         page.addSpaced(b2)
+        updateEnabled()
     }
 
     private fun buildEnterColorsPage(page: LinearLayout, onChanged: () -> Unit) {
@@ -894,8 +921,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildSideButtonsColorsPage(page: LinearLayout, onChanged: () -> Unit) {
         var useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(this)
-        var bg = KeyboardPrefs.getSideButtonsBg(this)
-        var textColor = KeyboardPrefs.getSideButtonsTextColor(this)
+        // Theme look = no background + theme icon color; start from it so turning the theme off keeps the look
+        var bg = if (useThemeBg) Color.TRANSPARENT else KeyboardPrefs.getSideButtonsBg(this)
+        var textColor = if (useThemeBg) {
+            themeColor(R.attr.edgeIconText, if (PrefsManager.isDarkMode(this)) Color.WHITE else Color.BLACK)
+        } else {
+            KeyboardPrefs.getSideButtonsTextColor(this)
+        }
 
         fun save() {
             KeyboardPrefs.setSideButtonsColors(this, bg, textColor, useThemeBg)
@@ -927,8 +959,9 @@ class MainActivity : AppCompatActivity() {
         val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, PrefsManager.isDarkMode(this))
         var useTheme = KeyboardPrefs.getKeysUseTheme(this)
         var allSame = KeyboardPrefs.getKeysAllSameColor(this)
-        var bg = KeyboardPrefs.getKeysBg(this)
-        var textColor = KeyboardPrefs.getKeysTextColor(this)
+        // While the theme is used, start from the theme colors, so turning it off keeps the look
+        var bg = if (useTheme) themeColors.keyFill else KeyboardPrefs.getKeysBg(this)
+        var textColor = if (useTheme) themeColors.keyText else KeyboardPrefs.getKeysTextColor(this)
 
         fun save() {
             KeyboardPrefs.setKeysColors(this, bg, textColor, allSame, useTheme = useTheme)
@@ -1096,7 +1129,16 @@ class MainActivity : AppCompatActivity() {
         group.setOnCheckedChangeListener { g, checkedId ->
             val mode = g.findViewById<View>(checkedId)?.tag as? KeyboardPrefs.BackgroundMode
                 ?: return@setOnCheckedChangeListener
-            KeyboardPrefs.setBackgroundMode(this, mode)
+            if (mode == KeyboardPrefs.BackgroundMode.CUSTOM &&
+                KeyboardPrefs.getBackgroundMode(this) != KeyboardPrefs.BackgroundMode.CUSTOM
+            ) {
+                // Switching to Custom starts from the background shown now, not an old stored color
+                val shown = KeyboardPrefs.resolveKeyboardBackground(this, PrefsManager.isDarkMode(this))
+                KeyboardPrefs.setBackgroundColor(this, shown, useTheme = false)
+                setSwatch(customBtn, shown)
+            } else {
+                KeyboardPrefs.setBackgroundMode(this, mode)
+            }
             customBtn.isEnabled = mode == KeyboardPrefs.BackgroundMode.CUSTOM
             onChanged()
         }
@@ -3078,13 +3120,17 @@ class MainActivity : AppCompatActivity() {
         val customPrefs = getSharedPreferences(PrefsManager.PREFS_CUSTOM_THEME, MODE_PRIVATE)
 
         // Save current keyboard colors as custom theme
+        // Colors as drawn (theme or custom), so "Last custom colors" restores what was visible
+        val isDark = PrefsManager.isDarkMode(this)
+        val (keyFill, keyText) = KeyboardPrefs.resolveKeyColors(this, isDark)
+        val (space1, space2) = KeyboardPrefs.resolveSpaceColors(this, isDark)
         customPrefs.edit()
             .putBoolean("has_custom_theme", true)
-            .putInt("custom_key_fill", KeyboardPrefs.getKeysBg(this))
-            .putInt("custom_key_text", KeyboardPrefs.getKeysTextColor(this))
-            .putInt("custom_background", KeyboardPrefs.getBackgroundColor(this))
-            .putInt("custom_space1_bg", KeyboardPrefs.getSpace1Bg(this))
-            .putInt("custom_space2_bg", KeyboardPrefs.getSpace2Bg(this))
+            .putInt("custom_key_fill", keyFill)
+            .putInt("custom_key_text", keyText)
+            .putInt("custom_background", KeyboardPrefs.resolveKeyboardBackground(this, isDark))
+            .putInt("custom_space1_bg", space1)
+            .putInt("custom_space2_bg", space2)
             .putInt("custom_enter_bg", KeyboardPrefs.getEnterBg(this))
             .putInt("custom_enter_icon", KeyboardPrefs.getEnterIcon(this))
             .putInt("custom_side_bg", KeyboardPrefs.getSideButtonsBg(this))
@@ -3110,7 +3156,7 @@ class MainActivity : AppCompatActivity() {
 
         KeyboardPrefs.setKeysColors(this, keyFill, keyText, true, useTheme = false)
         KeyboardPrefs.setBackgroundColor(this, background, false)
-        KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, true)
+        KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, space1Bg == space2Bg)
         KeyboardPrefs.setEnterColors(this, enterBg, enterIcon)
         KeyboardPrefs.setSideButtonsColors(this, sideBg, sideText, false)
     }
@@ -3164,6 +3210,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout) {
         SavedLayoutStorage.restoreLayout(this, savedLayout)
+        // The layout may carry its own key height / row spacing
+        setupKeySizeSlider()
+        setupRowSpacingSlider()
         preview.shape = KeyboardPrefs.getShape(this)
         spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this) }.coerceAtLeast(0))
         spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this)).coerceAtLeast(0))
@@ -3329,53 +3378,65 @@ class MainActivity : AppCompatActivity() {
         // Preview container reference for updates
         lateinit var previewContainer: LinearLayout
 
-        // Function to rebuild preview
+        // Preview: real keys with the saved shape, row count, key height, row spacing and colors
         fun rebuildPreview() {
             previewContainer.removeAllViews()
             previewContainer.setBackgroundColor(currentBgColor)
 
-            alphabetLayout.rows.forEach { row ->
+            val savedShape = runCatching { KeyShape.valueOf(savedLayout.keyShape) }.getOrDefault(KeyShape.HEX)
+            // Same per-layout rules as the keyboard (3-row hexagons are tall, 3-row triangles taller)
+            val shape = if (savedLayout.rowCount == 3 && savedShape == KeyShape.HEX) KeyShape.HEX_TALL else savedShape
+            val stretch = KeyScale.clamp(savedLayout.keyScale ?: KeyScale.DEFAULT) *
+                (if (savedLayout.rowCount == 3 && savedShape == KeyShape.TRIANGLE) KeyScale.THREE_ROW_TRIANGLE_DEFAULT else 1f)
+            val rowSpacing = KeyScale.clampRowSpacing(savedLayout.rowSpacingDp ?: 0).dp(this)
+
+            val rows = alphabetLayout.rows.map { row -> row.keys.filter { it.label.isNotEmpty() } }
+            val maxKeys = rows.maxOfOrNull { it.size }?.coerceAtLeast(1) ?: 1
+            val availW = (resources.displayMetrics.widthPixels * 0.95f).toInt() - 48.dp(this)
+            val keyW = availW / maxKeys
+            val baseH = if (shape == KeyShape.HEX_TALL) (keyW * 1.6f).toInt() else keyW
+            val isHex = shape == KeyShape.HEX || shape == KeyShape.HEX_TALL
+            // Honeycomb rows interlock by the hexagon tips (a quarter of the drawn height)
+            val rowOverlap = when {
+                isHex -> (baseH * 0.96f * stretch * 0.25f).toInt() - 1.dp(this)
+                shape == KeyShape.TRIANGLE -> (baseH * 0.15f * stretch).toInt()
+                else -> -(2.dp(this))
+            }
+
+            rows.forEachIndexed { rowIndex, keys ->
                 val rowLayout = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
-                    gravity = android.view.Gravity.CENTER
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { bottomMargin = 4.dp(this@MainActivity) }
+                    gravity = Gravity.CENTER_HORIZONTAL
+                    clipChildren = false
+                    clipToPadding = false
+                    // Honeycomb: every second row shifted by half a key
+                    if (isHex && rowIndex % 2 == 1) setPadding(keyW / 2, 0, 0, 0)
                 }
 
-                row.keys.forEach { key ->
-                    if (key.label.isNotEmpty()) {
-                        val keyView = TextView(this).apply {
-                            text = key.label
-                            textSize = 12f
-                            gravity = android.view.Gravity.CENTER
-                            setPadding(6.dp(this), 4.dp(this), 6.dp(this), 4.dp(this))
-
-                            when (key.label) {
-                                " " -> {
-                                    setBackgroundColor(currentSpaceBg)
-                                    text = "␣"
-                                }
-                                "↵" -> {
-                                    setBackgroundColor(currentEnterBg)
-                                    setTextColor(currentEnterIcon)
-                                }
-                                else -> {
-                                    setBackgroundColor(currentKeyFill)
-                                    setTextColor(currentKeyText)
-                                }
-                            }
-
-                            layoutParams = LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.WRAP_CONTENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply { marginEnd = 2.dp(this@MainActivity) }
-                        }
-                        rowLayout.addView(keyView)
+                keys.forEachIndexed { keyIndex, key ->
+                    val (fill, textColor) = when (key.label) {
+                        " " -> currentSpaceBg to currentKeyText
+                        "↵" -> currentEnterBg to currentEnterIcon
+                        else -> currentKeyFill to currentKeyText
                     }
+                    rowLayout.addView(KeyView(this).apply {
+                        text = if (key.label == " ") "" else key.label
+                        isAllCaps = false
+                        gravity = Gravity.CENTER
+                        includeFontPadding = false
+                        textSize = 11f
+                        this.shape = shape
+                        forceSquare = shape != KeyShape.TRIANGLE && shape != KeyShape.HEX_TALL
+                        heightStretch = stretch
+                        triangleFlipped = (rowIndex + keyIndex) % 2 == 1
+                        customBgColor = fill
+                        setTextColor(textColor)
+                    }, LinearLayout.LayoutParams(keyW, baseH))
                 }
-                previewContainer.addView(rowLayout)
+
+                previewContainer.addView(rowLayout, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { if (rowIndex > 0) topMargin = -rowOverlap + rowSpacing })
             }
         }
 
@@ -3436,6 +3497,8 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(currentBgColor)
             setPadding(8.dp(this), 8.dp(this), 8.dp(this), 8.dp(this))
+            clipChildren = false
+            clipToPadding = false
         }
         rebuildPreview()
         root.addView(previewContainer)
