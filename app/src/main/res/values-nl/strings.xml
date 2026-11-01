@@ -6,9 +6,12 @@
     <string name="main_set_layout">Indeling bewerken</string>
     <string name="main_key_shape">Toetsvorm</string>
     <string name="main_keyboard_rows">Toetsenbordrijen</string>
+    <string name="main_key_height">Toetshoogte: %1$d%%</string>
+    <string name="main_row_spacing">Rijafstand: %1$s</string>
     <string name="main_bind_long_press">Lang indrukken</string>
     <string name="main_colors">Kleuren</string>
     <string name="main_vibration">Trillen</string>
+    <string name="main_suggestions">Woordsuggesties</string>
     <string name="main_export">Instellingen exporteren</string>
     <string name="main_import">Instellingen importeren</string>
     <string name="export_done">Instellingen geëxporteerd</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Instellingen importeren?</string>
     <string name="import_confirm_message">Dit vervangt je huidige indelingen, kleuren en instellingen. Die worden eerst als back-up opgeslagen.</string>
     <string name="import_action">Importeren</string>
+    <string name="main_about">Over</string>
+    <string name="about_version">Versie %1$s</string>
+    <string name="about_privacy">Antara Toetsenbord heeft geen internettoegang en verzamelt niets. Alles wat je typt en alle instellingen blijven op je apparaat, tenzij je ze zelf exporteert.</string>
+    <string name="about_licenses">Opensourcelicenties</string>
+    <string name="about_licenses_hint">Tik op een item om de licentie te lezen.</string>
     <string name="main_language">Taal</string>
     <string name="language_system_default">Systeemtaal</string>
     <string name="main_theme">Thema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritische tekens</string>
     <string name="lp_cat_latin">Latijnse letters</string>
     <string name="lp_cat_cyrillic">Cyrillische letters</string>
+    <string name="lp_cat_greek">Griekse letters</string>
     <string name="lp_cat_currency">Valuta</string>
     <string name="lp_cat_symbols">Symbolen</string>
     <string name="lp_cat_brackets">Haakjes</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Aanhalingsteken</string>
     <string name="a11y_key">Toets %1$s</string>
-    <string name="script_picker_title">Schrift kiezen</string>
-    <string name="script_picker_close">Sluiten</string>
-    <string name="script_latin">Latijn</string>
-    <string name="script_serbian_cyrillic">Servisch cyrillisch</string>
-    <string name="script_bulgarian_cyrillic">Bulgaars cyrillisch</string>
-    <string name="script_russian_cyrillic">Russisch cyrillisch</string>
-    <string name="script_ukrainian_cyrillic">Oekraïens cyrillisch</string>
-    <string name="script_macedonian_cyrillic">Macedonisch cyrillisch</string>
     <string name="emoji_loading">Laden…</string>
     <string name="emoji_no_recent">Geen recente emoji</string>
     <string name="emoji_empty_category">Geen emoji in deze categorie</string>

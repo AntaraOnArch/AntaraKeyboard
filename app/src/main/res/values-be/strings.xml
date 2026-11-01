@@ -6,9 +6,12 @@
     <string name="main_set_layout">Змяніць раскладку</string>
     <string name="main_key_shape">Форма клавіш</string>
     <string name="main_keyboard_rows">Рады клавіятуры</string>
+    <string name="main_key_height">Вышыня клавіш: %1$d%%</string>
+    <string name="main_row_spacing">Адлегласць паміж радамі: %1$s</string>
     <string name="main_bind_long_press">Доўгае націсканне</string>
     <string name="main_colors">Колеры</string>
     <string name="main_vibration">Вібрацыя</string>
+    <string name="main_suggestions">Падказкі слоў</string>
     <string name="main_export">Экспарт налад</string>
     <string name="main_import">Імпарт налад</string>
     <string name="export_done">Налады экспартаваны</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Імпартаваць налады?</string>
     <string name="import_confirm_message">Бягучыя раскладкі, колеры і налады будуць заменены. Спачатку яны захаваюцца як копія.</string>
     <string name="import_action">Імпарт</string>
+    <string name="main_about">Пра праграму</string>
+    <string name="about_version">Версія %1$s</string>
+    <string name="about_privacy">Антара клавіятура не мае доступу да інтэрнэту і нічога не збірае. Усё, што вы ўводзіце, і ўсе налады застаюцца на вашай прыладзе, калі вы самі іх не экспартуеце.</string>
+    <string name="about_licenses">Ліцэнзіі адкрытага ПЗ</string>
+    <string name="about_licenses_hint">Націсніце на пункт, каб прачытаць ліцэнзію.</string>
     <string name="main_language">Мова</string>
     <string name="language_system_default">Мова сістэмы</string>
     <string name="main_theme">Тэма</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Дыякрытыка</string>
     <string name="lp_cat_latin">Лацінскія літары</string>
     <string name="lp_cat_cyrillic">Кірыліца</string>
+    <string name="lp_cat_greek">Грэчаскія літары</string>
     <string name="lp_cat_currency">Валюты</string>
     <string name="lp_cat_symbols">Сімвалы</string>
     <string name="lp_cat_brackets">Дужкі</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Апостраф</string>
     <string name="a11y_quote">Двукоссе</string>
     <string name="a11y_key">Клавіша %1$s</string>
-    <string name="script_picker_title">Выберыце алфавіт</string>
-    <string name="script_picker_close">Закрыць</string>
-    <string name="script_latin">Лацініца</string>
-    <string name="script_serbian_cyrillic">Сербская кірыліца</string>
-    <string name="script_bulgarian_cyrillic">Балгарская кірыліца</string>
-    <string name="script_russian_cyrillic">Руская кірыліца</string>
-    <string name="script_ukrainian_cyrillic">Украінская кірыліца</string>
-    <string name="script_macedonian_cyrillic">Македонская кірыліца</string>
     <string name="emoji_loading">Загрузка…</string>
     <string name="emoji_no_recent">Няма нядаўніх эмодзі</string>
     <string name="emoji_empty_category">У гэтай катэгорыі няма эмодзі</string>

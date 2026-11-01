@@ -10,19 +10,35 @@ class KeyInputController(
     private val service: MyKeyboardService
 ) {
 
-    private var downX = 0f
-    private var downY = 0f
+    /**
+     * Gesture state per key. With several fingers down (e.g. both space keys) every key has its
+     * own start point; a shared one made the first finger look like a long swipe → deletion.
+     */
+    private class Gesture {
+        var downX = 0f
+        var downY = 0f
+        var horizontalSwipeActive = false
+        var swipeMode: SwipeMode? = null
+    }
 
-    private var horizontalSwipeActive = false
-    private var swipeMode: SwipeMode? = null
+    private val gestures = java.util.WeakHashMap<TextView, Gesture>()
 
     private enum class SwipeMode {
         DELETE, RESTORE
     }
 
+    /** True while a horizontal delete/restore swipe started on [view] is running. */
+    fun isHorizontalSwipeActive(view: TextView): Boolean = gestures[view]?.horizontalSwipeActive == true
+
+    /** Forgets all gestures (the service stops the delete/restore jobs itself). */
+    fun reset() {
+        gestures.clear()
+    }
+
     fun handleTouch(view: TextView, event: MotionEvent): Boolean {
 
         val label = view.text?.toString().orEmpty()
+        val g = gestures.getOrPut(view) { Gesture() }
 
         when (event.actionMasked) {
 
@@ -30,11 +46,11 @@ class KeyInputController(
 
             MotionEvent.ACTION_DOWN -> {
 
-                downX = event.rawX
-                downY = event.rawY
+                g.downX = event.rawX
+                g.downY = event.rawY
 
-                horizontalSwipeActive = false
-                swipeMode = null
+                g.horizontalSwipeActive = false
+                g.swipeMode = null
 
                 view.isPressed = true
 
@@ -49,8 +65,8 @@ class KeyInputController(
 
             MotionEvent.ACTION_MOVE -> {
 
-                val dx = event.rawX - downX
-                val dy = event.rawY - downY
+                val dx = event.rawX - g.downX
+                val dy = event.rawY - g.downY
 
                 val absDx = abs(dx)
                 val absDy = abs(dy)
@@ -60,9 +76,9 @@ class KeyInputController(
 
                 if (horizontalIntent) {
 
-                    if (!horizontalSwipeActive) {
+                    if (!g.horizontalSwipeActive) {
 
-                        horizontalSwipeActive = true
+                        g.horizontalSwipeActive = true
                         view.isPressed = false
 
                         if (label == "⌫") {
@@ -73,8 +89,8 @@ class KeyInputController(
 
                     if (dx < 0f) {
 
-                        if (swipeMode != SwipeMode.DELETE) {
-                            swipeMode = SwipeMode.DELETE
+                        if (g.swipeMode != SwipeMode.DELETE) {
+                            g.swipeMode = SwipeMode.DELETE
                             service.startSwipeDelete(absDx)
                         } else {
                             service.updateSwipeDelete(absDx)
@@ -82,8 +98,8 @@ class KeyInputController(
 
                     } else {
 
-                        if (swipeMode != SwipeMode.RESTORE) {
-                            swipeMode = SwipeMode.RESTORE
+                        if (g.swipeMode != SwipeMode.RESTORE) {
+                            g.swipeMode = SwipeMode.RESTORE
                             service.startSwipeRestore(absDx)
                         } else {
                             service.updateSwipeRestore(absDx)
@@ -114,9 +130,9 @@ class KeyInputController(
                         return true
                     }
 
-                    if (horizontalSwipeActive) {
-                        horizontalSwipeActive = false
-                        swipeMode = null
+                    if (g.horizontalSwipeActive) {
+                        g.horizontalSwipeActive = false
+                        g.swipeMode = null
                         view.isPressed = false
                         return true
                     }
@@ -127,15 +143,15 @@ class KeyInputController(
                     return true
                 }
 
-                if (horizontalSwipeActive) {
-                    horizontalSwipeActive = false
-                    swipeMode = null
+                if (g.horizontalSwipeActive) {
+                    g.horizontalSwipeActive = false
+                    g.swipeMode = null
                     view.isPressed = false
                     return true
                 }
 
-                val dx = event.rawX - downX
-                val dy = event.rawY - downY
+                val dx = event.rawX - g.downX
+                val dy = event.rawY - g.downY
                 val absDx = abs(dx)
                 val absDy = abs(dy)
 
@@ -190,8 +206,8 @@ class KeyInputController(
                     service.stopBackspaceHold()
                 }
 
-                horizontalSwipeActive = false
-                swipeMode = null
+                g.horizontalSwipeActive = false
+                g.swipeMode = null
 
                 view.isPressed = false
                 return true

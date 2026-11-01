@@ -6,9 +6,12 @@
     <string name="main_set_layout">Edytuj układ</string>
     <string name="main_key_shape">Kształt klawiszy</string>
     <string name="main_keyboard_rows">Rzędy klawiatury</string>
+    <string name="main_key_height">Wysokość klawiszy: %1$d%%</string>
+    <string name="main_row_spacing">Odstęp między rzędami: %1$s</string>
     <string name="main_bind_long_press">Długie naciśnięcie</string>
     <string name="main_colors">Kolory</string>
     <string name="main_vibration">Wibracje</string>
+    <string name="main_suggestions">Podpowiedzi słów</string>
     <string name="main_export">Eksportuj ustawienia</string>
     <string name="main_import">Importuj ustawienia</string>
     <string name="export_done">Ustawienia wyeksportowane</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Zaimportować ustawienia?</string>
     <string name="import_confirm_message">Obecne układy, kolory i ustawienia zostaną zastąpione. Najpierw zostanie zapisana kopia.</string>
     <string name="import_action">Importuj</string>
+    <string name="main_about">O aplikacji</string>
+    <string name="about_version">Wersja %1$s</string>
+    <string name="about_privacy">Klawiatura Antara nie ma dostępu do internetu i niczego nie zbiera. Wszystko, co piszesz, i wszystkie ustawienia zostają na urządzeniu, chyba że sam je wyeksportujesz.</string>
+    <string name="about_licenses">Licencje open source</string>
+    <string name="about_licenses_hint">Dotknij pozycji, aby przeczytać licencję.</string>
     <string name="main_language">Język</string>
     <string name="language_system_default">Język systemu</string>
     <string name="main_theme">Motyw</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Znaki diakrytyczne</string>
     <string name="lp_cat_latin">Litery łacińskie</string>
     <string name="lp_cat_cyrillic">Litery cyrylicy</string>
+    <string name="lp_cat_greek">Litery greckie</string>
     <string name="lp_cat_currency">Waluty</string>
     <string name="lp_cat_symbols">Symbole</string>
     <string name="lp_cat_brackets">Nawiasy</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Cudzysłów</string>
     <string name="a11y_key">Klawisz %1$s</string>
-    <string name="script_picker_title">Wybierz alfabet</string>
-    <string name="script_picker_close">Zamknij</string>
-    <string name="script_latin">Łaciński</string>
-    <string name="script_serbian_cyrillic">Cyrylica serbska</string>
-    <string name="script_bulgarian_cyrillic">Cyrylica bułgarska</string>
-    <string name="script_russian_cyrillic">Cyrylica rosyjska</string>
-    <string name="script_ukrainian_cyrillic">Cyrylica ukraińska</string>
-    <string name="script_macedonian_cyrillic">Cyrylica macedońska</string>
     <string name="emoji_loading">Wczytywanie…</string>
     <string name="emoji_no_recent">Brak ostatnich emoji</string>
     <string name="emoji_empty_category">Brak emoji w tej kategorii</string>

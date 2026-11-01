@@ -6,9 +6,12 @@
     <string name="main_set_layout">Editar distribución</string>
     <string name="main_key_shape">Forma de las teclas</string>
     <string name="main_keyboard_rows">Filas del teclado</string>
+    <string name="main_key_height">Altura de las teclas: %1$d %%</string>
+    <string name="main_row_spacing">Espacio entre filas: %1$s</string>
     <string name="main_bind_long_press">Pulsación larga</string>
     <string name="main_colors">Colores</string>
     <string name="main_vibration">Vibración</string>
+    <string name="main_suggestions">Sugerencias de palabras</string>
     <string name="main_export">Exportar ajustes</string>
     <string name="main_import">Importar ajustes</string>
     <string name="export_done">Ajustes exportados</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">¿Importar ajustes?</string>
     <string name="import_confirm_message">Se reemplazarán tus distribuciones, colores y ajustes actuales. Antes se guarda una copia.</string>
     <string name="import_action">Importar</string>
+    <string name="main_about">Acerca de</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_privacy">El Teclado Antara no tiene acceso a Internet y no recopila nada. Todo lo que escribes y todos los ajustes se quedan en tu dispositivo, salvo que tú mismo los exportes.</string>
+    <string name="about_licenses">Licencias de código abierto</string>
+    <string name="about_licenses_hint">Toca una entrada para leer su licencia.</string>
     <string name="main_language">Idioma</string>
     <string name="language_system_default">Idioma del sistema</string>
     <string name="main_theme">Tema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Diacríticos</string>
     <string name="lp_cat_latin">Letras latinas</string>
     <string name="lp_cat_cyrillic">Letras cirílicas</string>
+    <string name="lp_cat_greek">Letras griegas</string>
     <string name="lp_cat_currency">Monedas</string>
     <string name="lp_cat_symbols">Símbolos</string>
     <string name="lp_cat_brackets">Paréntesis</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apóstrofo</string>
     <string name="a11y_quote">Comillas</string>
     <string name="a11y_key">Tecla %1$s</string>
-    <string name="script_picker_title">Elegir alfabeto</string>
-    <string name="script_picker_close">Cerrar</string>
-    <string name="script_latin">Latino</string>
-    <string name="script_serbian_cyrillic">Cirílico serbio</string>
-    <string name="script_bulgarian_cyrillic">Cirílico búlgaro</string>
-    <string name="script_russian_cyrillic">Cirílico ruso</string>
-    <string name="script_ukrainian_cyrillic">Cirílico ucraniano</string>
-    <string name="script_macedonian_cyrillic">Cirílico macedonio</string>
     <string name="emoji_loading">Cargando…</string>
     <string name="emoji_no_recent">No hay emojis recientes</string>
     <string name="emoji_empty_category">No hay emojis en esta categoría</string>

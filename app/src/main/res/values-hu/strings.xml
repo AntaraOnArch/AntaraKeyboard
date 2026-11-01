@@ -6,9 +6,12 @@
     <string name="main_set_layout">Kiosztás szerkesztése</string>
     <string name="main_key_shape">Billentyűforma</string>
     <string name="main_keyboard_rows">Billentyűsorok</string>
+    <string name="main_key_height">Billentyűmagasság: %1$d%%</string>
+    <string name="main_row_spacing">Sorköz: %1$s</string>
     <string name="main_bind_long_press">Hosszú nyomás</string>
     <string name="main_colors">Színek</string>
     <string name="main_vibration">Rezgés</string>
+    <string name="main_suggestions">Szójavaslatok</string>
     <string name="main_export">Beállítások exportálása</string>
     <string name="main_import">Beállítások importálása</string>
     <string name="export_done">Beállítások exportálva</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Importálja a beállításokat?</string>
     <string name="import_confirm_message">Ez lecseréli a jelenlegi kiosztásokat, színeket és beállításokat. Előtte mentés készül.</string>
     <string name="import_action">Importálás</string>
+    <string name="main_about">Névjegy</string>
+    <string name="about_version">Verzió: %1$s</string>
+    <string name="about_privacy">Az Antara billentyűzet nem fér hozzá az internethez, és semmit sem gyűjt. Minden, amit begépel, és minden beállítás az eszközén marad, hacsak nem exportálja őket.</string>
+    <string name="about_licenses">Nyílt forráskódú licencek</string>
+    <string name="about_licenses_hint">Koppintson egy elemre a licenc elolvasásához.</string>
     <string name="main_language">Nyelv</string>
     <string name="language_system_default">Rendszer nyelve</string>
     <string name="main_theme">Téma</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Ékezetek</string>
     <string name="lp_cat_latin">Latin betűk</string>
     <string name="lp_cat_cyrillic">Cirill betűk</string>
+    <string name="lp_cat_greek">Görög betűk</string>
     <string name="lp_cat_currency">Pénznemek</string>
     <string name="lp_cat_symbols">Szimbólumok</string>
     <string name="lp_cat_brackets">Zárójelek</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Aposztróf</string>
     <string name="a11y_quote">Idézőjel</string>
     <string name="a11y_key">%1$s billentyű</string>
-    <string name="script_picker_title">Írásrendszer kiválasztása</string>
-    <string name="script_picker_close">Bezárás</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Szerb cirill</string>
-    <string name="script_bulgarian_cyrillic">Bolgár cirill</string>
-    <string name="script_russian_cyrillic">Orosz cirill</string>
-    <string name="script_ukrainian_cyrillic">Ukrán cirill</string>
-    <string name="script_macedonian_cyrillic">Macedón cirill</string>
     <string name="emoji_loading">Betöltés…</string>
     <string name="emoji_no_recent">Nincsenek legutóbbi emodzsik</string>
     <string name="emoji_empty_category">Ebben a kategóriában nincs emodzsi</string>

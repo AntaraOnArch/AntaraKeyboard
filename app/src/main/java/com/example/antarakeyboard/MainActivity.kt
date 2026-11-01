@@ -33,10 +33,14 @@ import androidx.core.os.LocaleListCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import com.example.antarakeyboard.data.SettingsBackup
+import com.example.antarakeyboard.data.OpenSourceLicenses
+import com.example.antarakeyboard.service.KeyScale
+import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.antarakeyboard.data.AppLanguages
+import com.example.antarakeyboard.data.AppLanguageSettings
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
@@ -48,6 +52,7 @@ import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.ui.ColorWheelView
+import com.example.antarakeyboard.ui.KeyView
 import com.example.antarakeyboard.ui.LayoutEditorBinder
 import com.example.antarakeyboard.ui.LongPressEditorBinder
 import com.example.antarakeyboard.ui.ReselectSpinner
@@ -116,6 +121,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val isDark = PrefsManager.isDarkMode(this)
+
+        // Android < 13: a language picked on the keyboard is stored in our prefs only;
+        // apply it to the app (AppCompat recreates the activity once if it differs)
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+            val wanted = PrefsManager.getAppLanguage(this)
+            val applied = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+            if (wanted != applied) {
+                AppCompatDelegate.setApplicationLocales(
+                    if (wanted.isEmpty()) LocaleListCompat.getEmptyLocaleList()
+                    else LocaleListCompat.forLanguageTags(wanted)
+                )
+            }
+        }
 
         AppCompatDelegate.setDefaultNightMode(
             if (isDark) AppCompatDelegate.MODE_NIGHT_YES
@@ -219,6 +237,9 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        setupKeySizeSlider()
+        setupRowSpacingSlider()
+
         // Setup Vibration Spinner
         spinnerVibration = findViewById(R.id.spinnerVibration)
         val vibrationAdapter = ArrayAdapter(
@@ -242,6 +263,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupLanguageSpinner()
+        setupSuggestionsSpinner()
+
+        findViewById<Button>(R.id.btnAbout).setOnClickListener { showAboutDialog() }
 
         findViewById<Button>(R.id.btnExportSettings).setOnClickListener {
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date())
@@ -277,6 +301,71 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
+
+    /**
+     * Key height slider: 60 %–150 % in 5 % steps. Only key height changes (keyboard height
+     * follows). Saved while dragging; the keyboard applies it the next time it opens.
+     */
+    private fun setupKeySizeSlider() {
+        val label = findViewById<TextView>(R.id.tvKeySize)
+        val seek = findViewById<SeekBar>(R.id.seekKeySize)
+        val minPercent = (KeyScale.MIN * 100).roundToInt()
+        val maxPercent = (KeyScale.MAX * 100).roundToInt()
+        val step = 5
+
+        fun percentAt(progress: Int) = minPercent + progress * step
+
+        seek.max = (maxPercent - minPercent) / step
+        val current = (KeyboardPrefs.getKeyScale(this) * 100).roundToInt()
+        seek.progress = ((current - minPercent) / step).coerceIn(0, seek.max)
+        label.text = getString(R.string.main_key_height, percentAt(seek.progress))
+
+        seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val percent = percentAt(progress)
+                label.text = getString(R.string.main_key_height, percent)
+                if (fromUser) KeyboardPrefs.setKeyScale(this@MainActivity, percent / 100f)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    /**
+     * Row spacing slider: −8 dp … +16 dp in 1 dp steps (0 = tuned default). Adds vertical space
+     * between rows only. Saved while dragging; the keyboard applies it the next time it opens.
+     */
+    private fun setupRowSpacingSlider() {
+        val label = findViewById<TextView>(R.id.tvRowSpacing)
+        val seek = findViewById<SeekBar>(R.id.seekRowSpacing)
+        val min = KeyScale.ROW_SPACING_MIN_DP
+
+        fun dpAt(progress: Int) = min + progress
+        fun showLabel(dp: Int) {
+            // Signed value, e.g. "+4 dp" / "−2 dp" / "0 dp"
+            val value = when {
+                dp > 0 -> "+$dp dp"
+                dp < 0 -> "−${-dp} dp"
+                else -> "0 dp"
+            }
+            label.text = getString(R.string.main_row_spacing, value)
+        }
+
+        seek.max = KeyScale.ROW_SPACING_MAX_DP - min
+        val current = KeyScale.clampRowSpacing(KeyboardPrefs.getRowSpacingDp(this))
+        seek.progress = current - min
+        showLabel(current)
+
+        seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val dp = dpAt(progress)
+                showLabel(dp)
+                if (fromUser) KeyboardPrefs.setRowSpacingDp(this@MainActivity, dp)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun exportSettingsTo(uri: Uri) {
@@ -346,30 +435,185 @@ class MainActivity : AppCompatActivity() {
         recreate()
     }
 
+    /** About popup: version, privacy statement and the open-source licenses (same popup style). */
+    private fun showAboutDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val pad = 16.dp(this)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(getColor(R.color.main_app_bg))
+        }
+
+        root.addView(TextView(this).apply {
+            text = getString(R.string.app_name)
+            textSize = 20f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_version, appVersionName())
+            alpha = 0.75f
+            setPadding(0, 2.dp(this@MainActivity), 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_privacy)
+            textSize = 15f
+            setPadding(0, 0, 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_licenses)
+            textSize = 16f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = getString(R.string.about_licenses_hint)
+            alpha = 0.75f
+            setPadding(0, 2.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
+        })
+
+        OpenSourceLicenses.ENTRIES.forEach { entry ->
+            root.addView(Button(this).apply {
+                text = "${entry.name}\n${entry.licenseName}"
+                isAllCaps = false
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                setOnClickListener { showLicenseDialog(entry) }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = 4.dp(this@MainActivity) })
+        }
+
+        // Scrolls only when the screen is too short (wrap content like every popup)
+        dialog.setContentView(ScrollView(this).apply { addView(root) })
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    /** Full license text of one component (from assets/licenses/). */
+    private fun showLicenseDialog(entry: OpenSourceLicenses.Entry) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val pad = 16.dp(this)
+        val licenseText = runCatching {
+            assets.open("licenses/${entry.licenseAsset}").bufferedReader().use { it.readText() }
+        }.getOrDefault(entry.licenseName)
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            setBackgroundColor(getColor(R.color.main_app_bg))
+        }
+        root.addView(TextView(this).apply {
+            text = entry.name
+            textSize = 18f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        root.addView(TextView(this).apply {
+            text = "${entry.copyright}\n${entry.url}"
+            alpha = 0.75f
+            setTextIsSelectable(true)
+            setPadding(0, 4.dp(this@MainActivity), 0, pad)
+        })
+        root.addView(TextView(this).apply {
+            text = licenseText
+            textSize = 12f
+            typeface = android.graphics.Typeface.MONOSPACE
+            setTextIsSelectable(true)
+        })
+        root.addView(Button(this).apply {
+            text = getString(R.string.action_close)
+            isAllCaps = false
+            setOnClickListener { dialog.dismiss() }
+        }, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { gravity = Gravity.END; topMargin = pad })
+
+        dialog.setContentView(ScrollView(this).apply { addView(root) })
+        dialog.show()
+        dialog.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    private fun appVersionName(): String = runCatching {
+        val info = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0)
+        }
+        info.versionName
+    }.getOrNull().orEmpty()
+
+    /** Word suggestions above the keyboard: On / Off (off by default), like vibration. */
+    private fun setupSuggestionsSpinner() {
+        val spinner = findViewById<Spinner>(R.id.spinnerSuggestions)
+        spinner.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            vibrationOptions.map { getString(it) }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinner.setSelection(if (KeyboardPrefs.isSuggestionsEnabled(this)) 0 else 1)
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, position == 0)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
     /**
      * App language: "System default" plus every translation, each named in its own language.
      * AppCompat applies it (system per-app language on Android 13+, stored by AppCompat below 13)
      * and recreates the activity; the keyboard service picks it up on its next start.
      */
+    private val languageTags = listOf("") + AppLanguages.TAGS
+    private var shownLanguageTag = ""
+
+    /** Shows the current app language (it may have been changed from the keyboard). */
+    private fun syncLanguageSpinner() {
+        val current = AppLanguages.match(AppLanguageSettings.selectedTag(this)) ?: ""
+        shownLanguageTag = current
+        findViewById<Spinner>(R.id.spinnerLanguage)
+            .setSelection(languageTags.indexOf(current).coerceAtLeast(0), false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // A language changed in Android settings: the editors must show its letters already
+        KeyboardPrefs.ensureDefaultLongPress(this)
+        syncLanguageSpinner()
+    }
+
     private fun setupLanguageSpinner() {
         val spinner = findViewById<Spinner>(R.id.spinnerLanguage)
-        val tags = listOf("") + AppLanguages.TAGS
-        val labels = tags.map { tag ->
+        val labels = languageTags.map { tag ->
             if (tag.isEmpty()) getString(R.string.language_system_default) else AppLanguages.nativeName(tag)
         }
         spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
 
-        val appLocales = AppCompatDelegate.getApplicationLocales()
-        val current = if (appLocales.isEmpty) "" else AppLanguages.match(appLocales[0]?.toLanguageTag()) ?: ""
-        spinner.setSelection(tags.indexOf(current).coerceAtLeast(0))
+        // One shared setting with the keyboard's dual-space language picker. The spinner must
+        // not restore its own old position on recreate (that would re-apply the old language
+        // after the keyboard changed it); onResume syncs it from the setting instead.
+        spinner.isSaveEnabled = false
+        syncLanguageSpinner()
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val tag = tags[position]
-                if (tag == current) return
-                PrefsManager.setAppLanguage(this@MainActivity, tag)
+                val tag = languageTags[position]
+                if (tag == shownLanguageTag) return
+                shownLanguageTag = tag
+                // App language + matching keyboard script (Cyrillic languages type Cyrillic)
+                AppLanguageSettings.select(this@MainActivity, tag)
                 AppCompatDelegate.setApplicationLocales(
                     if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList()
                     else LocaleListCompat.forLanguageTags(tag)
@@ -407,6 +651,11 @@ class MainActivity : AppCompatActivity() {
 
             // Resetiraj side buttons za trenutni broj redova
             resetSideButtonsForRowCount(currentRowCount)
+
+            // Key height and row spacing sliders back to default
+            KeyboardPrefs.resetKeySizing(this)
+            setupKeySizeSlider()
+            setupRowSpacingSlider()
         }
 
         if (colors) {
@@ -461,10 +710,8 @@ class MainActivity : AppCompatActivity() {
             getColor(R.color.keyboard_bg_light)
         }
 
-        // 1. Space colors — iz tvorničkih defaulta teme
-        val spaceFill = if (isDark) KeyboardPrefs.FactoryDefaults.DARK_SPACE_FILL
-            else KeyboardPrefs.FactoryDefaults.LIGHT_SPACE_FILL
-        KeyboardPrefs.setSpaceColors(this, spaceFill, spaceFill, true)
+        // 1. Space follows the theme again (its own colors stay stored for later)
+        KeyboardPrefs.setSpaceUseTheme(this, true)
 
         // opcionalno: počisti eventualni stari individual zapis za " "
         KeyboardPrefs.clearKeyIndividualColors(this, " ")
@@ -628,9 +875,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildSpaceColorsPage(page: LinearLayout, onChanged: () -> Unit) {
+        var useTheme = KeyboardPrefs.getSpaceUseTheme(this)
         var linked = KeyboardPrefs.isSpaceLinked(this)
-        var c1 = KeyboardPrefs.getSpace1Bg(this)
-        var c2 = KeyboardPrefs.getSpace2Bg(this)
+        // Start from what is drawn now, so switching off "use theme" keeps the look
+        val (drawn1, drawn2) = KeyboardPrefs.resolveSpaceColors(this, PrefsManager.isDarkMode(this))
+        var c1 = drawn1
+        var c2 = drawn2
 
         fun save() {
             if (linked) c2 = c1
@@ -656,6 +906,7 @@ class MainActivity : AppCompatActivity() {
         val cb = CheckBox(this).apply {
             text = getString(R.string.color_space_linked)
             isChecked = linked
+            isEnabled = !useTheme
             setOnCheckedChangeListener { _, isChecked ->
                 linked = isChecked
                 if (linked) setSwatch(b2, c1)
@@ -663,9 +914,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        fun updateEnabled() {
+            cb.isEnabled = !useTheme
+            b1.isEnabled = !useTheme
+            b2.isEnabled = !useTheme
+        }
+
+        val cbTheme = CheckBox(this).apply {
+            text = getString(R.string.color_use_theme)
+            isChecked = useTheme
+            setOnCheckedChangeListener { _, isChecked ->
+                useTheme = isChecked
+                if (isChecked) KeyboardPrefs.setSpaceUseTheme(this@MainActivity, true) else save()
+                updateEnabled()
+                onChanged()
+            }
+        }
+
+        page.addSpaced(cbTheme)
         page.addSpaced(cb)
         page.addSpaced(b1)
         page.addSpaced(b2)
+        updateEnabled()
     }
 
     private fun buildEnterColorsPage(page: LinearLayout, onChanged: () -> Unit) {
@@ -686,8 +956,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildSideButtonsColorsPage(page: LinearLayout, onChanged: () -> Unit) {
         var useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(this)
-        var bg = KeyboardPrefs.getSideButtonsBg(this)
-        var textColor = KeyboardPrefs.getSideButtonsTextColor(this)
+        // Theme look = no background + theme icon color; start from it so turning the theme off keeps the look
+        var bg = if (useThemeBg) Color.TRANSPARENT else KeyboardPrefs.getSideButtonsBg(this)
+        var textColor = if (useThemeBg) {
+            themeColor(R.attr.edgeIconText, if (PrefsManager.isDarkMode(this)) Color.WHITE else Color.BLACK)
+        } else {
+            KeyboardPrefs.getSideButtonsTextColor(this)
+        }
 
         fun save() {
             KeyboardPrefs.setSideButtonsColors(this, bg, textColor, useThemeBg)
@@ -719,8 +994,9 @@ class MainActivity : AppCompatActivity() {
         val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, PrefsManager.isDarkMode(this))
         var useTheme = KeyboardPrefs.getKeysUseTheme(this)
         var allSame = KeyboardPrefs.getKeysAllSameColor(this)
-        var bg = KeyboardPrefs.getKeysBg(this)
-        var textColor = KeyboardPrefs.getKeysTextColor(this)
+        // While the theme is used, start from the theme colors, so turning it off keeps the look
+        var bg = if (useTheme) themeColors.keyFill else KeyboardPrefs.getKeysBg(this)
+        var textColor = if (useTheme) themeColors.keyText else KeyboardPrefs.getKeysTextColor(this)
 
         fun save() {
             KeyboardPrefs.setKeysColors(this, bg, textColor, allSame, useTheme = useTheme)
@@ -888,7 +1164,16 @@ class MainActivity : AppCompatActivity() {
         group.setOnCheckedChangeListener { g, checkedId ->
             val mode = g.findViewById<View>(checkedId)?.tag as? KeyboardPrefs.BackgroundMode
                 ?: return@setOnCheckedChangeListener
-            KeyboardPrefs.setBackgroundMode(this, mode)
+            if (mode == KeyboardPrefs.BackgroundMode.CUSTOM &&
+                KeyboardPrefs.getBackgroundMode(this) != KeyboardPrefs.BackgroundMode.CUSTOM
+            ) {
+                // Switching to Custom starts from the background shown now, not an old stored color
+                val shown = KeyboardPrefs.resolveKeyboardBackground(this, PrefsManager.isDarkMode(this))
+                KeyboardPrefs.setBackgroundColor(this, shown, useTheme = false)
+                setSwatch(customBtn, shown)
+            } else {
+                KeyboardPrefs.setBackgroundMode(this, mode)
+            }
             customBtn.isEnabled = mode == KeyboardPrefs.BackgroundMode.CUSTOM
             onChanged()
         }
@@ -1489,15 +1774,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveDefaultsForRowCount(rowCount: Int) {
-        val currentRowCount = KeyboardPrefs.getRowCount(this)
-
-        // Spremi trenutne layoute s globalnim bindovima (ako već postoje)
-        if (currentRowCount != 0) {
-            val currentAlphabet = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, currentRowCount)
-            val currentNumeric = KeyboardPrefs.loadNumericLayoutForRowCount(this, currentRowCount)
-            GlobalLongPressStorage.extractAndSaveAlphabetBinds(this, currentAlphabet)
-            GlobalLongPressStorage.extractAndSaveNumericBinds(this, currentNumeric)
-        }
+        // Global binds are always current (every editor saves them); extracting them from the
+        // stored layout here would bring back an old snapshot, e.g. a previous language's letters
 
         // Postavi novi broj redova
         KeyboardPrefs.setRowCount(this, rowCount)
@@ -1978,6 +2256,11 @@ class MainActivity : AppCompatActivity() {
                 showSpecialCharPicker { picked ->
                     key.label = picked
                     key.longPressBindings.remove("__USER_EMPTY__")
+                    // The symbol brings its own binds (shared by all row counts); otherwise the
+                    // save would store it as "no binds" and wipe them
+                    key.longPressBindings.addAll(
+                        GlobalLongPressStorage.loadNumericBinds(this).getOrElse(picked) { emptyList() }
+                    )
                     numericBinder.bindInto(numericEditorContainer)
                     numericBinder.saveExternally()
                 }
@@ -2870,13 +3153,17 @@ class MainActivity : AppCompatActivity() {
         val customPrefs = getSharedPreferences(PrefsManager.PREFS_CUSTOM_THEME, MODE_PRIVATE)
 
         // Save current keyboard colors as custom theme
+        // Colors as drawn (theme or custom), so "Last custom colors" restores what was visible
+        val isDark = PrefsManager.isDarkMode(this)
+        val (keyFill, keyText) = KeyboardPrefs.resolveKeyColors(this, isDark)
+        val (space1, space2) = KeyboardPrefs.resolveSpaceColors(this, isDark)
         customPrefs.edit()
             .putBoolean("has_custom_theme", true)
-            .putInt("custom_key_fill", KeyboardPrefs.getKeysBg(this))
-            .putInt("custom_key_text", KeyboardPrefs.getKeysTextColor(this))
-            .putInt("custom_background", KeyboardPrefs.getBackgroundColor(this))
-            .putInt("custom_space1_bg", KeyboardPrefs.getSpace1Bg(this))
-            .putInt("custom_space2_bg", KeyboardPrefs.getSpace2Bg(this))
+            .putInt("custom_key_fill", keyFill)
+            .putInt("custom_key_text", keyText)
+            .putInt("custom_background", KeyboardPrefs.resolveKeyboardBackground(this, isDark))
+            .putInt("custom_space1_bg", space1)
+            .putInt("custom_space2_bg", space2)
             .putInt("custom_enter_bg", KeyboardPrefs.getEnterBg(this))
             .putInt("custom_enter_icon", KeyboardPrefs.getEnterIcon(this))
             .putInt("custom_side_bg", KeyboardPrefs.getSideButtonsBg(this))
@@ -2902,7 +3189,7 @@ class MainActivity : AppCompatActivity() {
 
         KeyboardPrefs.setKeysColors(this, keyFill, keyText, true, useTheme = false)
         KeyboardPrefs.setBackgroundColor(this, background, false)
-        KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, true)
+        KeyboardPrefs.setSpaceColors(this, space1Bg, space2Bg, space1Bg == space2Bg)
         KeyboardPrefs.setEnterColors(this, enterBg, enterIcon)
         KeyboardPrefs.setSideButtonsColors(this, sideBg, sideText, false)
     }
@@ -2956,6 +3243,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout) {
         SavedLayoutStorage.restoreLayout(this, savedLayout)
+        // The layout may carry its own key height / row spacing
+        setupKeySizeSlider()
+        setupRowSpacingSlider()
         preview.shape = KeyboardPrefs.getShape(this)
         spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this) }.coerceAtLeast(0))
         spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this)).coerceAtLeast(0))
@@ -3121,53 +3411,65 @@ class MainActivity : AppCompatActivity() {
         // Preview container reference for updates
         lateinit var previewContainer: LinearLayout
 
-        // Function to rebuild preview
+        // Preview: real keys with the saved shape, row count, key height, row spacing and colors
         fun rebuildPreview() {
             previewContainer.removeAllViews()
             previewContainer.setBackgroundColor(currentBgColor)
 
-            alphabetLayout.rows.forEach { row ->
+            val savedShape = runCatching { KeyShape.valueOf(savedLayout.keyShape) }.getOrDefault(KeyShape.HEX)
+            // Same per-layout rules as the keyboard (3-row hexagons are tall, 3-row triangles taller)
+            val shape = if (savedLayout.rowCount == 3 && savedShape == KeyShape.HEX) KeyShape.HEX_TALL else savedShape
+            val stretch = KeyScale.clamp(savedLayout.keyScale ?: KeyScale.DEFAULT) *
+                (if (savedLayout.rowCount == 3 && savedShape == KeyShape.TRIANGLE) KeyScale.THREE_ROW_TRIANGLE_DEFAULT else 1f)
+            val rowSpacing = KeyScale.clampRowSpacing(savedLayout.rowSpacingDp ?: 0).dp(this)
+
+            val rows = alphabetLayout.rows.map { row -> row.keys.filter { it.label.isNotEmpty() } }
+            val maxKeys = rows.maxOfOrNull { it.size }?.coerceAtLeast(1) ?: 1
+            val availW = (resources.displayMetrics.widthPixels * 0.95f).toInt() - 48.dp(this)
+            val keyW = availW / maxKeys
+            val baseH = if (shape == KeyShape.HEX_TALL) (keyW * 1.6f).toInt() else keyW
+            val isHex = shape == KeyShape.HEX || shape == KeyShape.HEX_TALL
+            // Honeycomb rows interlock by the hexagon tips (a quarter of the drawn height)
+            val rowOverlap = when {
+                isHex -> (baseH * 0.96f * stretch * 0.25f).toInt() - 1.dp(this)
+                shape == KeyShape.TRIANGLE -> (baseH * 0.15f * stretch).toInt()
+                else -> -(2.dp(this))
+            }
+
+            rows.forEachIndexed { rowIndex, keys ->
                 val rowLayout = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
-                    gravity = android.view.Gravity.CENTER
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { bottomMargin = 4.dp(this@MainActivity) }
+                    gravity = Gravity.CENTER_HORIZONTAL
+                    clipChildren = false
+                    clipToPadding = false
+                    // Honeycomb: every second row shifted by half a key
+                    if (isHex && rowIndex % 2 == 1) setPadding(keyW / 2, 0, 0, 0)
                 }
 
-                row.keys.forEach { key ->
-                    if (key.label.isNotEmpty()) {
-                        val keyView = TextView(this).apply {
-                            text = key.label
-                            textSize = 12f
-                            gravity = android.view.Gravity.CENTER
-                            setPadding(6.dp(this), 4.dp(this), 6.dp(this), 4.dp(this))
-
-                            when (key.label) {
-                                " " -> {
-                                    setBackgroundColor(currentSpaceBg)
-                                    text = "␣"
-                                }
-                                "↵" -> {
-                                    setBackgroundColor(currentEnterBg)
-                                    setTextColor(currentEnterIcon)
-                                }
-                                else -> {
-                                    setBackgroundColor(currentKeyFill)
-                                    setTextColor(currentKeyText)
-                                }
-                            }
-
-                            layoutParams = LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.WRAP_CONTENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply { marginEnd = 2.dp(this@MainActivity) }
-                        }
-                        rowLayout.addView(keyView)
+                keys.forEachIndexed { keyIndex, key ->
+                    val (fill, textColor) = when (key.label) {
+                        " " -> currentSpaceBg to currentKeyText
+                        "↵" -> currentEnterBg to currentEnterIcon
+                        else -> currentKeyFill to currentKeyText
                     }
+                    rowLayout.addView(KeyView(this).apply {
+                        text = if (key.label == " ") "" else key.label
+                        isAllCaps = false
+                        gravity = Gravity.CENTER
+                        includeFontPadding = false
+                        textSize = 11f
+                        this.shape = shape
+                        forceSquare = shape != KeyShape.TRIANGLE && shape != KeyShape.HEX_TALL
+                        heightStretch = stretch
+                        triangleFlipped = (rowIndex + keyIndex) % 2 == 1
+                        customBgColor = fill
+                        setTextColor(textColor)
+                    }, LinearLayout.LayoutParams(keyW, baseH))
                 }
-                previewContainer.addView(rowLayout)
+
+                previewContainer.addView(rowLayout, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { if (rowIndex > 0) topMargin = -rowOverlap + rowSpacing })
             }
         }
 
@@ -3228,6 +3530,8 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(currentBgColor)
             setPadding(8.dp(this), 8.dp(this), 8.dp(this), 8.dp(this))
+            clipChildren = false
+            clipToPadding = false
         }
         rebuildPreview()
         root.addView(previewContainer)

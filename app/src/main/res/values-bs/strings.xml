@@ -6,9 +6,12 @@
     <string name="main_set_layout">Uredi raspored</string>
     <string name="main_key_shape">Oblik tipki</string>
     <string name="main_keyboard_rows">Broj redova</string>
+    <string name="main_key_height">Visina tipki: %1$d%%</string>
+    <string name="main_row_spacing">Razmak između redova: %1$s</string>
     <string name="main_bind_long_press">Dugi pritisak</string>
     <string name="main_colors">Boje</string>
     <string name="main_vibration">Vibracija</string>
+    <string name="main_suggestions">Prijedlozi riječi</string>
     <string name="main_export">Izvezi postavke</string>
     <string name="main_import">Uvezi postavke</string>
     <string name="export_done">Postavke su izvezene</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Uvesti postavke?</string>
     <string name="import_confirm_message">Ovo zamjenjuje trenutne rasporede, boje i postavke. Prije toga se čuvaju kao kopija.</string>
     <string name="import_action">Uvezi</string>
+    <string name="main_about">O aplikaciji</string>
+    <string name="about_version">Verzija %1$s</string>
+    <string name="about_privacy">Antara tastatura nema pristup internetu i ništa ne prikuplja. Sve što kucate i sve postavke ostaju na vašem uređaju, osim ako ih sami ne izvezete.</string>
+    <string name="about_licenses">Licence otvorenog koda</string>
+    <string name="about_licenses_hint">Dodirnite stavku za tekst licence.</string>
     <string name="main_language">Jezik</string>
     <string name="language_system_default">Jezik sistema</string>
     <string name="main_theme">Tema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Dijakritici</string>
     <string name="lp_cat_latin">Latinična slova</string>
     <string name="lp_cat_cyrillic">Ćirilična slova</string>
+    <string name="lp_cat_greek">Grčka slova</string>
     <string name="lp_cat_currency">Valute</string>
     <string name="lp_cat_symbols">Simboli</string>
     <string name="lp_cat_brackets">Zagrade</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Navodnik</string>
     <string name="a11y_key">Tipka %1$s</string>
-    <string name="script_picker_title">Odaberite pismo</string>
-    <string name="script_picker_close">Zatvori</string>
-    <string name="script_latin">Latinica</string>
-    <string name="script_serbian_cyrillic">Srpska ćirilica</string>
-    <string name="script_bulgarian_cyrillic">Bugarska ćirilica</string>
-    <string name="script_russian_cyrillic">Ruska ćirilica</string>
-    <string name="script_ukrainian_cyrillic">Ukrajinska ćirilica</string>
-    <string name="script_macedonian_cyrillic">Makedonska ćirilica</string>
     <string name="emoji_loading">Učitavanje…</string>
     <string name="emoji_no_recent">Nema nedavnih emojija</string>
     <string name="emoji_empty_category">Nema emojija u ovoj kategoriji</string>

@@ -19,7 +19,9 @@ object KeyboardPrefs {
     const val PREFS_NAME = "keyboard_prefs"
 
     private const val KEY_SHAPE = "key_shape"
-    private const val LONG_PRESS_DEFAULTS_VERSION = 4
+    // 5: per-language Latin letters, Cyrillic scripts bind only their special letters
+    private const val LONG_PRESS_DEFAULTS_VERSION = 6
+    private const val KEY_LONG_PRESS_DEFAULTS_LANGUAGE = "long_press_defaults_language"
     private const val KEY_LONG_PRESS_DEFAULTS_VERSION = "long_press_defaults_version"
 
     // NOVO: Svaki row count ima svoj alphabet layout ključ
@@ -53,6 +55,35 @@ object KeyboardPrefs {
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    /* ───────── KEY SIZE ───────── */
+
+    private const val KEY_SCALE = "key_scale"
+
+    /** Key size factor from the main app slider (1.0 = default size). */
+    fun getKeyScale(context: Context): Float =
+        prefs(context).getFloat(KEY_SCALE, 1f)
+
+    fun setKeyScale(context: Context, scale: Float) {
+        prefs(context).edit().putFloat(KEY_SCALE, scale).apply()
+    }
+
+    /* ───────── ROW SPACING ───────── */
+
+    private const val KEY_ROW_SPACING_DP = "row_spacing_dp"
+
+    /** Extra vertical space between rows in dp from the main app slider (0 = default). */
+    fun getRowSpacingDp(context: Context): Int =
+        prefs(context).getInt(KEY_ROW_SPACING_DP, 0)
+
+    fun setRowSpacingDp(context: Context, dp: Int) {
+        prefs(context).edit().putInt(KEY_ROW_SPACING_DP, dp).apply()
+    }
+
+    /** Key height and row spacing back to their defaults (Reset layout / Reset all). */
+    fun resetKeySizing(context: Context) {
+        prefs(context).edit().remove(KEY_SCALE).remove(KEY_ROW_SPACING_DP).apply()
+    }
 
     /* ───────── SHAPE ───────── */
 
@@ -253,12 +284,27 @@ object KeyboardPrefs {
         prefs(context).edit().putInt(SPACE2_BG, color).apply()
     }
 
+    /** Sets explicit space colors (and stops following the theme). */
     fun setSpaceColors(context: Context, c1: Int, c2: Int, linked: Boolean) {
         prefs(context).edit()
             .putInt(SPACE1_BG, c1)
             .putInt(SPACE2_BG, c2)
             .putBoolean(SPACE_LINKED, linked)
+            .putBoolean(SPACE_USE_THEME, false)
             .apply()
+    }
+
+    private const val SPACE_USE_THEME = "space_use_theme"
+
+    /**
+     * Whether the space keys use the theme's space fill (Colors → Space → "Use theme colors").
+     * Installs from before this setting followed the keys' "use theme" flag, so that stays the default.
+     */
+    fun getSpaceUseTheme(context: Context): Boolean =
+        prefs(context).getBoolean(SPACE_USE_THEME, getKeysUseTheme(context))
+
+    fun setSpaceUseTheme(context: Context, useTheme: Boolean) {
+        prefs(context).edit().putBoolean(SPACE_USE_THEME, useTheme).apply()
     }
 
     /* ───────── SIDE BUTTONS COLORS ───────── */
@@ -308,6 +354,32 @@ object KeyboardPrefs {
             .putBoolean(KEYS_ALL_SAME_COLOR, allSame)
             .putBoolean(KEYS_USE_THEME, useTheme)
             .apply()
+    }
+
+    /* ───────── RESOLVED COLORS (single source for every place that draws keys) ───────── */
+
+    /**
+     * Colors a regular key is drawn with: theme defaults, the "all keys same color" colors, or
+     * the key's own colors (per-key mode; keys without own colors use the theme defaults).
+     * [label] is the key label for per-key colors (letters are stored lowercase).
+     * @return (fill, text)
+     */
+    fun resolveKeyColors(context: Context, isDark: Boolean, label: String? = null): Pair<Int, Int> {
+        val theme = getThemeDefaultsForMode(context, isDark)
+        if (getKeysUseTheme(context)) return theme.keyFill to theme.keyText
+        if (getKeysAllSameColor(context)) return getKeysBg(context) to getKeysTextColor(context)
+        val lookup = label?.let { if (it.length == 1 && it[0].isLetter()) it.lowercase() else it }
+        return lookup?.let { getKeyIndividualColors(context, it) } ?: (theme.keyFill to theme.keyText)
+    }
+
+    /** Fill of the (left, right) space key as drawn. */
+    fun resolveSpaceColors(context: Context, isDark: Boolean): Pair<Int, Int> {
+        if (getSpaceUseTheme(context)) {
+            val fill = getThemeDefaultsForMode(context, isDark).spaceFill
+            return fill to fill
+        }
+        val c1 = getSpace1Bg(context)
+        return c1 to (if (isSpaceLinked(context)) c1 else getSpace2Bg(context))
     }
 
     /* ───────── BACKGROUND COLOR ───────── */
@@ -428,7 +500,9 @@ object KeyboardPrefs {
      */
     fun loadAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadAlphabetLayoutForRowCount(context, rowCount)
-        return GlobalLongPressStorage.applyAlphabetBindsToLayout(context, baseLayout)
+        return GlobalLongPressStorage.applyAlphabetBindsToLayout(
+            context, baseLayout, defaultAlphabetLayoutForRowCount(rowCount)
+        )
     }
 
     /**
@@ -437,7 +511,9 @@ object KeyboardPrefs {
      */
     fun loadNumericLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadNumericLayoutForRowCount(context, rowCount)
-        return GlobalLongPressStorage.applyNumericBindsToLayout(context, baseLayout)
+        return GlobalLongPressStorage.applyNumericBindsToLayout(
+            context, baseLayout, defaultNumericLayoutForRowCount(rowCount)
+        )
     }
 
     /**
@@ -468,45 +544,82 @@ object KeyboardPrefs {
         ) ?: LongPressPresets.PRESET_SYSTEM
     }
 
+    /** App language, or the device language when the app follows the system. */
+    fun languageTag(context: Context): String = AppLanguageSettings.effectiveTag(context)
+
+    /**
+     * Switches the keyboard script (dual-space picker). Only the default long-press letters
+     * change; everything the user bound themselves stays.
+     */
     fun applyLongPressPreset(context: Context, presetId: String) {
-        val defaults = LongPressPresets.getById(context, presetId)
+        val sp = prefs(context)
+        val language = languageTag(context)
+        val oldDefaults = LongPressPresets.defaultsFor(
+            getSelectedLongPressPreset(context),
+            sp.getString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, null) ?: language
+        )
+        val newDefaults = LongPressPresets.defaultsFor(presetId, language)
 
-        GlobalLongPressStorage.saveAlphabetBinds(context, defaults)
+        GlobalLongPressStorage.saveAlphabetBinds(
+            context,
+            LongPressPresets.mergeDefaults(GlobalLongPressStorage.loadAlphabetBinds(context), oldDefaults, newDefaults)
+        )
 
-        prefs(context).edit()
+        sp.edit()
             .putString(KEY_SELECTED_LONG_PRESS_PRESET, presetId)
+            .putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
             .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
             .remove("long_press_defaults_initialized")
             .apply()
     }
 
-    // puni bindove automatski
+    /**
+     * Keeps the default long-press letters in sync (called whenever the keyboard opens):
+     * - first run / older defaults version: old defaults are removed, the new ones added
+     *   (v6: fuller per-language lists, own Belarusian script);
+     * - app/device language changed: the keyboard gets that language's script and letters.
+     * User-added bindings are always kept.
+     */
     fun ensureDefaultLongPress(context: Context) {
         val sp = prefs(context)
+        val preset = getSelectedLongPressPreset(context)
+        val language = languageTag(context)
+        val storedLanguage = sp.getString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, null)
+        val version = sp.getInt(KEY_LONG_PRESS_DEFAULTS_VERSION, 0)
 
-        val currentVersion = sp.getInt(KEY_LONG_PRESS_DEFAULTS_VERSION, 0)
-        if (currentVersion >= LONG_PRESS_DEFAULTS_VERSION) return
+        if (version >= LONG_PRESS_DEFAULTS_VERSION && storedLanguage == language) return
 
-        val selectedPreset = getSelectedLongPressPreset(context)
+        // Before v5 the script was picked separately and stays; since then it follows the
+        // language, so a changed language (e.g. in Android settings) also brings its script
+        val newPreset = if (version < 5) preset else AppLanguages.scriptPresetFor(language)
+        val oldDefaults: Map<String, Collection<String>> =
+            if (version < 5) LongPressPresets.withUppercaseSets(LegacyLongPressPresets.allDefaults())
+            else LongPressPresets.defaultsFor(preset, storedLanguage ?: language)
+        val newDefaults = LongPressPresets.defaultsFor(newPreset, language)
 
-        val defaults = if (selectedPreset == LongPressPresets.PRESET_SYSTEM) {
-            LongPressPresets.getForSystemLanguage(context)
-        } else {
-            LongPressPresets.getById(context, selectedPreset)
-        }
-
-        defaults.forEach { (key, values) ->
-            val existing = GlobalLongPressStorage.getAlphabetBind(context, key)
-
-            if (existing.isEmpty()) {
-                GlobalLongPressStorage.saveAlphabetBind(context, key, values)
-            }
-        }
+        GlobalLongPressStorage.saveAlphabetBinds(
+            context,
+            LongPressPresets.mergeDefaults(GlobalLongPressStorage.loadAlphabetBinds(context), oldDefaults, newDefaults)
+        )
 
         sp.edit()
+            .putString(KEY_SELECTED_LONG_PRESS_PRESET, newPreset)
+            .putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
             .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
             .remove("long_press_defaults_initialized")
             .apply()
+    }
+
+    /* ───────── WORD SUGGESTIONS ───────── */
+
+    private const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
+
+    /** Word suggestion strip above the keyboard (off by default). */
+    fun isSuggestionsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, false)
+
+    fun setSuggestionsEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, enabled).apply()
     }
 
     /* ───────── VIBRATION ───────── */

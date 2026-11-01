@@ -6,9 +6,12 @@
     <string name="main_set_layout">Επεξεργασία διάταξης</string>
     <string name="main_key_shape">Σχήμα πλήκτρων</string>
     <string name="main_keyboard_rows">Σειρές πληκτρολογίου</string>
+    <string name="main_key_height">Ύψος πλήκτρων: %1$d%%</string>
+    <string name="main_row_spacing">Απόσταση σειρών: %1$s</string>
     <string name="main_bind_long_press">Παρατεταμένο πάτημα</string>
     <string name="main_colors">Χρώματα</string>
     <string name="main_vibration">Δόνηση</string>
+    <string name="main_suggestions">Προτάσεις λέξεων</string>
     <string name="main_export">Εξαγωγή ρυθμίσεων</string>
     <string name="main_import">Εισαγωγή ρυθμίσεων</string>
     <string name="export_done">Οι ρυθμίσεις εξήχθησαν</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Εισαγωγή ρυθμίσεων;</string>
     <string name="import_confirm_message">Θα αντικατασταθούν οι τρέχουσες διατάξεις, τα χρώματα και οι ρυθμίσεις. Πρώτα αποθηκεύεται αντίγραφο.</string>
     <string name="import_action">Εισαγωγή</string>
+    <string name="main_about">Σχετικά</string>
+    <string name="about_version">Έκδοση %1$s</string>
+    <string name="about_privacy">Το Πληκτρολόγιο Αντάρα δεν έχει πρόσβαση στο διαδίκτυο και δεν συλλέγει τίποτα. Ό,τι πληκτρολογείτε και όλες οι ρυθμίσεις μένουν στη συσκευή σας, εκτός αν τις εξαγάγετε εσείς.</string>
+    <string name="about_licenses">Άδειες ανοιχτού κώδικα</string>
+    <string name="about_licenses_hint">Πατήστε μια καταχώριση για να διαβάσετε την άδεια.</string>
     <string name="main_language">Γλώσσα</string>
     <string name="language_system_default">Γλώσσα συστήματος</string>
     <string name="main_theme">Θέμα</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Διακριτικά</string>
     <string name="lp_cat_latin">Λατινικά γράμματα</string>
     <string name="lp_cat_cyrillic">Κυριλλικά γράμματα</string>
+    <string name="lp_cat_greek">Ελληνικά γράμματα</string>
     <string name="lp_cat_currency">Νομίσματα</string>
     <string name="lp_cat_symbols">Σύμβολα</string>
     <string name="lp_cat_brackets">Παρενθέσεις</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Απόστροφος</string>
     <string name="a11y_quote">Εισαγωγικά</string>
     <string name="a11y_key">Πλήκτρο %1$s</string>
-    <string name="script_picker_title">Επιλογή αλφαβήτου</string>
-    <string name="script_picker_close">Κλείσιμο</string>
-    <string name="script_latin">Λατινικό</string>
-    <string name="script_serbian_cyrillic">Σερβικό κυριλλικό</string>
-    <string name="script_bulgarian_cyrillic">Βουλγαρικό κυριλλικό</string>
-    <string name="script_russian_cyrillic">Ρωσικό κυριλλικό</string>
-    <string name="script_ukrainian_cyrillic">Ουκρανικό κυριλλικό</string>
-    <string name="script_macedonian_cyrillic">Σλαβομακεδονικό κυριλλικό</string>
     <string name="emoji_loading">Φόρτωση…</string>
     <string name="emoji_no_recent">Δεν υπάρχουν πρόσφατα emoji</string>
     <string name="emoji_empty_category">Δεν υπάρχουν emoji σε αυτήν την κατηγορία</string>

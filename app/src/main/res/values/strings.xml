@@ -8,9 +8,12 @@
     <string name="main_set_layout">Set layout</string>
     <string name="main_key_shape">Key shape</string>
     <string name="main_keyboard_rows">Keyboard rows</string>
+    <string name="main_key_height">Key height: %1$d%%</string>
+    <string name="main_row_spacing">Row spacing: %1$s</string>
     <string name="main_bind_long_press">Bind long press</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibration feedback</string>
+    <string name="main_suggestions">Word suggestions</string>
     <string name="main_export">Export settings</string>
     <string name="main_import">Import settings</string>
     <string name="export_done">Settings exported</string>
@@ -22,6 +25,11 @@
     <string name="import_confirm_title">Import settings?</string>
     <string name="import_confirm_message">This replaces your current layouts, colors and settings. They are saved as a backup first.</string>
     <string name="import_action">Import</string>
+    <string name="main_about">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Antara Keyboard has no internet access and collects nothing. Everything you type and all settings stay on your device, unless you export them yourself.</string>
+    <string name="about_licenses">Open-source licenses</string>
+    <string name="about_licenses_hint">Tap an entry to read its license.</string>
     <string name="main_language">Language</string>
     <string name="language_system_default">System default</string>
     <string name="main_theme">Theme</string>
@@ -114,6 +122,7 @@
     <string name="lp_cat_diacritics">Diacritics</string>
     <string name="lp_cat_latin">Latin letters</string>
     <string name="lp_cat_cyrillic">Cyrillic letters</string>
+    <string name="lp_cat_greek">Greek letters</string>
     <string name="lp_cat_currency">Currency</string>
     <string name="lp_cat_symbols">Symbols</string>
     <string name="lp_cat_brackets">Brackets</string>
@@ -216,25 +225,11 @@
     <string name="a11y_apostrophe">Apostrophe</string>
     <string name="a11y_quote">Quote</string>
     <string name="a11y_key">Key %1$s</string>
-    <string name="script_picker_title">Choose script</string>
-    <string name="script_picker_close">Close</string>
-    <string name="script_latin">Latin</string>
-    <string name="script_serbian_cyrillic">Serbian Cyrillic</string>
-    <string name="script_bulgarian_cyrillic">Bulgarian Cyrillic</string>
-    <string name="script_russian_cyrillic">Russian Cyrillic</string>
-    <string name="script_ukrainian_cyrillic">Ukrainian Cyrillic</string>
-    <string name="script_macedonian_cyrillic">Macedonian Cyrillic</string>
     <string name="emoji_loading">Loading…</string>
     <string name="emoji_no_recent">No recent emojis</string>
     <string name="emoji_empty_category">No emojis in this category</string>
 
     <!-- Sample letters are the same in every language -->
-    <string name="script_latin_sample" translatable="false">a, b, c + á, č, ć, š, ž…</string>
-    <string name="script_serbian_cyrillic_sample" translatable="false">а, б, в, љ, њ, ђ, ћ…</string>
-    <string name="script_bulgarian_cyrillic_sample" translatable="false">а, б, в, ж, ч, ш, щ, ъ…</string>
-    <string name="script_russian_cyrillic_sample" translatable="false">а, б, в, ж, ч, ш, щ, ы, э…</string>
-    <string name="script_ukrainian_cyrillic_sample" translatable="false">а, б, в, ґ, є, і, ї…</string>
-    <string name="script_macedonian_cyrillic_sample" translatable="false">а, б, в, ѓ, ќ, љ, њ, џ…</string>
 
     <plurals name="rows_count">
         <item quantity="one">%d row</item>

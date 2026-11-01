@@ -6,9 +6,12 @@
     <string name="main_set_layout">Редактиране на подредбата</string>
     <string name="main_key_shape">Форма на клавишите</string>
     <string name="main_keyboard_rows">Редове на клавиатурата</string>
+    <string name="main_key_height">Височина на клавишите: %1$d%%</string>
+    <string name="main_row_spacing">Разстояние между редовете: %1$s</string>
     <string name="main_bind_long_press">Дълго натискане</string>
     <string name="main_colors">Цветове</string>
     <string name="main_vibration">Вибрация</string>
+    <string name="main_suggestions">Предложения за думи</string>
     <string name="main_export">Експорт на настройките</string>
     <string name="main_import">Импорт на настройките</string>
     <string name="export_done">Настройките са експортирани</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Импорт на настройките?</string>
     <string name="import_confirm_message">Това ще замени текущите подредби, цветове и настройки. Първо се запазва копие.</string>
     <string name="import_action">Импорт</string>
+    <string name="main_about">За приложението</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_privacy">Антара клавиатура няма достъп до интернет и не събира нищо. Всичко, което въвеждате, и всички настройки остават на устройството ви, освен ако сами не ги експортирате.</string>
+    <string name="about_licenses">Лицензи с отворен код</string>
+    <string name="about_licenses_hint">Докоснете запис, за да прочетете лиценза.</string>
     <string name="main_language">Език</string>
     <string name="language_system_default">Език на системата</string>
     <string name="main_theme">Тема</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Диакритични знаци</string>
     <string name="lp_cat_latin">Латински букви</string>
     <string name="lp_cat_cyrillic">Кирилица</string>
+    <string name="lp_cat_greek">Гръцки букви</string>
     <string name="lp_cat_currency">Валути</string>
     <string name="lp_cat_symbols">Символи</string>
     <string name="lp_cat_brackets">Скоби</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Апостроф</string>
     <string name="a11y_quote">Кавички</string>
     <string name="a11y_key">Клавиш %1$s</string>
-    <string name="script_picker_title">Изберете азбука</string>
-    <string name="script_picker_close">Затваряне</string>
-    <string name="script_latin">Латиница</string>
-    <string name="script_serbian_cyrillic">Сръбска кирилица</string>
-    <string name="script_bulgarian_cyrillic">Българска кирилица</string>
-    <string name="script_russian_cyrillic">Руска кирилица</string>
-    <string name="script_ukrainian_cyrillic">Украинска кирилица</string>
-    <string name="script_macedonian_cyrillic">Македонска кирилица</string>
     <string name="emoji_loading">Зареждане…</string>
     <string name="emoji_no_recent">Няма скорошни емоджи</string>
     <string name="emoji_empty_category">Няма емоджи в тази категория</string>

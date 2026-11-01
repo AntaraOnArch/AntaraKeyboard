@@ -55,6 +55,11 @@ import kotlin.math.roundToInt
 import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.ScriptMapper
+import com.example.antarakeyboard.data.AppLanguageSettings
+import com.example.antarakeyboard.data.AppLanguages
+import com.example.antarakeyboard.service.suggest.SuggestionController
+import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
+import com.example.antarakeyboard.service.suggest.WordSuggester
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import java.util.Locale
@@ -69,6 +74,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     // A redraw requested while one is in progress runs right after it instead of being dropped
     private var pendingRedraw = false
     private var isPasswordInput = false
+
+    // Word suggestions: strip above the keys; the dictionary survives input view recreation
+    private val suggestionController by lazy {
+        SuggestionController(this, serviceScope) { refreshSuggestions() }
+    }
+    private lateinit var suggestionStrip: LinearLayout
+    private var suggestionsOn = false
+    private var suggestionsAllowedInField = false
     private var lastBottomInsetPx: Int = 0
 
     private var currentKeyboardConfig: KeyboardConfig = defaultKeyboardLayout
@@ -123,6 +136,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpacePickerWasShown = false
 
     private val DUAL_SPACE_HOLD_MS = 4000L
+
+    private val SUGGESTION_COUNT = 3
+    private val SUGGESTION_LOOKBEHIND = 48
 
     // RGB animation
     private var rgbAnimationJob: Job? = null
@@ -196,7 +212,24 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             Gravity.BOTTOM
         )
 
+        // Suggestion strip sits above the rows, outside keyboardContainer (whose children
+        // must all be key rows – the side-button overlay relies on that)
+        suggestionStrip = createSuggestionStrip()
+        overlayLayer.addView(
+            suggestionStrip,
+            0,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                suggestionStripHeightPx(),
+                Gravity.TOP
+            )
+        )
+        updateSuggestionStrip()
+
         inputController = KeyInputController(this)
+
+        // Swipe left/right to delete/restore also works on the background between keys
+        overlayLayer.setOnTouchListener(BackgroundSwipeListener())
 
         // Initialize managers
         deleteRestoreManager = DeleteRestoreManager(
@@ -340,7 +373,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         isPasswordInput = InputTypes.isPassword(info)
         keyPreviewManager.setEnabled(!isPasswordInput)
 
+        // First: a language changed elsewhere switches the script, which the dictionary follows
         KeyboardPrefs.ensureDefaultLongPress(this)
+
+        // Word suggestions (main app switch); nothing in passwords, numbers, e-mails or URLs
+        suggestionsOn = KeyboardPrefs.isSuggestionsEnabled(this)
+        suggestionsAllowedInField = InputTypes.allowsSuggestions(info)
+        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
+        else suggestionController.release()
+        updateSuggestionStrip()
 
         // Refresh vibration preference
         hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
@@ -398,6 +439,114 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         resetTransientState()
+        if (::suggestionStrip.isInitialized) showSuggestions(emptyList())
+    }
+
+    override fun onUpdateSelection(
+        oldSelStart: Int,
+        oldSelEnd: Int,
+        newSelStart: Int,
+        newSelEnd: Int,
+        candidatesStart: Int,
+        candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        // Every typed key, delete, suggestion and cursor move ends up here
+        refreshSuggestions()
+    }
+
+    /* ───────── WORD SUGGESTIONS ───────── */
+
+    private fun suggestionStripHeightPx(): Int = 38.dp(this)
+
+    /** Dictionary for the current keyboard script and app/device language. */
+    private fun currentSuggestionDictionary(): String? =
+        SuggestionDictionaries.forKeyboard(
+            KeyboardPrefs.getSelectedLongPressPreset(this),
+            KeyboardPrefs.languageTag(this)
+        )
+
+    private fun createSuggestionStrip(): LinearLayout = LinearLayout(themedCtx).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        tag = "suggestion_strip"
+
+        repeat(SUGGESTION_COUNT) { index ->
+            if (index > 0) {
+                addView(View(themedCtx), LinearLayout.LayoutParams(1.dp(this@MyKeyboardService), 18.dp(this@MyKeyboardService)))
+            }
+            addView(
+                TextView(themedCtx).apply {
+                    gravity = Gravity.CENTER
+                    textSize = 16f
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setPadding(4.dp(this@MyKeyboardService), 0, 4.dp(this@MyKeyboardService), 0)
+                    setOnClickListener { view ->
+                        val suggestion = (view as TextView).text?.toString().orEmpty()
+                        if (suggestion.isNotEmpty()) {
+                            hapticManager.performHapticFeedback(view)
+                            applySuggestion(suggestion)
+                        }
+                    }
+                },
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            )
+        }
+    }
+
+    /**
+     * Shows the strip only when suggestions are on and the field allows them; fields that ask
+     * for none (passwords, numbers, e-mail, URL, TYPE_TEXT_FLAG_NO_SUGGESTIONS) get no strip.
+     * Recolors it to match the keys.
+     */
+    private fun updateSuggestionStrip() {
+        if (!::suggestionStrip.isInitialized) return
+        suggestionStrip.visibility =
+            if (suggestionsOn && suggestionsAllowedInField) View.VISIBLE else View.GONE
+        val text = emojiPickerColors().text
+        for (i in 0 until suggestionStrip.childCount) {
+            when (val child = suggestionStrip.getChildAt(i)) {
+                is TextView -> child.setTextColor(text)
+                else -> child.setBackgroundColor(androidx.core.graphics.ColorUtils.setAlphaComponent(text, 0x40))
+            }
+        }
+        refreshSuggestions()
+    }
+
+    private fun refreshSuggestions() {
+        if (!::suggestionStrip.isInitialized || !suggestionsOn) return
+        val word = if (suggestionsAllowedInField) currentTypedWord() else ""
+        showSuggestions(if (word.isEmpty()) emptyList() else suggestionController.suggest(word))
+    }
+
+    private fun showSuggestions(words: List<String>) {
+        var slot = 0
+        for (i in 0 until suggestionStrip.childCount) {
+            val view = suggestionStrip.getChildAt(i) as? TextView ?: continue
+            view.text = words.getOrNull(slot).orEmpty()
+            slot++
+        }
+    }
+
+    /** The word right before the cursor (empty with a selection or inside a word). */
+    private fun currentTypedWord(): String {
+        val ic = currentInputConnection ?: return ""
+        if (!ic.getSelectedText(0).isNullOrEmpty()) return ""
+        val before = ic.getTextBeforeCursor(SUGGESTION_LOOKBEHIND, 0) ?: return ""
+        val after = ic.getTextAfterCursor(1, 0) ?: ""
+        return WordSuggester.currentWord(before, after)
+    }
+
+    /** Replaces the word being typed with [suggestion] and adds a space. */
+    private fun applySuggestion(suggestion: String) {
+        val ic = currentInputConnection ?: return
+        val typed = currentTypedWord()
+        ic.beginBatchEdit()
+        if (typed.isNotEmpty()) ic.deleteSurroundingText(typed.length, 0)
+        ic.commitText("$suggestion ", 1)
+        ic.endBatchEdit()
+        deleteRestoreManager.clearRestoreBuffer()
     }
 
     override fun onWindowHidden() {
@@ -641,6 +790,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         languagePresetPopup = null
     }
 
+    /**
+     * Dual-space picker: the same language choice as the main app (System default + every
+     * translation, each in its own language). Choosing one sets the app language and the
+     * keyboard script that goes with it (Cyrillic languages type Cyrillic).
+     */
     private fun showLanguagePresetPopup() {
         hideLongPressPopup()
         hideEmojiPopup()
@@ -657,215 +811,67 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val popupBg = pickerColors.panel
         val popupText = pickerColors.text
 
-        val selectedPreset = KeyboardPrefs.getSelectedLongPressPreset(this)
-
         val root = LinearLayout(themedCtx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(20.dp(this), 18.dp(this), 20.dp(this), 14.dp(this))
             setBackgroundColor(popupBg)
         }
 
-        val title = TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.script_picker_title)
+        root.addView(TextView(themedCtx).apply {
+            text = themedCtx.getString(R.string.main_language)
             textSize = 18f
             setTextColor(popupText)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(0, 0, 0, 14.dp(this))
-        }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        val radioGroup = RadioGroup(themedCtx).apply {
-            orientation = RadioGroup.VERTICAL
-        }
+        val tags = listOf("") + AppLanguages.TAGS
+        val current = AppLanguageSettings.selectedTag(this).let { AppLanguages.match(it) ?: "" }
 
-        fun makeRadioButton(
-            titleText: String,
-            subtitleText: String
-        ): RadioButton {
-            return RadioButton(themedCtx).apply {
-                text = "$titleText\n$subtitleText"
-                textSize = 15f
+        val radioGroup = RadioGroup(themedCtx).apply { orientation = RadioGroup.VERTICAL }
+        val idToTag = HashMap<Int, String>()
+        tags.forEach { tag ->
+            val id = View.generateViewId()
+            idToTag[id] = tag
+            radioGroup.addView(RadioButton(themedCtx).apply {
+                this.id = id
+                text = if (tag.isEmpty()) themedCtx.getString(R.string.language_system_default)
+                else AppLanguages.nativeName(tag)
+                textSize = 16f
                 setTextColor(popupText)
-                includeFontPadding = true
-                setPadding(0, 8.dp(this), 0, 8.dp(this))
-                isClickable = true
+                setPadding(0, 6.dp(this), 0, 6.dp(this))
                 isFocusable = false
-            }
+            }, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
-
-        val latinId = View.generateViewId()
-        val serbianCyrId = View.generateViewId()
-        val bulgarianCyrId = View.generateViewId()
-        val russianCyrId = View.generateViewId()
-        val ukrainianCyrId = View.generateViewId()
-        val macedonianCyrId = View.generateViewId()
-
-        val latinRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_latin),
-            subtitleText = themedCtx.getString(R.string.script_latin_sample)
-        ).apply {
-            id = latinId
-        }
-
-        val serbianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_serbian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_serbian_cyrillic_sample)
-        ).apply {
-            id = serbianCyrId
-        }
-
-        val bulgarianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_bulgarian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_bulgarian_cyrillic_sample)
-        ).apply {
-            id = bulgarianCyrId
-        }
-
-        val russianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_russian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_russian_cyrillic_sample)
-        ).apply {
-            id = russianCyrId
-        }
-        val ukrainianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_ukrainian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_ukrainian_cyrillic_sample)
-        ).apply {
-            id = ukrainianCyrId
-        }
-
-        val macedonianCyrRadio = makeRadioButton(
-            titleText = themedCtx.getString(R.string.script_macedonian_cyrillic),
-            subtitleText = themedCtx.getString(R.string.script_macedonian_cyrillic_sample)
-        ).apply {
-            id = macedonianCyrId
-        }
-
-        radioGroup.addView(
-            latinRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            serbianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            bulgarianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            russianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-        radioGroup.addView(
-            ukrainianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        radioGroup.addView(
-            macedonianCyrRadio,
-            RadioGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val initialCheckedId = when (selectedPreset) {
-            LongPressPresets.PRESET_SERBIAN_CYRILLIC -> serbianCyrId
-            LongPressPresets.PRESET_BULGARIAN_CYRILLIC -> bulgarianCyrId
-            LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrId
-            LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrId
-            LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrId
-            else -> latinId
-        }
-
-        radioGroup.check(initialCheckedId)
+        idToTag.entries.firstOrNull { it.value == current }?.let { radioGroup.check(it.key) }
 
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val presetId = when (checkedId) {
-                serbianCyrId -> LongPressPresets.PRESET_SERBIAN_CYRILLIC
-                bulgarianCyrId -> LongPressPresets.PRESET_BULGARIAN_CYRILLIC
-                russianCyrId -> LongPressPresets.PRESET_RUSSIAN_CYRILLIC
-                ukrainianCyrId -> LongPressPresets.PRESET_UKRAINIAN_CYRILLIC
-                macedonianCyrId -> LongPressPresets.PRESET_MACEDONIAN_CYRILLIC
-                else -> LongPressPresets.PRESET_LATIN
-            }
-
-            applyLongPressPresetAndRefresh(presetId)
+            val tag = idToTag[checkedId] ?: return@setOnCheckedChangeListener
+            applyLanguageFromPicker(tag)
         }
 
-        val closeBtn = TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.script_picker_close)
+        val scroll = ScrollView(themedCtx).apply {
+            isFillViewport = false
+            addView(radioGroup, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+        root.addView(scroll, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            (resources.displayMetrics.heightPixels * 0.46f).toInt()
+        ))
+
+        root.addView(TextView(themedCtx).apply {
+            text = themedCtx.getString(R.string.action_close)
             textSize = 14f
             setTextColor(popupText)
             gravity = Gravity.CENTER
             setPadding(8.dp(this), 16.dp(this), 8.dp(this), 0)
             isClickable = true
             isFocusable = false
-            setOnClickListener {
-                hideLanguagePresetPopup()
-            }
-        }
+            setOnClickListener { hideLanguagePresetPopup() }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
-        root.addView(
-            title,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-        val scroll = ScrollView(themedCtx).apply {
-            isFillViewport = false
-
-            addView(
-                radioGroup,
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-        }
-
-        root.addView(
-            scroll,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                (resources.displayMetrics.heightPixels * 0.46f).toInt()
-            )
-        )
-
-        root.addView(
-            closeBtn,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val popup = PopupWindow(
-            root,
-            popupWidth,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        ).apply {
+        val popup = PopupWindow(root, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             isFocusable = true
             isClippingEnabled = false
@@ -873,44 +879,30 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setOnDismissListener {
                 languagePresetPopup = null
-
                 if (!leftSpaceHeld && !rightSpaceHeld) {
                     dualSpacePickerWasShown = false
                 }
             }
         }
-
         languagePresetPopup = popup
 
-        /*
-         * Gravity.CENTER je sigurniji od ručnog x/y računanja.
-         * U IME-u ovo je najstabilniji modal bez rušenja.
-         */
+        // showAtLocation in an IME is relative to the rootView window: convert screen Y to local Y
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
-
         val rootLoc = IntArray(2)
         rootView.getLocationOnScreen(rootLoc)
+        val localX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
+        val localY = (screenH * 0.105f).toInt().coerceAtLeast(54.dp(this)) - rootLoc[1]
 
-        val desiredScreenX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
+        popup.showAtLocation(rootView, Gravity.NO_GRAVITY, localX, localY)
+    }
 
-// Ovo je pozicija crvenog kvadrata sa screenshota.
-// Smanji na 0.08f ako želiš još više gore.
-// Povećaj na 0.14f ako želiš malo niže.
-        val desiredScreenY = (screenH * 0.105f).toInt()
-            .coerceAtLeast(54.dp(this))
-
-// showAtLocation kod IME-a radi relativno prema rootView prozoru,
-// zato screen Y pretvaramo u lokalni Y.
-        val localX = desiredScreenX
-        val localY = desiredScreenY - rootLoc[1]
-
-        popup.showAtLocation(
-            rootView,
-            Gravity.NO_GRAVITY,
-            localX,
-            localY
-        )
+    /** Language chosen on the keyboard: same effect as the main app's Language dropdown. */
+    private fun applyLanguageFromPicker(tag: String) {
+        AppLanguageSettings.select(this, tag)
+        applyLongPressPresetAndRefresh(KeyboardPrefs.getSelectedLongPressPreset(this))
+        // New language for the keyboard's own texts (Android 13+ also sends a configuration change)
+        overlayLayer.post { recreateInputView() }
     }
 
     private fun applyLongPressPresetAndRefresh(presetId: String) {
@@ -930,11 +922,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         resetDualSpaceHoldState()
         hideLanguagePresetPopup()
+        // Another script types another language: switch the suggestion dictionary too
+        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
         redrawKeyboard()
     }
 
 
     private fun showEmojiPicker() {
+        // A delete/restore swipe must never keep running behind the picker
+        stopSwipeGestures()
         hideLongPressPopup()
         hideEmojiPopup()
 
@@ -1129,8 +1125,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
          * Ne dodajemo umjetni minTarget ni extraBottomSafety jer su oni
          * stvarali prazan prostor gore.
          */
+        val stripH = if (::suggestionStrip.isInitialized && suggestionStrip.visibility == View.VISIBLE) {
+            suggestionStripHeightPx()
+        } else {
+            0
+        }
         val desiredHeight =
             contentH +
+                    stripH +
                     overlayLayer.paddingTop +
                     overlayLayer.paddingBottom
 
@@ -1190,6 +1192,70 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     fun stopSwipeRestore() {
         deleteRestoreManager.stopSwipeRestore()
+    }
+
+    /**
+     * Delete/restore swipe on the keyboard background (gaps between keys, around the rows),
+     * with the same thresholds as on keys. Touches that start on a key are handled by the key.
+     */
+    private inner class BackgroundSwipeListener : View.OnTouchListener {
+        private var downX = 0f
+        private var downY = 0f
+        private var mode = SwipeMode.NONE
+
+        override fun onTouch(v: View, e: MotionEvent): Boolean {
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = e.rawX
+                    downY = e.rawY
+                    mode = SwipeMode.NONE
+                    hideLongPressPopup()
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = e.rawX - downX
+                    val absDx = kotlin.math.abs(dx)
+                    val absDy = kotlin.math.abs(e.rawY - downY)
+                    if (absDx > 20.dp(this@MyKeyboardService) && absDx > absDy * 1.05f) {
+                        if (dx < 0f) {
+                            if (mode != SwipeMode.DELETE) {
+                                mode = SwipeMode.DELETE
+                                startSwipeDelete(absDx)
+                            } else {
+                                updateSwipeDelete(absDx)
+                            }
+                        } else {
+                            if (mode != SwipeMode.RESTORE) {
+                                mode = SwipeMode.RESTORE
+                                startSwipeRestore(absDx)
+                            } else {
+                                updateSwipeRestore(absDx)
+                            }
+                        }
+                    }
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    stopSwipeGestures()
+                    mode = SwipeMode.NONE
+                    if (e.actionMasked == MotionEvent.ACTION_UP) v.performClick()
+                }
+
+                else -> return false
+            }
+            return true
+        }
+    }
+
+    private enum class SwipeMode { NONE, DELETE, RESTORE }
+
+    /** Stops every running delete/restore swipe and backspace hold. */
+    private fun stopSwipeGestures() {
+        if (!::deleteRestoreManager.isInitialized) return
+        deleteRestoreManager.stopSwipeDelete()
+        deleteRestoreManager.stopSwipeRestore()
+        deleteRestoreManager.stopBackspaceHold()
+        if (::inputController.isInitialized) inputController.reset()
     }
 
     fun startBackspaceHold() {
@@ -1338,11 +1404,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     /** Emoji picker follows the keyboard: background as surface, regular key colors for buttons. */
     private fun emojiPickerColors(): EmojiPickerManager.Colors {
-        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
         val background = popupSurfaceColor()
-        val useThemeKeys = KeyboardPrefs.getKeysUseTheme(this) || !KeyboardPrefs.getKeysAllSameColor(this)
-        val button = if (useThemeKeys) themeColors.keyFill else KeyboardPrefs.getKeysBg(this)
-        val text = if (useThemeKeys) themeColors.keyText else KeyboardPrefs.getKeysTextColor(this)
+        val (button, text) = keyColors()
 
         return EmojiPickerManager.Colors(
             background = background,
@@ -1387,7 +1450,64 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val triOverlapY: Int
     )
 
+    /**
+     * Row sizing with the key height slider applied (see [baseRowSizing] for the tuned defaults).
+     * The keys themselves grow ([KeyView.heightStretch]); sizes and row spacing stay as tuned.
+     * Only the honeycomb overlap grows with the hexagon tips so the rows stay interlocked.
+     */
     private fun computeRowSizing(count: Int, availW: Int): RowSizing {
+        val base = baseRowSizing(count, availW)
+        val f = keyHeightStretch()
+        if (f == 1f || base.overlapPx == 0) return base
+
+        val shape = effectiveShape()
+        val hexHeight = when (shape) {
+            KeyShape.HEX -> minOf(base.keyW, base.keyH) * 0.96f
+            KeyShape.HEX_TALL -> base.keyH * 0.96f
+            else -> return base
+        }
+        return base.copy(overlapPx = KeyScale.honeycombOverlap(base.overlapPx, hexHeight, f))
+    }
+
+    /** Key height factor from the main app slider (1 = tuned default). */
+    private fun keyHeightFactor(): Float = KeyScale.clamp(KeyboardPrefs.getKeyScale(this))
+
+    /**
+     * Height stretch the keys are drawn with: the slider factor times the layout's own default.
+     * 3-row portrait triangles are taller by default (what used to be 150 % on the slider).
+     */
+    private fun keyHeightStretch(): Float {
+        val layoutDefault = if (
+            !isLandscape() &&
+            currentShape == KeyShape.TRIANGLE &&
+            KeyboardPrefs.getRowCount(this) == 3
+        ) {
+            KeyScale.THREE_ROW_TRIANGLE_DEFAULT
+        } else {
+            1f
+        }
+        return keyHeightFactor() * layoutDefault
+    }
+
+    /** Extra vertical space between rows from the row spacing slider (px, may be negative). */
+    private fun rowSpacingPx(): Int =
+        KeyScale.clampRowSpacing(KeyboardPrefs.getRowSpacingDp(this)).dp(this)
+
+    /**
+     * Whether keys are drawn square (KeyView.forceSquare). Only portrait triangles
+     * and the 3-row portrait cube use their own height; HEX_TALL is never squared.
+     */
+    private fun keysForcedSquare(): Boolean {
+        val shape = effectiveShape()
+        if (shape == KeyShape.HEX_TALL) return false
+        val allowNonSquare = !isLandscape() && (
+            shape == KeyShape.TRIANGLE ||
+                (KeyboardPrefs.getRowCount(this) == 3 && shape == KeyShape.CUBE)
+            )
+        return !allowNonSquare
+    }
+
+    private fun baseRowSizing(count: Int, availW: Int): RowSizing {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val layoutShape = currentShape
 
@@ -1947,7 +2067,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         }
 
                         else -> 0
-                    }
+                    } + rowSpacingPx()  // row spacing slider (0 = tuned default)
                 }
 
                 keyboardContainer.addView(row, lpRow)
@@ -2156,7 +2276,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             minimumWidth = 0
             manualLabelSizeSp = 22f
 
-            setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText, Color.WHITE))
+            setTextColor(keyColors(label).second)
 
             // centralne tipke nemaju split label i nemaju swipe-up alternate
             useSplitLabels = false
@@ -2202,6 +2322,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
         }
     }
+    /**
+     * Landscape row overlap (used as a negative top margin). Hexagon rows overlap more as their
+     * tips grow with the key height slider; the row spacing slider adds space between rows.
+     */
+    private fun landscapeRowOverlapScaled(keySize: Int): Int {
+        val base = landscapeRowOverlapPx(keySize)
+        val overlap = when (currentShape) {
+            KeyShape.HEX, KeyShape.HEX_TALL, KeyShape.HEX_HALF_LEFT, KeyShape.HEX_HALF_RIGHT ->
+                KeyScale.honeycombOverlap(base, keySize * 0.96f, keyHeightStretch())
+            else -> base
+        }
+        return overlap - rowSpacingPx()
+    }
+
     private fun landscapeKeySizePx(): Int {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
@@ -2275,7 +2409,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
     private fun buildLandscapeLeftLetters(container: LinearLayout) {
         val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapPx(keySize)
+        val rowOverlap = landscapeRowOverlapScaled(keySize)
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
 
@@ -2353,7 +2487,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
     private fun buildLandscapeRightLetters(container: LinearLayout) {
         val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapPx(keySize)
+        val rowOverlap = landscapeRowOverlapScaled(keySize)
         val keyGap = landscapeKeyGapPx()
         val halfStep = (keySize / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(this)
@@ -2496,31 +2630,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             rowKeys.forEachIndexed { i, key ->
                 val kv = createCenterTextKey(key.label)
 
-                // Primijeni iste boje kao za obične tipke u glavnom layoutu
+                // Same colors as the regular keys of the main layout
                 if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
-                    val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-                    val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-
-                    if (useTheme) {
-                        // Use custom theme defaults
-                        val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                        kv.setTextColor(themeColors.keyText)
-                        kv.customBgColor = themeColors.keyFill
-                    } else if (allSame) {
-                        kv.customBgColor = KeyboardPrefs.getKeysBg(this)
-                        kv.setTextColor(KeyboardPrefs.getKeysTextColor(this))
-                    } else {
-                        val individualColors = KeyboardPrefs.getKeyIndividualColors(this, key.label)
-                        if (individualColors != null) {
-                            kv.customBgColor = individualColors.first
-                            kv.setTextColor(individualColors.second)
-                        } else {
-                            // Nema individualne boje — fallback na theme defaults
-                            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                            kv.setTextColor(themeColors.keyText)
-                            kv.customBgColor = themeColors.keyFill
-                        }
-                    }
+                    val (fill, text) = keyColors(key.label)
+                    kv.customBgColor = fill
+                    kv.setTextColor(text)
                 }
 
                 val lp = LinearLayout.LayoutParams(
@@ -2674,11 +2788,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 isUserEmpty -> {
                     hideCompletely = false
                     alpha = 0.65f
-                    customBgColor = themeColor(
-                        this@MyKeyboardService,
-                        R.attr.keyFill,
-                        0xFF4A4A4A.toInt()
-                    )
+                    customBgColor = keyColors().first
                 }
 
                 else -> {
@@ -2738,19 +2848,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         isAllCaps = false
         shape = activeShape
 
-// Samo 3-row portrait CUBE smije koristiti punu zadanu visinu.
-// Inače KeyView zadržava kvadrat i ignorira dodatni keyH.
-        val allowNonSquareShape =
-            !isLandscape() &&
-                    (
-                            activeShape == KeyShape.TRIANGLE ||
-                                    (
-                                            rowCount == 3 &&
-                                                    activeShape == KeyShape.CUBE
-                                            )
-                            )
-
-        forceSquare = !allowNonSquareShape
+        forceSquare = keysForcedSquare()
+        // Key height slider: the key draws its shape taller/shorter and grows by that much
+        heightStretch = keyHeightStretch()
 
         isSpecial = (label == "↵")
         gravity = Gravity.CENTER
@@ -2772,26 +2872,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             textSize = if (isLandscape()) 13f else 16f
         }
 
-        setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-            if (lastIsDark == true) Color.WHITE else Color.BLACK))
-
-        //if (label == "↵") {
-        //    customBgColor = KeyboardPrefs.getEnterBg(context)
-        //    setTextColor(KeyboardPrefs.getEnterIcon(context))
-        //}
-
-        if (label == "⇧") {
-            if (isShifted) {
-                text = "⇪"
-                customBgColor = Color.WHITE
-                setTextColor(Color.BLACK)
-            } else {
-                text = "⇧"
-                customBgColor = null
-                setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
-            }
-        }
+        // Final key colors (incl. Shift's active look) are set by applySpecialKeyColors()
+        setTextColor(keyColors(label).second)
 
         val nonBindable = setOf("⇧", "⌫", "↵", "123", "ABC", "abc", " ", "😊")
         val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
@@ -2830,7 +2912,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     if (label !in nonBindable) {
                         longPressJob = serviceScope.launch {
                             delay(longPressTimeout)
-                            val binds = keyConfig.longPressBindings
+                            // Latin keyboard: Latin letters only; Cyrillic keyboard: Cyrillic only
+                            val binds = LongPressPresets.visibleFor(
+                                KeyboardPrefs.getSelectedLongPressPreset(this@MyKeyboardService),
+                                keyConfig.longPressBindings
+                            )
                             if (binds.isNotEmpty()) {
                                 longPressTriggered = true
                                 keyPreviewManager.hide()
@@ -2851,9 +2937,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     val absDx = kotlin.math.abs(dx)
                     val absDy = kotlin.math.abs(dy)
 
+                    // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
+                    val horizontalSwipe = inputController.isHorizontalSwipeActive(v as TextView)
+
                     // 123 swipe-up => emoji samo na 4/5 row alphabet layoutu
                     if (!longPressTriggered &&
                         !handledBySwipeUp &&
+                        !horizontalSwipe &&
                         label == "123" &&
                         rowCount >= 4 &&
                         isAlphabetLayoutActive() &&
@@ -2873,6 +2963,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     // ? swipe-up => !
                     if (!longPressTriggered &&
                         !handledBySwipeUp &&
+                        !horizontalSwipe &&
                         (label == "." || label == "?") &&
                         (v as? KeyView)?.useSplitLabels == true &&
                         dy < -swipeUpThreshold &&
@@ -2915,8 +3006,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         }
                     }
 
-                    // Skip swipe gestures when long press popup is active
-                    if (!longPressTriggered) {
+                    // Skip swipe gestures when long press popup is active, and while both space
+                    // keys are held (dual-space script/language picker) – that is no swipe
+                    if (!longPressTriggered && !(leftSpaceHeld && rightSpaceHeld)) {
                         inputController.handleTouch(v as TextView, e)
                     }
                     true
@@ -2927,6 +3019,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     keyPreviewManager.hide()
 
                     if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
+                        stopSwipeGestures()
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
@@ -2935,6 +3028,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     }
 
                     if (handledBySwipeUp) {
+                        stopSwipeGestures()
                         v.isPressed = false
                         v.isSelected = false
                         v.clearFocus()
@@ -3007,99 +3101,48 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
     }
 
-    private fun colorLookupLabel(label: String): String {
-        return if (label.length == 1 && label[0].isLetter()) {
-            label.lowercase()
-        } else {
-            label
-        }
-    }
+    /** Regular key colors as drawn (shared rule in [KeyboardPrefs.resolveKeyColors]). */
+    private fun keyColors(label: String? = null): Pair<Int, Int> =
+        KeyboardPrefs.resolveKeyColors(this, lastIsDark == true, label)
 
+    /**
+     * Final colors of every key: space, Enter and Shift have their own colors, every other key
+     * (letters, symbols, ⌫, 😊, 123/ABC) uses the regular key colors. All colors come from the
+     * same resolvers the main app, saved layouts and popups use.
+     */
     private fun applySpecialKeyColors(kv: KeyView, key: KeyConfig, spaceIndex: Int): Int {
-        var nextSpaceIndex = spaceIndex
-
-        // 1. SPACE — uvijek posebno
-        if (key.label == " ") {
-            val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-            val spaceColor = if (useTheme) {
-                // Use custom theme defaults for space
-                KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true).spaceFill
-            } else {
-                // Use custom space color prefs
-                val linked = KeyboardPrefs.isSpaceLinked(this)
-                val c1 = KeyboardPrefs.getSpace1Bg(this)
-                val c2 = if (linked) c1 else KeyboardPrefs.getSpace2Bg(this)
-
-                when {
-                    isLeftSpace(key) -> c1
-                    isRightSpace(key) -> c2
-                    spaceIndex == 0 -> c1
-                    else -> c2
+        when (key.label) {
+            " " -> {
+                val (left, right) = KeyboardPrefs.resolveSpaceColors(this, lastIsDark == true)
+                kv.customBgColor = when {
+                    isLeftSpace(key) -> left
+                    isRightSpace(key) -> right
+                    spaceIndex == 0 -> left
+                    else -> right
                 }
+                return spaceIndex + 1
             }
 
-            kv.customBgColor = spaceColor
-            nextSpaceIndex++
-            return nextSpaceIndex
-        }
-
-        // 2. ENTER — uvijek posebno
-        if (key.label == "↵") {
-            kv.customBgColor = KeyboardPrefs.getEnterBg(this)
-            kv.setTextColor(KeyboardPrefs.getEnterIcon(this))
-            return nextSpaceIndex
-        }
-
-        // 3. SHIFT — posebno
-        if (key.label == "⇧") {
-            if (isShifted) {
-                kv.text = "⇪"
-                kv.customBgColor = Color.WHITE
-                kv.setTextColor(Color.BLACK)
-            } else {
-                kv.text = "⇧"
-                kv.customBgColor = null
-                kv.setTextColor(themeColor(this@MyKeyboardService, R.attr.keyText,
-                    if (lastIsDark == true) Color.WHITE else Color.BLACK))
+            "↵" -> {
+                kv.customBgColor = KeyboardPrefs.getEnterBg(this)
+                kv.setTextColor(KeyboardPrefs.getEnterIcon(this))
             }
-            return nextSpaceIndex
-        }
 
-        // 4. BACKSPACE, EMOJI — ne diraj, već su postavljeni u createKey
-        if (key.label in setOf("⌫", "😊")) {
-            return nextSpaceIndex
-        }
+            "⇧" -> {
+                // Same colors as every key; an active Shift shows a filled arrow
+                kv.text = if (isShifted) KeyMarkers.SHIFT_ON else KeyMarkers.SHIFT_OFF
+                val (fill, text) = keyColors(key.label)
+                kv.customBgColor = fill
+                kv.setTextColor(text)
+            }
 
-        // 5. OBIČNE TIPKE + "123", "ABC", "abc" — ovdje rješavamo boje
-        val allSame = KeyboardPrefs.getKeysAllSameColor(this)
-        val useTheme = KeyboardPrefs.getKeysUseTheme(this)
-
-        if (useTheme) {
-            // Koristi custom theme defaults
-            val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-            kv.setTextColor(themeColors.keyText)
-            kv.customBgColor = themeColors.keyFill
-        } else if (allSame) {
-            // Sve iste boje iz prefs
-            val keysBg = KeyboardPrefs.getKeysBg(this)
-            val keysText = KeyboardPrefs.getKeysTextColor(this)
-            kv.customBgColor = keysBg
-            kv.setTextColor(keysText)
-        } else {
-            // Pokušaj individualne boje
-            val individualColors = KeyboardPrefs.getKeyIndividualColors(this, colorLookupLabel(key.label))
-            if (individualColors != null) {
-                kv.customBgColor = individualColors.first
-                kv.setTextColor(individualColors.second)
-            } else {
-                // NEMA individualne boje — fallback na theme defaults
-                val themeColors = KeyboardPrefs.getThemeDefaultsForMode(this, lastIsDark == true)
-                kv.setTextColor(themeColors.keyText)
-                kv.customBgColor = themeColors.keyFill
+            else -> {
+                val (fill, text) = keyColors(key.label)
+                kv.customBgColor = fill
+                kv.setTextColor(text)
             }
         }
-
-        return nextSpaceIndex
+        return spaceIndex
     }
 
     /* ───────── RGB ANIMATION ───────── */

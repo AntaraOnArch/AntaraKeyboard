@@ -6,9 +6,12 @@
     <string name="main_set_layout">Edita la disposició</string>
     <string name="main_key_shape">Forma de les tecles</string>
     <string name="main_keyboard_rows">Files del teclat</string>
+    <string name="main_key_height">Alçada de les tecles: %1$d %%</string>
+    <string name="main_row_spacing">Espai entre files: %1$s</string>
     <string name="main_bind_long_press">Pulsació llarga</string>
     <string name="main_colors">Colors</string>
     <string name="main_vibration">Vibració</string>
+    <string name="main_suggestions">Suggeriments de paraules</string>
     <string name="main_export">Exporta la configuració</string>
     <string name="main_import">Importa la configuració</string>
     <string name="export_done">S\'ha exportat la configuració</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Vols importar la configuració?</string>
     <string name="import_confirm_message">Això substituirà les disposicions, els colors i la configuració actuals. Abans es desa una còpia.</string>
     <string name="import_action">Importa</string>
+    <string name="main_about">Quant a</string>
+    <string name="about_version">Versió %1$s</string>
+    <string name="about_privacy">El Teclat Antara no té accés a Internet i no recull res. Tot el que escrius i tota la configuració es queden al teu dispositiu, tret que els exportis tu.</string>
+    <string name="about_licenses">Llicències de codi obert</string>
+    <string name="about_licenses_hint">Toca una entrada per llegir-ne la llicència.</string>
     <string name="main_language">Idioma</string>
     <string name="language_system_default">Idioma del sistema</string>
     <string name="main_theme">Tema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Diacrítics</string>
     <string name="lp_cat_latin">Lletres llatines</string>
     <string name="lp_cat_cyrillic">Lletres ciríl·liques</string>
+    <string name="lp_cat_greek">Lletres gregues</string>
     <string name="lp_cat_currency">Monedes</string>
     <string name="lp_cat_symbols">Símbols</string>
     <string name="lp_cat_brackets">Parèntesis</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apòstrof</string>
     <string name="a11y_quote">Cometes</string>
     <string name="a11y_key">Tecla %1$s</string>
-    <string name="script_picker_title">Tria l\'alfabet</string>
-    <string name="script_picker_close">Tanca</string>
-    <string name="script_latin">Llatí</string>
-    <string name="script_serbian_cyrillic">Ciríl·lic serbi</string>
-    <string name="script_bulgarian_cyrillic">Ciríl·lic búlgar</string>
-    <string name="script_russian_cyrillic">Ciríl·lic rus</string>
-    <string name="script_ukrainian_cyrillic">Ciríl·lic ucraïnès</string>
-    <string name="script_macedonian_cyrillic">Ciríl·lic macedoni</string>
     <string name="emoji_loading">S\'està carregant…</string>
     <string name="emoji_no_recent">No hi ha emojis recents</string>
     <string name="emoji_empty_category">No hi ha emojis en aquesta categoria</string>

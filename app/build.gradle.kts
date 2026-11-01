@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
+    // Offline word suggestions (SymSpell, MIT)
+    implementation(libs.symspellkt)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

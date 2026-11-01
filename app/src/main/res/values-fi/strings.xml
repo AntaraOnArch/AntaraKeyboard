@@ -6,9 +6,12 @@
     <string name="main_set_layout">Muokkaa asettelua</string>
     <string name="main_key_shape">Näppäinten muoto</string>
     <string name="main_keyboard_rows">Näppäinrivit</string>
+    <string name="main_key_height">Näppäinkorkeus: %1$d %%</string>
+    <string name="main_row_spacing">Rivien väli: %1$s</string>
     <string name="main_bind_long_press">Pitkä painallus</string>
     <string name="main_colors">Värit</string>
     <string name="main_vibration">Värinä</string>
+    <string name="main_suggestions">Sanaehdotukset</string>
     <string name="main_export">Vie asetukset</string>
     <string name="main_import">Tuo asetukset</string>
     <string name="export_done">Asetukset viety</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Tuodaanko asetukset?</string>
     <string name="import_confirm_message">Tämä korvaa nykyiset asettelut, värit ja asetukset. Ne tallennetaan ensin varmuuskopioksi.</string>
     <string name="import_action">Tuo</string>
+    <string name="main_about">Tietoja</string>
+    <string name="about_version">Versio %1$s</string>
+    <string name="about_privacy">Antara-näppäimistöllä ei ole internetyhteyttä, eikä se kerää mitään. Kaikki kirjoittamasi ja kaikki asetukset pysyvät laitteellasi, ellet itse vie niitä.</string>
+    <string name="about_licenses">Avoimen lähdekoodin lisenssit</string>
+    <string name="about_licenses_hint">Napauta kohdetta lukeaksesi lisenssin.</string>
     <string name="main_language">Kieli</string>
     <string name="language_system_default">Järjestelmän kieli</string>
     <string name="main_theme">Teema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Tarkkeet</string>
     <string name="lp_cat_latin">Latinalaiset kirjaimet</string>
     <string name="lp_cat_cyrillic">Kyrilliset kirjaimet</string>
+    <string name="lp_cat_greek">Kreikkalaiset kirjaimet</string>
     <string name="lp_cat_currency">Valuutat</string>
     <string name="lp_cat_symbols">Symbolit</string>
     <string name="lp_cat_brackets">Sulkeet</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Heittomerkki</string>
     <string name="a11y_quote">Lainausmerkki</string>
     <string name="a11y_key">Näppäin %1$s</string>
-    <string name="script_picker_title">Valitse kirjoitusjärjestelmä</string>
-    <string name="script_picker_close">Sulje</string>
-    <string name="script_latin">Latinalainen</string>
-    <string name="script_serbian_cyrillic">Serbian kyrillinen</string>
-    <string name="script_bulgarian_cyrillic">Bulgarian kyrillinen</string>
-    <string name="script_russian_cyrillic">Venäjän kyrillinen</string>
-    <string name="script_ukrainian_cyrillic">Ukrainan kyrillinen</string>
-    <string name="script_macedonian_cyrillic">Makedonian kyrillinen</string>
     <string name="emoji_loading">Ladataan…</string>
     <string name="emoji_no_recent">Ei viimeisimpiä emojeja</string>
     <string name="emoji_empty_category">Tässä luokassa ei ole emojeja</string>

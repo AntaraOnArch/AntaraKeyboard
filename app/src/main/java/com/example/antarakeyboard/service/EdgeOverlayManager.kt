@@ -17,6 +17,7 @@ import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
+import com.example.antarakeyboard.model.KeyMarkers
 
 /**
  * Callback interface for edge button actions.
@@ -553,7 +554,7 @@ class EdgeOverlayManager(
 
         // 1. Label
         val label = when (slot.type) {
-            EdgeActionType.SHIFT -> if (isShifted) "⇪" else "⇧"
+            EdgeActionType.SHIFT -> if (isShifted) KeyMarkers.SHIFT_ON else KeyMarkers.SHIFT_OFF
             EdgeActionType.BACKSPACE -> "⌫"
             EdgeActionType.ENTER -> "↵"
             EdgeActionType.SPACE -> "␣"

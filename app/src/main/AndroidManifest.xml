@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- SymSpellKt declares minSdk 26 but is pure Kotlin (no Android/Java APIs), so it is safe on 24 -->
+    <uses-sdk tools:overrideLibrary="com.darkrockstudios.symspellkt" />
+
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"

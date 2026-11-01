@@ -6,4 +6,8 @@ object KeyMarkers {
 
     const val SPACE_LEFT = "__SPACE_LEFT__"
     const val SPACE_RIGHT = "__SPACE_RIGHT__"
+
+    /** Shift label: outlined arrow when off, filled arrow when on (U+FE0E keeps it text, not emoji). */
+    const val SHIFT_OFF = "⇧"
+    const val SHIFT_ON = "⬆\uFE0E"
 }

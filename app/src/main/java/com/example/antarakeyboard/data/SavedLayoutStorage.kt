@@ -49,7 +49,11 @@ object SavedLayoutStorage {
         val enterIcon: Int,
         val sideBg: Int,
         val sideText: Int,
-        val sideUseTheme: Boolean
+        val sideUseTheme: Boolean,
+        // Key height and row spacing sliders. Nullable: layouts saved before these existed
+        // have no value (Gson leaves them null) and keep the current slider values on restore.
+        val keyScale: Float? = null,
+        val rowSpacingDp: Int? = null
     )
 
     /**
@@ -70,6 +74,10 @@ object SavedLayoutStorage {
      */
     fun saveCurrentLayout(context: Context, name: String): SavedLayout {
         val rowCount = KeyboardPrefs.getRowCount(context)
+        // Store the colors as they are drawn (theme or custom), so a restore looks the same
+        val isDark = PrefsManager.isDarkMode(context)
+        val (keyFill, keyText) = KeyboardPrefs.resolveKeyColors(context, isDark)
+        val (space1, space2) = KeyboardPrefs.resolveSpaceColors(context, isDark)
 
         val savedLayout = SavedLayout(
             name = name,
@@ -79,19 +87,21 @@ object SavedLayoutStorage {
             numericLayoutJson = gson.toJson(KeyboardPrefs.loadNumericLayoutForRowCount(context, rowCount)),
             horizontalCenterLayoutJson = gson.toJson(KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(context, rowCount)),
             edgeSlotsJson = gson.toJson(EdgeSlotsStorage.load(context)),
-            keyFill = KeyboardPrefs.getKeysBg(context),
-            keyText = KeyboardPrefs.getKeysTextColor(context),
+            keyFill = keyFill,
+            keyText = keyText,
             // Dark / Light / Transparent are stored as their resolved color
             backgroundColor = KeyboardPrefs.resolveKeyboardBackground(context, PrefsManager.isDarkMode(context)),
             backgroundUseTheme = KeyboardPrefs.getBackgroundUseTheme(context),
-            space1Bg = KeyboardPrefs.getSpace1Bg(context),
-            space2Bg = KeyboardPrefs.getSpace2Bg(context),
-            spaceLinked = KeyboardPrefs.isSpaceLinked(context),
+            space1Bg = space1,
+            space2Bg = space2,
+            spaceLinked = space1 == space2,
             enterBg = KeyboardPrefs.getEnterBg(context),
             enterIcon = KeyboardPrefs.getEnterIcon(context),
             sideBg = KeyboardPrefs.getSideButtonsBg(context),
             sideText = KeyboardPrefs.getSideButtonsTextColor(context),
-            sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(context)
+            sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(context),
+            keyScale = KeyboardPrefs.getKeyScale(context),
+            rowSpacingDp = KeyboardPrefs.getRowSpacingDp(context)
         )
 
         addLayout(context, savedLayout)
@@ -140,6 +150,10 @@ object SavedLayoutStorage {
         KeyboardPrefs.saveAlphabetLayoutForRowCount(context, savedLayout.rowCount, alphabetLayout)
         KeyboardPrefs.saveNumericLayoutForRowCount(context, savedLayout.rowCount, numericLayout)
         KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(context, savedLayout.rowCount, horizontalCenterLayout)
+
+        // Key height and row spacing sliders (absent in layouts saved before they existed)
+        savedLayout.keyScale?.let { KeyboardPrefs.setKeyScale(context, it) }
+        savedLayout.rowSpacingDp?.let { KeyboardPrefs.setRowSpacingDp(context, it) }
 
         // Restore edge slots
         val edgeSlotsType = object : TypeToken<List<EdgeSlot>>() {}.type

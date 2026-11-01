@@ -6,9 +6,12 @@
     <string name="main_set_layout">Rediger oppsett</string>
     <string name="main_key_shape">Tasteform</string>
     <string name="main_keyboard_rows">Tastaturrader</string>
+    <string name="main_key_height">Tastehøyde: %1$d %%</string>
+    <string name="main_row_spacing">Radavstand: %1$s</string>
     <string name="main_bind_long_press">Langt trykk</string>
     <string name="main_colors">Farger</string>
     <string name="main_vibration">Vibrering</string>
+    <string name="main_suggestions">Ordforslag</string>
     <string name="main_export">Eksporter innstillinger</string>
     <string name="main_import">Importer innstillinger</string>
     <string name="export_done">Innstillinger eksportert</string>
@@ -20,6 +23,11 @@
     <string name="import_confirm_title">Importere innstillinger?</string>
     <string name="import_confirm_message">Dette erstatter nåværende oppsett, farger og innstillinger. De lagres først som sikkerhetskopi.</string>
     <string name="import_action">Importer</string>
+    <string name="main_about">Om appen</string>
+    <string name="about_version">Versjon %1$s</string>
+    <string name="about_privacy">Antara tastatur har ikke internettilgang og samler ikke inn noe. Alt du skriver og alle innstillinger blir på enheten din, med mindre du eksporterer dem selv.</string>
+    <string name="about_licenses">Lisenser for åpen kildekode</string>
+    <string name="about_licenses_hint">Trykk på en oppføring for å lese lisensen.</string>
     <string name="main_language">Språk</string>
     <string name="language_system_default">Systemspråk</string>
     <string name="main_theme">Tema</string>
@@ -112,6 +120,7 @@
     <string name="lp_cat_diacritics">Diakritiske tegn</string>
     <string name="lp_cat_latin">Latinske bokstaver</string>
     <string name="lp_cat_cyrillic">Kyrilliske bokstaver</string>
+    <string name="lp_cat_greek">Greske bokstaver</string>
     <string name="lp_cat_currency">Valuta</string>
     <string name="lp_cat_symbols">Symboler</string>
     <string name="lp_cat_brackets">Parenteser</string>
@@ -214,14 +223,6 @@
     <string name="a11y_apostrophe">Apostrof</string>
     <string name="a11y_quote">Anførselstegn</string>
     <string name="a11y_key">Tast %1$s</string>
-    <string name="script_picker_title">Velg skriftsystem</string>
-    <string name="script_picker_close">Lukk</string>
-    <string name="script_latin">Latinsk</string>
-    <string name="script_serbian_cyrillic">Serbisk kyrillisk</string>
-    <string name="script_bulgarian_cyrillic">Bulgarsk kyrillisk</string>
-    <string name="script_russian_cyrillic">Russisk kyrillisk</string>
-    <string name="script_ukrainian_cyrillic">Ukrainsk kyrillisk</string>
-    <string name="script_macedonian_cyrillic">Makedonsk kyrillisk</string>
     <string name="emoji_loading">Laster inn…</string>
     <string name="emoji_no_recent">Ingen nylige emoji</string>
     <string name="emoji_empty_category">Ingen emoji i denne kategorien</string>
