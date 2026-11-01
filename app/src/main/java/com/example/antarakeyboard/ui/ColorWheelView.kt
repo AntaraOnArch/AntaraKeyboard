@@ -60,13 +60,13 @@ class ColorWheelView @JvmOverloads constructor(
         val sweepShader = SweepGradient(
             centerX, centerY,
             intArrayOf(
-                Color.RED,     // 0°   = desno
+                Color.RED,     // 0°   = right
                 Color.YELLOW,  // 60°
-                Color.GREEN,   // 120° = dolje-lijevo
-                Color.CYAN,    // 180° = lijevo
-                Color.BLUE,    // 240° = gore-lijevo
-                Color.MAGENTA, // 300° = gore-desno
-                Color.RED      // 360° = desno
+                Color.GREEN,   // 120° = bottom left
+                Color.CYAN,    // 180° = left
+                Color.BLUE,    // 240° = top left
+                Color.MAGENTA, // 300° = top right
+                Color.RED      // 360° = right
             ),
             null
         )

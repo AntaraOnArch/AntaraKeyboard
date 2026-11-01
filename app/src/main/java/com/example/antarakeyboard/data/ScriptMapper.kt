@@ -63,7 +63,7 @@ object ScriptMapper {
         "v" to "в",
         "z" to "з",
 
-        // fallback za bugarska slova bez čistog latin para
+        // Bulgarian letters without a clean Latin pair
         "q" to "я",
         "w" to "ш",
         "x" to "х",
@@ -94,7 +94,7 @@ object ScriptMapper {
         "v" to "в",
         "z" to "з",
 
-        // fallback za ukrajinska slova bez čistog latin para
+        // Ukrainian letters without a clean Latin pair
         "q" to "я",
         "w" to "ш",
         "x" to "ь",
@@ -125,7 +125,7 @@ object ScriptMapper {
         "v" to "в",
         "z" to "з",
 
-        // fallback za makedonska slova bez čistog latin para
+        // Macedonian letters without a clean Latin pair
         "q" to "љ",
         "w" to "њ",
         "x" to "џ",
@@ -156,7 +156,7 @@ object ScriptMapper {
         "v" to "в",
         "z" to "з",
 
-        // fallback za ruska slova bez čistog latin para
+        // Russian letters without a clean Latin pair
         "q" to "я",
         "w" to "ш",
         "x" to "ь",

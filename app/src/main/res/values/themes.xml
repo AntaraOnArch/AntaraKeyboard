@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base tema (manifest) - uses unified colors that auto-switch -->
+    <!-- Base theme (manifest) - uses unified colors that auto-switch -->
     <style name="Theme.AntaraKeyboard.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="keyboardBg">@color/keyboard_bg</item>
         <item name="keyFill">@color/key_fill</item>

@@ -1,12 +1,65 @@
 package com.example.antarakeyboard.service
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.graphics.ColorFilter
+import android.graphics.Paint
+import android.graphics.PixelFormat
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.RadialGradient
+import android.graphics.Rect
+import android.graphics.Shader
+import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.view.ContextThemeWrapper
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.ScrollView
+import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isEmpty
+import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
+import com.example.antarakeyboard.R
+import com.example.antarakeyboard.data.AppLanguageSettings
+import com.example.antarakeyboard.data.AppLanguages
+import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.LongPressPresets
+import com.example.antarakeyboard.data.PrefsManager
+import com.example.antarakeyboard.data.ScriptMapper
+import com.example.antarakeyboard.extensions.dp
+import com.example.antarakeyboard.model.KeyConfig
+import com.example.antarakeyboard.model.KeyMarkers
+import com.example.antarakeyboard.model.KeyShape
+import com.example.antarakeyboard.model.KeyboardConfig
+import com.example.antarakeyboard.model.shiftedBinding
+import com.example.antarakeyboard.service.input.KeyInputController
+import com.example.antarakeyboard.service.suggest.SuggestionController
+import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
+import com.example.antarakeyboard.service.suggest.WordSuggester
+import com.example.antarakeyboard.ui.KeyView
+import com.example.antarakeyboard.ui.defaultKeyboardLayout
+import java.util.Locale
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,55 +68,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewConfiguration
-import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.FrameLayout
-import android.widget.GridLayout
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.ScrollView
-import android.widget.TextView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.antarakeyboard.EmojiData
-import com.example.antarakeyboard.R
-import com.example.antarakeyboard.data.EdgePos
-import com.example.antarakeyboard.data.EdgeSlotsStorage
-import com.example.antarakeyboard.extensions.dp
-import com.example.antarakeyboard.data.KeyboardPrefs
-import com.example.antarakeyboard.data.PrefsManager
-import com.example.antarakeyboard.model.EdgeActionType
-import com.example.antarakeyboard.model.EdgeSlot
-import com.example.antarakeyboard.model.KeyConfig
-import com.example.antarakeyboard.model.shiftedBinding
-import com.example.antarakeyboard.model.KeyShape
-import com.example.antarakeyboard.model.KeyboardConfig
-import com.example.antarakeyboard.service.input.KeyInputController
-import com.example.antarakeyboard.ui.KeyView
-import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
-import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
-import com.example.antarakeyboard.ui.defaultKeyboardLayout
-import com.example.antarakeyboard.ui.defaultNumericLayout
-import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
-import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
-import kotlin.math.max
-import kotlin.math.roundToInt
-import com.example.antarakeyboard.model.KeyMarkers
-import com.example.antarakeyboard.data.LongPressPresets
-import com.example.antarakeyboard.data.ScriptMapper
-import com.example.antarakeyboard.data.AppLanguageSettings
-import com.example.antarakeyboard.data.AppLanguages
-import com.example.antarakeyboard.service.suggest.SuggestionController
-import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
-import com.example.antarakeyboard.service.suggest.WordSuggester
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import java.util.Locale
-
 
 class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
@@ -86,7 +90,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private var currentKeyboardConfig: KeyboardConfig = defaultKeyboardLayout
     private var currentShape: KeyShape = KeyShape.HEX
-    private var activeShape: KeyShape = KeyShape.HEX
 
     // Coroutine scope for the service lifecycle
     private val serviceJob = SupervisorJob()
@@ -114,8 +117,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             )
         }
 
-    private val OVERLAP_RATIO = 0.18f
-
     private var lastIsDark: Boolean? = null
     private var lastAppLanguage: String? = null
     private var targetKeyboardHeightPx: Int = 0
@@ -135,10 +136,12 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpaceHoldJob: Job? = null
     private var dualSpacePickerWasShown = false
 
-    private val DUAL_SPACE_HOLD_MS = 4000L
-
-    private val SUGGESTION_COUNT = 3
-    private val SUGGESTION_LOOKBEHIND = 48
+    private companion object {
+        const val OVERLAP_RATIO = 0.18f
+        const val DUAL_SPACE_HOLD_MS = 4000L
+        const val SUGGESTION_COUNT = 3
+        const val SUGGESTION_LOOKBEHIND = 48
+    }
 
     // RGB animation
     private var rgbAnimationJob: Job? = null
@@ -146,6 +149,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /* ───────── LIFECYCLE ───────── */
     //claude sync
 
+    // The IME root view has no parent to inflate into; BackgroundSwipeListener calls performClick
+    @SuppressLint("InflateParams", "ClickableViewAccessibility")
     override fun onCreateInputView(): View {
         // Recreate (theme / configuration change): stop work bound to the old views
         releaseInputViewResources()
@@ -173,7 +178,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
 
 
-        // U onCreateInputView() - postavi početnu pozadinu (RGB se pokreće u onStartInputView)
+        // Initial background (the RGB animation is started in onStartInputView)
         if (!KeyboardPrefs.isAnyRgbModeEnabled(this)) {
             val bg = KeyboardPrefs.resolveKeyboardBackground(this, lastIsDark == true)
 
@@ -181,7 +186,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             overlayLayer.setBackgroundColor(bg)
             keyboardContainer.setBackgroundColor(bg)
 
-            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
+            window?.window?.setBackgroundDrawable(bg.toDrawable())
         }
 
 
@@ -367,7 +372,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
-        setExtractViewShown(false)
+        isExtractViewShown = false
 
         // Password fields: no key preview, so typed characters never appear on screen
         isPasswordInput = InputTypes.isPassword(info)
@@ -398,7 +403,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
         lastIsDark = isDarkNow
 
-        // NOVO: Postavi background boju iz KeyboardPrefs ili RGB animaciju
+        // Background color from KeyboardPrefs, or the RGB animation
         if (KeyboardPrefs.isAnyRgbModeEnabled(this)) {
             startRgbAnimation()
         } else {
@@ -407,11 +412,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             rootView.setBackgroundColor(bg)
             overlayLayer.setBackgroundColor(bg)
             keyboardContainer.setBackgroundColor(bg)
-            window?.window?.setBackgroundDrawable(ColorDrawable(bg))
+            window?.window?.setBackgroundDrawable(bg.toDrawable())
         }
 
-        // NE upisivati theme boje u KeyboardPrefs ovdje.
-        // Theme smije biti samo fallback kod crtanja, inače reset/start pregazi custom boje.
+        // Do NOT write theme colors into KeyboardPrefs here: the theme is only a fallback
+        // while drawing, otherwise reset/start would overwrite the custom colors.
 
         currentShape = KeyboardPrefs.getShape(this)
 
@@ -643,7 +648,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             dualSpacePickerWasShown = false
 
             dualSpaceHoldJob = serviceScope.launch {
-                delay(DUAL_SPACE_HOLD_MS)
+                delay(DUAL_SPACE_HOLD_MS.milliseconds)
                 dualSpaceHoldJob = null
 
                 if (leftSpaceHeld && rightSpaceHeld) {
@@ -876,7 +881,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             isFocusable = true
             isClippingEnabled = false
             elevation = 12.dp(this@MyKeyboardService).toFloat()
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
             setOnDismissListener {
                 languagePresetPopup = null
                 if (!leftSpaceHeld && !rightSpaceHeld) {
@@ -946,18 +951,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
 
-    private fun themeColor(ctx: Context, attr: Int, fallback: Int): Int {
-        val tv = android.util.TypedValue()
-        val th = ctx.theme
-        return if (
-            th.resolveAttribute(attr, tv, true) &&
-            tv.type in android.util.TypedValue.TYPE_FIRST_COLOR_INT..android.util.TypedValue.TYPE_LAST_COLOR_INT
-        ) {
-            tv.data
-        } else {
-            fallback
-        }
-    }
 
 
 
@@ -1043,7 +1036,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
         }
 
-        val denom = when (activeShape) {
+        val denominator = when (activeShape) {
             KeyShape.HEX,
             KeyShape.HEX_TALL,
             KeyShape.HEX_HALF_LEFT,
@@ -1054,7 +1047,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             KeyShape.CUBE -> rows.toFloat()
         }
 
-        val baseH = (usableForKeys / denom).toInt().coerceAtLeast(
+        val baseH = (usableForKeys / denominator).toInt().coerceAtLeast(
             if (isLandscape()) 28.dp(this) else 36.dp(this)
         )
 
@@ -1092,13 +1085,12 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private fun syncOverlayHeightToContent() {
         if (!::overlayLayer.isInitialized || !::keyboardContainer.isInitialized) return
-        if (overlayLayer.width <= 0 || keyboardContainer.childCount == 0) return
+        if (overlayLayer.width <= 0 || keyboardContainer.isEmpty()) return
 
         /*
-         * Bitno:
-         * keyboardContainer.height može biti odrezan trenutačnom visinom overlayja.
-         * Zato ga ponovno mjerimo s UNSPECIFIED visinom da dobijemo stvarnu
-         * visinu svih redova.
+         * Important: keyboardContainer.height can be clipped by the overlay's current
+         * height, so it is measured again with an UNSPECIFIED height to get the real
+         * height of all rows.
          */
         val contentWidth = (
                 overlayLayer.width -
@@ -1121,11 +1113,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         if (contentH <= 0) return
 
         /*
-         * paddingBottom već sadrži navigation/system inset.
-         * Ne dodajemo umjetni minTarget ni extraBottomSafety jer su oni
-         * stvarali prazan prostor gore.
+         * paddingBottom already contains the navigation/system inset. No artificial
+         * minTarget or extraBottomSafety is added: they left empty space at the top.
          */
-        val stripH = if (::suggestionStrip.isInitialized && suggestionStrip.visibility == View.VISIBLE) {
+        val stripH = if (::suggestionStrip.isInitialized && suggestionStrip.isVisible) {
             suggestionStripHeightPx()
         } else {
             0
@@ -1137,8 +1128,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     overlayLayer.paddingBottom
 
         /*
-         * Samo zaštita od potpuno pogrešnog mjerenja.
-         * Ovo više nije normalni limit tipkovnice.
+         * Only a guard against a completely wrong measurement, not the normal
+         * keyboard limit.
          */
         val screenH = resources.displayMetrics.heightPixels
 
@@ -1153,7 +1144,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             screenLimit
         )
 
-        // Ukloni eventualni stari minimum koji je ostao od ranije.
+        // Remove a minimum height that may be left over from earlier.
         overlayLayer.minimumHeight = 0
 
         val lp = overlayLayer.layoutParams ?: ViewGroup.LayoutParams(
@@ -1214,8 +1205,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
                 MotionEvent.ACTION_MOVE -> {
                     val dx = e.rawX - downX
-                    val absDx = kotlin.math.abs(dx)
-                    val absDy = kotlin.math.abs(e.rawY - downY)
+                    val absDx = abs(dx)
+                    val absDy = abs(e.rawY - downY)
                     if (absDx > 20.dp(this@MyKeyboardService) && absDx > absDy * 1.05f) {
                         if (dx < 0f) {
                             if (mode != SwipeMode.DELETE) {
@@ -1256,10 +1247,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         deleteRestoreManager.stopSwipeRestore()
         deleteRestoreManager.stopBackspaceHold()
         if (::inputController.isInitialized) inputController.reset()
-    }
-
-    fun startBackspaceHold() {
-        deleteRestoreManager.startBackspaceHold()
     }
 
     fun commitExactText(text: String) {
@@ -1435,7 +1422,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
 
-    private val lpRects: List<android.graphics.Rect>
+    private val longPressCellBounds: List<Rect>
         get() = longPressPopupManager.getLpRects()
 
     /* ───────── LAYOUT ───────── */
@@ -1512,26 +1499,24 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val layoutShape = currentShape
 
         /*
- * Portrait TRIANGLE:
- * sve tipke dobivaju veličinu referentnog reda sa 6 tipki.
- *
- * Red sa 7 tipki koristi horizontalno preklapanje kako bi
- * stao u istu dostupnu širinu bez smanjivanja tipki.
- */
+         * Portrait TRIANGLE: every key gets the size of the reference row with 6 keys.
+         * A row with 7 keys overlaps horizontally to fit the same width without
+         * shrinking the keys.
+         */
         if (!isLandscape() && layoutShape == KeyShape.TRIANGLE) {
             val usableW = when (savedRowCount) {
-                // Ostavljamo malo sigurnog prostora uz lijevi i desni rub
+                // Leave a little safe space at the left and right edge
                 3 -> (availW - 20.dp(this)).coerceAtLeast(240.dp(this))
 
-                // Postojeći dobar 4-row i 5-row prikaz
+                // 4-row and 5-row (tuned)
                 else -> (availW * 0.98f).toInt()
             }
 
             val referenceColumns = when (savedRowCount) {
-                // 3-row ima 11–12 tipki, zato mu trebaju manji trokuti
+                // 3-row has 11–12 keys per row, so it needs smaller triangles
                 3 -> 8.4f
 
-                // Postojeći 4-row i 5-row sizing
+                // 4-row and 5-row sizing
                 else -> 6f
             }
 
@@ -1545,14 +1530,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 .coerceAtLeast(minTriangleWidth)
 
             /*
-             * Za 7 tipki:
-             * 7 * keyW je preširoko, pa višak rasporedimo kroz
-             * šest razmaka između tipki.
+             * 7 keys: 7 * keyW is too wide, so the excess is spread over the six gaps
+             * between the keys.
              */
-            // Mali stalni overlap vrijedi i za redove sa 6 tipki.
+            // A small constant overlap applies to rows with 6 keys too.
             val baseOverlapX = (keyW * 0.22f).toInt()
 
-            // Dodatni overlap potreban da red sa 7 tipki stane.
+            // Extra overlap needed for a row with 7 keys to fit.
             val fitOverlapX = if (count > 1) {
                 ((count * keyW - usableW) / (count - 1))
                     .coerceAtLeast(0)
@@ -1563,8 +1547,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             val overlapX = when (savedRowCount) {
                 3 -> {
                     /*
-                     * Ne oduzimamo više 2.dp(this), jer je to proširivalo cijeli red
-                     * i izbacivalo krajnje tipke izvan ekrana.
+                     * No more subtracting 2.dp(this): it widened the whole row and pushed
+                     * the outer keys off the screen.
                      */
                     maxOf(baseOverlapX, fitOverlapX)
                 }
@@ -1617,8 +1601,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 when {
                     isLandscape() -> 2.dp(this)
 
-                    // 3-row portrait: manje praznog prostora,
-                    // pa same tipke mogu biti veće
+                    // 3-row portrait: less empty space, so the keys themselves
+                    // can be bigger
                     savedRowCount == 3 -> 2.dp(this)
 
                     else -> 4.dp(this)
@@ -1658,7 +1642,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 when {
                     isLandscape() -> availW
 
-                    // 3-row portrait: veće tipke
+                    // 3-row portrait: bigger keys
                     savedRowCount == 3 -> (availW * 0.98f).toInt()
 
                     else -> (availW * 0.92f).toInt()
@@ -1688,8 +1672,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             .coerceAtLeast(minKeyWidth)
 
         val keyW = when {
-            // red sa 6 tipki koristi istu veličinu gumba kao red sa 7 tipki
-            // Portrait CIRCLE, CUBE i TRIANGLE:
+            // Portrait CIRCLE, CUBE and TRIANGLE: a row with 6 keys uses the same key
+            // size as a row with 7 keys
             !isLandscape() &&
                     count == 6 &&
                     (
@@ -1771,17 +1755,16 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val rawKeyH = keyHeight()
 
         val keyH = when {
-            // 3-row portrait CUBE:
-            // širina ostaje ista, povećavamo samo visinu za 25%
+            // 3-row portrait CUBE: the width stays, only the height grows
             !isLandscape() &&
                     savedRowCount == 3 &&
                     layoutShape == KeyShape.CUBE -> {
-                // Visina je 25% veća od širine gumba,
-                // a ne 30% veća od ukupno izračunate visine reda.
+                // Height is 1.3 × the key width, not derived from the row's
+                // computed height.
                 (keyW * 1.3f).toInt()
             }
 
-            // postojeći 3-row portrait HEX
+            // 3-row portrait HEX
             !isLandscape() &&
                     savedRowCount == 3 &&
                     (
@@ -1912,103 +1895,71 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
                 val isShiftedRow = shouldHoneycomb && (containerRowIndex % 2 == 1)
 
-                val leftPad = when {
-                    savedRowCount == 4 && isShiftedRow ->
+                val leftPad = when (savedRowCount) {
+                    4 -> if (isShiftedRow) {
                         (sizing.outerPadPx + honeycombShift - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
-
-                    savedRowCount == 4 ->
+                    } else {
                         (sizing.outerPadPx - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
+                    }
 
-                    savedRowCount == 3 && isShiftedRow ->
+                    3 -> if (isShiftedRow) {
                         (sizing.outerPadPx + honeycombShift - 6.dp(this@MyKeyboardService)).coerceAtLeast(0)
-
-                    savedRowCount == 3 ->
+                    } else {
                         (sizing.outerPadPx - 12.dp(this@MyKeyboardService)).coerceAtLeast(0)
+                    }
 
-                    isShiftedRow ->
-                        sizing.outerPadPx + honeycombShift
-
-                    else ->
-                        sizing.outerPadPx
+                    else -> sizing.outerPadPx
                 }
 
-                val rightPad = when {
-                    savedRowCount == 4 && shouldHoneycomb && !isShiftedRow ->
+                val unshiftedHoneycombRow = shouldHoneycomb && !isShiftedRow
+                val rightPad = when (savedRowCount) {
+                    4 -> if (unshiftedHoneycombRow) {
                         sizing.outerPadPx + honeycombShift + 2.dp(this@MyKeyboardService)
-
-                    savedRowCount == 4 ->
+                    } else {
                         sizing.outerPadPx + 2.dp(this@MyKeyboardService)
+                    }
 
-                    savedRowCount == 3 && shouldHoneycomb && !isShiftedRow ->
+                    3 -> if (unshiftedHoneycombRow) {
                         (sizing.outerPadPx + honeycombShift - 10.dp(this@MyKeyboardService)).coerceAtLeast(0)
-
-                    savedRowCount == 3 ->
+                    } else {
                         (sizing.outerPadPx - 12.dp(this@MyKeyboardService)).coerceAtLeast(0)
+                    }
 
-                    shouldHoneycomb && !isShiftedRow ->
-                        sizing.outerPadPx + honeycombShift
-
-                    else ->
-                        sizing.outerPadPx
+                    else -> sizing.outerPadPx
                 }
 
-                val shapeRowTranslationX = if (!isLandscape()) {
-                    when {
+                val isTriangle = layoutShape == KeyShape.TRIANGLE
+                val isCubeOrCircle = layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE
+                // Cube / circle: odd rows left, even rows right (3 and 4 rows)
+                val cubeCircleShift = if (containerRowIndex % 2 == 0) -(5.dp(this@MyKeyboardService)) else 10.dp(this@MyKeyboardService)
 
-                        // 5-row TRIANGLE
-                        savedRowCount == 5 &&
-                                layoutShape == KeyShape.TRIANGLE -> {
-                            when (containerRowIndex) {
-                                0, 2, 4 -> -(14.dp(this@MyKeyboardService)) // 1., 3. i 5. red lijevo
-                                1, 3 -> 7.dp(this@MyKeyboardService)     // 2. i 4. red desno
-                                else -> 0
-                            }
+                val shapeRowTranslationX = if (isLandscape()) 0 else when (savedRowCount) {
+                    5 -> if (isTriangle) {
+                        when (containerRowIndex) {
+                            0, 2, 4 -> -(14.dp(this@MyKeyboardService)) // rows 1, 3 and 5 to the left
+                            1, 3 -> 7.dp(this@MyKeyboardService)     // rows 2 and 4 to the right
+                            else -> 0
                         }
+                    } else 0
 
-                        // 4-row TRIANGLE
-                        savedRowCount == 4 &&
-                                layoutShape == KeyShape.TRIANGLE -> {
-                            if (containerRowIndex % 2 == 0) {
-                                -(9.dp(this@MyKeyboardService))   // 1. i 3. red ulijevo
-                            } else {
-                                20.dp(this@MyKeyboardService)    // 2. i 4. red udesno
-                            }
-                        }
-
-                        // 3-row TRIANGLE
-                        savedRowCount == 3 &&
-                                layoutShape == KeyShape.TRIANGLE -> {
-                            when (containerRowIndex) {
-                                0, 2 -> -(4.dp(this@MyKeyboardService))   // 1. i 3. red ulijevo
-                                1 -> 18.dp(this@MyKeyboardService)       // 2. red udesno
-                                else -> 0
-                            }
-                        }
-
-                        // 4-row CUBE / CIRCLE
-                        savedRowCount == 4 &&
-                                (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
-                            if (containerRowIndex % 2 == 0) {
-                                -(5.dp(this@MyKeyboardService))
-                            } else {
-                                10.dp(this@MyKeyboardService)
-                            }
-                        }
-
-                        // 3-row CUBE / CIRCLE
-                        savedRowCount == 3 &&
-                                (layoutShape == KeyShape.CUBE || layoutShape == KeyShape.CIRCLE) -> {
-                            if (containerRowIndex % 2 == 0) {
-                                -(5.dp(this@MyKeyboardService))
-                            } else {
-                                10.dp(this@MyKeyboardService)
-                            }
-                        }
-
+                    4 -> when {
+                        // rows 1 and 3 to the left, 2 and 4 to the right
+                        isTriangle -> if (containerRowIndex % 2 == 0) -(9.dp(this@MyKeyboardService)) else 20.dp(this@MyKeyboardService)
+                        isCubeOrCircle -> cubeCircleShift
                         else -> 0
                     }
-                } else {
-                    0
+
+                    3 -> when {
+                        isTriangle -> when (containerRowIndex) {
+                            0, 2 -> -(4.dp(this@MyKeyboardService))   // rows 1 and 3 to the left
+                            1 -> 18.dp(this@MyKeyboardService)       // row 2 to the right
+                            else -> 0
+                        }
+                        isCubeOrCircle -> cubeCircleShift
+                        else -> 0
+                    }
+
+                    else -> 0
                 }
 
                 val row = LinearLayout(this@MyKeyboardService).apply {
@@ -2058,9 +2009,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                                 0
                             } else {
                                 when (savedRowCount) {
-                                    3 -> 1.dp(this@MyKeyboardService)    // 3-row ostaje kakav je sada
-                                    4 -> -(12.dp(this@MyKeyboardService))   // 4-row stisni redove
-                                    5 -> -(12.dp(this@MyKeyboardService))   // 5-row još malo jače stisni
+                                    3 -> 1.dp(this@MyKeyboardService)    // 3-row stays as it is
+                                    4 -> -(12.dp(this@MyKeyboardService))   // 4-row: rows closer together
+                                    5 -> -(12.dp(this@MyKeyboardService))   // 5-row: a little closer still
                                     else -> 1.dp(this@MyKeyboardService)
                                 }
                             }
@@ -2278,7 +2229,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
             setTextColor(keyColors(label).second)
 
-            // centralne tipke nemaju split label i nemaju swipe-up alternate
+            // center keys have no split label and no swipe-up alternate
             useSplitLabels = false
             mainLabel = ""
             swipeUpLabel = null
@@ -2387,7 +2338,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             KeyShape.HEX_HALF_RIGHT -> {
                 when (savedRowCount) {
                     5 -> 9.dp(this)
-                    4 -> 4.dp(this) // manje preklapanja = redovi se više razmaknu
+                    4 -> 4.dp(this) // less overlap = rows further apart
                     else -> (keySize * 0.25f).toInt()
                 }
             }
@@ -2427,13 +2378,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             val savedRowCount = KeyboardPrefs.getRowCount(this)
 
             val baseLeftInset = when (savedRowCount) {
-                3 -> 18.dp(this)    // sva 3 reda desno od side buttona
+                3 -> 18.dp(this)    // all 3 rows right of the side button
                 4 -> 12.dp(this)
                 else -> 0
             }
 
             val middleRowExtraRight = when (savedRowCount) {
-                3 -> 9.dp(this)    // samo 2. red još mrvicu desno za centriranje
+                3 -> 9.dp(this)    // only row 2 a bit further right, for centering
                 else -> 0
             }
 
@@ -2444,17 +2395,16 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 if (rowIndex > 0) topMargin = -rowOverlap
 
                 leftMargin = when {
-                    // 3-row: 1. i 3. red ostaju honeycomb, ali svi idu malo desno
+                    // 3-row: rows 1 and 3 keep the honeycomb, but all move a little right
                     savedRowCount == 3 && rowIndex in setOf(0, 2) ->
                         -(halfStep / 2) + baseLeftInset
 
-                    // 3-row: 2. red ide desno + dodatno centriranje
+                    // 3-row: row 2 goes right + extra centering
                     savedRowCount == 3 ->
                         baseLeftInset + middleRowExtraRight
 
                     savedRowCount == 4 && rowIndex in setOf(0, 2) ->
                         -halfStep + baseLeftInset
-
                     savedRowCount == 4 ->
                         baseLeftInset
 
@@ -2492,7 +2442,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val halfStep = (keySize / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(this)
         val baseRightInset = when (savedRowCount) {
-            3 -> 14.dp(this)    // sva 3 desna reda lijevo od side buttona
+            3 -> 14.dp(this)    // all 3 right rows left of the side button
             else -> 0
         }
 
@@ -2514,18 +2464,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 translationX = rowShiftX.toFloat()
             }
 
-            val takeCount = when {
-                savedRowCount == 3 -> {
+            val takeCount = when (savedRowCount) {
+                3 -> {
                     when (rowIndex) {
                         0 -> 5
                         1 -> 6
                         2 -> 5
                         else -> keys.size
                     }
-                }
-
-                savedRowCount == 5 -> {
-                    if (isOddLandscapeRow(rowIndex)) 3 else 4
                 }
 
                 else -> {
@@ -2560,7 +2506,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 }
 
                 rightMargin = when {
-                    // 3-row: sva 3 reda lijevo, uz postojeći honeycomb pomak
+                    // 3-row: all 3 rows to the left, on top of the honeycomb shift
                     savedRowCount == 3 && isOddLandscapeRow(rowIndex) ->
                         halfStep + baseRightInset
 
@@ -2594,7 +2540,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             savedRowCount
         )
 
-        // Prikazujemo sve redove iz horizontal center editora
+        // Show every row of the Horizontal (center island) editor
         val centerRows = cfg.rows
 
         val keySize = when (savedRowCount) {
@@ -2651,7 +2597,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                if (container.childCount > 0) topMargin = rowGap
+                if (container.isNotEmpty()) topMargin = rowGap
             }
 
             container.addView(rowLayout, rowLp)
@@ -2911,7 +2857,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     longPressJob?.cancel()
                     if (label !in nonBindable) {
                         longPressJob = serviceScope.launch {
-                            delay(longPressTimeout)
+                            delay(longPressTimeout.milliseconds)
                             // Latin keyboard: Latin letters only; Cyrillic keyboard: Cyrillic only
                             val binds = LongPressPresets.visibleFor(
                                 KeyboardPrefs.getSelectedLongPressPreset(this@MyKeyboardService),
@@ -2934,13 +2880,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 MotionEvent.ACTION_MOVE -> {
                     val dx = e.rawX - startX
                     val dy = e.rawY - startY
-                    val absDx = kotlin.math.abs(dx)
-                    val absDy = kotlin.math.abs(dy)
+                    val absDx = abs(dx)
+                    val absDy = abs(dy)
 
                     // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
                     val horizontalSwipe = inputController.isHorizontalSwipeActive(v as TextView)
 
-                    // 123 swipe-up => emoji samo na 4/5 row alphabet layoutu
+                    // 123 swipe-up => emoji, only on the 4/5-row alphabet layout
                     if (!longPressTriggered &&
                         !handledBySwipeUp &&
                         !horizontalSwipe &&
@@ -2969,8 +2915,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                         dy < -swipeUpThreshold &&
                         absDy > absDx
                     ) {
-                        val kv = v as KeyView
-                        val swipeText = kv.swipeUpLabel
+                        val swipeText = v.swipeUpLabel
 
                         if (!swipeText.isNullOrBlank()) {
                             handledBySwipeUp = true
@@ -2996,10 +2941,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                             moveLpSelection(0, if (dy > 0) 1 else -1)
                             startX = e.rawX
                             startY = e.rawY
-                        } else if (lpRects.isNotEmpty()) {
+                        } else if (longPressCellBounds.isNotEmpty()) {
                             val rx = e.rawX.toInt()
                             val ry = e.rawY.toInt()
-                            val newIdx = lpRects.indexOfFirst { it.contains(rx, ry) }
+                            val newIdx = longPressCellBounds.indexOfFirst { it.contains(rx, ry) }
                             if (newIdx != -1 && newIdx != longPressPopupManager.getSelectedIndex()) {
                                 longPressPopupManager.setSelectedIndex(newIdx)
                             }
@@ -3009,7 +2954,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     // Skip swipe gestures when long press popup is active, and while both space
                     // keys are held (dual-space script/language picker) – that is no swipe
                     if (!longPressTriggered && !(leftSpaceHeld && rightSpaceHeld)) {
-                        inputController.handleTouch(v as TextView, e)
+                        inputController.handleTouch(v, e)
                     }
                     true
                 }
@@ -3180,11 +3125,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         startStep: Int,
         saturation: Float,
         brightness: Float
-    ): android.graphics.drawable.Drawable {
+    ): Drawable {
         val numColors = 7
 
-        return object : android.graphics.drawable.Drawable() {
-            private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+        return object : Drawable() {
+            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
             private fun buildColors(phaseOffset: Int): IntArray {
                 val colors = IntArray(numColors)
@@ -3196,7 +3141,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 return colors
             }
 
-            override fun draw(canvas: android.graphics.Canvas) {
+            override fun draw(canvas: Canvas) {
                 val bounds = bounds
                 val w = bounds.width().toFloat()
                 val h = bounds.height().toFloat()
@@ -3222,26 +3167,26 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
                 // First gradient (base layer)
                 val colors1 = buildColors(0)
-                paint.shader = android.graphics.RadialGradient(
+                paint.shader = RadialGradient(
                     cx1, cy1, radius, colors1, positions,
-                    android.graphics.Shader.TileMode.CLAMP
+                    Shader.TileMode.CLAMP
                 )
                 canvas.drawRect(bounds, paint)
 
                 // Second gradient (blend on top)
-                paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN)
+                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
                 val colors2 = buildColors(512)  // Phase offset for variety
-                paint.shader = android.graphics.RadialGradient(
+                paint.shader = RadialGradient(
                     cx2, cy2, radius, colors2, positions,
-                    android.graphics.Shader.TileMode.CLAMP
+                    Shader.TileMode.CLAMP
                 )
                 canvas.drawRect(bounds, paint)
 
                 // Third gradient (blend on top)
                 val colors3 = buildColors(1024)  // Another phase offset
-                paint.shader = android.graphics.RadialGradient(
+                paint.shader = RadialGradient(
                     cx3, cy3, radius, colors3, positions,
-                    android.graphics.Shader.TileMode.CLAMP
+                    Shader.TileMode.CLAMP
                 )
                 canvas.drawRect(bounds, paint)
 
@@ -3249,8 +3194,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
 
             override fun setAlpha(alpha: Int) { paint.alpha = alpha }
-            override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) { paint.colorFilter = colorFilter }
-            override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+            override fun setColorFilter(colorFilter: ColorFilter?) { paint.colorFilter = colorFilter }
+            @Suppress("OVERRIDE_DEPRECATION")
+            override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
         }
     }
 
@@ -3294,7 +3240,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             while (isActive) {
                 rgbStep = (rgbStep + 4) % 1536  // Move through rainbow
                 applyRadialRainbow(rgbStep, saturation, brightness)
-                delay(delayPerStep)
+                delay(delayPerStep.milliseconds)
             }
         }
     }
@@ -3347,7 +3293,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                     transitionStartTime = now
                 }
 
-                delay(frameInterval)
+                delay(frameInterval.milliseconds)
             }
         }
     }
@@ -3365,7 +3311,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         rootView.setBackgroundColor(bg)
         overlayLayer.setBackgroundColor(bg)
         keyboardContainer.setBackgroundColor(bg)
-        window?.window?.setBackgroundDrawable(ColorDrawable(bg))
+        window?.window?.setBackgroundDrawable(bg.toDrawable())
     }
 
     private fun startRgbAnimation() {

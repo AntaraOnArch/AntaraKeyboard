@@ -159,7 +159,7 @@ val defaultThreeRowKeyboardLayoutQwertz: KeyboardConfig = KeyboardConfig(
 
 /* =========================
    NUMERIC - 5 ROWS
-   bez ⇧ i ⌫ u glavnim redovima
+   no ⇧ and ⌫ in the main rows
    ========================= */
 
 val defaultNumericLayout: KeyboardConfig = KeyboardConfig(

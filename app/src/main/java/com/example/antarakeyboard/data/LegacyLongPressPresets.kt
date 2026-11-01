@@ -45,7 +45,7 @@ internal object LegacyLongPressPresets {
             "h" to listOf("х"),
             "c" to listOf("ц", "ч", "ћ"),
 
-            // Tipke koje postoje na latin layoutu, ali nisu dio srpske latinice
+            // Keys on the Latin layout that are not part of Serbian Latin
             "q" to listOf("љ"),
             "w" to listOf("њ"),
             "x" to listOf("џ"),
@@ -86,7 +86,7 @@ internal object LegacyLongPressPresets {
             "h" to listOf("х"),
             "c" to listOf("ц", "ч"),
 
-            // Dodatne tipke za bugarska slova bez čistog latin para
+            // Extra keys for Bulgarian letters without a clean Latin pair
             "q" to listOf("я"),
             "w" to listOf("ш", "щ"),
             "x" to listOf("х", "ь"),
@@ -129,7 +129,7 @@ internal object LegacyLongPressPresets {
             "h" to listOf("х"),
             "c" to listOf("ц", "ч"),
 
-            // Dodatne tipke za ruska slova bez čistog latin para
+            // Extra keys for Russian letters without a clean Latin pair
             "q" to listOf("я"),
             "w" to listOf("ш", "щ"),
             "x" to listOf("х", "ь"),
@@ -173,7 +173,7 @@ internal object LegacyLongPressPresets {
             "h" to listOf("х"),
             "c" to listOf("ц", "ч"),
 
-            // Dodatne tipke za ukrajinska slova bez čistog latin para
+            // Extra keys for Ukrainian letters without a clean Latin pair
             "q" to listOf("я"),
             "w" to listOf("ш", "щ"),
             "x" to listOf("х", "ь"),
@@ -220,7 +220,7 @@ internal object LegacyLongPressPresets {
             "h" to listOf("х"),
             "c" to listOf("ц", "ч"),
 
-            // Dodatne tipke za makedonska slova bez čistog latin para
+            // Extra keys for Macedonian letters without a clean Latin pair
             "q" to listOf("љ"),
             "w" to listOf("њ"),
             "x" to listOf("џ"),

@@ -656,7 +656,7 @@ object EmojiData {
     }
 
     private fun subdivisionFlag(tag: String): String = buildString {
-        // Crna zastava kao baza
+        // Black flag as the base
         appendCodePoint(0x1F3F4)
 
         tag.lowercase().forEach { letter ->
@@ -706,7 +706,7 @@ object EmojiData {
             listOf(
                 "🏁", // kockasta
                 "🚩", // trokutasta
-                "🎌", // prekrižene
+                "🎌", // crossed flags
                 "🏴", // crna
                 "🏳️", // bijela
                 "🏳️‍🌈",
@@ -716,7 +716,7 @@ object EmojiData {
                     flagCodes.map(::regionalFlag) +
                     listOf(
                         subdivisionFlag("gbeng"), // Engleska
-                        subdivisionFlag("gbsct"), // Škotska
+                        subdivisionFlag("gbsct"), // Scotland
                         subdivisionFlag("gbwls")  // Wales
                     )
             ).distinct()
@@ -754,8 +754,8 @@ object EmojiData {
     )
 
     /*
-     * Trenutačni emoji popup koristi EmojiData.basic,
-     * pa će se sve grupe prikazati jedna iza druge.
+     * The emoji popup uses EmojiData.basic, so all groups are shown one after
+     * another.
      */
     val basic: List<String> = (
             smileys +

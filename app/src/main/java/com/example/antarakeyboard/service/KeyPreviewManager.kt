@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -91,7 +90,7 @@ class KeyPreviewManager(
         ).apply {
             isOutsideTouchable = false
             isFocusable = false
-            // Gornji red: preview mora moći izaći iznad ruba tipkovnice
+            // Top row: the preview must be able to extend above the keyboard's edge
             isClippingEnabled = false
             elevation = 8.dp(context).toFloat()
         }

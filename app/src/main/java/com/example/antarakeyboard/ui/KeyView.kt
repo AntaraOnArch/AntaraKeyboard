@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RectF
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -260,8 +259,8 @@ class KeyView @JvmOverloads constructor(
         var w = measuredWidth
         var h = measuredHeight
 
-        // HEX_TALL mora smjeti ostati viši od širine.
-        // Inače LayoutParams height iz MyKeyboardService nema nikakav efekt.
+        // HEX_TALL must be allowed to stay taller than wide, otherwise the LayoutParams
+        // height from MyKeyboardService has no effect.
         if (forceSquare && shape != KeyShape.HEX_TALL) {
             val s = min(w, h)
             w = s
@@ -530,7 +529,7 @@ class KeyView @JvmOverloads constructor(
         val cx = l + w * 0.5f
         val cy = t + h * 0.5f
 
-        // isti hex kut kao buildHex, samo rastegnut po visini
+        // same hex angle as buildHex, only stretched vertically
         val rx = w * 0.48f
         val ry = h * 0.48f
 
@@ -590,8 +589,8 @@ class KeyView @JvmOverloads constructor(
         val centerY = (t + b) * 0.5f
 
         /*
-         * Trokut koristi punu širinu, ali samo oko 46% visine.
-         * Tako dobivamo široku bazu i tupi kut na vrhu.
+         * The triangle uses the full width but only about 46 % of the height,
+         * giving a wide base and an obtuse angle at the tip.
          */
         val triangleHeight = min(
             height,
@@ -602,12 +601,12 @@ class KeyView @JvmOverloads constructor(
         val bottomY = centerY + triangleHeight * 0.7f
 
         if (!flipped) {
-            // vrh gore, široka baza dolje
+            // tip up, wide base down
             p.moveTo(centerX, topY)
             p.lineTo(l, bottomY)
             p.lineTo(r, bottomY)
         } else {
-            // široka baza gore, vrh dolje
+            // wide base up, tip down
             p.moveTo(l, topY)
             p.lineTo(r, topY)
             p.lineTo(centerX, bottomY)

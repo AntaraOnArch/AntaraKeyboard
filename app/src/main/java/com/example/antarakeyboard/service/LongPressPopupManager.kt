@@ -88,7 +88,7 @@ class LongPressPopupManager(
                 cornerRadius = corner
                 setColor(colors.popupBg)
             }
-            // Obrub u foregroundu da ostane i kad RGB mijenja pozadinu
+            // Border in the foreground so it stays while RGB changes the background
             foreground = GradientDrawable().apply {
                 cornerRadius = corner
                 setColor(0)
@@ -175,7 +175,7 @@ class LongPressPopupManager(
         ).apply {
             isOutsideTouchable = false
             isFocusable = false
-            // Gornji red: popup mora moći izaći iznad ruba tipkovnice
+            // Top row: the popup must be able to extend above the keyboard's edge
             isClippingEnabled = false
             elevation = 10.dp(context).toFloat()
             setOnDismissListener {
@@ -224,7 +224,7 @@ class LongPressPopupManager(
             maxX
         )
 
-        // rootLoc je screen pozicija overlaya — dopušta Y iznad tipkovnice, ali ne iznad ekrana
+        // rootLoc is the overlay's screen position: Y may go above the keyboard, but not above the screen
         val y = desiredY.coerceIn(
             minPopupOffset - rootLoc[1],
             maxY

@@ -54,7 +54,7 @@ object EdgeSlotsStorage {
     fun defaultSlots(rowCount: Int): List<EdgeSlot> {
         return when (normalizeRowCount(rowCount)) {
             3 -> listOf(
-                // preview-safe defaults dok 3-row još nije gotov
+                // preview-safe defaults while 3-row is not finished yet
                 EdgeSlot(0, EdgePos.Side.LEFT, EdgeActionType.BACKSPACE),
                 EdgeSlot(1, EdgePos.Side.RIGHT, EdgeActionType.SHIFT),
                 EdgeSlot(2, EdgePos.Side.LEFT, EdgeActionType.NONE),

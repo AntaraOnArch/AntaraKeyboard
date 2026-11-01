@@ -18,7 +18,7 @@
         android:theme="@style/Theme.AntaraKeyboard.Base"
         tools:targetApi="31">
 
-        <!-- IME (TIPKOVNICA) SERVICE -->
+        <!-- IME (KEYBOARD) SERVICE -->
         <service
             android:name="com.example.antarakeyboard.service.MyKeyboardService"
             android:enabled="true"

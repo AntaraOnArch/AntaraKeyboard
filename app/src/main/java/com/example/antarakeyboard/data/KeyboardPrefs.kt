@@ -2,7 +2,6 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
@@ -24,17 +23,17 @@ object KeyboardPrefs {
     private const val KEY_LONG_PRESS_DEFAULTS_LANGUAGE = "long_press_defaults_language"
     private const val KEY_LONG_PRESS_DEFAULTS_VERSION = "long_press_defaults_version"
 
-    // NOVO: Svaki row count ima svoj alphabet layout ključ
+    // Each row count has its own alphabet layout key
     private const val KEY_ALPHABET_LAYOUT_3 = "alphabet_layout_3"
     private const val KEY_ALPHABET_LAYOUT_4 = "alphabet_layout_4"
     private const val KEY_ALPHABET_LAYOUT_5 = "alphabet_layout_5"
 
-    // NOVO: Svaki row count ima svoj numeric layout ključ
+    // Each row count has its own numeric layout key
     private const val KEY_NUMERIC_LAYOUT_3 = "numeric_layout_3"
     private const val KEY_NUMERIC_LAYOUT_4 = "numeric_layout_4"
     private const val KEY_NUMERIC_LAYOUT_5 = "numeric_layout_5"
 
-    // Horizontal center layout ključevi
+    // Horizontal center layout keys
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_3 = "horizontal_center_layout_3"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_4 = "horizontal_center_layout_4"
     private const val KEY_HORIZONTAL_CENTER_LAYOUT_5 = "horizontal_center_layout_5"
@@ -485,18 +484,10 @@ object KeyboardPrefs {
             .apply()
     }
 
-    /* ───────── PROSLJEĐIVANJE BINDOVA ───────── */
-    // NOVO: Kopiraj bindove iz jednog layouta u drugi kad mijenjaš broj redova
-
-    /**
-     * Kopira long press bindove iz izvornog layouta u ciljni layout.
-     * Mapira bindove prema labelu tipke.
-     */
     /* ───────── GLOBAL BINDS INTEGRATION ───────── */
 
     /**
-     * Učitaj layout i automatski apliciraj globalne bindove.
-     * Ovo se koristi za alphabet layout.
+     * Loads the alphabet layout with the global long-press binds applied.
      */
     fun loadAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadAlphabetLayoutForRowCount(context, rowCount)
@@ -506,8 +497,7 @@ object KeyboardPrefs {
     }
 
     /**
-     * Učitaj layout i automatski apliciraj globalne bindove.
-     * Ovo se koristi za numeric layout.
+     * Loads the numeric layout with the global long-press binds applied.
      */
     fun loadNumericLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadNumericLayoutForRowCount(context, rowCount)
@@ -517,21 +507,16 @@ object KeyboardPrefs {
     }
 
     /**
-     * Spremi layout i izvuci bindove u globalni storage.
-     * Ovo se koristi za alphabet layout.
+     * Saves the alphabet layout and merges its binds into the global binds.
      */
     fun saveAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
-        // Prvo spremi normalno
         saveAlphabetLayoutForRowCount(context, rowCount, layout)
-        // Onda izvuci i spremi globalne bindove
         GlobalLongPressStorage.extractAndSaveAlphabetBinds(context, layout)
     }
 
     /**
-     * Spremi layout i izvuci bindove u globalni storage.
-     * Ovo se koristi za numeric layout.
+     * Saves the numeric layout and merges its binds into the global binds.
      */
-
     fun saveNumericLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
         saveNumericLayoutForRowCount(context, rowCount, layout)
         GlobalLongPressStorage.extractAndSaveNumericBinds(context, layout)

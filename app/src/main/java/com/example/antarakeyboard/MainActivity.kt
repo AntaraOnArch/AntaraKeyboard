@@ -630,7 +630,7 @@ class MainActivity : AppCompatActivity() {
     private fun performReset(colors: Boolean, layout: Boolean) {
         val currentRowCount = KeyboardPrefs.getRowCount(this)
 
-        // Spremi trenutni layout (i boje) kao backup prije reseta
+        // Save the current layout (and colors) as a backup before the reset
         val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
         SavedLayoutStorage.saveCurrentLayout(this, getString(R.string.backup_name, timestamp))
 
@@ -639,7 +639,7 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, currentRowCount, defaultHorizontalCenterLayout)
 
-            // Resetiraj glavne layoute na default, ALI zadrži globalne bindove
+            // Main layouts back to default, but KEEP the global binds
             KeyboardPrefs.clearAlphabetLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.clearNumericLayoutForRowCount(this, currentRowCount)
 
@@ -649,7 +649,7 @@ class MainActivity : AppCompatActivity() {
             KeyboardPrefs.saveAlphabetLayoutForRowCount(this, currentRowCount, alphabetWithBinds)
             KeyboardPrefs.saveNumericLayoutForRowCount(this, currentRowCount, numericWithBinds)
 
-            // Resetiraj side buttons za trenutni broj redova
+            // Side buttons back to default for the current row count
             resetSideButtonsForRowCount(currentRowCount)
 
             // Key height and row spacing sliders back to default
@@ -661,13 +661,13 @@ class MainActivity : AppCompatActivity() {
         if (colors) {
             val isDarkTheme = PrefsManager.isDarkMode(this)
 
-            // Spremi trenutne boje kao custom temu prije reseta
+            // Save the current colors as the custom theme before the reset
             saveCurrentColorsAsCustomTheme()
 
-            // Resetiraj SVE boje na default teme
+            // ALL colors back to the theme defaults
             resetAllColorsToThemeDefault(isDarkTheme)
 
-            // Očisti custom theme flag da tipkovnica koristi default boje, i ugasi RGB
+            // Clear the custom theme flag so the keyboard uses the default colors, and turn RGB off
             PrefsManager.setCustomTheme(this, false)
             KeyboardPrefs.setRgbSmoothEnabled(this, false)
             KeyboardPrefs.setRgbWildEnabled(this, false)
@@ -713,7 +713,7 @@ class MainActivity : AppCompatActivity() {
         // 1. Space follows the theme again (its own colors stay stored for later)
         KeyboardPrefs.setSpaceUseTheme(this, true)
 
-        // opcionalno: počisti eventualni stari individual zapis za " "
+        // Clear a possible old per-key entry for " "
         KeyboardPrefs.clearKeyIndividualColors(this, " ")
 
         // 2. Enter colors
@@ -737,7 +737,7 @@ class MainActivity : AppCompatActivity() {
         // 5. Background color
         KeyboardPrefs.setBackgroundColor(this, keyboardBg, true)
 
-        // 6. Očisti individualne keys boje
+        // 6. Clear the per-key colors
         val rowCount = KeyboardPrefs.getRowCount(this)
         val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount)
 
@@ -1777,10 +1777,10 @@ class MainActivity : AppCompatActivity() {
         // Global binds are always current (every editor saves them); extracting them from the
         // stored layout here would bring back an old snapshot, e.g. a previous language's letters
 
-        // Postavi novi broj redova
+        // Set the new row count
         KeyboardPrefs.setRowCount(this, rowCount)
 
-        // Učitaj default layoute za novi broj redova i apliciraj globalne bindove
+        // Load the default layouts for the new row count with the global binds applied
         val alphabetWithBinds = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rowCount)
         val numericWithBinds = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
 
@@ -1817,7 +1817,7 @@ class MainActivity : AppCompatActivity() {
 
         autosaveDirtySection = null
 
-        // Učitaj s globalnim bindovima; svaka promjena se odmah sprema
+        // Load with the global binds; every change is saved immediately
         val alphabetBinder = LongPressEditorBinder(
             context = this,
             initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount),
@@ -2546,7 +2546,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(16.dp(this), 16.dp(this), 16.dp(this), 16.dp(this))
         }
 
-        // Preview bar (definiraj PRIJE updatePreview da bude dostupan)
+        // Preview bar (defined BEFORE updatePreview so it is available there)
         val previewBar = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -2573,7 +2573,7 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
 
-        // DEFINIRAJ updatePreview OVDJE, prije colorWheel
+        // Define updatePreview HERE, before colorWheel
         lateinit var updatePreviewRef: () -> Unit
 
         val updatePreview: () -> Unit = {
@@ -2594,7 +2594,7 @@ class MainActivity : AppCompatActivity() {
             onPicked(color)
         }
 
-        // Sada možeš koristiti updatePreview u colorWheel
+        // Now updatePreview can be used in colorWheel
         val colorWheel = ColorWheelView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
