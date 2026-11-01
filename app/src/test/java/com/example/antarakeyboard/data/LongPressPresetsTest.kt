@@ -112,7 +112,47 @@ class LongPressPresetsTest {
     fun greekDefaultsAreAccentedVowels() {
         val greek = LongPressPresets.defaultsFor(LongPressPresets.PRESET_GREEK, "el")
         assertEquals(listOf("ά"), greek["a"])
-        assertEquals(listOf("Ί", "Ϊ"), greek["I"])
+        assertEquals(listOf("Ί", "Ϊ", "ΐ"), greek["I"])
         assertTrue("ΐ" in LongPressPresets.allGreekLetters())
+    }
+
+    @Test
+    fun greekLettersWithoutUppercaseStayOnShiftedKey() {
+        val greek = LongPressPresets.defaultsFor(LongPressPresets.PRESET_GREEK, "el")
+        assertEquals(listOf("ί", "ϊ", "ΐ"), greek["i"])
+        assertEquals(listOf("Ί", "Ϊ", "ΐ"), greek["I"])
+    }
+
+    @Test
+    fun everyTranslatedLatinLanguageHasItsOwnLetters() {
+        val common = LongPressPresets.latinFor("en")
+        AppLanguages.TAGS
+            .filter { it != "en" && AppLanguages.scriptPresetFor(it) == LongPressPresets.PRESET_LATIN }
+            .forEach { tag -> assertTrue(tag, LongPressPresets.latinFor(tag) != common) }
+    }
+
+    @Test
+    fun czechAndCroatianExamples() {
+        assertEquals(listOf("š"), LongPressPresets.defaultsFor(LongPressPresets.PRESET_LATIN, "hr")["s"])
+        assertEquals(listOf("á"), LongPressPresets.defaultsFor(LongPressPresets.PRESET_LATIN, "cs")["a"])
+    }
+
+    /** Keys + long press reach the whole alphabet of every Cyrillic and the Greek script. */
+    @Test
+    fun scriptKeyboardsReachTheirWholeAlphabet() {
+        val alphabets = mapOf(
+            LongPressPresets.PRESET_SERBIAN_CYRILLIC to "абвгдђежзијклљмнњопрстћуфхцчџш",
+            LongPressPresets.PRESET_MACEDONIAN_CYRILLIC to "абвгдѓежзѕијклљмнњопрстќуфхцчџш",
+            LongPressPresets.PRESET_RUSSIAN_CYRILLIC to "абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+            LongPressPresets.PRESET_UKRAINIAN_CYRILLIC to "абвгґдеєжзиіїйклмнопрстуфхцчшщьюя",
+            LongPressPresets.PRESET_BULGARIAN_CYRILLIC to "абвгдежзийклмнопрстуфхцчшщъьюя",
+            LongPressPresets.PRESET_BELARUSIAN_CYRILLIC to "абвгдеёжзійклмнопрстуўфхцчшыьэюя",
+            LongPressPresets.PRESET_GREEK to "αβγδεζηθικλμνξοπρσςτυφχψωάέήίόύώϊϋΐΰ"
+        )
+        alphabets.forEach { (preset, alphabet) ->
+            val reachable = ('a'..'z').map { ScriptMapper.map(preset, it.toString()) }.toSet() +
+                LongPressPresets.defaultsFor(preset, "en").values.flatten()
+            alphabet.forEach { letter -> assertTrue("$preset $letter", letter.toString() in reachable) }
+        }
     }
 }

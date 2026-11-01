@@ -8,7 +8,7 @@ object SuggestionDictionaries {
     /**
      * Dictionary for the keyboard script and the app/device language.
      * Cyrillic scripts type Cyrillic text, so they pick the matching Cyrillic dictionary
-     * (none bundled for Bulgarian, Ukrainian and Macedonian → no suggestions).
+     * (none bundled for Bulgarian, Ukrainian, Macedonian and Belarusian → no suggestions).
      * The Latin keyboard follows the language; unsupported languages fall back to English.
      */
     fun forKeyboard(scriptPreset: String, languageTag: String): String? = when (scriptPreset) {
@@ -17,7 +17,8 @@ object SuggestionDictionaries {
         LongPressPresets.PRESET_GREEK -> "el"
         LongPressPresets.PRESET_BULGARIAN_CYRILLIC,
         LongPressPresets.PRESET_UKRAINIAN_CYRILLIC,
-        LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> null
+        LongPressPresets.PRESET_MACEDONIAN_CYRILLIC,
+        LongPressPresets.PRESET_BELARUSIAN_CYRILLIC -> null
         else -> when (languageTag.substringBefore('-').substringBefore('_').lowercase()) {
             "hr" -> "hr"
             "sr" -> "sr_latn"

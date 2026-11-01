@@ -1772,15 +1772,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveDefaultsForRowCount(rowCount: Int) {
-        val currentRowCount = KeyboardPrefs.getRowCount(this)
-
-        // Spremi trenutne layoute s globalnim bindovima (ako već postoje)
-        if (currentRowCount != 0) {
-            val currentAlphabet = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, currentRowCount)
-            val currentNumeric = KeyboardPrefs.loadNumericLayoutForRowCount(this, currentRowCount)
-            GlobalLongPressStorage.extractAndSaveAlphabetBinds(this, currentAlphabet)
-            GlobalLongPressStorage.extractAndSaveNumericBinds(this, currentNumeric)
-        }
+        // Global binds are always current (every editor saves them); extracting them from the
+        // stored layout here would bring back an old snapshot, e.g. a previous language's letters
 
         // Postavi novi broj redova
         KeyboardPrefs.setRowCount(this, rowCount)

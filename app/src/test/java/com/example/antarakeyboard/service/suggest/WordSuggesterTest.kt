@@ -85,6 +85,7 @@ class WordSuggesterTest {
         assertEquals("sr_cyrl", SuggestionDictionaries.forKeyboard(LongPressPresets.PRESET_SERBIAN_CYRILLIC, "en"))
         assertEquals("ru", SuggestionDictionaries.forKeyboard(LongPressPresets.PRESET_RUSSIAN_CYRILLIC, "hr"))
         assertNull(SuggestionDictionaries.forKeyboard(LongPressPresets.PRESET_BULGARIAN_CYRILLIC, "bg"))
+        assertNull(SuggestionDictionaries.forKeyboard(LongPressPresets.PRESET_BELARUSIAN_CYRILLIC, "be"))
     }
 
     @Test

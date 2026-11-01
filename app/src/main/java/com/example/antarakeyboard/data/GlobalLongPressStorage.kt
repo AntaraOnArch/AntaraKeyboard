@@ -113,51 +113,36 @@ object GlobalLongPressStorage {
         context: Context,
         layout: com.example.antarakeyboard.model.KeyboardConfig
     ): com.example.antarakeyboard.model.KeyboardConfig {
-        val globalBinds = loadAlphabetBinds(context)
-        return applyBindsToLayout(layout, globalBinds)
+        if (!prefs(context).contains(KEY_ALPHABET_BINDS)) return layout
+        return applyBindsToLayout(layout, loadAlphabetBinds(context))
     }
 
     fun applyNumericBindsToLayout(
         context: Context,
         layout: com.example.antarakeyboard.model.KeyboardConfig
     ): com.example.antarakeyboard.model.KeyboardConfig {
-        val globalBinds = loadNumericBinds(context)
-        return applyBindsToLayout(layout, globalBinds)
+        if (!prefs(context).contains(KEY_NUMERIC_BINDS)) return layout
+        return applyBindsToLayout(layout, loadNumericBinds(context))
     }
 
+    /**
+     * The global binds are the only truth: a key missing from them has no binds, even if the
+     * stored layout still carries an old snapshot (e.g. letters of a previously used language).
+     */
     private fun applyBindsToLayout(
         layout: com.example.antarakeyboard.model.KeyboardConfig,
         binds: Map<String, List<String>>
     ): com.example.antarakeyboard.model.KeyboardConfig {
-        if (binds.isEmpty()) return layout
+        fun withBinds(key: com.example.antarakeyboard.model.KeyConfig) =
+            if (key.label.isBlank()) key
+            else key.copy(longPressBindings = binds[key.label].orEmpty().toMutableList())
 
         return layout.copy(
             rows = layout.rows.map { row ->
-                row.copy(keys = row.keys.map { key ->
-                    val globalBind = binds[key.label]
-                    if (globalBind != null && key.label.isNotBlank()) {
-                        key.copy(longPressBindings = globalBind.toMutableList())
-                    } else {
-                        key
-                    }
-                }.toMutableList())
+                row.copy(keys = row.keys.map(::withBinds).toMutableList())
             }.toMutableList(),
-            specialLeft = layout.specialLeft.map { key ->
-                val globalBind = binds[key.label]
-                if (globalBind != null && key.label.isNotBlank()) {
-                    key.copy(longPressBindings = globalBind.toMutableList())
-                } else {
-                    key
-                }
-            }.toMutableList(),
-            specialRight = layout.specialRight.map { key ->
-                val globalBind = binds[key.label]
-                if (globalBind != null && key.label.isNotBlank()) {
-                    key.copy(longPressBindings = globalBind.toMutableList())
-                } else {
-                    key
-                }
-            }.toMutableList()
+            specialLeft = layout.specialLeft.map(::withBinds).toMutableList(),
+            specialRight = layout.specialRight.map(::withBinds).toMutableList()
         )
     }
 }

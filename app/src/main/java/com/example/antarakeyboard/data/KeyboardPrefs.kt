@@ -20,7 +20,7 @@ object KeyboardPrefs {
 
     private const val KEY_SHAPE = "key_shape"
     // 5: per-language Latin letters, Cyrillic scripts bind only their special letters
-    private const val LONG_PRESS_DEFAULTS_VERSION = 5
+    private const val LONG_PRESS_DEFAULTS_VERSION = 6
     private const val KEY_LONG_PRESS_DEFAULTS_LANGUAGE = "long_press_defaults_language"
     private const val KEY_LONG_PRESS_DEFAULTS_VERSION = "long_press_defaults_version"
 
@@ -571,8 +571,9 @@ object KeyboardPrefs {
 
     /**
      * Keeps the default long-press letters in sync (called whenever the keyboard opens):
-     * - first run / older defaults version: old defaults are removed, the new ones added;
-     * - app/device language changed: the Latin keyboard gets the new language's letters.
+     * - first run / older defaults version: old defaults are removed, the new ones added
+     *   (v6: fuller per-language lists, own Belarusian script);
+     * - app/device language changed: the keyboard gets that language's script and letters.
      * User-added bindings are always kept.
      */
     fun ensureDefaultLongPress(context: Context) {
@@ -582,19 +583,14 @@ object KeyboardPrefs {
         val storedLanguage = sp.getString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, null)
         val version = sp.getInt(KEY_LONG_PRESS_DEFAULTS_VERSION, 0)
 
-        // A changed language (e.g. in Android settings) also brings its keyboard script
-        val newPreset = if (version >= LONG_PRESS_DEFAULTS_VERSION && storedLanguage != language) {
-            AppLanguages.scriptPresetFor(language)
-        } else {
-            preset
-        }
-        val oldDefaults: Map<String, Collection<String>> = when {
-            version < LONG_PRESS_DEFAULTS_VERSION ->
-                LongPressPresets.withUppercaseSets(LegacyLongPressPresets.allDefaults())
-            storedLanguage != language ->
-                LongPressPresets.defaultsFor(preset, storedLanguage ?: language)
-            else -> return
-        }
+        if (version >= LONG_PRESS_DEFAULTS_VERSION && storedLanguage == language) return
+
+        // Before v5 the script was picked separately and stays; since then it follows the
+        // language, so a changed language (e.g. in Android settings) also brings its script
+        val newPreset = if (version < 5) preset else AppLanguages.scriptPresetFor(language)
+        val oldDefaults: Map<String, Collection<String>> =
+            if (version < 5) LongPressPresets.withUppercaseSets(LegacyLongPressPresets.allDefaults())
+            else LongPressPresets.defaultsFor(preset, storedLanguage ?: language)
         val newDefaults = LongPressPresets.defaultsFor(newPreset, language)
 
         GlobalLongPressStorage.saveAlphabetBinds(

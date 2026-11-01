@@ -12,7 +12,8 @@ import java.util.Locale
  *   (Serbian c → ч ћ, d → ђ џ, …). Plain letters are not bound: the key already types them
  *   ([ScriptMapper]).
  *
- * Uppercase keys get the uppercase letters. User-added bindings are kept separately by
+ * The lists hold every letter of the language that the plain keys don't type, so each language
+ * reaches its whole alphabet. Uppercase keys get the uppercase letters. User-added bindings are kept separately by
  * [KeyboardPrefs.applyLongPressPreset] when the defaults change.
  */
 object LongPressPresets {
@@ -24,6 +25,7 @@ object LongPressPresets {
     const val PRESET_RUSSIAN_CYRILLIC = "ru_cyrl"
     const val PRESET_UKRAINIAN_CYRILLIC = "uk_cyrl"
     const val PRESET_MACEDONIAN_CYRILLIC = "mk_cyrl"
+    const val PRESET_BELARUSIAN_CYRILLIC = "be_cyrl"
     const val PRESET_GREEK = "el"
 
     /**
@@ -38,6 +40,7 @@ object LongPressPresets {
                 PRESET_RUSSIAN_CYRILLIC -> RUSSIAN_CYRILLIC
                 PRESET_UKRAINIAN_CYRILLIC -> UKRAINIAN_CYRILLIC
                 PRESET_MACEDONIAN_CYRILLIC -> MACEDONIAN_CYRILLIC
+                PRESET_BELARUSIAN_CYRILLIC -> BELARUSIAN_CYRILLIC
                 PRESET_GREEK -> GREEK
                 else -> latinFor(languageTag)
             }
@@ -75,7 +78,7 @@ object LongPressPresets {
 
     fun isCyrillicPreset(presetId: String): Boolean = presetId in setOf(
         PRESET_SERBIAN_CYRILLIC, PRESET_BULGARIAN_CYRILLIC, PRESET_RUSSIAN_CYRILLIC,
-        PRESET_UKRAINIAN_CYRILLIC, PRESET_MACEDONIAN_CYRILLIC
+        PRESET_UKRAINIAN_CYRILLIC, PRESET_MACEDONIAN_CYRILLIC, PRESET_BELARUSIAN_CYRILLIC
     )
 
     /** Unicode script the keyboard types with [presetId]. */
@@ -130,10 +133,14 @@ object LongPressPresets {
         val result = mutableMapOf<String, List<String>>()
         source.forEach { (key, values) ->
             result[key] = values
-            result[key.uppercase(Locale.ROOT)] = values.map { it.uppercase(Locale.ROOT) }
+            result[key.uppercase(Locale.ROOT)] = values.map(::upperLetter)
         }
         return result
     }
+
+    /** Uppercase of a letter; ΐ ΰ have no single-letter uppercase and stay as they are. */
+    private fun upperLetter(letter: String): String =
+        letter.uppercase(Locale.ROOT).takeIf { it.length == letter.length } ?: letter
 
     /* ───────── LATIN, PER LANGUAGE ───────── */
 
@@ -164,7 +171,7 @@ object LongPressPresets {
         ),
         "ca" to mapOf(
             "a" to listOf("à"), "c" to listOf("ç"), "e" to listOf("è", "é"), "i" to listOf("í", "ï"),
-            "o" to listOf("ò", "ó"), "u" to listOf("ú", "ü")
+            "l" to listOf("l·l"), "o" to listOf("ò", "ó"), "u" to listOf("ú", "ü")
         ),
         "pl" to mapOf(
             "a" to listOf("ą"), "c" to listOf("ć"), "e" to listOf("ę"), "l" to listOf("ł"),
@@ -186,12 +193,15 @@ object LongPressPresets {
             "o" to listOf("ó", "ö", "ő"), "u" to listOf("ú", "ü", "ű")
         ),
         "ro" to mapOf("a" to listOf("ă", "â"), "i" to listOf("î"), "s" to listOf("ș"), "t" to listOf("ț")),
-        "nl" to mapOf("e" to listOf("é", "ë"), "i" to listOf("ï"), "o" to listOf("ö")),
-        "sv" to mapOf("a" to listOf("å", "ä"), "o" to listOf("ö")),
-        "fi" to mapOf("a" to listOf("ä", "å"), "o" to listOf("ö")),
-        "da" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
-        "nb" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
-        "no" to mapOf("a" to listOf("å", "æ"), "o" to listOf("ø")),
+        "nl" to mapOf(
+            "a" to listOf("á"), "e" to listOf("é", "ë", "è", "ê"), "i" to listOf("ï", "í"),
+            "o" to listOf("ó", "ö"), "u" to listOf("ú", "ü")
+        ),
+        "sv" to mapOf("a" to listOf("å", "ä"), "e" to listOf("é"), "o" to listOf("ö")),
+        "fi" to mapOf("a" to listOf("ä", "å"), "o" to listOf("ö"), "s" to listOf("š"), "z" to listOf("ž")),
+        "da" to mapOf("a" to listOf("å", "æ"), "e" to listOf("é"), "o" to listOf("ø")),
+        "nb" to mapOf("a" to listOf("å", "æ"), "e" to listOf("é"), "o" to listOf("ø")),
+        "no" to mapOf("a" to listOf("å", "æ"), "e" to listOf("é"), "o" to listOf("ø")),
         "is" to mapOf(
             "a" to listOf("á", "æ"), "d" to listOf("ð"), "e" to listOf("é"), "i" to listOf("í"),
             "o" to listOf("ó", "ö"), "t" to listOf("þ"), "u" to listOf("ú"), "y" to listOf("ý")
@@ -259,6 +269,12 @@ object LongPressPresets {
         "i" to listOf("ї"), "s" to listOf("ш", "щ"), "u" to listOf("ю"), "z" to listOf("ж")
     )
 
+    /** Belarusian: і is on the i key and ў, ы, ш, ь, я have keys or binds; no щ, ъ, и. */
+    private val BELARUSIAN_CYRILLIC = mapOf(
+        "a" to listOf("я"), "c" to listOf("ч"), "e" to listOf("ё", "э"),
+        "u" to listOf("ў", "ю"), "z" to listOf("ж"), "g" to listOf("ґ")
+    )
+
     private val BULGARIAN_CYRILLIC = mapOf(
         "a" to listOf("я"), "c" to listOf("ч"), "s" to listOf("ш", "щ"), "u" to listOf("ю"),
         "z" to listOf("ж"), "y" to listOf("ь")
@@ -268,7 +284,7 @@ object LongPressPresets {
 
     /** Accented vowels (tonos, dialytika) on their vowel key; ς has its own key (w). */
     private val GREEK = mapOf(
-        "a" to listOf("ά"), "e" to listOf("έ"), "h" to listOf("ή"), "i" to listOf("ί", "ϊ"),
-        "o" to listOf("ό"), "y" to listOf("ύ", "ϋ"), "v" to listOf("ώ")
+        "a" to listOf("ά"), "e" to listOf("έ"), "h" to listOf("ή"), "i" to listOf("ί", "ϊ", "ΐ"),
+        "o" to listOf("ό"), "y" to listOf("ύ", "ϋ", "ΰ"), "v" to listOf("ώ")
     )
 }

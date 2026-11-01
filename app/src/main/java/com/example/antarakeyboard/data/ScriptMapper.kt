@@ -163,6 +163,9 @@ object ScriptMapper {
         "y" to "ы"
     )
 
+    /** Russian layout with the Belarusian і on i (Belarusian has no и). */
+    private val belarusianCyrillicDirectMap = russianCyrillicDirectMap + ("i" to "і")
+
     /** Standard Greek layout: u → θ, w → ς, q → ; (the Greek question mark). */
     private val greekDirectMap = mapOf(
         "a" to "α",
@@ -200,6 +203,7 @@ object ScriptMapper {
         LongPressPresets.PRESET_RUSSIAN_CYRILLIC -> russianCyrillicDirectMap
         LongPressPresets.PRESET_UKRAINIAN_CYRILLIC -> ukrainianCyrillicDirectMap
         LongPressPresets.PRESET_MACEDONIAN_CYRILLIC -> macedonianCyrillicDirectMap
+        LongPressPresets.PRESET_BELARUSIAN_CYRILLIC -> belarusianCyrillicDirectMap
         LongPressPresets.PRESET_GREEK -> greekDirectMap
         else -> null
     }

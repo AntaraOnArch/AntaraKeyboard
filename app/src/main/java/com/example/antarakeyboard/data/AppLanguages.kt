@@ -15,15 +15,15 @@ object AppLanguages {
     )
 
     /**
-     * Keyboard script for a language: Cyrillic languages type their Cyrillic (Belarusian uses the
-     * closest one, Russian), Greek types Greek; Serbian Latin and every other language type Latin.
+     * Keyboard script for a language: Cyrillic languages type their own Cyrillic, Greek types Greek; Serbian Latin and every other language type Latin.
      */
     fun scriptPresetFor(languageTag: String): String {
         val locale = Locale.forLanguageTag(languageTag)
         return when (locale.language) {
             "sr" -> if (locale.script == "Latn") LongPressPresets.PRESET_LATIN else LongPressPresets.PRESET_SERBIAN_CYRILLIC
             "mk" -> LongPressPresets.PRESET_MACEDONIAN_CYRILLIC
-            "ru", "be" -> LongPressPresets.PRESET_RUSSIAN_CYRILLIC
+            "ru" -> LongPressPresets.PRESET_RUSSIAN_CYRILLIC
+            "be" -> LongPressPresets.PRESET_BELARUSIAN_CYRILLIC
             "uk" -> LongPressPresets.PRESET_UKRAINIAN_CYRILLIC
             "bg" -> LongPressPresets.PRESET_BULGARIAN_CYRILLIC
             "el" -> LongPressPresets.PRESET_GREEK
