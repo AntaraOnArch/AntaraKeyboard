@@ -41,7 +41,6 @@ import com.example.antarakeyboard.ui.KeyView
 import com.example.antarakeyboard.ui.defaultKeyboardLayout
 import java.util.Locale
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
@@ -115,7 +114,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpacePickerWasShown = false
 
     private companion object {
-        const val OVERLAP_RATIO = 0.18f
         const val DUAL_SPACE_HOLD_MS = 4000L
     }
 
@@ -773,89 +771,21 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     private fun keyHeight(): Int {
-        val rows = totalVisibleRows()
-
         val containerH = (targetKeyboardHeightPx + lastBottomInsetPx).takeIf { it > 0 }
             ?: computeTargetKeyboardHeight()
 
         val usableH = (containerH - overlayLayer.paddingTop - overlayLayer.paddingBottom)
             .coerceAtLeast(120.dp(this))
 
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val activeShape = currentShape
-        val usableFactor = if (isLandscape()) 0.88f else 0.92f
-        val usableForKeys = (usableH * usableFactor).toInt()
-
-        if (!isLandscape()) {
-            when (savedRowCount) {
-                3 -> {
-                    return when(activeShape) {
-                        KeyShape.HEX,
-                        KeyShape.HEX_TALL,
-                        KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 3.15f).toInt().coerceAtLeast(52.dp(this))
-
-                        KeyShape.TRIANGLE -> (usableForKeys / 3.35f).toInt().coerceAtLeast(48.dp(this))
-                        KeyShape.CIRCLE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
-                        KeyShape.CUBE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
-                    }
-                }
-
-                4 -> {
-                    return when (activeShape) {
-                        KeyShape.HEX,
-                        KeyShape.HEX_TALL,
-                        KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 4.05f).toInt().coerceAtLeast(44.dp(this))
-
-                        KeyShape.TRIANGLE -> (usableForKeys / 4.25f).toInt().coerceAtLeast(42.dp(this))
-                        KeyShape.CIRCLE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
-                        KeyShape.CUBE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
-                    }
-                }
-            }
-        }
-
-        val denominator = when (activeShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> (rows - (rows - 1) * OVERLAP_RATIO).coerceAtLeast(1f)
-
-            KeyShape.TRIANGLE -> rows.toFloat()
-            KeyShape.CIRCLE -> rows.toFloat()
-            KeyShape.CUBE -> rows.toFloat()
-        }
-
-        val baseH = (usableForKeys / denominator).toInt().coerceAtLeast(
-            if (isLandscape()) 28.dp(this) else 36.dp(this)
-        )
-
-        return when (activeShape){
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> (baseH * 1.08f).toInt()
-
-            KeyShape.TRIANGLE -> if (isLandscape()) {
-                (baseH * 0.84f).toInt()
-            } else {
-                (baseH * 0.92f).toInt()
-            }
-
-            KeyShape.CIRCLE -> if (isLandscape()) {
-                (baseH * 0.88f).toInt()
-            } else {
-                (baseH * 0.96f).toInt()
-            }
-
-            KeyShape.CUBE -> if (isLandscape()) {
-                (baseH * 0.88f).toInt()
-            } else {
-                (baseH * 0.96f).toInt()
-            }
-        }
+        return KeySizing.keyHeight(sizingSpec(), totalVisibleRows(), usableH)
     }
+
+    private fun sizingSpec() = KeySizing.Spec(
+        rowCount = KeyboardPrefs.getRowCount(this),
+        shape = currentShape,
+        landscape = isLandscape(),
+        density = resources.displayMetrics.density
+    )
 
     private fun availableKeyboardWidthPx(): Int {
         val w = overlayLayer.width
@@ -1207,23 +1137,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     /* ───────── LAYOUT ───────── */
 
-    private data class RowSizing(
-        val keyW: Int,
-        val keyH: Int,
-        val gapPx: Int,
-        val outerPadPx: Int,
-        val overlapPx: Int,
-        val triOverlapX: Int,
-        val triOverlapY: Int
-    )
-
     /**
-     * Row sizing with the key height slider applied (see [baseRowSizing] for the tuned defaults).
+     * Row sizing with the key height slider applied (see [KeySizing.baseRowSizing] for the tuned defaults).
      * The keys themselves grow ([KeyView.heightStretch]); sizes and row spacing stay as tuned.
      * Only the honeycomb overlap grows with the hexagon tips so the rows stay interlocked.
      */
-    private fun computeRowSizing(count: Int, availW: Int): RowSizing {
-        val base = baseRowSizing(count, availW)
+    private fun computeRowSizing(count: Int, availW: Int): KeySizing.RowSizing {
+        val base = KeySizing.baseRowSizing(sizingSpec(), count, availW, ::keyHeight)
         val f = keyHeightStretch()
         if (f == 1f || base.overlapPx == 0) return base
 
@@ -1272,318 +1192,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 (KeyboardPrefs.getRowCount(this) == 3 && shape == KeyShape.CUBE)
             )
         return !allowNonSquare
-    }
-
-    private fun baseRowSizing(count: Int, availW: Int): RowSizing {
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val layoutShape = currentShape
-
-        /*
-         * Portrait TRIANGLE: every key gets the size of the reference row with 6 keys.
-         * A row with 7 keys overlaps horizontally to fit the same width without
-         * shrinking the keys.
-         */
-        if (!isLandscape() && layoutShape == KeyShape.TRIANGLE) {
-            val usableW = when (savedRowCount) {
-                // Leave a little safe space at the left and right edge
-                3 -> (availW - 20.dp(this)).coerceAtLeast(240.dp(this))
-
-                // 4-row and 5-row (tuned)
-                else -> (availW * 0.98f).toInt()
-            }
-
-            val referenceColumns = when (savedRowCount) {
-                // 3-row has 11–12 keys per row, so it needs smaller triangles
-                3 -> 8.4f
-
-                // 4-row and 5-row sizing
-                else -> 6f
-            }
-
-            val minTriangleWidth = when (savedRowCount) {
-                3 -> 30.dp(this)
-                else -> 40.dp(this)
-            }
-
-            val keyW = (usableW / referenceColumns)
-                .toInt()
-                .coerceAtLeast(minTriangleWidth)
-
-            /*
-             * 7 keys: 7 * keyW is too wide, so the excess is spread over the six gaps
-             * between the keys.
-             */
-            // A small constant overlap applies to rows with 6 keys too.
-            val baseOverlapX = (keyW * 0.22f).toInt()
-
-            // Extra overlap needed for a row with 7 keys to fit.
-            val fitOverlapX = if (count > 1) {
-                ((count * keyW - usableW) / (count - 1))
-                    .coerceAtLeast(0)
-            } else {
-                0
-            }
-
-            val overlapX = when (savedRowCount) {
-                3 -> {
-                    /*
-                     * No more subtracting 2.dp(this): it widened the whole row and pushed
-                     * the outer keys off the screen.
-                     */
-                    maxOf(baseOverlapX, fitOverlapX)
-                }
-
-                else -> {
-                    maxOf(baseOverlapX, fitOverlapX) + 2.dp(this)
-                }
-            }
-
-            val usedW =
-                count * keyW -
-                        (count - 1).coerceAtLeast(0) * overlapX
-
-            val outerPad = ((availW - usedW) / 2)
-                .coerceAtLeast(0)
-
-            return RowSizing(
-                keyW = keyW,
-                keyH = (keyW * 0.92f).toInt(),
-                gapPx = 0,
-                outerPadPx = outerPad,
-                overlapPx = 0,
-                triOverlapX = overlapX,
-                triOverlapY = 0
-            )
-        }
-
-        val gap = when (layoutShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when {
-                    isLandscape() -> 0.dp(this)
-                    savedRowCount == 3 -> 0.dp(this)
-                    savedRowCount == 4 -> 0.dp(this)
-                    else -> 1.dp(this)
-                }
-            }
-
-            KeyShape.TRIANGLE -> 0.dp(this)
-            KeyShape.CIRCLE -> {
-                when {
-                    isLandscape() -> 2.dp(this)
-                    savedRowCount == 3 -> 2.dp(this)
-                    else -> 4.dp(this)
-                }
-            }
-            KeyShape.CUBE -> {
-                when {
-                    isLandscape() -> 2.dp(this)
-
-                    // 3-row portrait: less empty space, so the keys themselves
-                    // can be bigger
-                    savedRowCount == 3 -> 2.dp(this)
-
-                    else -> 4.dp(this)
-                }
-            }
-        }
-
-        val effectiveAvailW = when (layoutShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when {
-                    isLandscape() -> {
-                        if (savedRowCount == 3) {
-                            availW
-                        } else {
-                            (availW * 1.22f).toInt()
-                        }
-                    }
-
-                    savedRowCount == 3 -> (availW * 0.95f).toInt()
-                    savedRowCount == 4 -> (availW * 0.94f).toInt()
-                    else -> availW
-                }
-            }
-
-            KeyShape.TRIANGLE -> if (isLandscape()) (availW * 0.92f).toInt() else (availW * 0.78f).toInt()
-            KeyShape.CIRCLE -> {
-                when {
-                    isLandscape() -> availW
-                    savedRowCount == 3 -> (availW * 0.98f).toInt()
-                    else -> (availW * 0.92f).toInt()
-                }
-            }
-            KeyShape.CUBE -> {
-                when {
-                    isLandscape() -> availW
-
-                    // 3-row portrait: bigger keys
-                    savedRowCount == 3 -> (availW * 0.98f).toInt()
-
-                    else -> (availW * 0.92f).toInt()
-                }
-            }
-        }
-
-        val targetColumns = when {
-            layoutShape == KeyShape.HEX && isLandscape() && savedRowCount == 3 -> 11f
-            layoutShape == KeyShape.HEX && isLandscape() -> 7f
-            savedRowCount == 3 -> 8.8f
-            layoutShape == KeyShape.HEX && savedRowCount == 4 -> 8.9f
-            layoutShape == KeyShape.HEX -> 7f
-            else -> max(1, count).toFloat()
-        }
-
-        val minKeyWidth = when {
-            isLandscape() && savedRowCount == 3 -> 24.dp(this)
-            isLandscape() -> 40.dp(this)
-            savedRowCount == 3 -> 20.dp(this)
-            savedRowCount == 4 -> 24.dp(this)
-            else -> 36.dp(this)
-        }
-
-        val baseKeyW = ((effectiveAvailW - (targetColumns - 1) * gap) / targetColumns)
-            .toInt()
-            .coerceAtLeast(minKeyWidth)
-
-        val keyW = when {
-            // Portrait CIRCLE, CUBE and TRIANGLE: a row with 6 keys uses the same key
-            // size as a row with 7 keys
-            !isLandscape() &&
-                    count == 6 &&
-                    (
-                            layoutShape == KeyShape.CIRCLE ||
-                                    layoutShape == KeyShape.CUBE
-                            ) -> {
-                ((effectiveAvailW - 6 * gap) / 7f)
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    savedRowCount == 3 -> baseKeyW
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    count <= 6 -> {
-                (baseKeyW * 1.06f).toInt()
-            }
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    count >= 7 -> {
-                baseKeyW
-            }
-
-            savedRowCount == 3 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(24.dp(this))
-            }
-
-            savedRowCount == 4 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(22.dp(this))
-            }
-
-            count == 7 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-
-            count == 6 -> baseKeyW
-
-            else -> {
-                ((effectiveAvailW - (count - 1) * gap) / max(1, count).toFloat())
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-        }
-
-        val used = count * keyW + (count - 1) * gap
-
-        val outer = when {
-            isLandscape() && layoutShape == KeyShape.HEX -> {
-                ((availW - used) / 2).coerceAtLeast(4.dp(this))
-            }
-
-            isLandscape() -> {
-                ((availW - used) / 2).coerceAtLeast(6.dp(this))
-            }
-
-            savedRowCount == 3 -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-
-            savedRowCount == 4 -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-
-            else -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-        }
-
-        val rawKeyH = keyHeight()
-
-        val keyH = when {
-            // 3-row portrait CUBE: the width stays, only the height grows
-            !isLandscape() &&
-                    savedRowCount == 3 &&
-                    layoutShape == KeyShape.CUBE -> {
-                // Height is 1.3 × the key width, not derived from the row's
-                // computed height.
-                (keyW * 1.3f).toInt()
-            }
-
-            // 3-row portrait HEX
-            !isLandscape() &&
-                    savedRowCount == 3 &&
-                    (
-                            layoutShape == KeyShape.HEX ||
-                                    layoutShape == KeyShape.HEX_HALF_LEFT ||
-                                    layoutShape == KeyShape.HEX_HALF_RIGHT
-                            ) -> {
-                (keyW * 1.90f).toInt().coerceAtLeast(42.dp(this))
-            }
-
-            else -> rawKeyH
-        }
-
-        val overlap = when (currentShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                val ratio = when {
-                    isLandscape() -> OVERLAP_RATIO * 0.6f
-                    savedRowCount == 3 -> OVERLAP_RATIO * 1.58f
-                    savedRowCount == 4 -> OVERLAP_RATIO * 1.00f
-                    else -> OVERLAP_RATIO
-                }
-                (keyH * ratio).toInt()
-            }
-
-            else -> 0
-        }
-
-        return RowSizing(
-            keyW = keyW,
-            keyH = keyH,
-            gapPx = gap,
-            outerPadPx = outer,
-            overlapPx = overlap,
-            triOverlapX = 0,
-            triOverlapY = 0
-        )
     }
 
     private fun redrawKeyboard() {
