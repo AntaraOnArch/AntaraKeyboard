@@ -26,7 +26,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -57,7 +56,7 @@ import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.ui.ColorsDialog
 import com.example.antarakeyboard.extensions.themeColor
 import com.example.antarakeyboard.ui.LayoutEditorBinder
-import com.example.antarakeyboard.ui.LongPressEditorBinder
+import com.example.antarakeyboard.ui.LongPressEditorDialog
 import com.example.antarakeyboard.ui.ReselectSpinner
 import com.example.antarakeyboard.ui.RgbSettingsDialog
 import com.example.antarakeyboard.ui.ShapePreviewView
@@ -853,253 +852,13 @@ class MainActivity : AppCompatActivity() {
         resetSideButtonsForRowCount(rowCount)
     }
 
-    // Text built from data (names, key labels, color values), not from UI strings
-    @SuppressLint("SetTextI18n")
     private fun openLongPressEditorDialog() {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_longpress_editor)
-
-        // Section dropdown
-        val spinnerSection = dialog.findViewById<Spinner>(R.id.spinnerLongPressSection)
-        val sectionOptions = listOf(
-            R.string.lp_section_alphabet, R.string.lp_section_numeric,
-            R.string.lp_section_my_binds, R.string.lp_section_custom
-        ).map { getString(it) }
-        spinnerSection.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sectionOptions).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-
-        val pageAlphabet = dialog.findViewById<LinearLayout>(R.id.pageAlphabetLp)
-        val pageNumeric = dialog.findViewById<LinearLayout>(R.id.pageNumericLp)
-        val pageMyBinds = dialog.findViewById<ScrollView>(R.id.pageMyBindsLp)
-        val myBindsContainer = dialog.findViewById<LinearLayout>(R.id.myBindsContainer)
-        val pageCustomText = dialog.findViewById<ScrollView>(R.id.pageCustomTextLp)
-        val customTextContainer = dialog.findViewById<LinearLayout>(R.id.customTextContainer)
-
-        val currentRowCount = KeyboardPrefs.getRowCount(this)
-        var currentPage = 0
-
         autosaveDirtySection = null
-
-        // Load with the global binds; every change is saved immediately
-        val alphabetBinder = LongPressEditorBinder(
-            context = this,
-            initial = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, currentRowCount),
-            titleText = getString(R.string.lp_title_alphabet),
-            onChanged = { updated ->
-                KeyboardPrefs.saveAlphabetLayoutWithGlobalBinds(this, currentRowCount, updated)
-                autosaveDirtySection = sectionOptions[0]
-            }
-        )
-
-        val numericBinder = LongPressEditorBinder(
-            context = this,
-            initial = KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, currentRowCount),
-            titleText = getString(R.string.lp_title_numeric),
-            lockedLabels = setOf("⇧", "⌫", "↵", "ABC", "abc", " "),
-            onChanged = { updated ->
-                KeyboardPrefs.saveNumericLayoutWithGlobalBinds(this, currentRowCount, updated)
-                autosaveDirtySection = sectionOptions[1]
-            }
-        )
-
-        alphabetBinder.bindInto(pageAlphabet)
-        numericBinder.bindInto(pageNumeric)
-
-        // My binds: every key with a binding; tap to edit its bindings
-        fun buildMyBindsPage() {
-            myBindsContainer.removeAllViews()
-
-            val groups = listOf(
-                getString(R.string.lp_group_alphabet) to alphabetBinder,
-                getString(R.string.lp_group_numeric) to numericBinder
-            )
-
-            var anyBound = false
-            groups.forEach { (groupName, binder) ->
-                val keys = binder.boundKeys()
-                if (keys.isEmpty()) return@forEach
-                anyBound = true
-
-                myBindsContainer.addView(TextView(this).apply {
-                    text = groupName
-                    textSize = 16f
-                    setTypeface(typeface, android.graphics.Typeface.BOLD)
-                    setPadding(0, 8.dp(this@MainActivity), 0, 6.dp(this@MainActivity))
-                })
-
-                keys.forEach { key ->
-                    myBindsContainer.addView(Button(this).apply {
-                        text = "${key.label}   →   ${binder.visibleBindings(key).joinToString(" ")}"
-                        // Long custom text: preview only, full text stays bound
-                        maxLines = 3
-                        ellipsize = android.text.TextUtils.TruncateAt.END
-                        isAllCaps = false
-                        gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                        setOnClickListener {
-                            binder.openPicker(key) { buildMyBindsPage() }
-                        }
-                    }, LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { bottomMargin = 4.dp(this@MainActivity) })
-                }
-            }
-
-            if (!anyBound) {
-                myBindsContainer.addView(TextView(this).apply {
-                    text = getString(R.string.lp_no_binds)
-                    textSize = 14f
-                    alpha = 0.75f
-                    setPadding(0, 8.dp(this@MainActivity), 0, 8.dp(this@MainActivity))
-                })
-            }
-        }
-
-        // Custom text: choose Letters / Numbers, tap a key, type any text and bind it
-        var customUseNumeric = false
-        var customSelected: com.example.antarakeyboard.model.KeyConfig? = null
-
-        fun buildCustomTextPage() {
-            customTextContainer.removeAllViews()
-            val binder = if (customUseNumeric) numericBinder else alphabetBinder
-            val gap = 8.dp(this)
-
-            val group = android.widget.RadioGroup(this).apply {
-                orientation = android.widget.RadioGroup.HORIZONTAL
-            }
-            val rbLetters = android.widget.RadioButton(this).apply {
-                id = View.generateViewId()
-                text = getString(R.string.lp_group_alphabet)
-                isChecked = !customUseNumeric
-            }
-            val rbNumbers = android.widget.RadioButton(this).apply {
-                id = View.generateViewId()
-                text = getString(R.string.lp_group_numeric)
-                isChecked = customUseNumeric
-            }
-            group.addView(rbLetters)
-            group.addView(rbNumbers)
-            group.setOnCheckedChangeListener { _, checkedId ->
-                customUseNumeric = checkedId == rbNumbers.id
-                customSelected = null
-                buildCustomTextPage()
-            }
-            customTextContainer.addView(group)
-
-            customTextContainer.addView(TextView(this).apply {
-                text = getString(R.string.lp_custom_choose_key)
-                alpha = 0.75f
-                setPadding(0, gap, 0, gap / 2)
-            })
-
-            val preview = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-            binder.renderKeyChooser(preview, customSelected) { key ->
-                if (binder.isBindable(key)) {
-                    customSelected = key
-                    buildCustomTextPage()
-                }
-            }
-            customTextContainer.addView(preview)
-
-            val key = customSelected ?: return
-
-            customTextContainer.addView(TextView(this).apply {
-                text = getString(R.string.lp_custom_text_for, key.label)
-                textSize = 16f
-                setTypeface(typeface, android.graphics.Typeface.BOLD)
-                setPadding(0, gap * 2, 0, gap / 2)
-            })
-
-            val input = android.widget.EditText(this).apply {
-                hint = getString(R.string.lp_custom_hint)
-                // No length limit; long text is only shortened where it is previewed
-                isSingleLine = true
-            }
-            customTextContainer.addView(input, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ))
-
-            customTextContainer.addView(Button(this).apply {
-                text = getString(R.string.lp_custom_add)
-                isAllCaps = false
-                setOnClickListener {
-                    // Inserted exactly as typed (spaces included); only blank text is refused
-                    val text = input.text.toString()
-                    if (text.isBlank()) return@setOnClickListener
-                    if (binder.addBinding(key, text)) {
-                        autosaveDirtySection = sectionOptions[3]
-                        buildCustomTextPage()
-                    } else {
-                        Toast.makeText(this@MainActivity, R.string.lp_custom_already, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { gravity = Gravity.END })
-
-            // Everything currently bound to this key; ✕ removes it
-            val bindings = binder.visibleBindings(key)
-            if (bindings.isNotEmpty()) {
-                customTextContainer.addView(TextView(this).apply {
-                    text = getString(R.string.lp_custom_bound)
-                    alpha = 0.75f
-                    setPadding(0, gap, 0, gap / 2)
-                })
-            }
-            bindings.forEach { binding ->
-                val row = LinearLayout(this).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    gravity = Gravity.CENTER_VERTICAL
-                }
-                row.addView(TextView(this).apply {
-                    text = binding
-                    textSize = 15f
-                    maxLines = 2
-                    ellipsize = android.text.TextUtils.TruncateAt.END
-                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-                row.addView(Button(this).apply {
-                    text = "✕"
-                    contentDescription = getString(R.string.action_delete)
-                    setOnClickListener {
-                        binder.removeBinding(key, binding)
-                        autosaveDirtySection = sectionOptions[3]
-                        buildCustomTextPage()
-                    }
-                })
-                customTextContainer.addView(row)
-            }
-        }
-
-        fun showPage(page: Int) {
-            currentPage = page
-            pageAlphabet.visibility = if (page == 0) View.VISIBLE else View.GONE
-            pageNumeric.visibility = if (page == 1) View.VISIBLE else View.GONE
-            pageMyBinds.visibility = if (page == 2) View.VISIBLE else View.GONE
-            pageCustomText.visibility = if (page == 3) View.VISIBLE else View.GONE
-            if (page == 2) buildMyBindsPage()
-            if (page == 3) buildCustomTextPage()
-        }
-
-        spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position != currentPage) showSavedToastIfDirty()
-                showPage(position)
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        dialog.setOnDismissListener {
-            showSavedToastIfDirty()
-        }
-
-        dialog.show()
-        dialog.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        showPage(0)
+        LongPressEditorDialog(
+            this,
+            markDirty = { autosaveDirtySection = it },
+            flushSavedToast = ::showSavedToastIfDirty
+        ).show()
     }
 
     private fun normalizeSlot(s: EdgeSlot): EdgeSlot {
