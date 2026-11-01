@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Szaleńczo ← → Spokojnie</string>
     <string name="rgb_saturation">Nasycenie: %1$d%%</string>
     <string name="rgb_brightness">Jasność: %1$d%%</string>
-    <string name="rgb_settings_saved">Zapisano ustawienia %1$s</string>
     <string name="lp_section_alphabet">Długie naciśnięcie – litery</string>
     <string name="lp_section_numeric">Długie naciśnięcie – cyfry</string>
     <string name="lp_section_my_binds">Moje przypisania</string>

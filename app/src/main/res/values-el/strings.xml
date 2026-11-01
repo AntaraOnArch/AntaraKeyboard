@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Τρελά ← → Χαλαρά</string>
     <string name="rgb_saturation">Κορεσμός: %1$d%%</string>
     <string name="rgb_brightness">Φωτεινότητα: %1$d%%</string>
-    <string name="rgb_settings_saved">Οι ρυθμίσεις %1$s αποθηκεύτηκαν</string>
     <string name="lp_section_alphabet">Παρατεταμένο πάτημα – γράμματα</string>
     <string name="lp_section_numeric">Παρατεταμένο πάτημα – αριθμοί</string>
     <string name="lp_section_my_binds">Οι αντιστοιχίσεις μου</string>

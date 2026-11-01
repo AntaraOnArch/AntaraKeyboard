@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Galet ← → Lugnt</string>
     <string name="rgb_saturation">Mättnad: %1$d %%</string>
     <string name="rgb_brightness">Ljusstyrka: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-inställningar sparade</string>
     <string name="lp_section_alphabet">Långt tryck – bokstäver</string>
     <string name="lp_section_numeric">Långt tryck – siffror</string>
     <string name="lp_section_my_binds">Mina kopplingar</string>

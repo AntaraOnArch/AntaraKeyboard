@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Beprotiškai ← → Ramiai</string>
     <string name="rgb_saturation">Sodrumas: %1$d %%</string>
     <string name="rgb_brightness">Ryškumas: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s nustatymai išsaugoti</string>
     <string name="lp_section_alphabet">Ilgas paspaudimas – raidės</string>
     <string name="lp_section_numeric">Ilgas paspaudimas – skaitmenys</string>
     <string name="lp_section_my_binds">Mano priskyrimai</string>

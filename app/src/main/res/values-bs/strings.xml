@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Ludo ← → Opušteno</string>
     <string name="rgb_saturation">Zasićenost: %1$d%%</string>
     <string name="rgb_brightness">Svjetlina: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s – postavke sačuvane</string>
     <string name="lp_section_alphabet">Dugi pritisak – slova</string>
     <string name="lp_section_numeric">Dugi pritisak – brojevi</string>
     <string name="lp_section_my_binds">Moje veze</string>

@@ -101,7 +101,6 @@
     <string name="rgb_insane_chill">Insane ← → Chill</string>
     <string name="rgb_saturation">Saturation: %1$d%%</string>
     <string name="rgb_brightness">Brightness: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s settings saved</string>
     <string name="lp_section_alphabet">Alphabet long press</string>
     <string name="lp_section_numeric">Numeric long press</string>
     <string name="lp_section_my_binds">My binds</string>

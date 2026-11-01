@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Hull ← → Rahulik</string>
     <string name="rgb_saturation">Küllastus: %1$d%%</string>
     <string name="rgb_brightness">Heledus: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s seaded salvestatud</string>
     <string name="lp_section_alphabet">Pikk vajutus – tähed</string>
     <string name="lp_section_numeric">Pikk vajutus – numbrid</string>
     <string name="lp_section_my_binds">Minu sidumised</string>

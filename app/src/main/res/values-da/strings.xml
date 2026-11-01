@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Vildt ← → Roligt</string>
     <string name="rgb_saturation">Mætning: %1$d %%</string>
     <string name="rgb_brightness">Lysstyrke: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-indstillinger gemt</string>
     <string name="lp_section_alphabet">Langt tryk – bogstaver</string>
     <string name="lp_section_numeric">Langt tryk – tal</string>
     <string name="lp_section_my_binds">Mine tildelinger</string>

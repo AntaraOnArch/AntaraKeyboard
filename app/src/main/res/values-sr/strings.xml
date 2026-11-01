@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Лудо ← → Опуштено</string>
     <string name="rgb_saturation">Засићеност: %1$d%%</string>
     <string name="rgb_brightness">Осветљеност: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s – подешавања сачувана</string>
     <string name="lp_section_alphabet">Дуги притисак – слова</string>
     <string name="lp_section_numeric">Дуги притисак – бројеви</string>
     <string name="lp_section_my_binds">Моје везе</string>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Teclado Antara</string>
     <string name="main_enable">Activar</string>
     <string name="main_choose">Elegir</string>
@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Loco ← → Tranquilo</string>
     <string name="rgb_saturation">Saturación: %1$d %%</string>
     <string name="rgb_brightness">Brillo: %1$d %%</string>
-    <string name="rgb_settings_saved">Ajustes de %1$s guardados</string>
     <string name="lp_section_alphabet">Pulsación larga – letras</string>
     <string name="lp_section_numeric">Pulsación larga – números</string>
     <string name="lp_section_my_binds">Mis asignaciones</string>
@@ -227,7 +226,8 @@
     <string name="emoji_no_recent">No hay emojis recientes</string>
     <string name="emoji_empty_category">No hay emojis en esta categoría</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d fila</item>
         <item quantity="many">%d filas</item>
         <item quantity="other">%d filas</item>

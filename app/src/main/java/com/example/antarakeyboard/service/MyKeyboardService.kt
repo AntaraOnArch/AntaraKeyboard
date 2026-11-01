@@ -3,17 +3,8 @@ package com.example.antarakeyboard.service
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.ColorFilter
-import android.graphics.Paint
-import android.graphics.PixelFormat
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
-import android.graphics.RadialGradient
 import android.graphics.Rect
-import android.graphics.Shader
-import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.view.ContextThemeWrapper
@@ -66,7 +57,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class MyKeyboardService : InputMethodService(), EdgeActionCallback {
@@ -144,8 +134,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     // RGB animation
-    private var rgbAnimationJob: Job? = null
-    private val rgbRandom = java.util.Random()
+    private val rgbAnimator by lazy { RgbBackgroundAnimator(this, serviceScope, ::applyRgbFrame) }
     /* ───────── LIFECYCLE ───────── */
     //claude sync
 
@@ -254,13 +243,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             isPortraitProvider = { isPortrait() },
             currentShapeProvider = { currentShape },
             colorsProvider = { anchor -> longPressPopupColors(anchor) },
-            rgbBackgroundProvider = {
-                if (rgbAnimationJob != null) {
-                    createRadialRainbowDrawable(lastRgbStep, lastRgbSaturation, lastRgbBrightness)
-                } else {
-                    null
-                }
-            }
+            rgbBackgroundProvider = { if (rgbAnimator.isRunning) rgbAnimator.newDrawable() else null }
         )
 
         edgeOverlayManager = EdgeOverlayManager(
@@ -3090,218 +3073,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         return spaceIndex
     }
 
-    /* ───────── RGB ANIMATION ───────── */
+    /* ───────── RGB ANIMATION (RgbBackgroundAnimator) ───────── */
 
-    // RGB Rainbow color calculation - 6 segments × 256 steps = 1536 total steps
-    // Produces smooth transitions: Red→Yellow→Green→Cyan→Blue→Magenta→Red
-    private fun rainbowColor(x: Int): Int {
-        val step = ((x % 1536) + 1536) % 1536  // Handle negative values
-        val segment = step / 256
-        val c = step % 256
-
-        return when (segment) {
-            0 -> Color.rgb(255, c, 0)           // Red to Yellow
-            1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
-            2 -> Color.rgb(0, 255, c)           // Green to Cyan
-            3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
-            4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
-            5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
-            else -> Color.rgb(255, 0, 0)        // Fallback to Red
-        }
-    }
-
-    // Apply saturation and brightness (HSV S and V scale) to a rainbow color
-    private fun adjustColor(color: Int, saturation: Float, brightness: Float): Int {
-        val hsv = FloatArray(3)
-        Color.colorToHSV(color, hsv)
-        hsv[1] *= saturation
-        hsv[2] *= brightness
-        return Color.HSVToColor(hsv)
-    }
-
-    // Create multi-center radial rainbow gradient
-    // 3 centers: first letter row 1, last letter row 2, 3rd letter row 3
-    private fun createRadialRainbowDrawable(
-        startStep: Int,
-        saturation: Float,
-        brightness: Float
-    ): Drawable {
-        val numColors = 7
-
-        return object : Drawable() {
-            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-            private fun buildColors(phaseOffset: Int): IntArray {
-                val colors = IntArray(numColors)
-                for (i in 0 until numColors) {
-                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
-                    val color = rainbowColor(colorStep)
-                    colors[i] = adjustColor(color, saturation, brightness)
-                }
-                return colors
-            }
-
-            override fun draw(canvas: Canvas) {
-                val bounds = bounds
-                val w = bounds.width().toFloat()
-                val h = bounds.height().toFloat()
-                val maxDim = maxOf(w, h)
-
-                // 3 center positions (approximate key positions):
-                // Center 1: First letter, row 1 - top left area
-                val cx1 = bounds.left + w * 0.12f
-                val cy1 = bounds.top + h * 0.15f
-                // Center 2: Last letter, row 2 - right middle area
-                val cx2 = bounds.left + w * 0.88f
-                val cy2 = bounds.top + h * 0.42f
-                // Center 3: 3rd letter, row 3 - left-center lower area
-                val cx3 = bounds.left + w * 0.28f
-                val cy3 = bounds.top + h * 0.68f
-
-                val radius = maxDim * 0.9f
-                val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
-
-                // Draw 3 overlapping radial gradients with different phase offsets
-                // Using SCREEN blend mode for additive-like blending
-                paint.xfermode = null
-
-                // First gradient (base layer)
-                val colors1 = buildColors(0)
-                paint.shader = RadialGradient(
-                    cx1, cy1, radius, colors1, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                // Second gradient (blend on top)
-                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
-                val colors2 = buildColors(512)  // Phase offset for variety
-                paint.shader = RadialGradient(
-                    cx2, cy2, radius, colors2, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                // Third gradient (blend on top)
-                val colors3 = buildColors(1024)  // Another phase offset
-                paint.shader = RadialGradient(
-                    cx3, cy3, radius, colors3, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                paint.xfermode = null
-            }
-
-            override fun setAlpha(alpha: Int) { paint.alpha = alpha }
-            override fun setColorFilter(colorFilter: ColorFilter?) { paint.colorFilter = colorFilter }
-            @Suppress("OVERRIDE_DEPRECATION")
-            override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
-        }
-    }
-
-    private fun applyRadialRainbow(startStep: Int, saturation: Float, brightness: Float) {
-        val drawable1 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable2 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable3 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable4 = createRadialRainbowDrawable(startStep, saturation, brightness)
-
-        rootView.background = drawable1
-        overlayLayer.background = drawable2
-        keyboardContainer.background = drawable3
-        window?.window?.setBackgroundDrawable(drawable4)
-
-        lastRgbStep = startStep
-        lastRgbSaturation = saturation
-        lastRgbBrightness = brightness
+    /** One RGB frame: every surface (and an open long-press popup) gets a fresh drawable. */
+    private fun applyRgbFrame() {
+        rootView.background = rgbAnimator.newDrawable()
+        overlayLayer.background = rgbAnimator.newDrawable()
+        keyboardContainer.background = rgbAnimator.newDrawable()
+        window?.window?.setBackgroundDrawable(rgbAnimator.newDrawable())
         if (longPressPopupManager.isPopupShowing) {
-            longPressPopupManager.updateRgbBackground(
-                createRadialRainbowDrawable(startStep, saturation, brightness)
-            )
+            longPressPopupManager.updateRgbBackground(rgbAnimator.newDrawable())
         }
     }
 
-    private var rgbStep = 0
-    private var lastRgbStep = 0
-    private var lastRgbSaturation = 1f
-    private var lastRgbBrightness = 1f
-
-    private fun startRgbSmooth() {
-        stopRgbAnimation()
-
-        val speedMs = KeyboardPrefs.getRgbSmoothSpeed(this)
-        val saturation = KeyboardPrefs.getRgbSmoothSaturation(this)
-        val brightness = KeyboardPrefs.getRgbSmoothBrightness(this)
-
-        // Calculate delay per step (1536 steps for full rainbow cycle)
-        val delayPerStep = (speedMs / 1536f).toLong().coerceAtLeast(8L)
-
-        rgbAnimationJob = serviceScope.launch {
-            while (isActive) {
-                rgbStep = (rgbStep + 4) % 1536  // Move through rainbow
-                applyRadialRainbow(rgbStep, saturation, brightness)
-                delay(delayPerStep.milliseconds)
-            }
-        }
-    }
-
-    private fun startRgbWild() {
-        stopRgbAnimation()
-
-        val speedMs = KeyboardPrefs.getRgbWildSpeed(this)
-        val saturation = KeyboardPrefs.getRgbWildSaturation(this)
-        val brightness = KeyboardPrefs.getRgbWildBrightness(this)
-        val frameInterval = 16L  // ~60fps for smooth animation
-        val transitionDuration = (speedMs * 0.85f).toLong()  // 85% of interval for transition
-
-        // Ease-in-out function for smooth acceleration/deceleration
-        fun easeInOutCubic(t: Float): Float {
-            return if (t < 0.5f) {
-                4f * t * t * t
-            } else {
-                1f - (-2f * t + 2f).let { it * it * it } / 2f
-            }
-        }
-
-        rgbAnimationJob = serviceScope.launch {
-            var startStep = 0
-            var targetStep = rgbRandom.nextInt(1536)
-            var transitionStartTime = System.currentTimeMillis()
-
-            while (isActive) {
-                val now = System.currentTimeMillis()
-                val elapsed = now - transitionStartTime
-
-                // Calculate eased progress
-                val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
-                val easedProgress = easeInOutCubic(rawProgress)
-
-                // Calculate shortest path difference
-                var diff = targetStep - startStep
-                if (diff > 768) diff -= 1536
-                if (diff < -768) diff += 1536
-
-                // Interpolate with easing
-                val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
-
-                applyRadialRainbow(currentStep, saturation, brightness)
-
-                // Pick new target when transition completes
-                if (elapsed >= speedMs) {
-                    startStep = targetStep
-                    targetStep = rgbRandom.nextInt(1536)
-                    transitionStartTime = now
-                }
-
-                delay(frameInterval.milliseconds)
-            }
-        }
-    }
-
-    private fun stopRgbAnimation() {
-        rgbAnimationJob?.cancel()
-        rgbAnimationJob = null
-    }
+    private fun stopRgbAnimation() = rgbAnimator.stop()
 
     private fun restoreNormalBackground() {
         stopRgbAnimation()
@@ -3315,11 +3100,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     private fun startRgbAnimation() {
-        when {
-            KeyboardPrefs.isRgbSmoothEnabled(this) -> startRgbSmooth()
-            KeyboardPrefs.isRgbWildEnabled(this) -> startRgbWild()
-            else -> restoreNormalBackground()
-        }
+        if (!rgbAnimator.start()) restoreNormalBackground()
     }
-
 }

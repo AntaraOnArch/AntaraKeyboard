@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Tastiera Antara</string>
     <string name="main_enable">Attiva</string>
     <string name="main_choose">Agħżel</string>
@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Miġnun ← → Rilassat</string>
     <string name="rgb_saturation">Saturazzjoni: %1$d%%</string>
     <string name="rgb_brightness">Luminożità: %1$d%%</string>
-    <string name="rgb_settings_saved">Is-settings ta\' %1$s ġew salvati</string>
     <string name="lp_section_alphabet">Għafsa twila – ittri</string>
     <string name="lp_section_numeric">Għafsa twila – numri</string>
     <string name="lp_section_my_binds">L-assoċjazzjonijiet tiegħi</string>
@@ -227,7 +226,8 @@
     <string name="emoji_no_recent">L-ebda emoji reċenti</string>
     <string name="emoji_empty_category">L-ebda emoji f\'din il-kategorija</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d ringiela</item>
         <item quantity="two">%d ringieli</item>
         <item quantity="few">%d ringieli</item>

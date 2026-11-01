@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Őrült ← → Nyugodt</string>
     <string name="rgb_saturation">Telítettség: %1$d%%</string>
     <string name="rgb_brightness">Fényerő: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s beállításai mentve</string>
     <string name="lp_section_alphabet">Hosszú nyomás – betűk</string>
     <string name="lp_section_numeric">Hosszú nyomás – számok</string>
     <string name="lp_section_my_binds">Hozzárendeléseim</string>

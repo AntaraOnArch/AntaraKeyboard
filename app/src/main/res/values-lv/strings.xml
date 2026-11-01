@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Traki ← → Mierīgi</string>
     <string name="rgb_saturation">Piesātinājums: %1$d%%</string>
     <string name="rgb_brightness">Spilgtums: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s iestatījumi saglabāti</string>
     <string name="lp_section_alphabet">Ilgā nospiešana – burti</string>
     <string name="lp_section_numeric">Ilgā nospiešana – cipari</string>
     <string name="lp_section_my_binds">Manas piesaistes</string>

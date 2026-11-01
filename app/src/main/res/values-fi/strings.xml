@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Hurja ← → Rauhallinen</string>
     <string name="rgb_saturation">Kylläisyys: %1$d %%</string>
     <string name="rgb_brightness">Kirkkaus: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-asetukset tallennettu</string>
     <string name="lp_section_alphabet">Pitkä painallus – kirjaimet</string>
     <string name="lp_section_numeric">Pitkä painallus – numerot</string>
     <string name="lp_section_my_binds">Omat määritykset</string>

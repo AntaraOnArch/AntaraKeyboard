@@ -166,7 +166,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
 - **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. A saved layout also stores the key height and row spacing (`SavedLayout.keyScale` / `rowSpacingDp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
-- **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (speed / saturation / brightness). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
+- **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (`ui/RgbSettingsDialog`: speed / saturation / brightness, autosaved, one "<theme> saved" toast on close; its live preview runs the keyboard's own `RgbBackgroundAnimator`). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
 - Swipe up on a letter → capital letter.
@@ -233,7 +233,7 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 
 ### Known gaps (code vs spec)
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
-- **RGB Smooth / RGB Wild settings popups** still use `AlertDialog` with Save/Cancel.
+- (none)
 
 **Target SDK**: 36 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
 
@@ -283,6 +283,7 @@ The main app also writes `custom_theme_prefs` ("Last custom colors") directly.
 | `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker with categories and lazy loading |
 | `HapticManager` | `service/HapticManager.kt` | Vibration feedback for key presses |
 | `KeyPreviewManager` | `service/KeyPreviewManager.kt` | Key press preview popup above finger |
+| `RgbBackgroundAnimator` | `service/RgbBackgroundAnimator.kt` | RGB Smooth / Wild animation (`RgbSettings`, pure `RainbowMath`), used by the keyboard and the settings preview |
 | `InputTypes` | `service/InputTypes.kt` | Password / numeric field detection from `EditorInfo.inputType` |
 | `ScriptMapper` | `data/ScriptMapper.kt` | Latin → Cyrillic / Greek key mapping per script preset |
 | `KeyboardConfig` | `model/KeyboardConfig.kt` | Data model: rows → keys → labels + long-press bindings |

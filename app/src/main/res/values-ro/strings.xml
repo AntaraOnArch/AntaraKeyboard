@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Nebunesc ← → Relaxat</string>
     <string name="rgb_saturation">Saturație: %1$d%%</string>
     <string name="rgb_brightness">Luminozitate: %1$d%%</string>
-    <string name="rgb_settings_saved">Setările %1$s au fost salvate</string>
     <string name="lp_section_alphabet">Apăsare lungă – litere</string>
     <string name="lp_section_numeric">Apăsare lungă – cifre</string>
     <string name="lp_section_my_binds">Asocierile mele</string>

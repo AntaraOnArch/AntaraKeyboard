@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Wahnsinn ← → Entspannt</string>
     <string name="rgb_saturation">Sättigung: %1$d%%</string>
     <string name="rgb_brightness">Helligkeit: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s-Einstellungen gespeichert</string>
     <string name="lp_section_alphabet">Langes Drücken – Buchstaben</string>
     <string name="lp_section_numeric">Langes Drücken – Zahlen</string>
     <string name="lp_section_my_binds">Meine Belegungen</string>

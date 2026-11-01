@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Безумно ← → Спокойно</string>
     <string name="rgb_saturation">Насыщенность: %1$d %%</string>
     <string name="rgb_brightness">Яркость: %1$d %%</string>
-    <string name="rgb_settings_saved">Настройки %1$s сохранены</string>
     <string name="lp_section_alphabet">Долгое нажатие – буквы</string>
     <string name="lp_section_numeric">Долгое нажатие – цифры</string>
     <string name="lp_section_my_binds">Мои привязки</string>

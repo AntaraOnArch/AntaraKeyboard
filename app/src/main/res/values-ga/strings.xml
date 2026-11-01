@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Craiceáilte ← → Socair</string>
     <string name="rgb_saturation">Sáithiú: %1$d%%</string>
     <string name="rgb_brightness">Gile: %1$d%%</string>
-    <string name="rgb_settings_saved">Socruithe %1$s sábháilte</string>
     <string name="lp_section_alphabet">Brú fada – litreacha</string>
     <string name="lp_section_numeric">Brú fada – uimhreacha</string>
     <string name="lp_section_my_binds">Mo cheangail</string>

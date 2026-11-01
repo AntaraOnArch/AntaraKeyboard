@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Šíleně ← → Klidně</string>
     <string name="rgb_saturation">Sytost: %1$d %%</string>
     <string name="rgb_brightness">Jas: %1$d %%</string>
-    <string name="rgb_settings_saved">Nastavení %1$s uloženo</string>
     <string name="lp_section_alphabet">Dlouhé stisknutí – písmena</string>
     <string name="lp_section_numeric">Dlouhé stisknutí – čísla</string>
     <string name="lp_section_my_binds">Moje přiřazení</string>

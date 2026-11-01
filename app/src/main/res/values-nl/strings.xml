@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Gek ← → Rustig</string>
     <string name="rgb_saturation">Verzadiging: %1$d%%</string>
     <string name="rgb_brightness">Helderheid: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s-instellingen opgeslagen</string>
     <string name="lp_section_alphabet">Lang indrukken – letters</string>
     <string name="lp_section_numeric">Lang indrukken – cijfers</string>
     <string name="lp_section_my_binds">Mijn koppelingen</string>

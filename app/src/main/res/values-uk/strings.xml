@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Шалено ← → Спокійно</string>
     <string name="rgb_saturation">Насиченість: %1$d%%</string>
     <string name="rgb_brightness">Яскравість: %1$d%%</string>
-    <string name="rgb_settings_saved">Налаштування %1$s збережено</string>
     <string name="lp_section_alphabet">Довге натискання – літери</string>
     <string name="lp_section_numeric">Довге натискання – цифри</string>
     <string name="lp_section_my_binds">Мої прив\'язки</string>

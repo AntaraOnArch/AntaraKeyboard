@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Brjálað ← → Rólegt</string>
     <string name="rgb_saturation">Mettun: %1$d%%</string>
     <string name="rgb_brightness">Birta: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s-stillingar vistaðar</string>
     <string name="lp_section_alphabet">Langt ýtt – stafir</string>
     <string name="lp_section_numeric">Langt ýtt – tölur</string>
     <string name="lp_section_my_binds">Mínar tengingar</string>

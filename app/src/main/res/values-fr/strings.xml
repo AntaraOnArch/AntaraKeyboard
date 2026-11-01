@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Clavier Antara</string>
     <string name="main_enable">Activer</string>
     <string name="main_choose">Choisir</string>
@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Fou ← → Calme</string>
     <string name="rgb_saturation">Saturation : %1$d %%</string>
     <string name="rgb_brightness">Luminosité : %1$d %%</string>
-    <string name="rgb_settings_saved">Réglages %1$s enregistrés</string>
     <string name="lp_section_alphabet">Appui long – lettres</string>
     <string name="lp_section_numeric">Appui long – chiffres</string>
     <string name="lp_section_my_binds">Mes associations</string>
@@ -227,7 +226,8 @@
     <string name="emoji_no_recent">Aucun emoji récent</string>
     <string name="emoji_empty_category">Aucun emoji dans cette catégorie</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d rangée</item>
         <item quantity="many">%d rangées</item>
         <item quantity="other">%d rangées</item>

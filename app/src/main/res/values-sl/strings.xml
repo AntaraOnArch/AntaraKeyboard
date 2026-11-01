@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Noro ← → Umirjeno</string>
     <string name="rgb_saturation">Nasičenost: %1$d %%</string>
     <string name="rgb_brightness">Svetlost: %1$d %%</string>
-    <string name="rgb_settings_saved">Nastavitve %1$s shranjene</string>
     <string name="lp_section_alphabet">Dolg pritisk – črke</string>
     <string name="lp_section_numeric">Dolg pritisk – številke</string>
     <string name="lp_section_my_binds">Moje povezave</string>

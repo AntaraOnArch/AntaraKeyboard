@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Шалёна ← → Спакойна</string>
     <string name="rgb_saturation">Насычанасць: %1$d%%</string>
     <string name="rgb_brightness">Яркасць: %1$d%%</string>
-    <string name="rgb_settings_saved">Налады %1$s захаваны</string>
     <string name="lp_section_alphabet">Доўгае націсканне – літары</string>
     <string name="lp_section_numeric">Доўгае націсканне – лічбы</string>
     <string name="lp_section_my_binds">Мае прывязкі</string>

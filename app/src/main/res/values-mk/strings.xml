@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Лудо ← → Опуштено</string>
     <string name="rgb_saturation">Заситеност: %1$d%%</string>
     <string name="rgb_brightness">Осветленост: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s – поставките се зачувани</string>
     <string name="lp_section_alphabet">Долго притискање – букви</string>
     <string name="lp_section_numeric">Долго притискање – бројки</string>
     <string name="lp_section_my_binds">Мои врски</string>

@@ -99,7 +99,6 @@
     <string name="rgb_insane_chill">Çmendurisht ← → Qetë</string>
     <string name="rgb_saturation">Ngopja: %1$d%%</string>
     <string name="rgb_brightness">Ndriçimi: %1$d%%</string>
-    <string name="rgb_settings_saved">Cilësimet e %1$s u ruajtën</string>
     <string name="lp_section_alphabet">Shtypje e gjatë – shkronja</string>
     <string name="lp_section_numeric">Shtypje e gjatë – numra</string>
     <string name="lp_section_my_binds">Lidhjet e mia</string>
