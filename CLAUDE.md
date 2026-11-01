@@ -63,7 +63,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 **Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. Landscape uses the same mechanism. The keyboard height follows (measured from content). 3-row portrait triangles are drawn 1.5× taller at 100 % (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`, applied in `keyHeightStretch()`).
 
-**Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `landscapeRowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
+**Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `LandscapeLayoutBuilder.rowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
 
 ### Main app buttons
 
@@ -206,7 +206,7 @@ All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isC
 Actions available per slot (`EdgeActionType`): Shift, Backspace, Enter, Space, Char (any special character), Emoji picker, None. When Shift or Backspace is placed on a side button, that key is hidden from the main layout (replaced by an `__EDGE_GHOST__` placeholder in `EdgeKeyManager`). Enter stays in both places. The side (left/right) of each slot is fixed per row count (`EdgeSlotsStorage.fixedSideForIndex`). Slots are stored per row count.
 
 ### Landscape
-Letter rows split into left and right halves with the Horizontal "island" in the middle (`buildLandscapeLayout`). The split points per row are hard-coded per row count (`leftLandscapeKeysForRow` / `rightLandscapeKeysForRow`).
+Letter rows split into left and right halves with the Horizontal "island" in the middle (`service/LandscapeLayoutBuilder.kt`, which reaches the service through its `Host` interface). The split points per row are hard-coded per row count (`LandscapeSplit.leftKeys` / `rightKeys`, pure and unit-tested). With 5 rows the 7-key rows 2 and 4 are split 4 + 4, so their middle letters (g, n) appear on both halves.
 
 ### Settings export / import
 - **Export** writes one JSON file through the system "save as" picker (`ActivityResultContracts.CreateDocument`, no storage permission). **Import** reads it through `OpenDocument`, asks for confirmation, saves the current state as a "Backup" in Saved layouts, applies the file, re-applies theme and language, and recreates the screen.
@@ -245,7 +245,7 @@ The app follows a configuration-driven architecture where `MyKeyboardService` or
 
 ```
 MyKeyboardService (InputMethodService)
-├── Keyboard Rendering (redrawKeyboard, createKey, buildLandscapeLayout)
+├── Keyboard Rendering (redrawKeyboard, createKey; landscape in LandscapeLayoutBuilder)
 ├── Input Processing (delegates to KeyInputController)
 ├── Configuration State (KeyboardConfig, KeyShape, isShifted)
 ├── DeleteRestoreManager (swipe delete/restore, backspace hold)
