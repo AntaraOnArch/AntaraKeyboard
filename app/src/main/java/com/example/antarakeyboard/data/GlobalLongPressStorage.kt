@@ -70,72 +70,60 @@ object GlobalLongPressStorage {
     /* ───────── HELPERS ───────── */
 
     /**
-     * Izvuče bindove iz layouta i spremi ih globalno
+     * Saves the binds of every key in [layout] into the global binds. Keys that are not in this
+     * layout (other row counts have other numeric keys) keep their binds; a key whose binds were
+     * all removed is stored with an empty list, so it doesn't fall back to the factory binds.
      */
     fun extractAndSaveAlphabetBinds(context: Context, layout: com.example.antarakeyboard.model.KeyboardConfig) {
-        val binds = extractBindsFromLayout(layout)
-        saveAlphabetBinds(context, binds)
+        saveAlphabetBinds(context, loadAlphabetBinds(context) + extractBindsFromLayout(layout))
     }
 
     fun extractAndSaveNumericBinds(context: Context, layout: com.example.antarakeyboard.model.KeyboardConfig) {
-        val binds = extractBindsFromLayout(layout)
-        saveNumericBinds(context, binds)
+        saveNumericBinds(context, loadNumericBinds(context) + extractBindsFromLayout(layout))
     }
 
-    private fun extractBindsFromLayout(layout: com.example.antarakeyboard.model.KeyboardConfig): Map<String, List<String>> {
-        val binds = mutableMapOf<String, List<String>>()
-
-        layout.rows.forEach { row ->
-            row.keys.forEach { key ->
-                if (key.longPressBindings.isNotEmpty() && key.label.isNotBlank()) {
-                    binds[key.label] = key.longPressBindings.toList()
-                }
-            }
-        }
-        layout.specialLeft.forEach { key ->
-            if (key.longPressBindings.isNotEmpty() && key.label.isNotBlank()) {
-                binds[key.label] = key.longPressBindings.toList()
-            }
-        }
-        layout.specialRight.forEach { key ->
-            if (key.longPressBindings.isNotEmpty() && key.label.isNotBlank()) {
-                binds[key.label] = key.longPressBindings.toList()
-            }
-        }
-
-        return binds
-    }
+    internal fun extractBindsFromLayout(layout: com.example.antarakeyboard.model.KeyboardConfig): Map<String, List<String>> =
+        (layout.rows.flatMap { it.keys } + layout.specialLeft + layout.specialRight)
+            .filter { it.label.isNotBlank() }
+            .associate { it.label to it.longPressBindings.toList() }
 
     /**
-     * Apliciraj globalne bindove na layout
+     * Applies the global binds to [layout]; [factory] is the default layout of the same row count.
      */
     fun applyAlphabetBindsToLayout(
         context: Context,
-        layout: com.example.antarakeyboard.model.KeyboardConfig
+        layout: com.example.antarakeyboard.model.KeyboardConfig,
+        factory: com.example.antarakeyboard.model.KeyboardConfig
     ): com.example.antarakeyboard.model.KeyboardConfig {
         if (!prefs(context).contains(KEY_ALPHABET_BINDS)) return layout
-        return applyBindsToLayout(layout, loadAlphabetBinds(context))
+        return applyBindsToLayout(layout, loadAlphabetBinds(context), factory)
     }
 
     fun applyNumericBindsToLayout(
         context: Context,
-        layout: com.example.antarakeyboard.model.KeyboardConfig
+        layout: com.example.antarakeyboard.model.KeyboardConfig,
+        factory: com.example.antarakeyboard.model.KeyboardConfig
     ): com.example.antarakeyboard.model.KeyboardConfig {
         if (!prefs(context).contains(KEY_NUMERIC_BINDS)) return layout
-        return applyBindsToLayout(layout, loadNumericBinds(context))
+        return applyBindsToLayout(layout, loadNumericBinds(context), factory)
     }
 
     /**
-     * The global binds are the only truth: a key missing from them has no binds, even if the
-     * stored layout still carries an old snapshot (e.g. letters of a previously used language).
+     * The global binds are the only truth. A key missing from them gets the factory binds of
+     * [factory] (e.g. `" , : ;` on `.`), never the snapshot stored inside [layout], which can
+     * still hold letters of a previously used language.
      */
-    private fun applyBindsToLayout(
+    internal fun applyBindsToLayout(
         layout: com.example.antarakeyboard.model.KeyboardConfig,
-        binds: Map<String, List<String>>
+        binds: Map<String, List<String>>,
+        factory: com.example.antarakeyboard.model.KeyboardConfig
     ): com.example.antarakeyboard.model.KeyboardConfig {
+        val factoryBinds = extractBindsFromLayout(factory)
         fun withBinds(key: com.example.antarakeyboard.model.KeyConfig) =
             if (key.label.isBlank()) key
-            else key.copy(longPressBindings = binds[key.label].orEmpty().toMutableList())
+            else key.copy(
+                longPressBindings = (binds[key.label] ?: factoryBinds[key.label]).orEmpty().toMutableList()
+            )
 
         return layout.copy(
             rows = layout.rows.map { row ->

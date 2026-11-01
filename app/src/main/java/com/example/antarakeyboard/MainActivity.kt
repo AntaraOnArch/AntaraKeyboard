@@ -587,6 +587,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // A language changed in Android settings: the editors must show its letters already
+        KeyboardPrefs.ensureDefaultLongPress(this)
         syncLanguageSpinner()
     }
 
@@ -2254,6 +2256,11 @@ class MainActivity : AppCompatActivity() {
                 showSpecialCharPicker { picked ->
                     key.label = picked
                     key.longPressBindings.remove("__USER_EMPTY__")
+                    // The symbol brings its own binds (shared by all row counts); otherwise the
+                    // save would store it as "no binds" and wipe them
+                    key.longPressBindings.addAll(
+                        GlobalLongPressStorage.loadNumericBinds(this).getOrElse(picked) { emptyList() }
+                    )
                     numericBinder.bindInto(numericEditorContainer)
                     numericBinder.saveExternally()
                 }

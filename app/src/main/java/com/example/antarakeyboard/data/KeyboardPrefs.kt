@@ -500,7 +500,9 @@ object KeyboardPrefs {
      */
     fun loadAlphabetLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadAlphabetLayoutForRowCount(context, rowCount)
-        return GlobalLongPressStorage.applyAlphabetBindsToLayout(context, baseLayout)
+        return GlobalLongPressStorage.applyAlphabetBindsToLayout(
+            context, baseLayout, defaultAlphabetLayoutForRowCount(rowCount)
+        )
     }
 
     /**
@@ -509,7 +511,9 @@ object KeyboardPrefs {
      */
     fun loadNumericLayoutWithGlobalBinds(context: Context, rowCount: Int): KeyboardConfig {
         val baseLayout = loadNumericLayoutForRowCount(context, rowCount)
-        return GlobalLongPressStorage.applyNumericBindsToLayout(context, baseLayout)
+        return GlobalLongPressStorage.applyNumericBindsToLayout(
+            context, baseLayout, defaultNumericLayoutForRowCount(rowCount)
+        )
     }
 
     /**

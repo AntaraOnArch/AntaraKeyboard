@@ -107,6 +107,7 @@ object LongPressPresets {
      * New long-press binds after the defaults changed (script, language or app update):
      * [oldDefaults] are removed from [current], [newDefaults] come first, and everything the user
      * bound themselves (custom text, extra letters, emoji) stays after them in its order.
+     * A key the user cleared (empty list) stays empty, so it never falls back to factory binds.
      */
     fun mergeDefaults(
         current: Map<String, List<String>>,
@@ -117,7 +118,7 @@ object LongPressPresets {
             val old = oldDefaults[key].orEmpty()
             val userBinds = current[key].orEmpty().filter { it !in old }
             (newDefaults[key].orEmpty() + userBinds).distinct()
-        }.filterValues { it.isNotEmpty() }
+        }.filter { (key, values) -> values.isNotEmpty() || current[key]?.isEmpty() == true }
 
     /** Same as [withUppercase] for sets (used for the old defaults of the migration). */
     internal fun withUppercaseSets(source: Map<String, Set<String>>): Map<String, Set<String>> {

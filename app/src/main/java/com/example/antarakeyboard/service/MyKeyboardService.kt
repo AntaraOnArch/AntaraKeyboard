@@ -373,14 +373,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         isPasswordInput = InputTypes.isPassword(info)
         keyPreviewManager.setEnabled(!isPasswordInput)
 
+        // First: a language changed elsewhere switches the script, which the dictionary follows
+        KeyboardPrefs.ensureDefaultLongPress(this)
+
         // Word suggestions (main app switch); nothing in passwords, numbers, e-mails or URLs
         suggestionsOn = KeyboardPrefs.isSuggestionsEnabled(this)
         suggestionsAllowedInField = InputTypes.allowsSuggestions(info)
         if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
         else suggestionController.release()
         updateSuggestionStrip()
-
-        KeyboardPrefs.ensureDefaultLongPress(this)
 
         // Refresh vibration preference
         hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
