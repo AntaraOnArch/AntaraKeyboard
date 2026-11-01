@@ -4,20 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.Rect
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -27,7 +24,6 @@ import androidx.core.view.isVisible
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.AppLanguageSettings
 import com.example.antarakeyboard.data.KeyboardPrefs
-import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.data.ScriptMapper
 import com.example.antarakeyboard.extensions.dp
@@ -1131,10 +1127,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         longPressPopupManager.hideLongPressPopup()
     }
 
-
-    private val longPressCellBounds: List<Rect>
-        get() = longPressPopupManager.getLpRects()
-
     /* ───────── LAYOUT ───────── */
 
     /**
@@ -1499,6 +1491,33 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
 
     /* ───────── KEY VIEW ───────── */
+    private val keyTouchHost by lazy { KeyTouchHost() }
+
+    /** The key touch handler's view of this service. */
+    private inner class KeyTouchHost : KeyTouchListener.Host {
+        override val serviceScope get() = this@MyKeyboardService.serviceScope
+        override val inputController get() = this@MyKeyboardService.inputController
+        override val hapticManager get() = this@MyKeyboardService.hapticManager
+        override val keyPreviewManager get() = this@MyKeyboardService.keyPreviewManager
+        override val longPressPopupManager get() = this@MyKeyboardService.longPressPopupManager
+        override val bothSpacesHeld get() = leftSpaceHeld && rightSpaceHeld
+        override fun isAlphabetLayoutActive() = this@MyKeyboardService.isAlphabetLayoutActive()
+        override fun hideLongPressPopup() = this@MyKeyboardService.hideLongPressPopup()
+        override fun hideEmojiPopup() = this@MyKeyboardService.hideEmojiPopup()
+        override fun showLongPressPopup(anchor: View, chars: List<String>) =
+            this@MyKeyboardService.showLongPressPopup(anchor, chars)
+        override fun moveLpSelection(dx: Int, dy: Int) = this@MyKeyboardService.moveLpSelection(dx, dy)
+        override fun showEmojiPicker() = this@MyKeyboardService.showEmojiPicker()
+        override fun handleDualSpaceDown(key: KeyConfig) = this@MyKeyboardService.handleDualSpaceDown(key)
+        override fun handleDualSpaceUpOrCancel(key: KeyConfig) =
+            this@MyKeyboardService.handleDualSpaceUpOrCancel(key)
+        override fun stopSwipeGestures() = this@MyKeyboardService.stopSwipeGestures()
+        override fun toggleShift() = this@MyKeyboardService.toggleShift()
+        override fun commitText(text: String) {
+            currentInputConnection?.commitText(text, 1)
+        }
+    }
+
     /** The landscape builder's view of this service. */
     private inner class LandscapeHost : LandscapeLayoutBuilder.Host {
         override val keyboardContainer get() = this@MyKeyboardService.keyboardContainer
@@ -1671,229 +1690,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         // Final key colors (incl. Shift's active look) are set by applySpecialKeyColors()
         setTextColor(keyColors(label).second)
 
-        val nonBindable = setOf("⇧", "⌫", "↵", "123", "ABC", "abc", " ", "😊")
-        val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
-
-        var longPressTriggered = false
-        var startX = 0f
-        var startY = 0f
-        val step = 18.dp(this)
-        var handledBySwipeUp = false
-        val swipeUpThreshold = 26.dp(this)
-        var longPressJob: Job? = null
-
         isLongClickable = true
-
-        setOnTouchListener { v, e ->
-            when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = e.rawX
-                    startY = e.rawY
-                    longPressTriggered = false
-                    handledBySwipeUp = false
-                    hideLongPressPopup()
-                    hideEmojiPopup()
-
-                    // Haptic feedback on key press
-                    hapticManager.performHapticFeedback(v)
-
-                    // Show key preview
-                    keyPreviewManager.show(v, label)
-
-                    if (label == " ") {
-                        handleDualSpaceDown(keyConfig)
-                    }
-
-                    longPressJob?.cancel()
-                    if (label !in nonBindable) {
-                        longPressJob = serviceScope.launch {
-                            delay(longPressTimeout.milliseconds)
-                            // Latin keyboard: Latin letters only; Cyrillic keyboard: Cyrillic only
-                            val binds = LongPressPresets.visibleFor(
-                                KeyboardPrefs.getSelectedLongPressPreset(this@MyKeyboardService),
-                                keyConfig.longPressBindings
-                            )
-                            if (binds.isNotEmpty()) {
-                                longPressTriggered = true
-                                keyPreviewManager.hide()
-                                hapticManager.onLongPress()
-                                showLongPressPopup(this@apply, binds)
-                                longPressPopupManager.resetSelection()
-                            }
-                        }
-                    }
-
-                    inputController.handleTouch(v as TextView, e)
-                    true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = e.rawX - startX
-                    val dy = e.rawY - startY
-                    val absDx = abs(dx)
-                    val absDy = abs(dy)
-
-                    // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
-                    val horizontalSwipe = inputController.isHorizontalSwipeActive(v as TextView)
-
-                    // 123 swipe-up => emoji, only on the 4/5-row alphabet layout
-                    if (!longPressTriggered &&
-                        !handledBySwipeUp &&
-                        !horizontalSwipe &&
-                        label == "123" &&
-                        rowCount >= 4 &&
-                        isAlphabetLayoutActive() &&
-                        dy < -swipeUpThreshold &&
-                        absDy > absDx
-                    ) {
-                        handledBySwipeUp = true
-                        longPressJob?.cancel()
-                        hideLongPressPopup()
-                        keyPreviewManager.hide()
-                        showEmojiPicker()
-                        v.isPressed = false
-                        return@setOnTouchListener true
-                    }
-
-                    // . swipe-up => ,
-                    // ? swipe-up => !
-                    if (!longPressTriggered &&
-                        !handledBySwipeUp &&
-                        !horizontalSwipe &&
-                        (label == "." || label == "?") &&
-                        (v as? KeyView)?.useSplitLabels == true &&
-                        dy < -swipeUpThreshold &&
-                        absDy > absDx
-                    ) {
-                        val swipeText = v.swipeUpLabel
-
-                        if (!swipeText.isNullOrBlank()) {
-                            handledBySwipeUp = true
-                            longPressJob?.cancel()
-                            hideLongPressPopup()
-                            currentInputConnection?.commitText(swipeText, 1)
-                            v.isPressed = false
-                            return@setOnTouchListener true
-                        }
-                    }
-
-                    if (!longPressTriggered && absDx > 20.dp(this) && absDx > absDy * 1.05f) {
-                        longPressJob?.cancel()
-                        hideLongPressPopup()
-                    }
-
-                    if (longPressTriggered) {
-                        if (absDx > absDy && absDx > step) {
-                            moveLpSelection(if (dx > 0) 1 else -1, 0)
-                            startX = e.rawX
-                            startY = e.rawY
-                        } else if (absDy > step) {
-                            moveLpSelection(0, if (dy > 0) 1 else -1)
-                            startX = e.rawX
-                            startY = e.rawY
-                        } else if (longPressCellBounds.isNotEmpty()) {
-                            val rx = e.rawX.toInt()
-                            val ry = e.rawY.toInt()
-                            val newIdx = longPressCellBounds.indexOfFirst { it.contains(rx, ry) }
-                            if (newIdx != -1 && newIdx != longPressPopupManager.getSelectedIndex()) {
-                                longPressPopupManager.setSelectedIndex(newIdx)
-                            }
-                        }
-                    }
-
-                    // Skip swipe gestures when long press popup is active, and while both space
-                    // keys are held (dual-space script/language picker) – that is no swipe
-                    if (!longPressTriggered && !(leftSpaceHeld && rightSpaceHeld)) {
-                        inputController.handleTouch(v, e)
-                    }
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    // Hide key preview
-                    keyPreviewManager.hide()
-
-                    if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
-                        stopSwipeGestures()
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-                        longPressJob?.cancel()
-                        return@setOnTouchListener true
-                    }
-
-                    if (handledBySwipeUp) {
-                        stopSwipeGestures()
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-                        longPressJob?.cancel()
-                        return@setOnTouchListener true
-                    }
-
-                    v.performClick()
-                    v.isSelected = false
-                    v.clearFocus()
-                    longPressJob?.cancel()
-
-                    if (longPressTriggered) {
-                        longPressPopupManager.getSelectedChar()?.let { ch ->
-                            currentInputConnection?.commitText(ch, 1)
-                        }
-                        hideLongPressPopup()
-                        v.isPressed = false
-                        true
-                    } else {
-                        when (label) {
-                            "⇧" -> {
-                                v.isPressed = false
-                                toggleShift()
-                                true
-                            }
-
-                            "😊" -> {
-                                v.isPressed = false
-                                showEmojiPicker()
-                                true
-                            }
-
-                            else -> {
-                                inputController.handleTouch(v as TextView, e)
-                                true
-                            }
-                        }
-                    }
-                }
-
-                MotionEvent.ACTION_CANCEL -> {
-                    // Hide key preview
-                    keyPreviewManager.hide()
-
-                    if (label == " ") {
-                        handleDualSpaceUpOrCancel(keyConfig)
-                    }
-
-                    handledBySwipeUp = false
-                    longPressJob?.cancel()
-
-                    if (longPressTriggered) {
-                        hideLongPressPopup()
-                    }
-
-                    v.isPressed = false
-                    v.isSelected = false
-                    v.clearFocus()
-
-                    // Skip swipe cleanup when long press popup was shown
-                    if (!longPressTriggered) {
-                        inputController.handleTouch(v as TextView, e)
-                    }
-                    true
-                }
-
-                else -> false
-            }
-        }
+        setOnTouchListener(KeyTouchListener(this@MyKeyboardService, this, keyConfig, rowCount, keyTouchHost))
     }
 
     /** Regular key colors as drawn (shared rule in [KeyboardPrefs.resolveKeyColors]). */
