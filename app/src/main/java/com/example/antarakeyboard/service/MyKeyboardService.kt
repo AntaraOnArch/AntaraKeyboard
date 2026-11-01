@@ -16,10 +16,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
@@ -29,7 +25,6 @@ import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.AppLanguageSettings
-import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.PrefsManager
@@ -119,7 +114,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private lateinit var emojiPickerManager: EmojiPickerManager
 
-    private var languagePresetPopup: PopupWindow? = null
+    private val languagePicker by lazy { LanguagePickerPopup(this, LanguagePickerHost()) }
 
     private var leftSpaceHeld = false
     private var rightSpaceHeld = false
@@ -570,7 +565,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /** Dismisses popups and stops jobs owned by the current input view, if one exists. */
     private fun releaseInputViewResources() {
         stopRgbAnimation()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         if (::emojiPickerManager.isInitialized) emojiPickerManager.hide()
         if (::longPressPopupManager.isInitialized) longPressPopupManager.hideLongPressPopup()
         if (::keyPreviewManager.isInitialized) keyPreviewManager.hide()
@@ -594,7 +589,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         if (::emojiPickerManager.isInitialized) hideEmojiPopup()
         if (::longPressPopupManager.isInitialized) hideLongPressPopup()
         if (::keyPreviewManager.isInitialized) keyPreviewManager.hide()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         resetDualSpaceHoldState()
     }
 
@@ -626,7 +621,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             leftSpaceHeld &&
             rightSpaceHeld &&
             dualSpaceHoldJob == null &&
-            languagePresetPopup == null
+            !languagePicker.isShowing
         ) {
             dualSpacePickerWasShown = false
 
@@ -636,7 +631,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
                 if (leftSpaceHeld && rightSpaceHeld) {
                     dualSpacePickerWasShown = true
-                    showLanguagePresetPopup()
+                    languagePicker.show()
                 }
             }
         }
@@ -646,7 +641,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         if (!isDualSpaceKey(key)) return false
 
         val shouldConsumeSpace =
-            dualSpacePickerWasShown || languagePresetPopup != null
+            dualSpacePickerWasShown || languagePicker.isShowing
 
         if (isLeftSpace(key)) {
             leftSpaceHeld = false
@@ -660,7 +655,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             cancelDualSpaceHoldTimer()
         }
 
-        if (!leftSpaceHeld && !rightSpaceHeld && languagePresetPopup == null) {
+        if (!leftSpaceHeld && !rightSpaceHeld && !languagePicker.isShowing) {
             dualSpacePickerWasShown = false
         }
 
@@ -773,116 +768,23 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         emojiPickerManager.hide()
     }
 
-    private fun hideLanguagePresetPopup() {
-        languagePresetPopup?.dismiss()
-        languagePresetPopup = null
-    }
-
-    /**
-     * Dual-space picker: the same language choice as the main app (System default + every
-     * translation, each in its own language). Choosing one sets the app language and the
-     * keyboard script that goes with it (Cyrillic languages type Cyrillic).
-     */
-    private fun showLanguagePresetPopup() {
-        hideLongPressPopup()
-        hideEmojiPopup()
-        hideLanguagePresetPopup()
-        cancelDualSpaceHoldTimer()
-
-        dualSpacePickerWasShown = true
-
-        val popupWidth = (resources.displayMetrics.widthPixels * 0.86f).toInt()
-            .coerceAtLeast(280.dp(this))
-
-        // Same palette as the emoji picker: keyboard surface + key text
-        val pickerColors = emojiPickerColors()
-        val popupBg = pickerColors.panel
-        val popupText = pickerColors.text
-
-        val root = LinearLayout(themedCtx).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(20.dp(this), 18.dp(this), 20.dp(this), 14.dp(this))
-            setBackgroundColor(popupBg)
+    /** The language picker's view of this service. */
+    private inner class LanguagePickerHost : LanguagePickerPopup.Host {
+        override val themedContext: Context get() = themedCtx
+        override val rootView: View get() = this@MyKeyboardService.rootView
+        override fun colors() = emojiPickerColors()
+        override fun onShow() {
+            hideLongPressPopup()
+            hideEmojiPopup()
+            cancelDualSpaceHoldTimer()
+            dualSpacePickerWasShown = true
         }
-
-        root.addView(TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.main_language)
-            textSize = 18f
-            setTextColor(popupText)
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setPadding(0, 0, 0, 14.dp(this))
-        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
-        val tags = listOf("") + AppLanguages.TAGS
-        val current = AppLanguageSettings.selectedTag(this).let { AppLanguages.match(it) ?: "" }
-
-        val radioGroup = RadioGroup(themedCtx).apply { orientation = RadioGroup.VERTICAL }
-        val idToTag = HashMap<Int, String>()
-        tags.forEach { tag ->
-            val id = View.generateViewId()
-            idToTag[id] = tag
-            radioGroup.addView(RadioButton(themedCtx).apply {
-                this.id = id
-                text = if (tag.isEmpty()) themedCtx.getString(R.string.language_system_default)
-                else AppLanguages.nativeName(tag)
-                textSize = 16f
-                setTextColor(popupText)
-                setPadding(0, 6.dp(this), 0, 6.dp(this))
-                isFocusable = false
-            }, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        }
-        idToTag.entries.firstOrNull { it.value == current }?.let { radioGroup.check(it.key) }
-
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val tag = idToTag[checkedId] ?: return@setOnCheckedChangeListener
-            applyLanguageFromPicker(tag)
-        }
-
-        val scroll = ScrollView(themedCtx).apply {
-            isFillViewport = false
-            addView(radioGroup, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        }
-        root.addView(scroll, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            (resources.displayMetrics.heightPixels * 0.46f).toInt()
-        ))
-
-        root.addView(TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.action_close)
-            textSize = 14f
-            setTextColor(popupText)
-            gravity = Gravity.CENTER
-            setPadding(8.dp(this), 16.dp(this), 8.dp(this), 0)
-            isClickable = true
-            isFocusable = false
-            setOnClickListener { hideLanguagePresetPopup() }
-        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
-        val popup = PopupWindow(root, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
-            isOutsideTouchable = true
-            isFocusable = true
-            isClippingEnabled = false
-            elevation = 12.dp(this@MyKeyboardService).toFloat()
-            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
-            setOnDismissListener {
-                languagePresetPopup = null
-                if (!leftSpaceHeld && !rightSpaceHeld) {
-                    dualSpacePickerWasShown = false
-                }
+        override fun onDismissed() {
+            if (!leftSpaceHeld && !rightSpaceHeld) {
+                dualSpacePickerWasShown = false
             }
         }
-        languagePresetPopup = popup
-
-        // showAtLocation in an IME is relative to the rootView window: convert screen Y to local Y
-        val screenW = resources.displayMetrics.widthPixels
-        val screenH = resources.displayMetrics.heightPixels
-        val rootLoc = IntArray(2)
-        rootView.getLocationOnScreen(rootLoc)
-        val localX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
-        val localY = (screenH * 0.105f).toInt().coerceAtLeast(54.dp(this)) - rootLoc[1]
-
-        popup.showAtLocation(rootView, Gravity.NO_GRAVITY, localX, localY)
+        override fun onLanguagePicked(tag: String) = applyLanguageFromPicker(tag)
     }
 
     /** Language chosen on the keyboard: same effect as the main app's Language dropdown. */
@@ -909,7 +811,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         )
 
         resetDualSpaceHoldState()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         // Another script types another language: switch the suggestion dictionary too
         if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
         redrawKeyboard()
