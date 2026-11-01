@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
@@ -120,9 +121,7 @@ object SavedLayoutStorage {
             layouts.removeAt(layouts.lastIndex)
         }
 
-        prefs(context).edit()
-            .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
-            .apply()
+        prefs(context).edit { putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts)) }
     }
 
     /**
@@ -178,9 +177,7 @@ object SavedLayoutStorage {
     fun deleteLayout(context: Context, layoutId: Long) {
         val layouts = getSavedLayouts(context).toMutableList()
         layouts.removeAll { it.id == layoutId }
-        prefs(context).edit()
-            .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
-            .apply()
+        prefs(context).edit { putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts)) }
     }
 
     /**
@@ -191,9 +188,7 @@ object SavedLayoutStorage {
         val index = layouts.indexOfFirst { it.id == layoutId }
         if (index >= 0) {
             layouts[index] = layouts[index].copy(name = newName)
-            prefs(context).edit()
-                .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
-                .apply()
+            prefs(context).edit { putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts)) }
         }
     }
 
@@ -222,9 +217,7 @@ object SavedLayoutStorage {
                 enterIcon = enterIcon,
                 backgroundColor = backgroundColor
             )
-            prefs(context).edit()
-                .putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts))
-                .apply()
+            prefs(context).edit { putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts)) }
         }
     }
 

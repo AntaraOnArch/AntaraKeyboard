@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -20,7 +21,7 @@ object GlobalLongPressStorage {
 
     fun saveAlphabetBinds(context: Context, binds: Map<String, List<String>>) {
         val json = gson.toJson(binds)
-        prefs(context).edit().putString(KEY_ALPHABET_BINDS, json).apply()
+        prefs(context).edit { putString(KEY_ALPHABET_BINDS, json) }
     }
 
     fun loadAlphabetBinds(context: Context): Map<String, List<String>> {
@@ -43,14 +44,14 @@ object GlobalLongPressStorage {
     }
 
     fun clearAlphabetBinds(context: Context) {
-        prefs(context).edit().remove(KEY_ALPHABET_BINDS).apply()
+        prefs(context).edit { remove(KEY_ALPHABET_BINDS) }
     }
 
     /* ───────── NUMERIC BINDS ───────── */
 
     fun saveNumericBinds(context: Context, binds: Map<String, List<String>>) {
         val json = gson.toJson(binds)
-        prefs(context).edit().putString(KEY_NUMERIC_BINDS, json).apply()
+        prefs(context).edit { putString(KEY_NUMERIC_BINDS, json) }
     }
 
     fun loadNumericBinds(context: Context): Map<String, List<String>> {
@@ -64,7 +65,7 @@ object GlobalLongPressStorage {
     }
 
     fun clearNumericBinds(context: Context) {
-        prefs(context).edit().remove(KEY_NUMERIC_BINDS).apply()
+        prefs(context).edit { remove(KEY_NUMERIC_BINDS) }
     }
 
     /* ───────── HELPERS ───────── */

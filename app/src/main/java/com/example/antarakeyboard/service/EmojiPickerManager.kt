@@ -1,9 +1,9 @@
 package com.example.antarakeyboard.service
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
 import com.example.antarakeyboard.EmojiData
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EmojiPickerStorage
@@ -153,7 +154,7 @@ class EmojiPickerManager(
             isOutsideTouchable = true
             isFocusable = false
             elevation = 12.dp(context).toFloat()
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
             setOnDismissListener {
                 popup = null
                 loadJob?.cancel()
@@ -369,6 +370,8 @@ class EmojiPickerManager(
         return scroll
     }
 
+    // The touch listener only blocks the parent from intercepting and returns false
+    @SuppressLint("ClickableViewAccessibility")
     private fun createEmojiGridContainer(): View {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -445,6 +448,9 @@ class EmojiPickerManager(
         return container
     }
 
+    // The touch listener only adds visual feedback and returns false; clicks still go through
+    // onClick (and performClick), so calling performClick here would fire twice
+    @SuppressLint("ClickableViewAccessibility")
     private fun createActionButton(action: EmojiButtonAction, width: Int, height: Int): View {
         return TextView(context).apply {
             text = EmojiPickerStorage.getButtonLabel(action)
@@ -575,6 +581,9 @@ class EmojiPickerManager(
         }
     }
 
+    // The touch listener only adds visual feedback and returns false; clicks still go through
+    // onClick (and performClick), so calling performClick here would fire twice
+    @SuppressLint("ClickableViewAccessibility")
     private fun createEmojiButton(emoji: String): View {
         return TextView(context).apply {
             text = emoji

@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
@@ -64,7 +65,7 @@ object KeyboardPrefs {
         prefs(context).getFloat(KEY_SCALE, 1f)
 
     fun setKeyScale(context: Context, scale: Float) {
-        prefs(context).edit().putFloat(KEY_SCALE, scale).apply()
+        prefs(context).edit { putFloat(KEY_SCALE, scale) }
     }
 
     /* ───────── ROW SPACING ───────── */
@@ -76,12 +77,15 @@ object KeyboardPrefs {
         prefs(context).getInt(KEY_ROW_SPACING_DP, 0)
 
     fun setRowSpacingDp(context: Context, dp: Int) {
-        prefs(context).edit().putInt(KEY_ROW_SPACING_DP, dp).apply()
+        prefs(context).edit { putInt(KEY_ROW_SPACING_DP, dp) }
     }
 
     /** Key height and row spacing back to their defaults (Reset layout / Reset all). */
     fun resetKeySizing(context: Context) {
-        prefs(context).edit().remove(KEY_SCALE).remove(KEY_ROW_SPACING_DP).apply()
+        prefs(context).edit {
+            remove(KEY_SCALE)
+            remove(KEY_ROW_SPACING_DP)
+        }
     }
 
     /* ───────── SHAPE ───────── */
@@ -96,7 +100,7 @@ object KeyboardPrefs {
     }
 
     fun setShape(context: Context, shape: KeyShape) {
-        prefs(context).edit().putString(KEY_SHAPE, shape.name).apply()
+        prefs(context).edit { putString(KEY_SHAPE, shape.name) }
     }
 
     /* ───────── ROW COUNT ───────── */
@@ -105,7 +109,7 @@ object KeyboardPrefs {
         prefs(context).getInt(KEY_ROW_COUNT, 3)
 
     fun setRowCount(context: Context, rowCount: Int) {
-        prefs(context).edit().putInt(KEY_ROW_COUNT, rowCount).apply()
+        prefs(context).edit { putInt(KEY_ROW_COUNT, rowCount) }
     }
 
     /* ───────── DEFAULT LAYOUTS ───────── */
@@ -135,9 +139,7 @@ object KeyboardPrefs {
         key: String,
         layout: KeyboardConfig
     ) {
-        prefs(context).edit()
-            .putString(key, gson.toJson(layout))
-            .apply()
+        prefs(context).edit { putString(key, gson.toJson(layout)) }
     }
 
     private fun loadLayoutWithKey(
@@ -189,7 +191,7 @@ object KeyboardPrefs {
 
     fun clearAlphabetLayoutForRowCount(context: Context, rowCount: Int) {
         val key = alphabetLayoutKeyForRowCount(rowCount)
-        prefs(context).edit().remove(key).apply()
+        prefs(context).edit { remove(key) }
     }
 
 
@@ -224,7 +226,7 @@ object KeyboardPrefs {
 
     fun clearNumericLayoutForRowCount(context: Context, rowCount: Int) {
         val key = numericLayoutKeyForRowCount(rowCount)
-        prefs(context).edit().remove(key).apply()
+        prefs(context).edit { remove(key) }
     }
 
     /* ───────── HORIZONTAL CENTER LAYOUT ───────── */
@@ -257,7 +259,7 @@ object KeyboardPrefs {
 
     fun clearHorizontalCenterLayoutForRowCount(context: Context, rowCount: Int) {
         val key = horizontalCenterLayoutKeyForRowCount(rowCount)
-        prefs(context).edit().remove(key).apply()
+        prefs(context).edit { remove(key) }
     }
 
     /* ───────── SPACE COLORS ───────── */
@@ -266,7 +268,7 @@ object KeyboardPrefs {
         prefs(context).getBoolean(SPACE_LINKED, true)
 
     fun setSpaceLinked(context: Context, linked: Boolean) {
-        prefs(context).edit().putBoolean(SPACE_LINKED, linked).apply()
+        prefs(context).edit { putBoolean(SPACE_LINKED, linked) }
     }
 
     fun getSpace1Bg(context: Context): Int =
@@ -276,21 +278,21 @@ object KeyboardPrefs {
         prefs(context).getInt(SPACE2_BG, 0xFF3E3E3E.toInt())
 
     fun setSpace1Bg(context: Context, color: Int) {
-        prefs(context).edit().putInt(SPACE1_BG, color).apply()
+        prefs(context).edit { putInt(SPACE1_BG, color) }
     }
 
     fun setSpace2Bg(context: Context, color: Int) {
-        prefs(context).edit().putInt(SPACE2_BG, color).apply()
+        prefs(context).edit { putInt(SPACE2_BG, color) }
     }
 
     /** Sets explicit space colors (and stops following the theme). */
     fun setSpaceColors(context: Context, c1: Int, c2: Int, linked: Boolean) {
-        prefs(context).edit()
-            .putInt(SPACE1_BG, c1)
-            .putInt(SPACE2_BG, c2)
-            .putBoolean(SPACE_LINKED, linked)
-            .putBoolean(SPACE_USE_THEME, false)
-            .apply()
+        prefs(context).edit {
+            putInt(SPACE1_BG, c1)
+            putInt(SPACE2_BG, c2)
+            putBoolean(SPACE_LINKED, linked)
+            putBoolean(SPACE_USE_THEME, false)
+        }
     }
 
     private const val SPACE_USE_THEME = "space_use_theme"
@@ -303,7 +305,7 @@ object KeyboardPrefs {
         prefs(context).getBoolean(SPACE_USE_THEME, getKeysUseTheme(context))
 
     fun setSpaceUseTheme(context: Context, useTheme: Boolean) {
-        prefs(context).edit().putBoolean(SPACE_USE_THEME, useTheme).apply()
+        prefs(context).edit { putBoolean(SPACE_USE_THEME, useTheme) }
     }
 
     /* ───────── SIDE BUTTONS COLORS ───────── */
@@ -321,11 +323,11 @@ object KeyboardPrefs {
         prefs(context).getInt(SIDE_BUTTONS_TEXT_COLOR, 0xFFFFFFFF.toInt())
 
     fun setSideButtonsColors(context: Context, bg: Int, textColor: Int, useThemeBg: Boolean) {
-        prefs(context).edit()
-            .putInt(SIDE_BUTTONS_BG, bg)
-            .putInt(SIDE_BUTTONS_TEXT_COLOR, textColor)
-            .putBoolean(SIDE_BUTTONS_USE_THEME_BG, useThemeBg)
-            .apply()
+        prefs(context).edit {
+            putInt(SIDE_BUTTONS_BG, bg)
+            putInt(SIDE_BUTTONS_TEXT_COLOR, textColor)
+            putBoolean(SIDE_BUTTONS_USE_THEME_BG, useThemeBg)
+        }
     }
 
     /* ───────── KEYS COLORS ───────── */
@@ -347,12 +349,12 @@ object KeyboardPrefs {
         prefs(context).getInt(KEYS_TEXT_COLOR, 0xFFFFFFFF.toInt())
 
     fun setKeysColors(context: Context, bg: Int, textColor: Int, allSame: Boolean, useTheme: Boolean = false) {
-        prefs(context).edit()
-            .putInt(KEYS_BG, bg)
-            .putInt(KEYS_TEXT_COLOR, textColor)
-            .putBoolean(KEYS_ALL_SAME_COLOR, allSame)
-            .putBoolean(KEYS_USE_THEME, useTheme)
-            .apply()
+        prefs(context).edit {
+            putInt(KEYS_BG, bg)
+            putInt(KEYS_TEXT_COLOR, textColor)
+            putBoolean(KEYS_ALL_SAME_COLOR, allSame)
+            putBoolean(KEYS_USE_THEME, useTheme)
+        }
     }
 
     /* ───────── RESOLVED COLORS (single source for every place that draws keys) ───────── */
@@ -405,17 +407,17 @@ object KeyboardPrefs {
     }
 
     fun setKeyIndividualColors(context: Context, keyLabel: String, bg: Int, textColor: Int) {
-        prefs(context).edit()
-            .putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", bg)
-            .putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", textColor)
-            .apply()
+        prefs(context).edit {
+            putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", bg)
+            putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", textColor)
+        }
     }
 
     fun clearKeyIndividualColors(context: Context, keyLabel: String) {
-        prefs(context).edit()
-            .remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg")
-            .remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text")
-            .apply()
+        prefs(context).edit {
+            remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg")
+            remove("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text")
+        }
     }
 
     fun getBackgroundUseTheme(context: Context): Boolean =
@@ -425,11 +427,11 @@ object KeyboardPrefs {
         prefs(context).getInt(BACKGROUND_COLOR, 0xFF1A1A1A.toInt())
 
     fun setBackgroundColor(context: Context, color: Int, useTheme: Boolean) {
-        prefs(context).edit()
-            .putInt(BACKGROUND_COLOR, color)
-            .putBoolean(BACKGROUND_USE_THEME, useTheme)
-            .putString(BACKGROUND_MODE, (if (useTheme) BackgroundMode.THEME else BackgroundMode.CUSTOM).name)
-            .apply()
+        prefs(context).edit {
+            putInt(BACKGROUND_COLOR, color)
+            putBoolean(BACKGROUND_USE_THEME, useTheme)
+            putString(BACKGROUND_MODE, (if (useTheme) BackgroundMode.THEME else BackgroundMode.CUSTOM).name)
+        }
     }
 
     /** Keyboard background source chosen in Colors → Background. */
@@ -445,10 +447,10 @@ object KeyboardPrefs {
     }
 
     fun setBackgroundMode(context: Context, mode: BackgroundMode) {
-        prefs(context).edit()
-            .putString(BACKGROUND_MODE, mode.name)
-            .putBoolean(BACKGROUND_USE_THEME, mode == BackgroundMode.THEME)
-            .apply()
+        prefs(context).edit {
+            putString(BACKGROUND_MODE, mode.name)
+            putBoolean(BACKGROUND_USE_THEME, mode == BackgroundMode.THEME)
+        }
     }
 
     /** The color the keyboard background is drawn with (transparent for [BackgroundMode.TRANSPARENT]). */
@@ -470,18 +472,18 @@ object KeyboardPrefs {
         prefs(context).getInt(ENTER_ICON, 0xFFFFFFFF.toInt())
 
     fun setEnterBg(context: Context, color: Int) {
-        prefs(context).edit().putInt(ENTER_BG, color).apply()
+        prefs(context).edit { putInt(ENTER_BG, color) }
     }
 
     fun setEnterIcon(context: Context, color: Int) {
-        prefs(context).edit().putInt(ENTER_ICON, color).apply()
+        prefs(context).edit { putInt(ENTER_ICON, color) }
     }
 
     fun setEnterColors(context: Context, bg: Int, icon: Int) {
-        prefs(context).edit()
-            .putInt(ENTER_BG, bg)
-            .putInt(ENTER_ICON, icon)
-            .apply()
+        prefs(context).edit {
+            putInt(ENTER_BG, bg)
+            putInt(ENTER_ICON, icon)
+        }
     }
 
     /* ───────── GLOBAL BINDS INTEGRATION ───────── */
@@ -550,12 +552,12 @@ object KeyboardPrefs {
             LongPressPresets.mergeDefaults(GlobalLongPressStorage.loadAlphabetBinds(context), oldDefaults, newDefaults)
         )
 
-        sp.edit()
-            .putString(KEY_SELECTED_LONG_PRESS_PRESET, presetId)
-            .putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
-            .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
-            .remove("long_press_defaults_initialized")
-            .apply()
+        sp.edit {
+            putString(KEY_SELECTED_LONG_PRESS_PRESET, presetId)
+            putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
+            putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
+            remove("long_press_defaults_initialized")
+        }
     }
 
     /**
@@ -587,12 +589,12 @@ object KeyboardPrefs {
             LongPressPresets.mergeDefaults(GlobalLongPressStorage.loadAlphabetBinds(context), oldDefaults, newDefaults)
         )
 
-        sp.edit()
-            .putString(KEY_SELECTED_LONG_PRESS_PRESET, newPreset)
-            .putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
-            .putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
-            .remove("long_press_defaults_initialized")
-            .apply()
+        sp.edit {
+            putString(KEY_SELECTED_LONG_PRESS_PRESET, newPreset)
+            putString(KEY_LONG_PRESS_DEFAULTS_LANGUAGE, language)
+            putInt(KEY_LONG_PRESS_DEFAULTS_VERSION, LONG_PRESS_DEFAULTS_VERSION)
+            remove("long_press_defaults_initialized")
+        }
     }
 
     /* ───────── WORD SUGGESTIONS ───────── */
@@ -604,7 +606,7 @@ object KeyboardPrefs {
         prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, false)
 
     fun setSuggestionsEnabled(context: Context, enabled: Boolean) {
-        prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, enabled).apply()
+        prefs(context).edit { putBoolean(KEY_SUGGESTIONS_ENABLED, enabled) }
     }
 
     /* ───────── VIBRATION ───────── */
@@ -615,7 +617,7 @@ object KeyboardPrefs {
         prefs(context).getBoolean(KEY_VIBRATION_ENABLED, true)
 
     fun setVibrationEnabled(context: Context, enabled: Boolean) {
-        prefs(context).edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+        prefs(context).edit { putBoolean(KEY_VIBRATION_ENABLED, enabled) }
     }
 
     /* ───────── THEME DEFAULTS ───────── */
@@ -681,37 +683,37 @@ object KeyboardPrefs {
 
     // Setters
     fun setThemeLightDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
-        prefs(context).edit()
-            .putInt(THEME_LIGHT_KEY_FILL, keyFill)
-            .putInt(THEME_LIGHT_KEY_TEXT, keyText)
-            .putInt(THEME_LIGHT_SPACE_FILL, spaceFill)
-            .putInt(THEME_LIGHT_KEYBOARD_BG, keyboardBg)
-            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
-            .apply()
+        prefs(context).edit {
+            putInt(THEME_LIGHT_KEY_FILL, keyFill)
+            putInt(THEME_LIGHT_KEY_TEXT, keyText)
+            putInt(THEME_LIGHT_SPACE_FILL, spaceFill)
+            putInt(THEME_LIGHT_KEYBOARD_BG, keyboardBg)
+            putBoolean(THEME_DEFAULTS_CUSTOM, true)
+        }
     }
 
     fun setThemeDarkDefaults(context: Context, keyFill: Int, keyText: Int, spaceFill: Int, keyboardBg: Int) {
-        prefs(context).edit()
-            .putInt(THEME_DARK_KEY_FILL, keyFill)
-            .putInt(THEME_DARK_KEY_TEXT, keyText)
-            .putInt(THEME_DARK_SPACE_FILL, spaceFill)
-            .putInt(THEME_DARK_KEYBOARD_BG, keyboardBg)
-            .putBoolean(THEME_DEFAULTS_CUSTOM, true)
-            .apply()
+        prefs(context).edit {
+            putInt(THEME_DARK_KEY_FILL, keyFill)
+            putInt(THEME_DARK_KEY_TEXT, keyText)
+            putInt(THEME_DARK_SPACE_FILL, spaceFill)
+            putInt(THEME_DARK_KEYBOARD_BG, keyboardBg)
+            putBoolean(THEME_DEFAULTS_CUSTOM, true)
+        }
     }
 
     fun resetThemeDefaultsToFactory(context: Context) {
-        prefs(context).edit()
-            .remove(THEME_LIGHT_KEY_FILL)
-            .remove(THEME_LIGHT_KEY_TEXT)
-            .remove(THEME_LIGHT_SPACE_FILL)
-            .remove(THEME_LIGHT_KEYBOARD_BG)
-            .remove(THEME_DARK_KEY_FILL)
-            .remove(THEME_DARK_KEY_TEXT)
-            .remove(THEME_DARK_SPACE_FILL)
-            .remove(THEME_DARK_KEYBOARD_BG)
-            .remove(THEME_DEFAULTS_CUSTOM)
-            .apply()
+        prefs(context).edit {
+            remove(THEME_LIGHT_KEY_FILL)
+            remove(THEME_LIGHT_KEY_TEXT)
+            remove(THEME_LIGHT_SPACE_FILL)
+            remove(THEME_LIGHT_KEYBOARD_BG)
+            remove(THEME_DARK_KEY_FILL)
+            remove(THEME_DARK_KEY_TEXT)
+            remove(THEME_DARK_SPACE_FILL)
+            remove(THEME_DARK_KEYBOARD_BG)
+            remove(THEME_DEFAULTS_CUSTOM)
+        }
     }
 
     // Convenience method to get colors for current mode
@@ -756,28 +758,28 @@ object KeyboardPrefs {
         prefs(context).getBoolean(RGB_SMOOTH_ENABLED, false)
 
     fun setRgbSmoothEnabled(context: Context, enabled: Boolean) {
-        prefs(context).edit().putBoolean(RGB_SMOOTH_ENABLED, enabled).apply()
+        prefs(context).edit { putBoolean(RGB_SMOOTH_ENABLED, enabled) }
     }
 
     fun getRgbSmoothSpeed(context: Context): Int =
         prefs(context).getInt(RGB_SMOOTH_SPEED, RGB_SPEED_DEFAULT)
 
     fun setRgbSmoothSpeed(context: Context, speedMs: Int) {
-        prefs(context).edit().putInt(RGB_SMOOTH_SPEED, speedMs.coerceIn(RGB_SPEED_MIN, RGB_SPEED_MAX)).apply()
+        prefs(context).edit { putInt(RGB_SMOOTH_SPEED, speedMs.coerceIn(RGB_SPEED_MIN, RGB_SPEED_MAX)) }
     }
 
     fun getRgbSmoothSaturation(context: Context): Float =
         prefs(context).getFloat(RGB_SMOOTH_SATURATION, 0.7f)
 
     fun setRgbSmoothSaturation(context: Context, saturation: Float) {
-        prefs(context).edit().putFloat(RGB_SMOOTH_SATURATION, saturation.coerceIn(0.1f, 1.0f)).apply()
+        prefs(context).edit { putFloat(RGB_SMOOTH_SATURATION, saturation.coerceIn(0.1f, 1.0f)) }
     }
 
     fun getRgbSmoothBrightness(context: Context): Float =
         prefs(context).getFloat(RGB_SMOOTH_BRIGHTNESS, 0.3f)
 
     fun setRgbSmoothBrightness(context: Context, brightness: Float) {
-        prefs(context).edit().putFloat(RGB_SMOOTH_BRIGHTNESS, brightness.coerceIn(0.1f, 1.0f)).apply()
+        prefs(context).edit { putFloat(RGB_SMOOTH_BRIGHTNESS, brightness.coerceIn(0.1f, 1.0f)) }
     }
 
     /* ───────── RGB WILD ───────── */
@@ -796,28 +798,30 @@ object KeyboardPrefs {
         prefs(context).getBoolean(RGB_WILD_ENABLED, false)
 
     fun setRgbWildEnabled(context: Context, enabled: Boolean) {
-        prefs(context).edit().putBoolean(RGB_WILD_ENABLED, enabled).apply()
+        prefs(context).edit { putBoolean(RGB_WILD_ENABLED, enabled) }
     }
 
     fun getRgbWildSpeed(context: Context): Int =
         prefs(context).getInt(RGB_WILD_SPEED, RGB_WILD_SPEED_DEFAULT)
 
     fun setRgbWildSpeed(context: Context, speedMs: Int) {
-        prefs(context).edit().putInt(RGB_WILD_SPEED, speedMs.coerceIn(RGB_WILD_SPEED_MIN, RGB_WILD_SPEED_MAX)).apply()
+        prefs(context).edit {
+            putInt(RGB_WILD_SPEED, speedMs.coerceIn(RGB_WILD_SPEED_MIN, RGB_WILD_SPEED_MAX))
+        }
     }
 
     fun getRgbWildSaturation(context: Context): Float =
         prefs(context).getFloat(RGB_WILD_SATURATION, 1.0f)
 
     fun setRgbWildSaturation(context: Context, saturation: Float) {
-        prefs(context).edit().putFloat(RGB_WILD_SATURATION, saturation.coerceIn(0.3f, 1.0f)).apply()
+        prefs(context).edit { putFloat(RGB_WILD_SATURATION, saturation.coerceIn(0.3f, 1.0f)) }
     }
 
     fun getRgbWildBrightness(context: Context): Float =
         prefs(context).getFloat(RGB_WILD_BRIGHTNESS, 0.8f)
 
     fun setRgbWildBrightness(context: Context, brightness: Float) {
-        prefs(context).edit().putFloat(RGB_WILD_BRIGHTNESS, brightness.coerceIn(0.3f, 1.0f)).apply()
+        prefs(context).edit { putFloat(RGB_WILD_BRIGHTNESS, brightness.coerceIn(0.3f, 1.0f)) }
     }
 
     // Helper to check if any RGB mode is active
@@ -826,9 +830,9 @@ object KeyboardPrefs {
 
     // Disable all RGB modes
     fun disableAllRgbModes(context: Context) {
-        prefs(context).edit()
-            .putBoolean(RGB_SMOOTH_ENABLED, false)
-            .putBoolean(RGB_WILD_ENABLED, false)
-            .apply()
+        prefs(context).edit {
+            putBoolean(RGB_SMOOTH_ENABLED, false)
+            putBoolean(RGB_WILD_ENABLED, false)
+        }
     }
 }

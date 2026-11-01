@@ -1,5 +1,6 @@
 package com.example.antarakeyboard
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipDescription
@@ -26,12 +27,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.os.LocaleListCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import androidx.core.view.isEmpty
+import androidx.core.view.isNotEmpty
 import com.example.antarakeyboard.data.SettingsBackup
 import com.example.antarakeyboard.data.OpenSourceLicenses
 import com.example.antarakeyboard.service.KeyScale
@@ -436,6 +441,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** About popup: version, privacy statement and the open-source licenses (same popup style). */
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun showAboutDialog() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -494,6 +501,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** Full license text of one component (from assets/licenses/). */
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun showLicenseDialog(entry: OpenSourceLicenses.Entry) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -870,7 +879,7 @@ class MainActivity : AppCompatActivity() {
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { if (childCount > 0) topMargin = 8.dp(this@MainActivity) }
+            ).apply { if (this@addSpaced.isNotEmpty()) topMargin = 8.dp(this@MainActivity) }
         )
     }
 
@@ -1790,6 +1799,8 @@ class MainActivity : AppCompatActivity() {
         resetSideButtonsForRowCount(rowCount)
     }
 
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun openLongPressEditorDialog() {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -2186,6 +2197,8 @@ class MainActivity : AppCompatActivity() {
         showSavedToastIfDirty()
     }
 
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun openLayoutEditorDialog() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_layout_editor)
@@ -2383,12 +2396,7 @@ class MainActivity : AppCompatActivity() {
                         setOnLongClickListener { v ->
                             val data = ClipData.newPlainText("fromIndex", index.toString())
                             val shadow = View.DragShadowBuilder(v)
-                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                                v.startDragAndDrop(data, shadow, null, 0)
-                            } else {
-                                @Suppress("DEPRECATION")
-                                v.startDrag(data, shadow, null, 0)
-                            }
+                            v.startDragAndDrop(data, shadow, null, 0)
                             true
                         }
 
@@ -2525,6 +2533,8 @@ class MainActivity : AppCompatActivity() {
         showPage(0)
     }
 
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun showAdvancedColorPicker(
         title: String,
         initialColor: Int,
@@ -2637,7 +2647,7 @@ class MainActivity : AppCompatActivity() {
         hexInput.setOnEditorActionListener { _, _, _ ->
             val hexText = hexInput.text.toString()
             try {
-                val parsedColor = Color.parseColor("#$hexText")
+                val parsedColor = "#$hexText".toColorInt()
                 Color.RGBToHSV(Color.red(parsedColor), Color.green(parsedColor), Color.blue(parsedColor), hsv)
                 currentHue = hsv[0]
                 currentSat = hsv[1]
@@ -2829,12 +2839,7 @@ class MainActivity : AppCompatActivity() {
             val data = ClipData.newPlainText("fromIndex", fromIndex.toString())
             val shadow = View.DragShadowBuilder(v)
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                v.startDragAndDrop(data, shadow, null, 0)
-            } else {
-                @Suppress("DEPRECATION")
-                v.startDrag(data, shadow, null, 0)
-            }
+            v.startDragAndDrop(data, shadow, null, 0)
         }
 
         fun parseFromIndex(e: DragEvent): Int? {
@@ -3157,18 +3162,18 @@ class MainActivity : AppCompatActivity() {
         val isDark = PrefsManager.isDarkMode(this)
         val (keyFill, keyText) = KeyboardPrefs.resolveKeyColors(this, isDark)
         val (space1, space2) = KeyboardPrefs.resolveSpaceColors(this, isDark)
-        customPrefs.edit()
-            .putBoolean("has_custom_theme", true)
-            .putInt("custom_key_fill", keyFill)
-            .putInt("custom_key_text", keyText)
-            .putInt("custom_background", KeyboardPrefs.resolveKeyboardBackground(this, isDark))
-            .putInt("custom_space1_bg", space1)
-            .putInt("custom_space2_bg", space2)
-            .putInt("custom_enter_bg", KeyboardPrefs.getEnterBg(this))
-            .putInt("custom_enter_icon", KeyboardPrefs.getEnterIcon(this))
-            .putInt("custom_side_bg", KeyboardPrefs.getSideButtonsBg(this))
-            .putInt("custom_side_text", KeyboardPrefs.getSideButtonsTextColor(this))
-            .apply()
+        customPrefs.edit {
+            putBoolean("has_custom_theme", true)
+            putInt("custom_key_fill", keyFill)
+            putInt("custom_key_text", keyText)
+            putInt("custom_background", KeyboardPrefs.resolveKeyboardBackground(this@MainActivity, isDark))
+            putInt("custom_space1_bg", space1)
+            putInt("custom_space2_bg", space2)
+            putInt("custom_enter_bg", KeyboardPrefs.getEnterBg(this@MainActivity))
+            putInt("custom_enter_icon", KeyboardPrefs.getEnterIcon(this@MainActivity))
+            putInt("custom_side_bg", KeyboardPrefs.getSideButtonsBg(this@MainActivity))
+            putInt("custom_side_text", KeyboardPrefs.getSideButtonsTextColor(this@MainActivity))
+        }
     }
 
     private fun loadCustomThemeColors() {
@@ -3256,6 +3261,8 @@ class MainActivity : AppCompatActivity() {
      * Popup opened from Theme → Custom: lists all saved layouts (and the last custom colors).
      * [onDone] gets true if something was applied, false if the popup was just closed.
      */
+    // Text built from data (names, key labels, color values), not from UI strings
+    @SuppressLint("SetTextI18n")
     private fun showSavedLayoutsPopup(onDone: (applied: Boolean) -> Unit) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -3320,7 +3327,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            if (list.childCount == 0) {
+            if (list.isEmpty()) {
                 list.addView(TextView(this).apply {
                     text = getString(R.string.no_saved_layouts)
                     alpha = 0.75f

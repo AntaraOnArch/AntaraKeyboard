@@ -10,6 +10,7 @@ import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.graphics.withClip
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dpF
 import com.example.antarakeyboard.model.KeyMarkers
@@ -387,10 +388,7 @@ class KeyView @JvmOverloads constructor(
         overlayPath.reset()
         overlayPath.addRect(l, t, r, t + h * 0.48f, Path.Direction.CW)
 
-        val save = canvas.save()
-        canvas.clipPath(shapePath)
-        canvas.drawPath(overlayPath, overlayPaint)
-        canvas.restoreToCount(save)
+        canvas.withClip(shapePath) { drawPath(overlayPath, overlayPaint) }
     }
     private fun lightenColor(color: Int, amount: Float): Int {
         val a = android.graphics.Color.alpha(color)

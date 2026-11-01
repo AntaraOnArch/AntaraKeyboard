@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.data
 
+import androidx.core.content.edit
 import com.example.antarakeyboard.R
 import androidx.annotation.StringRes
 import android.content.Context
@@ -71,12 +72,12 @@ object EmojiPickerStorage {
 
         // Save
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_RECENT_EMOJIS, gson.toJson(limited)).apply()
+        prefs.edit { putString(KEY_RECENT_EMOJIS, gson.toJson(limited)) }
     }
 
     fun clearRecentEmojis(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_RECENT_EMOJIS).apply()
+        prefs.edit { remove(KEY_RECENT_EMOJIS) }
     }
 
     /* ───────── BUTTON ORDER ───────── */
@@ -113,7 +114,7 @@ object EmojiPickerStorage {
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val names = order.map { it.name }
-        prefs.edit().putString(KEY_BUTTON_ORDER, gson.toJson(names)).apply()
+        prefs.edit { putString(KEY_BUTTON_ORDER, gson.toJson(names)) }
     }
 
     fun defaultButtonOrder(): List<EmojiButtonAction> {
@@ -162,7 +163,7 @@ object EmojiPickerStorage {
 
     fun setTabsPosition(context: Context, position: TabsPosition) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_TABS_POSITION, position.name).apply()
+        prefs.edit { putString(KEY_TABS_POSITION, position.name) }
     }
 
     /* ───────── BUTTONS SIDE ───────── */
@@ -180,6 +181,6 @@ object EmojiPickerStorage {
 
     fun setButtonsSide(context: Context, side: ButtonsSide) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_BUTTONS_SIDE, side.name).apply()
+        prefs.edit { putString(KEY_BUTTONS_SIDE, side.name) }
     }
 }

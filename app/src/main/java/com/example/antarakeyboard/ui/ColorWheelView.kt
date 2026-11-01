@@ -16,6 +16,11 @@ class ColorWheelView @JvmOverloads constructor(
     private val saturationPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val thumbPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val thumbStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val thumbShadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.argb(100, 0, 0, 0)
+        style = Paint.Style.FILL
+    }
+    private val thumbHsv = floatArrayOf(0f, 0f, 1f)
 
     private var centerX = 0f
     private var centerY = 0f
@@ -53,11 +58,9 @@ class ColorWheelView @JvmOverloads constructor(
         centerY = h / 2f
         wheelRadius = min(w, h) / 2f * 0.85f
         thumbRadius = wheelRadius * 0.08f
-    }
 
-    override fun onDraw(canvas: Canvas) {
-        // Draw color wheel (hue) - ISPRAVAN REDOSLIJED
-        val sweepShader = SweepGradient(
+        // Shaders depend only on the size, so they are built here and not on every draw
+        wheelPaint.shader = SweepGradient(
             centerX, centerY,
             intArrayOf(
                 Color.RED,     // 0°   = right
@@ -70,16 +73,17 @@ class ColorWheelView @JvmOverloads constructor(
             ),
             null
         )
-        wheelPaint.shader = sweepShader
-        canvas.drawCircle(centerX, centerY, wheelRadius, wheelPaint)
-
-        // Draw saturation gradient (white to transparent)
-        val radialShader = RadialGradient(
-            centerX, centerY, wheelRadius,
+        // Saturation: white in the center, fading to transparent at the edge
+        saturationPaint.shader = RadialGradient(
+            centerX, centerY, wheelRadius.coerceAtLeast(1f),
             Color.WHITE, Color.TRANSPARENT,
             Shader.TileMode.CLAMP
         )
-        saturationPaint.shader = radialShader
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        // Color wheel (hue) with the saturation gradient on top
+        canvas.drawCircle(centerX, centerY, wheelRadius, wheelPaint)
         canvas.drawCircle(centerX, centerY, wheelRadius, saturationPaint)
 
         // Draw thumb
@@ -88,14 +92,12 @@ class ColorWheelView @JvmOverloads constructor(
         val thumbX = centerX + (thumbDistance * cos(thumbAngle)).toFloat()
         val thumbY = centerY + (thumbDistance * sin(thumbAngle)).toFloat()
 
-        val thumbColor = Color.HSVToColor(floatArrayOf(hue, saturation, 1f))
-        thumbPaint.color = thumbColor
+        thumbHsv[0] = hue
+        thumbHsv[1] = saturation
+        thumbPaint.color = Color.HSVToColor(thumbHsv)
 
         // Thumb shadow
-        canvas.drawCircle(thumbX, thumbY, thumbRadius + 2f, Paint().apply {
-            color = Color.argb(100, 0, 0, 0)
-            style = Paint.Style.FILL
-        })
+        canvas.drawCircle(thumbX, thumbY, thumbRadius + 2f, thumbShadowPaint)
 
         // Draw thumb
         canvas.drawCircle(thumbX, thumbY, thumbRadius, thumbPaint)
@@ -118,7 +120,14 @@ class ColorWheelView @JvmOverloads constructor(
                 invalidate()
                 return true
             }
+
+            MotionEvent.ACTION_UP -> {
+                performClick()
+                return true
+            }
         }
         return super.onTouchEvent(event)
     }
+
+    override fun performClick(): Boolean = super.performClick()
 }
