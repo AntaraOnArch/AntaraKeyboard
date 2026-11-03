@@ -42,8 +42,6 @@
     <string name="shape_triangle">Triangolo</string>
     <string name="shape_circle">Cerchio</string>
     <string name="shape_cube">Cubo</string>
-    <string name="option_on">Attiva</string>
-    <string name="option_off">Disattiva</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="theme_transparent">Trasparente</string>

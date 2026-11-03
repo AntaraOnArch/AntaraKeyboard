@@ -21,6 +21,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -29,6 +30,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import androidx.core.view.isEmpty
 import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
 import com.example.antarakeyboard.data.SettingsBackup
 import com.example.antarakeyboard.data.OpenSourceLicenses
 import com.example.antarakeyboard.service.KeyScale
@@ -66,9 +68,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var preview: ShapePreviewView
     private lateinit var spinnerKeyShape: Spinner
     private lateinit var spinnerRowCount: Spinner
-    private lateinit var spinnerVibration: Spinner
     private lateinit var spinnerTheme: ReselectSpinner
     private lateinit var btnThemeSettings: Button
+    private lateinit var btnSavedLayouts: Button
     private lateinit var bindLPButton: Button
     private lateinit var spinnerReset: Spinner
 
@@ -98,7 +100,6 @@ class MainActivity : AppCompatActivity() {
     private val rowCountOptions = listOf(3, 4, 5)
 
     // Vibration options
-    private val vibrationOptions = listOf(R.string.option_on, R.string.option_off)
 
     // Theme options (Custom added dynamically if user has custom colors)
     private var themeOptions = listOf<String>()
@@ -190,10 +191,10 @@ class MainActivity : AppCompatActivity() {
         spinnerKeyShape = findViewById(R.id.spinnerKeyShape)
         val shapeAdapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.main_spinner_item,
             shapeOptions.map { getString(it.second) }
         ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
         spinnerKeyShape.adapter = shapeAdapter
 
@@ -217,10 +218,10 @@ class MainActivity : AppCompatActivity() {
         spinnerRowCount = findViewById(R.id.spinnerRowCount)
         val rowCountAdapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.main_spinner_item,
             rowCountOptions.map { rowsLabel(it) }
         ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
         spinnerRowCount.adapter = rowCountAdapter
 
@@ -241,30 +242,17 @@ class MainActivity : AppCompatActivity() {
         setupKeySizeSlider()
         setupRowSpacingSlider()
 
-        // Setup Vibration Spinner
-        spinnerVibration = findViewById(R.id.spinnerVibration)
-        val vibrationAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            vibrationOptions.map { getString(it) }
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Vibration and word suggestions: on / off switches
+        findViewById<SwitchCompat>(R.id.switchVibration).apply {
+            isChecked = KeyboardPrefs.isVibrationEnabled(this@MainActivity)
+            setOnCheckedChangeListener { _, on -> KeyboardPrefs.setVibrationEnabled(this@MainActivity, on) }
         }
-        spinnerVibration.adapter = vibrationAdapter
-
-        val vibrationEnabled = KeyboardPrefs.isVibrationEnabled(this)
-        spinnerVibration.setSelection(if (vibrationEnabled) 0 else 1)
-
-        spinnerVibration.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val enabled = position == 0
-                KeyboardPrefs.setVibrationEnabled(this@MainActivity, enabled)
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        findViewById<SwitchCompat>(R.id.switchSuggestions).apply {
+            isChecked = KeyboardPrefs.isSuggestionsEnabled(this@MainActivity)
+            setOnCheckedChangeListener { _, on -> KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, on) }
         }
 
         setupLanguageSpinner()
-        setupSuggestionsSpinner()
 
         findViewById<Button>(R.id.btnAbout).setOnClickListener { showAboutDialog() }
 
@@ -281,6 +269,8 @@ class MainActivity : AppCompatActivity() {
         spinnerTheme = findViewById(R.id.spinnerTheme)
         btnThemeSettings = findViewById(R.id.btnThemeSettings)
         btnThemeSettings.setOnClickListener { openThemeSettings() }
+        btnSavedLayouts = findViewById(R.id.btnSavedLayouts)
+        btnSavedLayouts.setOnClickListener { openSavedLayouts() }
         setupThemeSpinner()
 
         bindLPButton.setOnClickListener {
@@ -291,8 +281,8 @@ class MainActivity : AppCompatActivity() {
         val resetOptions = listOf(
             R.string.reset_hint, R.string.reset_colors, R.string.reset_layout, R.string.reset_all
         ).map { getString(it) }
-        spinnerReset.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, resetOptions).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerReset.adapter = ArrayAdapter(this, R.layout.main_spinner_item, resetOptions).apply {
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
         spinnerReset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -555,25 +545,6 @@ class MainActivity : AppCompatActivity() {
         info.versionName
     }.getOrNull().orEmpty()
 
-    /** Word suggestions above the keyboard: On / Off (off by default), like vibration. */
-    private fun setupSuggestionsSpinner() {
-        val spinner = findViewById<Spinner>(R.id.spinnerSuggestions)
-        spinner.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            vibrationOptions.map { getString(it) }
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
-        spinner.setSelection(if (KeyboardPrefs.isSuggestionsEnabled(this)) 0 else 1)
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, position == 0)
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-    }
-
     /**
      * App language: "System default" plus every translation, each named in its own language.
      * AppCompat applies it (system per-app language on Android 13+, stored by AppCompat below 13)
@@ -595,6 +566,8 @@ class MainActivity : AppCompatActivity() {
         // A language changed in Android settings: the editors must show its letters already
         KeyboardPrefs.ensureDefaultLongPress(this)
         syncLanguageSpinner()
+        // A reset or an import may have added saved layouts
+        updateThemeSettingsButton()
     }
 
     private fun setupLanguageSpinner() {
@@ -602,8 +575,8 @@ class MainActivity : AppCompatActivity() {
         val labels = languageTags.map { tag ->
             if (tag.isEmpty()) getString(R.string.language_system_default) else AppLanguages.nativeName(tag)
         }
-        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = ArrayAdapter(this, R.layout.main_spinner_item, labels).apply {
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
 
         // One shared setting with the keyboard's dual-space language picker. The spinner must
@@ -693,6 +666,8 @@ class MainActivity : AppCompatActivity() {
             colors -> R.string.reset_done_colors
             else -> R.string.reset_done_layout
         }
+        // The backup may be the first saved layout
+        updateThemeSettingsButton()
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
@@ -914,10 +889,10 @@ class MainActivity : AppCompatActivity() {
 
         val themeAdapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.main_spinner_item,
             themeOptions.map { themeLabel(it) }
         ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
         spinnerTheme.adapter = themeAdapter
 
@@ -996,7 +971,16 @@ class MainActivity : AppCompatActivity() {
         when (themeOptions.getOrNull(currentThemePosition)) {
             THEME_RGB_SMOOTH -> showRgbSettingsDialog(wild = false)
             THEME_RGB_WILD -> showRgbSettingsDialog(wild = true)
-            THEME_CUSTOM -> savedLayoutsDialog.showSavedLayoutsPopup { applied -> if (applied) selectCustomTheme() }
+            THEME_CUSTOM -> openSavedLayouts()
+        }
+    }
+
+    /** Saved layouts popup; applied colors make Custom the active theme. */
+    private fun openSavedLayouts() {
+        savedLayoutsDialog.showSavedLayoutsPopup { applied ->
+            if (applied) selectCustomTheme()
+            // Colors applied, or entries deleted: dropdown and buttons follow
+            setupThemeSpinner()
         }
     }
 
@@ -1007,19 +991,17 @@ class MainActivity : AppCompatActivity() {
         KeyboardPrefs.setRgbWildEnabled(this, false)
     }
 
-    /** Button under the Theme dropdown: RGB settings for RGB themes, Saved layouts for Custom. */
+    /**
+     * Buttons under the Theme dropdown: RGB settings while an RGB theme is active, and Saved
+     * layouts whenever there is something to restore (a saved layout or "Last custom colors"),
+     * whatever the theme – side by side when both show.
+     */
     private fun updateThemeSettingsButton() {
-        when (themeOptions.getOrNull(currentThemePosition)) {
-            THEME_RGB_SMOOTH, THEME_RGB_WILD -> {
-                btnThemeSettings.text = getString(R.string.theme_btn_rgb_settings)
-                btnThemeSettings.visibility = View.VISIBLE
-            }
-            THEME_CUSTOM -> {
-                btnThemeSettings.text = getString(R.string.theme_btn_saved_layouts)
-                btnThemeSettings.visibility = View.VISIBLE
-            }
-            else -> btnThemeSettings.visibility = View.GONE
-        }
+        val rgb = themeOptions.getOrNull(currentThemePosition).let { it == THEME_RGB_SMOOTH || it == THEME_RGB_WILD }
+        val saved = LastCustomColors.exists(this) || SavedLayoutStorage.getSavedLayouts(this).isNotEmpty()
+        btnThemeSettings.isVisible = rgb
+        btnSavedLayouts.isVisible = saved
+        findViewById<View>(R.id.themeButtonsGap).isVisible = rgb && saved
     }
 
     private fun applyThemeSelection(theme: String) {

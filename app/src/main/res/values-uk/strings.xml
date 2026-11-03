@@ -42,8 +42,6 @@
     <string name="shape_triangle">Трикутник</string>
     <string name="shape_circle">Коло</string>
     <string name="shape_cube">Куб</string>
-    <string name="option_on">Увімк.</string>
-    <string name="option_off">Вимк.</string>
     <string name="theme_light">Світла</string>
     <string name="theme_dark">Темна</string>
     <string name="theme_transparent">Прозора</string>

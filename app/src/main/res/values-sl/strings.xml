@@ -42,8 +42,6 @@
     <string name="shape_triangle">Trikotnik</string>
     <string name="shape_circle">Krog</string>
     <string name="shape_cube">Kocka</string>
-    <string name="option_on">Vklopljeno</string>
-    <string name="option_off">Izklopljeno</string>
     <string name="theme_light">Svetla</string>
     <string name="theme_dark">Temna</string>
     <string name="theme_transparent">Prosojna</string>

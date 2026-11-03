@@ -68,21 +68,60 @@
             android:text="@string/main_set_layout"
             app:textAllCaps="false" />
 
-        <!-- Key shape -->
-        <TextView
-            android:id="@+id/tvKeyShape"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_key_shape"
-            android:textSize="18sp" />
-
-        <Spinner
-            android:id="@+id/spinnerKeyShape"
-            style="@style/MainSpinner"
+        <!-- Key shape and row count side by side -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="18dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvKeyShape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/main_key_shape"
+                    android:textSize="18sp" />
+
+                <Spinner
+                    android:id="@+id/spinnerKeyShape"
+                    style="@style/MainSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvRowCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/main_keyboard_rows"
+                    android:textSize="18sp" />
+
+                <Spinner
+                    android:id="@+id/spinnerRowCount"
+                    style="@style/MainSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <com.example.antarakeyboard.ui.ShapePreviewView
             android:id="@+id/preview"
@@ -91,21 +130,6 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="5dp"/>
-
-        <TextView
-            android:id="@+id/tvRowCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_keyboard_rows"
-            android:textSize="18sp" />
-
-        <Spinner
-            android:id="@+id/spinnerRowCount"
-            style="@style/MainSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
 
         <!-- Key height (keyboard height follows) -->
         <TextView
@@ -193,99 +217,148 @@
                 app:textAllCaps="false" />
         </LinearLayout>
 
-        <!-- Side button positions popup -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnSideOffsets"
-            style="@style/MainRoundedButton"
+        <!-- Side button positions and Colors popups side by side; a long label takes two
+             lines. The first button wraps its content and the second matches its height
+             (both match_parent would collapse the row to zero height) -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:text="@string/main_side_offsets"
-            app:textAllCaps="false" />
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-        <!-- Colors popup -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnColors"
-            style="@style/MainRoundedButton"
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSideOffsets"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/main_side_offsets"
+                app:textAllCaps="false" />
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnColors"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/main_colors"
+                app:textAllCaps="false" />
+        </LinearLayout>
+
+        <!-- App language and theme side by side -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/main_colors"
-            app:textAllCaps="false" />
-
-        <!-- Vibration toggle -->
-        <TextView
-            android:id="@+id/tvVibration"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="@string/main_vibration"
-            android:textSize="18sp" />
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-        <Spinner
-            android:id="@+id/spinnerVibration"
-            style="@style/MainSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <!-- Word suggestions strip -->
-        <TextView
-            android:id="@+id/tvSuggestions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_suggestions"
-            android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/tvLanguage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/main_language"
+                    android:textSize="18sp" />
 
-        <Spinner
-            android:id="@+id/spinnerSuggestions"
-            style="@style/MainSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+                <Spinner
+                    android:id="@+id/spinnerLanguage"
+                    style="@style/MainSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
 
-        <!-- App language -->
-        <TextView
-            android:id="@+id/tvLanguage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_language"
-            android:textSize="18sp" />
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="wrap_content" />
 
-        <Spinner
-            android:id="@+id/spinnerLanguage"
-            style="@style/MainSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <!-- Theme dropdown -->
-        <TextView
-            android:id="@+id/tvTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_theme"
-            android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/tvTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/main_theme"
+                    android:textSize="18sp" />
 
-        <com.example.antarakeyboard.ui.ReselectSpinner
-            android:id="@+id/spinnerTheme"
-            style="@style/MainSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+                <com.example.antarakeyboard.ui.ReselectSpinner
+                    android:id="@+id/spinnerTheme"
+                    style="@style/MainSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <!-- Shown only while an RGB or Custom theme is active -->
-        <Button
-            android:id="@+id/btnThemeSettings"
-            style="@style/MainRoundedButton"
+        <!-- RGB settings (only while an RGB theme is active) and Saved layouts (whenever
+             there is a saved layout or "Last custom colors") -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:visibility="gone"
-            app:textAllCaps="false" />
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnThemeSettings"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_btn_rgb_settings"
+                android:visibility="gone"
+                app:textAllCaps="false" />
+
+            <Space
+                android:id="@+id/themeButtonsGap"
+                android:layout_width="12dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSavedLayouts"
+                style="@style/MainRoundedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/theme_btn_saved_layouts"
+                android:visibility="gone"
+                app:textAllCaps="false" />
+        </LinearLayout>
+
+        <!-- Vibration and word suggestions: on / off switches -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchVibration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:minHeight="48dp"
+            android:text="@string/main_vibration"
+            android:textSize="18sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchSuggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:minHeight="48dp"
+            android:text="@string/main_suggestions"
+            android:textSize="18sp" />
 
         <!-- About & open-source licenses -->
         <androidx.appcompat.widget.AppCompatButton

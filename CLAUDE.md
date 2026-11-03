@@ -36,13 +36,13 @@ This section is the authoritative description of intended behavior. When changin
 
 | Option | Values | Where it is chosen |
 |--------|--------|--------------------|
-| Row count | 3, 4 or 5 rows | Main app – **Keyboard rows** dropdown |
+| Row count | 3, 4 or 5 rows | Main app – **Keyboard rows** dropdown (next to Key shape) |
 | Key shape | Hexagon, Triangle, Circle, Cube | Main app – **Key shape** dropdown (with live preview) |
 | Key height | 60 %–150 % (5 % steps, default 100 %) | Main app – **Key height** slider |
 | Row spacing | −8 dp … +16 dp (1 dp steps, default 0) | Main app – **Row spacing** slider |
 | Language (and with it the keyboard script) | System default or any of the 35 languages | Main app – **Language** dropdown, or on the keyboard – **hold BOTH space keys for 4 seconds** → the same language list; Android 13+ also system Settings → Apps → Antara → Language |
-| Vibration feedback | On / Off | Main app – **Vibration feedback** dropdown |
-| Word suggestions | On / Off (default Off) | Main app – **Word suggestions** dropdown |
+| Vibration feedback | On / Off | Main app – **Vibration** switch |
+| Word suggestions | On / Off (default Off) | Main app – **Word suggestions** switch |
 
 Everything that depends on layout (Set layout editors, long-press bindings, side buttons, numeric layout) automatically adapts to the currently selected row count and key shape.
 
@@ -72,16 +72,17 @@ In screen order (`res/layout/activity_main.xml`):
 1. **Enable** – opens Android system settings so the user can enable the keyboard (IME).
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
-4. **Key shape** dropdown – with shape preview.
-5. **Keyboard rows** dropdown – 3 / 4 / 5, followed by the **Key height** and **Row spacing** sliders.
+4. **Key shape** and **Keyboard rows** (3 / 4 / 5) dropdowns side by side in one row, the shape preview under them.
+5. **Key height** and **Row spacing** sliders.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
-8. **Side button positions** – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots).
-9. **Colors** – popup for coloring every part of the keyboard (sections below).
-10. **Vibration feedback** dropdown – On / Off, followed by the **Word suggestions** dropdown – On / Off.
-11. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
-12. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
-13. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
+8. **Side button positions** and **Colors** (same row) – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots); popup for coloring every part of the keyboard (sections below).
+9. **Language** and **Theme** dropdowns side by side. Language: System default + every translation, each named in its own language (`data/AppLanguages.kt`).
+    Theme: Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)). Below it **RGB settings** (only while an RGB theme is active) and **Saved layouts** (whenever a saved layout or "Last custom colors" exists, **whatever the theme**, for a quick restore); side by side when both show (`updateThemeSettingsButton`).
+10. **Vibration** and **Word suggestions** switches (on / off).
+11. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
+
+**Dropdowns** use `@style/MainSpinner` (chevron arrow at the right edge, `drawable/spinner_background.xml` with `paddingMode="stack"`) and `layout/main_spinner_item.xml` (one line, auto-shrinks to fit half width); the open list is a rounded surface exactly as wide as the dropdown (`drawable/spinner_popup_background.xml`, whose start/end padding must equal MainSpinner's paddingStart/End) with `layout/main_spinner_dropdown_item.xml` entries. In a side-by-side row of buttons, give one `wrap_content` height and the other `match_parent` (both `match_parent` collapses the row).
 
 **All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
@@ -167,7 +168,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
-- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. **Layout and colors restore separately:** Restore offers *Layout and colors* / *Layout only* / *Colors only* (each confirmed); an entry saved without colors (`includesColors` false) offers only its layout, and its preview draws it in the current colors without color editing or Apply Colors. Layout only never changes the theme. A saved layout also stores the key height, row spacing and side button positions (`SavedLayout.keyScale` / `rowSpacingDp` / `sideOffset*Dp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, plus the saved side buttons on their rows shifted by the saved portrait side button positions (same row rules as the keyboard, `EdgeOverlayManager.edgeBindings` / `sideButtonKeyRows`; only 3- and 4-row hexagon layouts shift every second row), shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. **Layout and colors restore separately:** Restore offers *Layout and colors* / *Layout only* / *Colors only* (each confirmed); an entry saved without colors (`includesColors` false) offers only its layout, and its preview draws it in the current colors without color editing or Apply Colors. Layout only never changes the theme. A saved layout also stores the key height, row spacing and side button positions (`SavedLayout.keyScale` / `rowSpacingDp` / `sideOffset*Dp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, plus the saved side buttons on their rows shifted by the saved portrait side button positions (same row rules as the keyboard, `EdgeOverlayManager.edgeBindings` / `sideButtonKeyRows`; only 3- and 4-row hexagon layouts shift every second row), shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. Picking **Custom** in the dropdown again while it is active, or the **Saved layouts** button below it (shown in every theme), opens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
 - **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (`ui/RgbSettingsDialog`: speed / saturation / brightness, autosaved, one "<theme> saved" toast on close; its live preview runs the keyboard's own `RgbBackgroundAnimator`). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
