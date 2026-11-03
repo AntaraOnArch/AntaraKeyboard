@@ -231,6 +231,11 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 - `MainActivity.showAboutDialog()` lists `data/OpenSourceLicenses.ENTRIES`; each entry opens its license text from `app/src/main/assets/licenses/` (Apache 2.0 full text, the MIT texts with their copyright notices, the CC BY-SA 4.0 notice for the dictionaries).
 - **When adding a runtime dependency, add an entry (and its license text if new)** – check with `./gradlew :app:dependencies --configuration releaseRuntimeClasspath`. `OpenSourceLicensesTest` fails if a referenced license file is missing.
 
+### App icon
+- Logo: a fractal "A" – every A holds two joined A's under its crossbar (the twins' inner leg edges continue the parent's inner leg edges, they meet in the middle and touch the crossbar), white on a deep purple radial gradient. Figma master: "Antara logo – master 1024" and the launcher / Play Store frames next to it.
+- Adaptive icon (`mipmap-anydpi-v26/ic_launcher*.xml`): `drawable/ic_launcher_background.xml` (gradient) and `drawable/ic_launcher_foreground.xml` (one vector path, 4 levels; also the monochrome layer). The 50dp mark sits so apex and feet stay inside the 66dp safe zone.
+- Legacy PNGs `mipmap-<density>/ic_launcher(_round).png` for Android 7; Play Store icon (512×512) in `app/src/main/ic_launcher-playstore.png` (uploaded in Play Console, not packaged).
+
 ### Privacy
 - No `INTERNET` permission; only `VIBRATE`.
 - No cloud backup (`allowBackup="false"`, `res/xml/backup_rules.xml` and `data_extraction_rules.xml` exclude everything from cloud backup). Direct device-to-device transfer keeps settings.

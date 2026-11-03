@@ -1,30 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Antara logo: fractal A (every A holds two joined A's under its crossbar, 4 levels here; a 5th would be ~1dp).
+     50dp mark in the 108dp adaptive layer, placed so apex and feet stay inside the 66dp
+     safe zone; also used as the monochrome (themed) layer. Generated from the Figma master.
+     One long path on purpose (VectorPath ignored): the launcher renders the icon once and caches it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    android:viewportHeight="108"
+    tools:ignore="VectorPath">
     <path
         android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M29,74L49,24L58.5,24L38.5,74ZM49.5,24L59,24L79,74L69.5,74ZM41.5,49.9L66.5,49.9L66.5,54.9L41.5,54.9ZM34.9,74L42.5,54.9L46.2,54.9L38.5,74ZM42.7,54.9L46.3,54.9L54,74L50.4,74ZM39.6,64.8L49.2,64.8L49.2,66.7L39.6,66.7ZM37.1,74L40,66.7L41.4,66.7L38.5,74ZM40.1,66.7L41.5,66.7L44.4,74L43,74ZM38.9,70.5L42.6,70.5L42.6,71.2L38.9,71.2ZM38,74L39.1,71.2L39.6,71.2L38.5,74ZM39.1,71.2L39.6,71.2L40.8,74L40.2,74ZM38.7,72.6L40.1,72.6L40.1,72.9L38.7,72.9ZM40.8,74L41.9,71.2L42.4,71.2L41.3,74ZM41.9,71.2L42.5,71.2L43.6,74L43,74ZM41.5,72.6L42.9,72.6L42.9,72.9L41.5,72.9ZM44.4,74L47.4,66.7L48.8,66.7L45.8,74ZM47.4,66.7L48.8,66.7L51.8,74L50.4,74ZM46.3,70.5L49.9,70.5L49.9,71.2L46.3,71.2ZM45.3,74L46.4,71.2L46.9,71.2L45.8,74ZM46.4,71.2L47,71.2L48.1,74L47.6,74ZM46,72.6L47.4,72.6L47.4,72.9L46,72.9ZM48.1,74L49.2,71.2L49.7,71.2L48.6,74ZM49.2,71.2L49.8,71.2L50.9,74L50.4,74ZM48.8,72.6L50.2,72.6L50.2,72.9L48.8,72.9ZM54,74L61.7,54.9L65.3,54.9L57.6,74ZM61.8,54.9L65.5,54.9L73.1,74L69.5,74ZM58.8,64.8L68.4,64.8L68.4,66.7L58.8,66.7ZM56.2,74L59.2,66.7L60.6,66.7L57.6,74ZM59.2,66.7L60.6,66.7L63.6,74L62.2,74ZM58.1,70.5L61.7,70.5L61.7,71.2L58.1,71.2ZM57.1,74L58.2,71.2L58.8,71.2L57.6,74ZM58.3,71.2L58.8,71.2L59.9,74L59.4,74ZM57.8,72.6L59.2,72.6L59.2,72.9L57.8,72.9ZM59.9,74L61,71.2L61.6,71.2L60.4,74ZM61.1,71.2L61.6,71.2L62.7,74L62.2,74ZM60.6,72.6L62,72.6L62,72.9L60.6,72.9ZM63.6,74L66.5,66.7L67.9,66.7L65,74ZM66.6,66.7L68,66.7L70.9,74L69.5,74ZM65.4,70.5L69.1,70.5L69.1,71.2L65.4,71.2ZM64.4,74L65.5,71.2L66.1,71.2L65,74ZM65.6,71.2L66.1,71.2L67.2,74L66.7,74ZM65.1,72.6L66.5,72.6L66.5,72.9L65.1,72.9ZM67.2,74L68.4,71.2L68.9,71.2L67.8,74ZM68.4,71.2L68.9,71.2L70,74L69.5,74ZM67.9,72.6L69.3,72.6L69.3,72.9L67.9,72.9Z" />
 </vector>
