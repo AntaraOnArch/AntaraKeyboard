@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Zeilenabstand: %1$s</string>
     <string name="main_bind_long_press">Langes Drücken</string>
     <string name="main_colors">Farben</string>
+    <string name="main_side_offsets">Position der Seitentasten</string>
+    <string name="side_offset_left">Linke Seitentasten: %1$s</string>
+    <string name="side_offset_left_landscape">Linke Seitentasten (Querformat): %1$s</string>
+    <string name="side_offset_right">Rechte Seitentasten: %1$s</string>
+    <string name="side_offset_right_landscape">Rechte Seitentasten (Querformat): %1$s</string>
+    <string name="side_offset_hint">Verschiebe die Seitentasten etwas, wenn sie in einen abgerundeten Bildschirmrand reichen. ◊ = Standardposition.</string>
+    <string name="side_offset_direction">← links · rechts →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Wortvorschläge</string>
     <string name="main_export">Einstellungen exportieren</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopiert!</string>
     <string name="restore_layout_title">Layout wiederherstellen</string>
     <string name="restore_layout_message">Dies ersetzt dein aktuelles Layout und deine Farben.</string>
+    <string name="restore_layout_and_colors">Layout und Farben</string>
+    <string name="restore_layout_only">Nur Layout</string>
+    <string name="restore_layout_only_message">Dein aktuelles Layout wird ersetzt. Die Farben bleiben.</string>
+    <string name="restore_colors_only_message">Deine aktuellen Farben werden ersetzt. Das Layout bleibt.</string>
+    <string name="saved_without_colors">Ohne Farben gespeichert (es waren die Designfarben aktiv)</string>
     <string name="delete_confirm">Löschen?</string>
     <string name="layout_restored">Layout wiederhergestellt!</string>
     <string name="saved_layouts_title">Gespeicherte Layouts</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Noch keine gespeicherten Layouts</string>
     <string name="transparent_background">Transparenter Hintergrund</string>
     <string name="preview_info">Form: %1$s | Reihen: %2$d\nGespeichert: %3$s</string>
+    <string name="preview_side_offsets">Seitentasten: links %1$s, rechts %2$s\nQuerformat: links %3$s, rechts %4$s</string>
     <string name="preview_colors_label">Farben (zum Bearbeiten tippen):</string>
     <string name="swatch_keys">Tasten</string>
     <string name="swatch_text">Text</string>

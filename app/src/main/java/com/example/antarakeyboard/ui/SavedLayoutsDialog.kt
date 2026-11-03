@@ -16,12 +16,19 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isEmpty
 import com.example.antarakeyboard.R
+import com.example.antarakeyboard.data.EdgePos
+import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.data.LastCustomColors
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.data.SavedLayoutStorage
 import com.example.antarakeyboard.extensions.dp
+import com.example.antarakeyboard.model.EdgeActionType
+import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
+import com.example.antarakeyboard.service.EdgeOverlayManager
 import com.example.antarakeyboard.service.KeyScale
+import com.google.gson.reflect.TypeToken
 
 /**
  * Saved layouts (Theme → Custom, Set layout's saved-layouts dropdown): the list, the
@@ -32,15 +39,27 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
     interface Host {
         fun rowsLabel(rows: Int): String
         fun shapeLabel(shapeName: String): String
-        /** Restores [savedLayout] and refreshes the main screen. */
-        fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout)
+        /** Restores [savedLayout] ([withColors]: also its colors) and refreshes the main screen. */
+        fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout, withColors: Boolean)
+        /** Colors of a saved layout were applied (makes Custom the active theme). */
+        fun onColorsApplied()
     }
 
-    /** Preview / Restore / Rename / Delete menu for one saved layout. */
+    /** What a restore brings back; an entry without colors only offers [LAYOUT]. */
+    private enum class RestorePart(val label: Int, val message: Int) {
+        ALL(R.string.restore_layout_and_colors, R.string.restore_layout_message),
+        LAYOUT(R.string.restore_layout_only, R.string.restore_layout_only_message),
+        COLORS(R.string.colors_only, R.string.restore_colors_only_message)
+    }
+
+    /**
+     * Preview / Restore / Rename / Delete menu for one saved layout. [onRestored] gets true
+     * when colors were applied (Custom becomes the active theme), false for the layout only.
+     */
     fun showSavedLayoutActions(
         savedLayout: SavedLayoutStorage.SavedLayout,
         onListChanged: () -> Unit,
-        onRestored: () -> Unit,
+        onRestored: (colorsApplied: Boolean) -> Unit,
         onClosed: () -> Unit = {}
     ) {
         AlertDialog.Builder(activity)
@@ -51,15 +70,19 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                 when (which) {
                     0 -> showSavedLayoutPreview(savedLayout, onApplied = onRestored)
                     1 -> {
-                        AlertDialog.Builder(activity)
-                            .setTitle(R.string.restore_layout_title)
-                            .setMessage(R.string.restore_layout_message)
-                            .setPositiveButton(R.string.action_restore) { _, _ ->
-                                host.restoreSavedLayout(savedLayout)
-                                onRestored()
-                            }
-                            .setNegativeButton(R.string.action_cancel, null)
-                            .show()
+                        // Layout and colors can be restored separately
+                        if (savedLayout.includesColors) {
+                            val parts = RestorePart.entries
+                            AlertDialog.Builder(activity)
+                                .setTitle(R.string.restore_layout_title)
+                                .setItems(parts.map { activity.getString(it.label) }.toTypedArray()) { _, part ->
+                                    confirmRestore(savedLayout, parts[part], onRestored)
+                                }
+                                .setNegativeButton(R.string.action_cancel, null)
+                                .show()
+                        } else {
+                            confirmRestore(savedLayout, RestorePart.LAYOUT, onRestored)
+                        }
                     }
                     2 -> {
                         val input = android.widget.EditText(activity).apply { setText(savedLayout.name); selectAll() }
@@ -81,6 +104,32 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             }
             .setOnCancelListener { onClosed() }
             .show()
+    }
+
+    private fun confirmRestore(
+        savedLayout: SavedLayoutStorage.SavedLayout,
+        part: RestorePart,
+        onRestored: (colorsApplied: Boolean) -> Unit
+    ) {
+        AlertDialog.Builder(activity)
+            .setTitle(savedLayout.name)
+            .setMessage(part.message)
+            .setPositiveButton(R.string.action_restore) { _, _ ->
+                when (part) {
+                    RestorePart.ALL -> host.restoreSavedLayout(savedLayout, withColors = true)
+                    RestorePart.LAYOUT -> host.restoreSavedLayout(savedLayout, withColors = false)
+                    RestorePart.COLORS -> applyColors(savedLayout)
+                }
+                onRestored(part != RestorePart.LAYOUT)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
+    private fun applyColors(savedLayout: SavedLayoutStorage.SavedLayout) {
+        SavedLayoutStorage.applyColors(activity, savedLayout)
+        host.onColorsApplied()
+        Toast.makeText(activity, R.string.colors_applied, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -145,8 +194,9 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                     showSavedLayoutActions(
                         savedLayout = saved,
                         onListChanged = { rebuildList() },
-                        onRestored = {
-                            applied = true
+                        onRestored = { colorsApplied ->
+                            // Layout only: the theme stays as it was
+                            applied = colorsApplied
                             dialog.dismiss()
                         }
                     )
@@ -172,20 +222,28 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         )
     }
 
-    /** [onApplied] runs after colors or the whole layout were applied (makes Custom the active theme). */
+    /**
+     * [onApplied] runs after a restore or applied colors (true = colors were applied, which
+     * makes Custom the active theme). An entry without colors is drawn in the current colors
+     * and only offers restoring its layout.
+     */
     private fun showSavedLayoutPreview(
         savedLayout: SavedLayoutStorage.SavedLayout,
-        onApplied: () -> Unit
+        onApplied: (colorsApplied: Boolean) -> Unit
     ) {
         val gson = com.google.gson.Gson()
 
-        // Mutable color values
-        var currentKeyFill = savedLayout.keyFill
-        var currentKeyText = savedLayout.keyText
-        var currentSpaceBg = savedLayout.space1Bg
-        var currentEnterBg = savedLayout.enterBg
-        var currentEnterIcon = savedLayout.enterIcon
-        var currentBgColor = savedLayout.backgroundColor
+        val hasColors = savedLayout.includesColors
+
+        // Mutable color values; a layout without colors is shown in the colors drawn now
+        val isDark = PrefsManager.isDarkMode(activity)
+        val (drawnKeyFill, drawnKeyText) = KeyboardPrefs.resolveKeyColors(activity, isDark)
+        var currentKeyFill = if (hasColors) savedLayout.keyFill else drawnKeyFill
+        var currentKeyText = if (hasColors) savedLayout.keyText else drawnKeyText
+        var currentSpaceBg = if (hasColors) savedLayout.space1Bg else KeyboardPrefs.resolveSpaceColors(activity, isDark).first
+        var currentEnterBg = if (hasColors) savedLayout.enterBg else KeyboardPrefs.getEnterBg(activity)
+        var currentEnterIcon = if (hasColors) savedLayout.enterIcon else KeyboardPrefs.getEnterIcon(activity)
+        var currentBgColor = if (hasColors) savedLayout.backgroundColor else KeyboardPrefs.resolveKeyboardBackground(activity, isDark)
 
         // Parse the saved layout JSON
         val alphabetLayout: KeyboardConfig = gson.fromJson(
@@ -211,7 +269,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         root.addView(titleText)
 
         // Transparent background can't be seen in the preview, so say it explicitly
-        if (!savedLayout.backgroundUseTheme && Color.alpha(savedLayout.backgroundColor) == 0) {
+        if (hasColors && !savedLayout.backgroundUseTheme && Color.alpha(savedLayout.backgroundColor) == 0) {
             root.addView(TextView(activity).apply {
                 text = activity.getString(R.string.transparent_background)
                 textSize = 13f
@@ -228,11 +286,28 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         }
         root.addView(infoText)
 
-        // Colors section
+        // Side button positions (absent in layouts saved before they existed)
+        if (savedLayout.sideOffsetLeftDp != null) {
+            fun offset(dp: Int?) = SideOffsetsDialog.formatOffset(dp ?: 0)
+            root.addView(TextView(activity).apply {
+                text = activity.getString(
+                    R.string.preview_side_offsets,
+                    offset(savedLayout.sideOffsetLeftDp),
+                    offset(savedLayout.sideOffsetRightDp),
+                    offset(savedLayout.sideOffsetLeftLandscapeDp),
+                    offset(savedLayout.sideOffsetRightLandscapeDp)
+                )
+                textSize = 12f
+                setPadding(0, 0, 0, 12.dp(activity))
+            })
+        }
+
+        // Colors section (a layout without colors says so instead)
         val colorsLabel = TextView(activity).apply {
-            text = activity.getString(R.string.preview_colors_label)
+            text = activity.getString(if (hasColors) R.string.preview_colors_label else R.string.saved_without_colors)
             textSize = 14f
             setTypeface(null, android.graphics.Typeface.BOLD)
+            if (!hasColors) setPadding(0, 0, 0, 12.dp(activity))
         }
         root.addView(colorsLabel)
 
@@ -244,7 +319,19 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         // Preview container reference for updates
         lateinit var previewContainer: LinearLayout
 
-        // Preview: real keys with the saved shape, row count, key height, row spacing and colors
+        // Side buttons of the saved layout: colors as saved (or the current ones for a layout
+        // without colors); "use theme" draws them without fill in the key text color
+        val edgeSlots: List<EdgeSlot> = runCatching<List<EdgeSlot>> {
+            gson.fromJson(savedLayout.edgeSlotsJson, object : TypeToken<List<EdgeSlot>>() {}.type)
+        }.getOrNull().orEmpty()
+        val sideBindings = EdgeOverlayManager.edgeBindings(savedLayout.rowCount, edgeSlots)
+        val sideKeyRows = EdgeOverlayManager.sideButtonKeyRows(savedLayout.rowCount)
+        val sideUseTheme = if (hasColors) savedLayout.sideUseTheme else KeyboardPrefs.getSideButtonsUseThemeBg(activity)
+        val sideBg = if (hasColors) savedLayout.sideBg else KeyboardPrefs.getSideButtonsBg(activity)
+        val sideText = if (hasColors) savedLayout.sideText else KeyboardPrefs.getSideButtonsTextColor(activity)
+
+        // Preview: real keys with the saved shape, row count, key height, row spacing, colors,
+        // side buttons and their position sliders (portrait values)
         fun rebuildPreview() {
             previewContainer.removeAllViews()
             previewContainer.setBackgroundColor(currentBgColor)
@@ -258,10 +345,24 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
 
             val rows = alphabetLayout.rows.map { row -> row.keys.filter { it.label.isNotEmpty() } }
             val maxKeys = rows.maxOfOrNull { it.size }?.coerceAtLeast(1) ?: 1
-            val availW = (activity.resources.displayMetrics.widthPixels * 0.95f).toInt() - 48.dp(activity)
-            val keyW = availW / maxKeys
-            val baseH = if (shape == KeyShape.HEX_TALL) (keyW * 1.6f).toInt() else keyW
             val isHex = shape == KeyShape.HEX || shape == KeyShape.HEX_TALL
+            // Like the keyboard: only 3- and 4-row hexagon layouts shift every second row;
+            // 5 rows interlock by their different key counts
+            val honeycombFactor = when {
+                !isHex -> 0f
+                savedLayout.rowCount == 3 -> 0.42f
+                savedLayout.rowCount == 4 -> 0.5f
+                else -> 0f
+            }
+            // Room for a side button on both ends of every row (keys stay centered)
+            val sideFactor = 0.72f
+            val previewPadding = 16.dp(activity)
+            val availW = (activity.resources.displayMetrics.widthPixels * 0.95f).toInt() -
+                32.dp(activity) - previewPadding
+            val keyW = (availW / (maxKeys + honeycombFactor + 2 * sideFactor)).toInt()
+            val sideW = (keyW * sideFactor).toInt()
+            val shiftPx = (keyW * honeycombFactor).toInt()
+            val baseH = if (shape == KeyShape.HEX_TALL) (keyW * 1.6f).toInt() else keyW
             // Honeycomb rows interlock by the hexagon tips (a quarter of the drawn height)
             val rowOverlap = when {
                 isHex -> (baseH * 0.96f * stretch * 0.25f).toInt() - 1.dp(activity)
@@ -269,14 +370,38 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                 else -> -(2.dp(activity))
             }
 
+            fun sideButton(rowIndex: Int, side: EdgePos.Side): View {
+                val visualIndex = sideKeyRows.indexOf(rowIndex)
+                val slot = sideBindings.firstOrNull { it.visualIndex == visualIndex && it.side == side }?.slot
+                val offsetDp = when (side) {
+                    EdgePos.Side.LEFT -> savedLayout.sideOffsetLeftDp
+                    EdgePos.Side.RIGHT -> savedLayout.sideOffsetRightDp
+                } ?: 0
+                return TextView(activity).apply {
+                    if (slot != null) {
+                        text = EdgeOverlayManager.sideButtonLabel(slot)
+                        textSize = if (slot.type == EdgeActionType.SHIFT) 18f else 12f
+                        gravity = Gravity.CENTER
+                        includeFontPadding = false
+                        setTextColor(if (sideUseTheme) currentKeyText else sideText)
+                        if (!sideUseTheme) setBackgroundColor(sideBg)
+                        translationX = offsetDp.dp(activity).toFloat()
+                    }
+                    layoutParams = LinearLayout.LayoutParams(sideW, baseH)
+                }
+            }
+
             rows.forEachIndexed { rowIndex, keys ->
-                val rowLayout = LinearLayout(activity).apply {
+                val shifted = honeycombFactor > 0f && rowIndex % 2 == 1
+                val keysLayout = LinearLayout(activity).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = Gravity.CENTER_HORIZONTAL
                     clipChildren = false
                     clipToPadding = false
-                    // Honeycomb: every second row shifted by half a key
-                    if (isHex && rowIndex % 2 == 1) setPadding(keyW / 2, 0, 0, 0)
+                    // Honeycomb: every second row half a key to the right of the others
+                    if (honeycombFactor > 0f) {
+                        if (shifted) setPadding(shiftPx, 0, 0, 0) else setPadding(0, 0, shiftPx, 0)
+                    }
                 }
 
                 keys.forEachIndexed { keyIndex, key ->
@@ -285,7 +410,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                         "↵" -> currentEnterBg to currentEnterIcon
                         else -> currentKeyFill to currentKeyText
                     }
-                    rowLayout.addView(KeyView(activity).apply {
+                    keysLayout.addView(KeyView(activity).apply {
                         text = if (key.label == " ") "" else key.label
                         isAllCaps = false
                         gravity = Gravity.CENTER
@@ -298,6 +423,16 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                         customBgColor = fill
                         setTextColor(textColor)
                     }, LinearLayout.LayoutParams(keyW, baseH))
+                }
+
+                val rowLayout = LinearLayout(activity).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    clipChildren = false
+                    clipToPadding = false
+                    addView(sideButton(rowIndex, EdgePos.Side.LEFT))
+                    addView(keysLayout, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(sideButton(rowIndex, EdgePos.Side.RIGHT))
                 }
 
                 previewContainer.addView(rowLayout, LinearLayout.LayoutParams(
@@ -347,7 +482,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         addColorSwatch(currentEnterBg, activity.getString(R.string.swatch_enter)) { currentEnterBg = it }
         addColorSwatch(currentBgColor, activity.getString(R.string.swatch_bg)) { currentBgColor = it }
 
-        root.addView(colorsRow)
+        if (hasColors) root.addView(colorsRow)
 
         // Layout preview section
         val layoutLabel = TextView(activity).apply {
@@ -372,6 +507,8 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         // Buttons
         val buttonsRow = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
+            // Same height for all buttons, even when one label takes two lines
+            isBaselineAligned = false
             gravity = android.view.Gravity.END
             setPadding(0, 16.dp(this), 0, 0)
         }
@@ -389,6 +526,10 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             backgroundUseTheme = savedLayout.backgroundUseTheme && currentBgColor == savedLayout.backgroundColor
         )
 
+        // Equal widths; a long label wraps onto two whole lines instead of breaking a word
+        fun buttonParams() = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            .apply { marginStart = 4.dp(activity) }
+
         val applyColorsBtn = Button(activity).apply {
             text = activity.getString(R.string.apply_colors)
             isAllCaps = false
@@ -404,10 +545,9 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
                     currentEnterIcon,
                     currentBgColor
                 )
-                SavedLayoutStorage.applyColors(activity, editedLayout())
-                Toast.makeText(activity, R.string.colors_applied, Toast.LENGTH_SHORT).show()
+                applyColors(editedLayout())
                 dialog.dismiss()
-                onApplied()
+                onApplied(true)
             }
         }
 
@@ -415,9 +555,9 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             text = activity.getString(R.string.restore_layout_button)
             isAllCaps = false
             setOnClickListener {
-                host.restoreSavedLayout(editedLayout())
+                host.restoreSavedLayout(editedLayout(), withColors = hasColors)
                 dialog.dismiss()
-                onApplied()
+                onApplied(hasColors)
             }
         }
 
@@ -427,9 +567,9 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             setOnClickListener { dialog.dismiss() }
         }
 
-        buttonsRow.addView(applyColorsBtn)
-        buttonsRow.addView(restoreBtn)
-        buttonsRow.addView(closeBtn)
+        if (hasColors) buttonsRow.addView(applyColorsBtn, buttonParams())
+        buttonsRow.addView(restoreBtn, buttonParams())
+        buttonsRow.addView(closeBtn, buttonParams())
         root.addView(buttonsRow)
 
         val scrollView = ScrollView(activity).apply {

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Bil milli raða: %1$s</string>
     <string name="main_bind_long_press">Langt ýtt</string>
     <string name="main_colors">Litir</string>
+    <string name="main_side_offsets">Staðsetning hliðarhnappa</string>
+    <string name="side_offset_left">Vinstri hliðarhnappar: %1$s</string>
+    <string name="side_offset_left_landscape">Vinstri hliðarhnappar (lárétt): %1$s</string>
+    <string name="side_offset_right">Hægri hliðarhnappar: %1$s</string>
+    <string name="side_offset_right_landscape">Hægri hliðarhnappar (lárétt): %1$s</string>
+    <string name="side_offset_hint">Færðu hliðarhnappana aðeins ef þeir ná inn á ávalan skjábrún. ◊ = sjálfgefin staðsetning.</string>
+    <string name="side_offset_direction">← vinstri · hægri →</string>
     <string name="main_vibration">Titringur</string>
     <string name="main_suggestions">Orðatillögur</string>
     <string name="main_export">Flytja út stillingar</string>
@@ -163,6 +170,11 @@
     <string name="copied">Afritað!</string>
     <string name="restore_layout_title">Endurheimta uppsetningu</string>
     <string name="restore_layout_message">Þetta kemur í stað núverandi uppsetningar og lita.</string>
+    <string name="restore_layout_and_colors">Uppsetning og litir</string>
+    <string name="restore_layout_only">Aðeins uppsetning</string>
+    <string name="restore_layout_only_message">Núverandi uppsetningu verður skipt út. Litirnir haldast.</string>
+    <string name="restore_colors_only_message">Núverandi litum verður skipt út. Uppsetningin helst.</string>
+    <string name="saved_without_colors">Vistað án lita (litir þemans voru í notkun)</string>
     <string name="delete_confirm">Eyða?</string>
     <string name="layout_restored">Uppsetning endurheimt!</string>
     <string name="saved_layouts_title">Vistaðar uppsetningar</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Engar vistaðar uppsetningar enn</string>
     <string name="transparent_background">Gegnsær bakgrunnur</string>
     <string name="preview_info">Lögun: %1$s | Raðir: %2$d\nVistað: %3$s</string>
+    <string name="preview_side_offsets">Hliðarhnappar: vinstri %1$s, hægri %2$s\nLárétt: vinstri %3$s, hægri %4$s</string>
     <string name="preview_colors_label">Litir (ýttu til að breyta):</string>
     <string name="swatch_keys">Lyklar</string>
     <string name="swatch_text">Texti</string>

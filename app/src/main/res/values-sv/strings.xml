@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Radavstånd: %1$s</string>
     <string name="main_bind_long_press">Långt tryck</string>
     <string name="main_colors">Färger</string>
+    <string name="main_side_offsets">Placering av sidoknappar</string>
+    <string name="side_offset_left">Vänstra sidoknappar: %1$s</string>
+    <string name="side_offset_left_landscape">Vänstra sidoknappar (liggande): %1$s</string>
+    <string name="side_offset_right">Högra sidoknappar: %1$s</string>
+    <string name="side_offset_right_landscape">Högra sidoknappar (liggande): %1$s</string>
+    <string name="side_offset_hint">Flytta sidoknapparna lite om de hamnar i en rundad skärmkant. ◊ = standardplacering.</string>
+    <string name="side_offset_direction">← vänster · höger →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordförslag</string>
     <string name="main_export">Exportera inställningar</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopierat!</string>
     <string name="restore_layout_title">Återställ layout</string>
     <string name="restore_layout_message">Detta ersätter din nuvarande layout och dina färger.</string>
+    <string name="restore_layout_and_colors">Layout och färger</string>
+    <string name="restore_layout_only">Endast layout</string>
+    <string name="restore_layout_only_message">Din nuvarande layout ersätts. Färgerna behålls.</string>
+    <string name="restore_colors_only_message">Dina nuvarande färger ersätts. Layouten behålls.</string>
+    <string name="saved_without_colors">Sparad utan färger (temafärgerna användes)</string>
     <string name="delete_confirm">Radera?</string>
     <string name="layout_restored">Layout återställd!</string>
     <string name="saved_layouts_title">Sparade layouter</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Inga sparade layouter än</string>
     <string name="transparent_background">Genomskinlig bakgrund</string>
     <string name="preview_info">Form: %1$s | Rader: %2$d\nSparad: %3$s</string>
+    <string name="preview_side_offsets">Sidoknappar: vänster %1$s, höger %2$s\nLiggande: vänster %3$s, höger %4$s</string>
     <string name="preview_colors_label">Färger (tryck för att redigera):</string>
     <string name="swatch_keys">Tangenter</string>
     <string name="swatch_text">Text</string>

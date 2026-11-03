@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Tarpas tarp eilučių: %1$s</string>
     <string name="main_bind_long_press">Ilgas paspaudimas</string>
     <string name="main_colors">Spalvos</string>
+    <string name="main_side_offsets">Šoninių klavišų padėtis</string>
+    <string name="side_offset_left">Kairieji šoniniai klavišai: %1$s</string>
+    <string name="side_offset_left_landscape">Kairieji šoniniai klavišai (gulsčiai): %1$s</string>
+    <string name="side_offset_right">Dešinieji šoniniai klavišai: %1$s</string>
+    <string name="side_offset_right_landscape">Dešinieji šoniniai klavišai (gulsčiai): %1$s</string>
+    <string name="side_offset_hint">Šiek tiek pastumkite šoninius klavišus, jei jie užeina ant suapvalinto ekrano krašto. ◊ = numatytoji padėtis.</string>
+    <string name="side_offset_direction">← kairėn · dešinėn →</string>
     <string name="main_vibration">Vibravimas</string>
     <string name="main_suggestions">Žodžių pasiūlymai</string>
     <string name="main_export">Eksportuoti nustatymus</string>
@@ -163,6 +170,11 @@
     <string name="copied">Nukopijuota!</string>
     <string name="restore_layout_title">Atkurti išdėstymą</string>
     <string name="restore_layout_message">Tai pakeis dabartinį išdėstymą ir spalvas.</string>
+    <string name="restore_layout_and_colors">Išdėstymas ir spalvos</string>
+    <string name="restore_layout_only">Tik išdėstymas</string>
+    <string name="restore_layout_only_message">Dabartinis išdėstymas bus pakeistas. Spalvos lieka.</string>
+    <string name="restore_colors_only_message">Dabartinės spalvos bus pakeistos. Išdėstymas lieka.</string>
+    <string name="saved_without_colors">Išsaugota be spalvų (buvo naudojamos temos spalvos)</string>
     <string name="delete_confirm">Ištrinti?</string>
     <string name="layout_restored">Išdėstymas atkurtas!</string>
     <string name="saved_layouts_title">Išsaugoti išdėstymai</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Išsaugotų išdėstymų dar nėra</string>
     <string name="transparent_background">Permatomas fonas</string>
     <string name="preview_info">Forma: %1$s | Eilutės: %2$d\nIšsaugota: %3$s</string>
+    <string name="preview_side_offsets">Šoniniai klavišai: kairė %1$s, dešinė %2$s\nGulsčiai: kairė %3$s, dešinė %4$s</string>
     <string name="preview_colors_label">Spalvos (palieskite, kad redaguotumėte):</string>
     <string name="swatch_keys">Klavišai</string>
     <string name="swatch_text">Tekstas</string>

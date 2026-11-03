@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Espacio entre filas: %1$s</string>
     <string name="main_bind_long_press">Pulsación larga</string>
     <string name="main_colors">Colores</string>
+    <string name="main_side_offsets">Posición de las teclas laterales</string>
+    <string name="side_offset_left">Teclas laterales izquierdas: %1$s</string>
+    <string name="side_offset_left_landscape">Teclas laterales izquierdas (horizontal): %1$s</string>
+    <string name="side_offset_right">Teclas laterales derechas: %1$s</string>
+    <string name="side_offset_right_landscape">Teclas laterales derechas (horizontal): %1$s</string>
+    <string name="side_offset_hint">Mueve un poco las teclas laterales si llegan al borde redondeado de la pantalla. ◊ = posición predeterminada.</string>
+    <string name="side_offset_direction">← izquierda · derecha →</string>
     <string name="main_vibration">Vibración</string>
     <string name="main_suggestions">Sugerencias de palabras</string>
     <string name="main_export">Exportar ajustes</string>
@@ -163,6 +170,11 @@
     <string name="copied">¡Copiado!</string>
     <string name="restore_layout_title">Restaurar distribución</string>
     <string name="restore_layout_message">Esto reemplazará tu distribución y colores actuales.</string>
+    <string name="restore_layout_and_colors">Diseño y colores</string>
+    <string name="restore_layout_only">Solo diseño</string>
+    <string name="restore_layout_only_message">Se reemplazará tu diseño actual. Los colores se mantienen.</string>
+    <string name="restore_colors_only_message">Se reemplazarán tus colores actuales. El diseño se mantiene.</string>
+    <string name="saved_without_colors">Guardado sin colores (se usaban los colores del tema)</string>
     <string name="delete_confirm">¿Eliminar?</string>
     <string name="layout_restored">¡Distribución restaurada!</string>
     <string name="saved_layouts_title">Distribuciones guardadas</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Aún no hay distribuciones guardadas</string>
     <string name="transparent_background">Fondo transparente</string>
     <string name="preview_info">Forma: %1$s | Filas: %2$d\nGuardado: %3$s</string>
+    <string name="preview_side_offsets">Teclas laterales: izquierda %1$s, derecha %2$s\nHorizontal: izquierda %3$s, derecha %4$s</string>
     <string name="preview_colors_label">Colores (toca para editar):</string>
     <string name="swatch_keys">Teclas</string>
     <string name="swatch_text">Texto</string>

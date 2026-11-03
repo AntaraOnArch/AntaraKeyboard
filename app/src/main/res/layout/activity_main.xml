@@ -193,6 +193,16 @@
                 app:textAllCaps="false" />
         </LinearLayout>
 
+        <!-- Side button positions popup -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSideOffsets"
+            style="@style/MainRoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/main_side_offsets"
+            app:textAllCaps="false" />
+
         <!-- Colors popup -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnColors"

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Ridade vahe: %1$s</string>
     <string name="main_bind_long_press">Pikk vajutus</string>
     <string name="main_colors">Värvid</string>
+    <string name="main_side_offsets">Külgklahvide asukoht</string>
+    <string name="side_offset_left">Vasakpoolsed külgklahvid: %1$s</string>
+    <string name="side_offset_left_landscape">Vasakpoolsed külgklahvid (horisontaalne): %1$s</string>
+    <string name="side_offset_right">Parempoolsed külgklahvid: %1$s</string>
+    <string name="side_offset_right_landscape">Parempoolsed külgklahvid (horisontaalne): %1$s</string>
+    <string name="side_offset_hint">Nihuta külgklahve veidi, kui need ulatuvad ümardatud ekraaniservale. ◊ = vaikeasukoht.</string>
+    <string name="side_offset_direction">← vasakule · paremale →</string>
     <string name="main_vibration">Vibreerimine</string>
     <string name="main_suggestions">Sõnasoovitused</string>
     <string name="main_export">Ekspordi seaded</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopeeritud!</string>
     <string name="restore_layout_title">Taasta paigutus</string>
     <string name="restore_layout_message">See asendab praeguse paigutuse ja värvid.</string>
+    <string name="restore_layout_and_colors">Paigutus ja värvid</string>
+    <string name="restore_layout_only">Ainult paigutus</string>
+    <string name="restore_layout_only_message">Praegune paigutus asendatakse. Värvid jäävad.</string>
+    <string name="restore_colors_only_message">Praegused värvid asendatakse. Paigutus jääb.</string>
+    <string name="saved_without_colors">Salvestatud ilma värvideta (kasutusel olid teema värvid)</string>
     <string name="delete_confirm">Kustutada?</string>
     <string name="layout_restored">Paigutus taastatud!</string>
     <string name="saved_layouts_title">Salvestatud paigutused</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Salvestatud paigutusi veel pole</string>
     <string name="transparent_background">Läbipaistev taust</string>
     <string name="preview_info">Kuju: %1$s | Read: %2$d\nSalvestatud: %3$s</string>
+    <string name="preview_side_offsets">Külgklahvid: vasak %1$s, parem %2$s\nHorisontaalne: vasak %3$s, parem %4$s</string>
     <string name="preview_colors_label">Värvid (muutmiseks puuduta):</string>
     <string name="swatch_keys">Klahvid</string>
     <string name="swatch_text">Tekst</string>

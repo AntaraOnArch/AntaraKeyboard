@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Растојание меѓу редовите: %1$s</string>
     <string name="main_bind_long_press">Долго притискање</string>
     <string name="main_colors">Бои</string>
+    <string name="main_side_offsets">Позиции на страничните копчиња</string>
+    <string name="side_offset_left">Леви странични копчиња: %1$s</string>
+    <string name="side_offset_left_landscape">Леви странични копчиња (хоризонтално): %1$s</string>
+    <string name="side_offset_right">Десни странични копчиња: %1$s</string>
+    <string name="side_offset_right_landscape">Десни странични копчиња (хоризонтално): %1$s</string>
+    <string name="side_offset_hint">Малку поместете ги страничните копчиња ако влегуваат во заоблениот раб на екранот. ◊ = стандардна позиција.</string>
+    <string name="side_offset_direction">← лево · десно →</string>
     <string name="main_vibration">Вибрација</string>
     <string name="main_suggestions">Предлози за зборови</string>
     <string name="main_export">Извези поставки</string>
@@ -163,6 +170,11 @@
     <string name="copied">Копирано!</string>
     <string name="restore_layout_title">Врати распоред</string>
     <string name="restore_layout_message">Ова ќе ги замени тековниот распоред и бои.</string>
+    <string name="restore_layout_and_colors">Распоред и бои</string>
+    <string name="restore_layout_only">Само распоред</string>
+    <string name="restore_layout_only_message">Ова ќе го замени тековниот распоред. Боите остануваат.</string>
+    <string name="restore_colors_only_message">Ова ќе ги замени тековните бои. Распоредот останува.</string>
+    <string name="saved_without_colors">Зачувано без бои (се користеа боите на темата)</string>
     <string name="delete_confirm">Да се избрише?</string>
     <string name="layout_restored">Распоредот е вратен!</string>
     <string name="saved_layouts_title">Зачувани распореди</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Сè уште нема зачувани распореди</string>
     <string name="transparent_background">Проѕирна позадина</string>
     <string name="preview_info">Облик: %1$s | Редови: %2$d\nЗачувано: %3$s</string>
+    <string name="preview_side_offsets">Странични копчиња: лево %1$s, десно %2$s\nХоризонтално: лево %3$s, десно %4$s</string>
     <string name="preview_colors_label">Бои (допрете за уредување):</string>
     <string name="swatch_keys">Копчиња</string>
     <string name="swatch_text">Текст</string>

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spás idir sraitheanna: %1$s</string>
     <string name="main_bind_long_press">Brú fada</string>
     <string name="main_colors">Dathanna</string>
+    <string name="main_side_offsets">Suíomh na gcnaipí taoibh</string>
+    <string name="side_offset_left">Cnaipí taoibh ar chlé: %1$s</string>
+    <string name="side_offset_left_landscape">Cnaipí taoibh ar chlé (tírdhreach): %1$s</string>
+    <string name="side_offset_right">Cnaipí taoibh ar dheis: %1$s</string>
+    <string name="side_offset_right_landscape">Cnaipí taoibh ar dheis (tírdhreach): %1$s</string>
+    <string name="side_offset_hint">Bog na cnaipí taoibh beagán má shíneann siad isteach in imeall cruinn an scáileáin. ◊ = suíomh réamhshocraithe.</string>
+    <string name="side_offset_direction">← ar chlé · ar dheis →</string>
     <string name="main_vibration">Creathadh</string>
     <string name="main_suggestions">Moltaí focal</string>
     <string name="main_export">Easpórtáil socruithe</string>
@@ -163,6 +170,11 @@
     <string name="copied">Cóipeáilte!</string>
     <string name="restore_layout_title">Athchóirigh leagan amach</string>
     <string name="restore_layout_message">Cuirfidh sé seo in ionad do leagan amach agus do dhathanna reatha.</string>
+    <string name="restore_layout_and_colors">Leagan amach agus dathanna</string>
+    <string name="restore_layout_only">Leagan amach amháin</string>
+    <string name="restore_layout_only_message">Cuirfear leagan amach eile in ionad an leagain amach reatha. Fanann na dathanna.</string>
+    <string name="restore_colors_only_message">Cuirfear dathanna eile in ionad na ndathanna reatha. Fanann an leagan amach.</string>
+    <string name="saved_without_colors">Sábháilte gan dathanna (bhí dathanna an téama in úsáid)</string>
     <string name="delete_confirm">Scrios?</string>
     <string name="layout_restored">Leagan amach athchóirithe!</string>
     <string name="saved_layouts_title">Leaganacha amach sábháilte</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Níl aon leagan amach sábháilte fós</string>
     <string name="transparent_background">Cúlra trédhearcach</string>
     <string name="preview_info">Cruth: %1$s | Sraitheanna: %2$d\nSábháilte: %3$s</string>
+    <string name="preview_side_offsets">Cnaipí taoibh: clé %1$s, deis %2$s\nTírdhreach: clé %3$s, deis %4$s</string>
     <string name="preview_colors_label">Dathanna (tapáil chun eagarthóireacht):</string>
     <string name="swatch_keys">Eochracha</string>
     <string name="swatch_text">Téacs</string>

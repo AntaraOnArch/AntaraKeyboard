@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Razmik med vrsticami: %1$s</string>
     <string name="main_bind_long_press">Dolg pritisk</string>
     <string name="main_colors">Barve</string>
+    <string name="main_side_offsets">Položaji stranskih tipk</string>
+    <string name="side_offset_left">Leve stranske tipke: %1$s</string>
+    <string name="side_offset_left_landscape">Leve stranske tipke (ležeče): %1$s</string>
+    <string name="side_offset_right">Desne stranske tipke: %1$s</string>
+    <string name="side_offset_right_landscape">Desne stranske tipke (ležeče): %1$s</string>
+    <string name="side_offset_hint">Stranske tipke malo premaknite, če segajo v zaobljen rob zaslona. ◊ = privzeti položaj.</string>
+    <string name="side_offset_direction">← levo · desno →</string>
     <string name="main_vibration">Vibriranje</string>
     <string name="main_suggestions">Predlogi besed</string>
     <string name="main_export">Izvozi nastavitve</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopirano!</string>
     <string name="restore_layout_title">Obnovi postavitev</string>
     <string name="restore_layout_message">S tem boste zamenjali trenutno postavitev in barve.</string>
+    <string name="restore_layout_and_colors">Postavitev in barve</string>
+    <string name="restore_layout_only">Samo postavitev</string>
+    <string name="restore_layout_only_message">To bo zamenjalo trenutno postavitev. Barve ostanejo.</string>
+    <string name="restore_colors_only_message">To bo zamenjalo trenutne barve. Postavitev ostane.</string>
+    <string name="saved_without_colors">Shranjeno brez barv (uporabljene so bile barve teme)</string>
     <string name="delete_confirm">Izbrisati?</string>
     <string name="layout_restored">Postavitev obnovljena!</string>
     <string name="saved_layouts_title">Shranjene postavitve</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Še ni shranjenih postavitev</string>
     <string name="transparent_background">Prosojno ozadje</string>
     <string name="preview_info">Oblika: %1$s | Vrstice: %2$d\nShranjeno: %3$s</string>
+    <string name="preview_side_offsets">Stranske tipke: levo %1$s, desno %2$s\nLežeče: levo %3$s, desno %4$s</string>
     <string name="preview_colors_label">Barve (tapnite za urejanje):</string>
     <string name="swatch_keys">Tipke</string>
     <string name="swatch_text">Besedilo</string>

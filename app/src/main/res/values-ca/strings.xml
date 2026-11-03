@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Espai entre files: %1$s</string>
     <string name="main_bind_long_press">Pulsació llarga</string>
     <string name="main_colors">Colors</string>
+    <string name="main_side_offsets">Posició de les tecles laterals</string>
+    <string name="side_offset_left">Tecles laterals esquerres: %1$s</string>
+    <string name="side_offset_left_landscape">Tecles laterals esquerres (horitzontal): %1$s</string>
+    <string name="side_offset_right">Tecles laterals dretes: %1$s</string>
+    <string name="side_offset_right_landscape">Tecles laterals dretes (horitzontal): %1$s</string>
+    <string name="side_offset_hint">Mou una mica les tecles laterals si arriben a la vora arrodonida de la pantalla. ◊ = posició per defecte.</string>
+    <string name="side_offset_direction">← esquerra · dreta →</string>
     <string name="main_vibration">Vibració</string>
     <string name="main_suggestions">Suggeriments de paraules</string>
     <string name="main_export">Exporta la configuració</string>
@@ -163,6 +170,11 @@
     <string name="copied">S\'ha copiat!</string>
     <string name="restore_layout_title">Restaura la disposició</string>
     <string name="restore_layout_message">Això substituirà la disposició i els colors actuals.</string>
+    <string name="restore_layout_and_colors">Disposició i colors</string>
+    <string name="restore_layout_only">Només disposició</string>
+    <string name="restore_layout_only_message">Se substituirà la disposició actual. Els colors es mantenen.</string>
+    <string name="restore_colors_only_message">Se substituiran els colors actuals. La disposició es manté.</string>
+    <string name="saved_without_colors">Desat sense colors (s’utilitzaven els colors del tema)</string>
     <string name="delete_confirm">Vols suprimir-ho?</string>
     <string name="layout_restored">S\'ha restaurat la disposició!</string>
     <string name="saved_layouts_title">Disposicions desades</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Encara no hi ha disposicions desades</string>
     <string name="transparent_background">Fons transparent</string>
     <string name="preview_info">Forma: %1$s | Files: %2$d\nDesat: %3$s</string>
+    <string name="preview_side_offsets">Tecles laterals: esquerra %1$s, dreta %2$s\nHoritzontal: esquerra %3$s, dreta %4$s</string>
     <string name="preview_colors_label">Colors (toca per editar):</string>
     <string name="swatch_keys">Tecles</string>
     <string name="swatch_text">Text</string>

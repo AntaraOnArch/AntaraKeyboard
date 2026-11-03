@@ -80,11 +80,35 @@ object KeyboardPrefs {
         prefs(context).edit { putInt(KEY_ROW_SPACING_DP, dp) }
     }
 
-    /** Key height and row spacing back to their defaults (Reset layout / Reset all). */
+    /* ───────── SIDE BUTTON OFFSETS ───────── */
+
+    const val SIDE_OFFSET_MIN_DP = -12
+    const val SIDE_OFFSET_MAX_DP = 12
+
+    private fun sideOffsetKey(side: EdgePos.Side, landscape: Boolean): String =
+        "side_offset_${side.name.lowercase()}${if (landscape) "_landscape" else ""}_dp"
+
+    /**
+     * Horizontal shift of the left or right side buttons in dp (positive = to the right,
+     * 0 = default position), per orientation; set in the main app for rounded screen edges.
+     */
+    fun getSideOffsetDp(context: Context, side: EdgePos.Side, landscape: Boolean): Int =
+        prefs(context).getInt(sideOffsetKey(side, landscape), 0)
+            .coerceIn(SIDE_OFFSET_MIN_DP, SIDE_OFFSET_MAX_DP)
+
+    fun setSideOffsetDp(context: Context, side: EdgePos.Side, landscape: Boolean, dp: Int) {
+        prefs(context).edit { putInt(sideOffsetKey(side, landscape), dp) }
+    }
+
+    /** Key height, row spacing and side button positions back to their defaults (Reset layout / Reset all). */
     fun resetKeySizing(context: Context) {
         prefs(context).edit {
             remove(KEY_SCALE)
             remove(KEY_ROW_SPACING_DP)
+            for (side in EdgePos.Side.entries) {
+                remove(sideOffsetKey(side, landscape = false))
+                remove(sideOffsetKey(side, landscape = true))
+            }
         }
     }
 
@@ -463,13 +487,30 @@ object KeyboardPrefs {
             BackgroundMode.TRANSPARENT -> 0x00000000
         }
 
+    /**
+     * True when the keyboard shows plain theme colors (what Reset colors sets): keys, space and
+     * side buttons use the theme, background by theme, default Enter colors. Such colors are not
+     * worth keeping in a backup or as "Last custom colors" – the theme brings them back anyway.
+     */
+    fun colorsAreThemeDefaults(context: Context): Boolean =
+        getKeysUseTheme(context) &&
+            getSpaceUseTheme(context) &&
+            getSideButtonsUseThemeBg(context) &&
+            getBackgroundMode(context) == BackgroundMode.THEME &&
+            getEnterBg(context) == DEFAULT_ENTER_BG &&
+            getEnterIcon(context) == DEFAULT_ENTER_ICON
+
     /* ───────── ENTER COLORS ───────── */
 
+    // Same as R.color.special_fill / special_text (what Reset colors sets)
+    private const val DEFAULT_ENTER_BG = 0xFF2E55E7.toInt()
+    private const val DEFAULT_ENTER_ICON = 0xFFFFFFFF.toInt()
+
     fun getEnterBg(context: Context): Int =
-        prefs(context).getInt(ENTER_BG, 0xFF2E55E7.toInt())
+        prefs(context).getInt(ENTER_BG, DEFAULT_ENTER_BG)
 
     fun getEnterIcon(context: Context): Int =
-        prefs(context).getInt(ENTER_ICON, 0xFFFFFFFF.toInt())
+        prefs(context).getInt(ENTER_ICON, DEFAULT_ENTER_ICON)
 
     fun setEnterBg(context: Context, color: Int) {
         prefs(context).edit { putInt(ENTER_BG, color) }

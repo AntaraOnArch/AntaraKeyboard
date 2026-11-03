@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Απόσταση σειρών: %1$s</string>
     <string name="main_bind_long_press">Παρατεταμένο πάτημα</string>
     <string name="main_colors">Χρώματα</string>
+    <string name="main_side_offsets">Θέσεις πλευρικών πλήκτρων</string>
+    <string name="side_offset_left">Αριστερά πλευρικά πλήκτρα: %1$s</string>
+    <string name="side_offset_left_landscape">Αριστερά πλευρικά πλήκτρα (οριζόντια): %1$s</string>
+    <string name="side_offset_right">Δεξιά πλευρικά πλήκτρα: %1$s</string>
+    <string name="side_offset_right_landscape">Δεξιά πλευρικά πλήκτρα (οριζόντια): %1$s</string>
+    <string name="side_offset_hint">Μετακινήστε λίγο τα πλευρικά πλήκτρα αν φτάνουν στη στρογγυλεμένη άκρη της οθόνης. ◊ = προεπιλεγμένη θέση.</string>
+    <string name="side_offset_direction">← αριστερά · δεξιά →</string>
     <string name="main_vibration">Δόνηση</string>
     <string name="main_suggestions">Προτάσεις λέξεων</string>
     <string name="main_export">Εξαγωγή ρυθμίσεων</string>
@@ -163,6 +170,11 @@
     <string name="copied">Αντιγράφηκε!</string>
     <string name="restore_layout_title">Επαναφορά διάταξης</string>
     <string name="restore_layout_message">Αυτό θα αντικαταστήσει την τρέχουσα διάταξη και τα χρώματα.</string>
+    <string name="restore_layout_and_colors">Διάταξη και χρώματα</string>
+    <string name="restore_layout_only">Μόνο διάταξη</string>
+    <string name="restore_layout_only_message">Θα αντικατασταθεί η τρέχουσα διάταξη. Τα χρώματα μένουν.</string>
+    <string name="restore_colors_only_message">Θα αντικατασταθούν τα τρέχοντα χρώματα. Η διάταξη μένει.</string>
+    <string name="saved_without_colors">Αποθηκεύτηκε χωρίς χρώματα (χρησιμοποιούνταν τα χρώματα του θέματος)</string>
     <string name="delete_confirm">Διαγραφή;</string>
     <string name="layout_restored">Η διάταξη επανήλθε!</string>
     <string name="saved_layouts_title">Αποθηκευμένες διατάξεις</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Δεν υπάρχουν ακόμη αποθηκευμένες διατάξεις</string>
     <string name="transparent_background">Διαφανές φόντο</string>
     <string name="preview_info">Σχήμα: %1$s | Σειρές: %2$d\nΑποθηκεύτηκε: %3$s</string>
+    <string name="preview_side_offsets">Πλευρικά πλήκτρα: αριστερά %1$s, δεξιά %2$s\nΟριζόντια: αριστερά %3$s, δεξιά %4$s</string>
     <string name="preview_colors_label">Χρώματα (πατήστε για επεξεργασία):</string>
     <string name="swatch_keys">Πλήκτρα</string>
     <string name="swatch_text">Κείμενο</string>

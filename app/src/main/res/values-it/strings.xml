@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spazio tra le righe: %1$s</string>
     <string name="main_bind_long_press">Pressione prolungata</string>
     <string name="main_colors">Colori</string>
+    <string name="main_side_offsets">Posizione dei tasti laterali</string>
+    <string name="side_offset_left">Tasti laterali sinistri: %1$s</string>
+    <string name="side_offset_left_landscape">Tasti laterali sinistri (orizzontale): %1$s</string>
+    <string name="side_offset_right">Tasti laterali destri: %1$s</string>
+    <string name="side_offset_right_landscape">Tasti laterali destri (orizzontale): %1$s</string>
+    <string name="side_offset_hint">Sposta leggermente i tasti laterali se finiscono sul bordo arrotondato dello schermo. ◊ = posizione predefinita.</string>
+    <string name="side_offset_direction">← sinistra · destra →</string>
     <string name="main_vibration">Vibrazione</string>
     <string name="main_suggestions">Suggerimenti di parole</string>
     <string name="main_export">Esporta impostazioni</string>
@@ -163,6 +170,11 @@
     <string name="copied">Copiato!</string>
     <string name="restore_layout_title">Ripristina layout</string>
     <string name="restore_layout_message">Questo sostituirà il layout e i colori attuali.</string>
+    <string name="restore_layout_and_colors">Layout e colori</string>
+    <string name="restore_layout_only">Solo layout</string>
+    <string name="restore_layout_only_message">Il layout attuale verrà sostituito. I colori restano.</string>
+    <string name="restore_colors_only_message">I colori attuali verranno sostituiti. Il layout resta.</string>
+    <string name="saved_without_colors">Salvato senza colori (erano in uso i colori del tema)</string>
     <string name="delete_confirm">Eliminare?</string>
     <string name="layout_restored">Layout ripristinato!</string>
     <string name="saved_layouts_title">Layout salvati</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Ancora nessun layout salvato</string>
     <string name="transparent_background">Sfondo trasparente</string>
     <string name="preview_info">Forma: %1$s | Righe: %2$d\nSalvato: %3$s</string>
+    <string name="preview_side_offsets">Tasti laterali: sinistra %1$s, destra %2$s\nOrizzontale: sinistra %3$s, destra %4$s</string>
     <string name="preview_colors_label">Colori (tocca per modificare):</string>
     <string name="swatch_keys">Tasti</string>
     <string name="swatch_text">Testo</string>

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Atstarpe starp rindām: %1$s</string>
     <string name="main_bind_long_press">Ilgā nospiešana</string>
     <string name="main_colors">Krāsas</string>
+    <string name="main_side_offsets">Sānu taustiņu novietojums</string>
+    <string name="side_offset_left">Kreisie sānu taustiņi: %1$s</string>
+    <string name="side_offset_left_landscape">Kreisie sānu taustiņi (ainava): %1$s</string>
+    <string name="side_offset_right">Labie sānu taustiņi: %1$s</string>
+    <string name="side_offset_right_landscape">Labie sānu taustiņi (ainava): %1$s</string>
+    <string name="side_offset_hint">Nedaudz pārvietojiet sānu taustiņus, ja tie sniedzas noapaļotajā ekrāna malā. ◊ = noklusējuma novietojums.</string>
+    <string name="side_offset_direction">← pa kreisi · pa labi →</string>
     <string name="main_vibration">Vibrācija</string>
     <string name="main_suggestions">Vārdu ieteikumi</string>
     <string name="main_export">Eksportēt iestatījumus</string>
@@ -163,6 +170,11 @@
     <string name="copied">Nokopēts!</string>
     <string name="restore_layout_title">Atjaunot izkārtojumu</string>
     <string name="restore_layout_message">Tas aizstās pašreizējo izkārtojumu un krāsas.</string>
+    <string name="restore_layout_and_colors">Izkārtojums un krāsas</string>
+    <string name="restore_layout_only">Tikai izkārtojums</string>
+    <string name="restore_layout_only_message">Pašreizējais izkārtojums tiks aizstāts. Krāsas paliek.</string>
+    <string name="restore_colors_only_message">Pašreizējās krāsas tiks aizstātas. Izkārtojums paliek.</string>
+    <string name="saved_without_colors">Saglabāts bez krāsām (tika izmantotas motīva krāsas)</string>
     <string name="delete_confirm">Dzēst?</string>
     <string name="layout_restored">Izkārtojums atjaunots!</string>
     <string name="saved_layouts_title">Saglabātie izkārtojumi</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Vēl nav saglabātu izkārtojumu</string>
     <string name="transparent_background">Caurspīdīgs fons</string>
     <string name="preview_info">Forma: %1$s | Rindas: %2$d\nSaglabāts: %3$s</string>
+    <string name="preview_side_offsets">Sānu taustiņi: pa kreisi %1$s, pa labi %2$s\nAinava: pa kreisi %3$s, pa labi %4$s</string>
     <string name="preview_colors_label">Krāsas (pieskarieties, lai rediģētu):</string>
     <string name="swatch_keys">Taustiņi</string>
     <string name="swatch_text">Teksts</string>

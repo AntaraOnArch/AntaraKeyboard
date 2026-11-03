@@ -76,11 +76,12 @@ In screen order (`res/layout/activity_main.xml`):
 5. **Keyboard rows** dropdown – 3 / 4 / 5, followed by the **Key height** and **Row spacing** sliders.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
-8. **Colors** – popup for coloring every part of the keyboard (sections below).
-9. **Vibration feedback** dropdown – On / Off, followed by the **Word suggestions** dropdown – On / Off.
-10. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
-11. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
-12. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
+8. **Side button positions** – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots).
+9. **Colors** – popup for coloring every part of the keyboard (sections below).
+10. **Vibration feedback** dropdown – On / Off, followed by the **Word suggestions** dropdown – On / Off.
+11. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
+12. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
+13. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
 
 **All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
@@ -141,8 +142,9 @@ Lets the user bind any special letter or emoji to a key's long press.
 
 ### Reset
 Dropdown with three options; each first saves the current state as a "Backup <time>" in Saved layouts.
-- **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. The pre-reset colors are also kept as "Last custom colors".
-- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons, and the **key height / row spacing sliders back to default**.
+- **Theme default colors are never backed up:** when the keyboard shows plain theme colors (`KeyboardPrefs.colorsAreThemeDefaults`: keys, space, side buttons use the theme, background by theme, default Enter), the backup is **layout only** (`SavedLayout.hasColors = false`), Reset colors makes no backup at all and does not overwrite "Last custom colors".
+- **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. Custom pre-reset colors are also kept as "Last custom colors".
+- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons, and the **key height / row spacing / side button position sliders back to default**.
 - **Reset all** – both of the above.
 - **Preserved** (never reset): long-press bindings and the selected key shape.
 - Reset layout only touches the **current row count**.
@@ -165,7 +167,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
-- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. A saved layout also stores the key height and row spacing (`SavedLayout.keyScale` / `rowSpacingDp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. **Layout and colors restore separately:** Restore offers *Layout and colors* / *Layout only* / *Colors only* (each confirmed); an entry saved without colors (`includesColors` false) offers only its layout, and its preview draws it in the current colors without color editing or Apply Colors. Layout only never changes the theme. A saved layout also stores the key height, row spacing and side button positions (`SavedLayout.keyScale` / `rowSpacingDp` / `sideOffset*Dp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, plus the saved side buttons on their rows shifted by the saved portrait side button positions (same row rules as the keyboard, `EdgeOverlayManager.edgeBindings` / `sideButtonKeyRows`; only 3- and 4-row hexagon layouts shift every second row), shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
 - **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (`ui/RgbSettingsDialog`: speed / saturation / brightness, autosaved, one "<theme> saved" toast on close; its live preview runs the keyboard's own `RgbBackgroundAnimator`). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
@@ -205,8 +207,10 @@ All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isC
 ### Side buttons (edge slots)
 Actions available per slot (`EdgeActionType`): Shift, Backspace, Enter, Space, Char (any special character), Emoji picker, None. When Shift or Backspace is placed on a side button, that key is hidden from the main layout (replaced by an `__EDGE_GHOST__` placeholder in `EdgeKeyManager`). Enter stays in both places. The side (left/right) of each slot is fixed per row count (`EdgeSlotsStorage.fixedSideForIndex`). Slots are stored per row count.
 
+**Side button positions** (main app, `ui/SideOffsetsDialog`): four sliders – left, left landscape, right, right landscape – shift all side buttons of that side horizontally by −12…+12 dp (1 dp steps, default 0 shown as ◊, positive = to the right), e.g. away from a rounded screen edge. Stored as `side_offset_<left|right>[_landscape]_dp` in `keyboard_prefs` (`KeyboardPrefs.getSideOffsetDp`), independent of row count. Saved layouts store them (`SavedLayout.sideOffset*Dp`, nullable for older entries), show them in Preview and restore them with the layout (also *Layout only*); Reset layout / Reset all set them back to ◊. `EdgeOverlayManager` adds the offset after its position clamp, so it always moves the buttons. Autosaved, one "<Section> saved" toast on close.
+
 ### Landscape
-Letter rows split into left and right halves with the Horizontal "island" in the middle (`service/LandscapeLayoutBuilder.kt`, which reaches the service through its `Host` interface). The split points per row are hard-coded per row count (`LandscapeSplit.leftKeys` / `rightKeys`, pure and unit-tested). With 5 rows the 7-key rows 2 and 4 are split 4 + 4, so their middle letters (g, n) appear on both halves.
+Letter rows split into left and right halves with the Horizontal "island" in the middle (`service/LandscapeLayoutBuilder.kt`, which reaches the service through its `Host` interface). The split points per row are hard-coded per row count (`LandscapeSplit.leftKeys` / `rightKeys`, pure and unit-tested). With 5 rows the 7-key rows 2 and 4 are split 4 + 4, so their middle letters (g, n) appear on both halves. **This duplication is intentional** (either thumb reaches them, easier typing) – do not remove it.
 
 ### Settings export / import
 - **Export** writes one JSON file through the system "save as" picker (`ActivityResultContracts.CreateDocument`, no storage permission). **Import** reads it through `OpenDocument`, asks for confirmation, saves the current state as a "Backup" in Saved layouts, applies the file, re-applies theme and language, and recreates the screen.
@@ -305,6 +309,7 @@ The extracted classes reach their owner (service or activity) through a small `H
 | `ColorsDialog` / `ColorPickerDialog` | `ui/` | Colors popup; `Context.showAdvancedColorPicker` (wheel, brightness, hex/HSL/RGB) |
 | `SavedLayoutsDialog` | `ui/SavedLayoutsDialog.kt` | Saved layouts list, actions menu and preview |
 | `RgbSettingsDialog` | `ui/RgbSettingsDialog.kt` | RGB theme settings with live preview |
+| `SideOffsetsDialog` | `ui/SideOffsetsDialog.kt` | Side button positions (offset sliders); sliders from `ui/DialogSliders.kt` |
 | `EditorKeyboardRenderer` | `ui/EditorKeyboardRenderer.kt` | Shared keyboard preview for the Set layout and Bind long press editors |
 | `SavedLayoutStorage` | `data/SavedLayoutStorage.kt` | Backups / saved layouts (Theme → Custom) |
 
@@ -312,7 +317,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit` and `KeySizing`. Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing` and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 

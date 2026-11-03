@@ -12,6 +12,13 @@
     <string name="main_row_spacing">Row spacing: %1$s</string>
     <string name="main_bind_long_press">Bind long press</string>
     <string name="main_colors">Colors</string>
+    <string name="main_side_offsets">Side button positions</string>
+    <string name="side_offset_left">Left side buttons: %1$s</string>
+    <string name="side_offset_left_landscape">Left side buttons (landscape): %1$s</string>
+    <string name="side_offset_right">Right side buttons: %1$s</string>
+    <string name="side_offset_right_landscape">Right side buttons (landscape): %1$s</string>
+    <string name="side_offset_hint">Move the side buttons a little if they reach into a rounded screen edge. ◊ = default position.</string>
+    <string name="side_offset_direction">← left · right →</string>
     <string name="main_vibration">Vibration feedback</string>
     <string name="main_suggestions">Word suggestions</string>
     <string name="main_export">Export settings</string>
@@ -165,6 +172,11 @@
     <string name="copied">Copied!</string>
     <string name="restore_layout_title">Restore layout</string>
     <string name="restore_layout_message">This will replace your current layout and colors.</string>
+    <string name="restore_layout_and_colors">Layout and colors</string>
+    <string name="restore_layout_only">Layout only</string>
+    <string name="restore_layout_only_message">This will replace your current layout. Your colors stay.</string>
+    <string name="restore_colors_only_message">This will replace your current colors. Your layout stays.</string>
+    <string name="saved_without_colors">Saved without colors (theme colors were in use)</string>
     <string name="delete_confirm">Delete?</string>
     <string name="layout_restored">Layout restored!</string>
     <string name="saved_layouts_title">Saved layouts</string>
@@ -176,6 +188,7 @@
     <string name="no_saved_layouts">No saved layouts yet</string>
     <string name="transparent_background">Transparent background</string>
     <string name="preview_info">Shape: %1$s | Rows: %2$d\nSaved: %3$s</string>
+    <string name="preview_side_offsets">Side buttons: left %1$s, right %2$s\nLandscape: left %3$s, right %4$s</string>
     <string name="preview_colors_label">Colors (tap to edit):</string>
     <string name="swatch_keys">Keys</string>
     <string name="swatch_text">Text</string>

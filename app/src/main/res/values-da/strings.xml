@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Rækkeafstand: %1$s</string>
     <string name="main_bind_long_press">Langt tryk</string>
     <string name="main_colors">Farver</string>
+    <string name="main_side_offsets">Placering af sidetaster</string>
+    <string name="side_offset_left">Venstre sidetaster: %1$s</string>
+    <string name="side_offset_left_landscape">Venstre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_right">Højre sidetaster: %1$s</string>
+    <string name="side_offset_right_landscape">Højre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_hint">Flyt sidetasterne lidt, hvis de når ind i en afrundet skærmkant. ◊ = standardplacering.</string>
+    <string name="side_offset_direction">← venstre · højre →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordforslag</string>
     <string name="main_export">Eksportér indstillinger</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopieret!</string>
     <string name="restore_layout_title">Gendan layout</string>
     <string name="restore_layout_message">Dette erstatter dit nuværende layout og dine farver.</string>
+    <string name="restore_layout_and_colors">Layout og farver</string>
+    <string name="restore_layout_only">Kun layout</string>
+    <string name="restore_layout_only_message">Dit nuværende layout erstattes. Farverne bevares.</string>
+    <string name="restore_colors_only_message">Dine nuværende farver erstattes. Layoutet bevares.</string>
+    <string name="saved_without_colors">Gemt uden farver (temafarverne var i brug)</string>
     <string name="delete_confirm">Slet?</string>
     <string name="layout_restored">Layout gendannet!</string>
     <string name="saved_layouts_title">Gemte layouts</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Ingen gemte layouts endnu</string>
     <string name="transparent_background">Gennemsigtig baggrund</string>
     <string name="preview_info">Form: %1$s | Rækker: %2$d\nGemt: %3$s</string>
+    <string name="preview_side_offsets">Sidetaster: venstre %1$s, højre %2$s\nLiggende: venstre %3$s, højre %4$s</string>
     <string name="preview_colors_label">Farver (tryk for at redigere):</string>
     <string name="swatch_keys">Taster</string>
     <string name="swatch_text">Tekst</string>

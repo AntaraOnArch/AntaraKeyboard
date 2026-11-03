@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Espacement des rangées : %1$s</string>
     <string name="main_bind_long_press">Appui long</string>
     <string name="main_colors">Couleurs</string>
+    <string name="main_side_offsets">Position des touches latérales</string>
+    <string name="side_offset_left">Touches latérales gauches: %1$s</string>
+    <string name="side_offset_left_landscape">Touches latérales gauches (paysage): %1$s</string>
+    <string name="side_offset_right">Touches latérales droites: %1$s</string>
+    <string name="side_offset_right_landscape">Touches latérales droites (paysage): %1$s</string>
+    <string name="side_offset_hint">Décalez légèrement les touches latérales si elles débordent sur un bord d’écran arrondi. ◊ = position par défaut.</string>
+    <string name="side_offset_direction">← gauche · droite →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Suggestions de mots</string>
     <string name="main_export">Exporter les réglages</string>
@@ -163,6 +170,11 @@
     <string name="copied">Copié !</string>
     <string name="restore_layout_title">Restaurer la disposition</string>
     <string name="restore_layout_message">Cela remplacera votre disposition et vos couleurs actuelles.</string>
+    <string name="restore_layout_and_colors">Disposition et couleurs</string>
+    <string name="restore_layout_only">Disposition seule</string>
+    <string name="restore_layout_only_message">Votre disposition actuelle sera remplacée. Les couleurs restent.</string>
+    <string name="restore_colors_only_message">Vos couleurs actuelles seront remplacées. La disposition reste.</string>
+    <string name="saved_without_colors">Enregistré sans couleurs (les couleurs du thème étaient utilisées)</string>
     <string name="delete_confirm">Supprimer ?</string>
     <string name="layout_restored">Disposition restaurée !</string>
     <string name="saved_layouts_title">Dispositions enregistrées</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Aucune disposition enregistrée</string>
     <string name="transparent_background">Arrière-plan transparent</string>
     <string name="preview_info">Forme : %1$s | Rangées : %2$d\nEnregistré : %3$s</string>
+    <string name="preview_side_offsets">Touches latérales : gauche %1$s, droite %2$s\nPaysage : gauche %3$s, droite %4$s</string>
     <string name="preview_colors_label">Couleurs (touchez pour modifier) :</string>
     <string name="swatch_keys">Touches</string>
     <string name="swatch_text">Texte</string>

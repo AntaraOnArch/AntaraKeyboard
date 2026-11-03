@@ -54,8 +54,19 @@ object SavedLayoutStorage {
         // Key height and row spacing sliders. Nullable: layouts saved before these existed
         // have no value (Gson leaves them null) and keep the current slider values on restore.
         val keyScale: Float? = null,
-        val rowSpacingDp: Int? = null
-    )
+        val rowSpacingDp: Int? = null,
+        // False when only theme default colors were in use: the entry is a layout without
+        // colors. Null in entries saved before this flag existed (they have colors).
+        val hasColors: Boolean? = null,
+        // Side button position sliders (dp); null in layouts saved before they existed
+        val sideOffsetLeftDp: Int? = null,
+        val sideOffsetLeftLandscapeDp: Int? = null,
+        val sideOffsetRightDp: Int? = null,
+        val sideOffsetRightLandscapeDp: Int? = null
+    ) {
+        /** Whether the color fields hold colors worth restoring. */
+        val includesColors: Boolean get() = hasColors != false
+    }
 
     /**
      * Get all saved layouts
@@ -71,9 +82,10 @@ object SavedLayoutStorage {
     }
 
     /**
-     * Save current layout configuration
+     * Saves the current layout; [includeColors] false marks the entry as layout only
+     * (its color fields are then just the drawn theme colors, never applied).
      */
-    fun saveCurrentLayout(context: Context, name: String): SavedLayout {
+    fun saveCurrentLayout(context: Context, name: String, includeColors: Boolean = true): SavedLayout {
         val rowCount = KeyboardPrefs.getRowCount(context)
         // Store the colors as they are drawn (theme or custom), so a restore looks the same
         val isDark = PrefsManager.isDarkMode(context)
@@ -102,7 +114,12 @@ object SavedLayoutStorage {
             sideText = KeyboardPrefs.getSideButtonsTextColor(context),
             sideUseTheme = KeyboardPrefs.getSideButtonsUseThemeBg(context),
             keyScale = KeyboardPrefs.getKeyScale(context),
-            rowSpacingDp = KeyboardPrefs.getRowSpacingDp(context)
+            rowSpacingDp = KeyboardPrefs.getRowSpacingDp(context),
+            hasColors = includeColors,
+            sideOffsetLeftDp = KeyboardPrefs.getSideOffsetDp(context, EdgePos.Side.LEFT, landscape = false),
+            sideOffsetLeftLandscapeDp = KeyboardPrefs.getSideOffsetDp(context, EdgePos.Side.LEFT, landscape = true),
+            sideOffsetRightDp = KeyboardPrefs.getSideOffsetDp(context, EdgePos.Side.RIGHT, landscape = false),
+            sideOffsetRightLandscapeDp = KeyboardPrefs.getSideOffsetDp(context, EdgePos.Side.RIGHT, landscape = true)
         )
 
         addLayout(context, savedLayout)
@@ -125,9 +142,10 @@ object SavedLayoutStorage {
     }
 
     /**
-     * Restore a saved layout
+     * Restores the layout of [savedLayout] (rows, shape, letters, numeric, horizontal, side
+     * buttons, key height, row spacing); [withColors] also applies its colors, if it has any.
      */
-    fun restoreLayout(context: Context, savedLayout: SavedLayout) {
+    fun restoreLayout(context: Context, savedLayout: SavedLayout, withColors: Boolean) {
         // Restore row count and shape
         KeyboardPrefs.setRowCount(context, savedLayout.rowCount)
         KeyboardPrefs.setShape(context, KeyShape.valueOf(savedLayout.keyShape))
@@ -153,17 +171,22 @@ object SavedLayoutStorage {
         // Key height and row spacing sliders (absent in layouts saved before they existed)
         savedLayout.keyScale?.let { KeyboardPrefs.setKeyScale(context, it) }
         savedLayout.rowSpacingDp?.let { KeyboardPrefs.setRowSpacingDp(context, it) }
+        savedLayout.sideOffsetLeftDp?.let { KeyboardPrefs.setSideOffsetDp(context, EdgePos.Side.LEFT, false, it) }
+        savedLayout.sideOffsetLeftLandscapeDp?.let { KeyboardPrefs.setSideOffsetDp(context, EdgePos.Side.LEFT, true, it) }
+        savedLayout.sideOffsetRightDp?.let { KeyboardPrefs.setSideOffsetDp(context, EdgePos.Side.RIGHT, false, it) }
+        savedLayout.sideOffsetRightLandscapeDp?.let { KeyboardPrefs.setSideOffsetDp(context, EdgePos.Side.RIGHT, true, it) }
 
         // Restore edge slots
         val edgeSlotsType = object : TypeToken<List<EdgeSlot>>() {}.type
         val edgeSlots: List<EdgeSlot> = gson.fromJson(savedLayout.edgeSlotsJson, edgeSlotsType)
         EdgeSlotsStorage.save(context, edgeSlots)
 
-        applyColors(context, savedLayout)
+        if (withColors) applyColors(context, savedLayout)
     }
 
     /** Applies only the colors of a saved layout to the keyboard (layout and shape stay as they are). */
     fun applyColors(context: Context, savedLayout: SavedLayout) {
+        if (!savedLayout.includesColors) return
         KeyboardPrefs.setKeysColors(context, savedLayout.keyFill, savedLayout.keyText, true)
         KeyboardPrefs.setBackgroundColor(context, savedLayout.backgroundColor, savedLayout.backgroundUseTheme)
         KeyboardPrefs.setSpaceColors(context, savedLayout.space1Bg, savedLayout.space2Bg, savedLayout.spaceLinked)
@@ -215,7 +238,9 @@ object SavedLayoutStorage {
                 space2Bg = spaceBg,
                 enterBg = enterBg,
                 enterIcon = enterIcon,
-                backgroundColor = backgroundColor
+                backgroundColor = backgroundColor,
+                // Edited colors are colors worth keeping
+                hasColors = true
             )
             prefs(context).edit { putString(KEY_SAVED_LAYOUTS, gson.toJson(layouts)) }
         }

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Razmak između redova: %1$s</string>
     <string name="main_bind_long_press">Dugi pritisak</string>
     <string name="main_colors">Boje</string>
+    <string name="main_side_offsets">Pozicije bočnih tipki</string>
+    <string name="side_offset_left">Lijeve bočne tipke: %1$s</string>
+    <string name="side_offset_left_landscape">Lijeve bočne tipke (horizontalno): %1$s</string>
+    <string name="side_offset_right">Desne bočne tipke: %1$s</string>
+    <string name="side_offset_right_landscape">Desne bočne tipke (horizontalno): %1$s</string>
+    <string name="side_offset_hint">Malo pomjeri bočne tipke ako ulaze u zaobljeni rub ekrana. ◊ = zadana pozicija.</string>
+    <string name="side_offset_direction">← lijevo · desno →</string>
     <string name="main_vibration">Vibracija</string>
     <string name="main_suggestions">Prijedlozi riječi</string>
     <string name="main_export">Izvezi postavke</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopirano!</string>
     <string name="restore_layout_title">Vrati raspored</string>
     <string name="restore_layout_message">Ovo će zamijeniti trenutni raspored i boje.</string>
+    <string name="restore_layout_and_colors">Raspored i boje</string>
+    <string name="restore_layout_only">Samo raspored</string>
+    <string name="restore_layout_only_message">Ovo će zamijeniti trenutni raspored. Boje ostaju.</string>
+    <string name="restore_colors_only_message">Ovo će zamijeniti trenutne boje. Raspored ostaje.</string>
+    <string name="saved_without_colors">Sačuvano bez boja (korištene su boje teme)</string>
     <string name="delete_confirm">Obrisati?</string>
     <string name="layout_restored">Raspored je vraćen!</string>
     <string name="saved_layouts_title">Sačuvani rasporedi</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Još nema sačuvanih rasporeda</string>
     <string name="transparent_background">Providna pozadina</string>
     <string name="preview_info">Oblik: %1$s | Redovi: %2$d\nSačuvano: %3$s</string>
+    <string name="preview_side_offsets">Bočne tipke: lijevo %1$s, desno %2$s\nHorizontalno: lijevo %3$s, desno %4$s</string>
     <string name="preview_colors_label">Boje (dodirnite za uređivanje):</string>
     <string name="swatch_keys">Tipke</string>
     <string name="swatch_text">Tekst</string>

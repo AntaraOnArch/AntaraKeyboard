@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Размак између редова: %1$s</string>
     <string name="main_bind_long_press">Дуги притисак</string>
     <string name="main_colors">Боје</string>
+    <string name="main_side_offsets">Положаји бочних тастера</string>
+    <string name="side_offset_left">Леви бочни тастери: %1$s</string>
+    <string name="side_offset_left_landscape">Леви бочни тастери (положено): %1$s</string>
+    <string name="side_offset_right">Десни бочни тастери: %1$s</string>
+    <string name="side_offset_right_landscape">Десни бочни тастери (положено): %1$s</string>
+    <string name="side_offset_hint">Мало помери бочне тастере ако улазе у заобљену ивицу екрана. ◊ = подразумевани положај.</string>
+    <string name="side_offset_direction">← лево · десно →</string>
     <string name="main_vibration">Вибрација</string>
     <string name="main_suggestions">Предлози речи</string>
     <string name="main_export">Извези подешавања</string>
@@ -163,6 +170,11 @@
     <string name="copied">Копирано!</string>
     <string name="restore_layout_title">Врати распоред</string>
     <string name="restore_layout_message">Ово ће заменити тренутни распоред и боје.</string>
+    <string name="restore_layout_and_colors">Распоред и боје</string>
+    <string name="restore_layout_only">Само распоред</string>
+    <string name="restore_layout_only_message">Ово ће заменити тренутни распоред. Боје остају.</string>
+    <string name="restore_colors_only_message">Ово ће заменити тренутне боје. Распоред остаје.</string>
+    <string name="saved_without_colors">Сачувано без боја (коришћене су боје теме)</string>
     <string name="delete_confirm">Обрисати?</string>
     <string name="layout_restored">Распоред је враћен!</string>
     <string name="saved_layouts_title">Сачувани распореди</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Још нема сачуваних распореда</string>
     <string name="transparent_background">Провидна позадина</string>
     <string name="preview_info">Облик: %1$s | Редови: %2$d\nСачувано: %3$s</string>
+    <string name="preview_side_offsets">Бочни тастери: лево %1$s, десно %2$s\nПоложено: лево %3$s, десно %4$s</string>
     <string name="preview_colors_label">Боје (додирните за уређивање):</string>
     <string name="swatch_keys">Тастери</string>
     <string name="swatch_text">Текст</string>

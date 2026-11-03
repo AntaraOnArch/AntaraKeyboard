@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Hapësira mes rreshtave: %1$s</string>
     <string name="main_bind_long_press">Shtypje e gjatë</string>
     <string name="main_colors">Ngjyrat</string>
+    <string name="main_side_offsets">Pozicioni i tasteve anësore</string>
+    <string name="side_offset_left">Tastet anësore majtas: %1$s</string>
+    <string name="side_offset_left_landscape">Tastet anësore majtas (horizontale): %1$s</string>
+    <string name="side_offset_right">Tastet anësore djathtas: %1$s</string>
+    <string name="side_offset_right_landscape">Tastet anësore djathtas (horizontale): %1$s</string>
+    <string name="side_offset_hint">Zhvendosni pak tastet anësore nëse dalin në skajin e rrumbullakët të ekranit. ◊ = pozicioni i parazgjedhur.</string>
+    <string name="side_offset_direction">← majtas · djathtas →</string>
     <string name="main_vibration">Dridhja</string>
     <string name="main_suggestions">Sugjerime fjalësh</string>
     <string name="main_export">Eksporto cilësimet</string>
@@ -163,6 +170,11 @@
     <string name="copied">U kopjua!</string>
     <string name="restore_layout_title">Rikthe paraqitjen</string>
     <string name="restore_layout_message">Kjo do të zëvendësojë paraqitjen dhe ngjyrat aktuale.</string>
+    <string name="restore_layout_and_colors">Paraqitja dhe ngjyrat</string>
+    <string name="restore_layout_only">Vetëm paraqitja</string>
+    <string name="restore_layout_only_message">Paraqitja aktuale do të zëvendësohet. Ngjyrat mbeten.</string>
+    <string name="restore_colors_only_message">Ngjyrat aktuale do të zëvendësohen. Paraqitja mbetet.</string>
+    <string name="saved_without_colors">Ruajtur pa ngjyra (përdoreshin ngjyrat e temës)</string>
     <string name="delete_confirm">Të fshihet?</string>
     <string name="layout_restored">Paraqitja u rikthye!</string>
     <string name="saved_layouts_title">Paraqitjet e ruajtura</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Ende nuk ka paraqitje të ruajtura</string>
     <string name="transparent_background">Sfond i tejdukshëm</string>
     <string name="preview_info">Forma: %1$s | Rreshta: %2$d\nRuajtur: %3$s</string>
+    <string name="preview_side_offsets">Tastet anësore: majtas %1$s, djathtas %2$s\nHorizontale: majtas %3$s, djathtas %4$s</string>
     <string name="preview_colors_label">Ngjyrat (prek për ta modifikuar):</string>
     <string name="swatch_keys">Tastet</string>
     <string name="swatch_text">Teksti</string>

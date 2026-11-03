@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spațiu între rânduri: %1$s</string>
     <string name="main_bind_long_press">Apăsare lungă</string>
     <string name="main_colors">Culori</string>
+    <string name="main_side_offsets">Poziția tastelor laterale</string>
+    <string name="side_offset_left">Tastele laterale stânga: %1$s</string>
+    <string name="side_offset_left_landscape">Tastele laterale stânga (peisaj): %1$s</string>
+    <string name="side_offset_right">Tastele laterale dreapta: %1$s</string>
+    <string name="side_offset_right_landscape">Tastele laterale dreapta (peisaj): %1$s</string>
+    <string name="side_offset_hint">Mută puțin tastele laterale dacă ajung pe marginea rotunjită a ecranului. ◊ = poziția implicită.</string>
+    <string name="side_offset_direction">← stânga · dreapta →</string>
     <string name="main_vibration">Vibrație</string>
     <string name="main_suggestions">Sugestii de cuvinte</string>
     <string name="main_export">Exportă setările</string>
@@ -163,6 +170,11 @@
     <string name="copied">Copiat!</string>
     <string name="restore_layout_title">Restabilește aranjamentul</string>
     <string name="restore_layout_message">Aceasta va înlocui aranjamentul și culorile actuale.</string>
+    <string name="restore_layout_and_colors">Aranjament și culori</string>
+    <string name="restore_layout_only">Doar aranjamentul</string>
+    <string name="restore_layout_only_message">Aranjamentul curent va fi înlocuit. Culorile rămân.</string>
+    <string name="restore_colors_only_message">Culorile curente vor fi înlocuite. Aranjamentul rămâne.</string>
+    <string name="saved_without_colors">Salvat fără culori (erau folosite culorile temei)</string>
     <string name="delete_confirm">Ștergi?</string>
     <string name="layout_restored">Aranjament restabilit!</string>
     <string name="saved_layouts_title">Aranjamente salvate</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Încă nu există aranjamente salvate</string>
     <string name="transparent_background">Fundal transparent</string>
     <string name="preview_info">Formă: %1$s | Rânduri: %2$d\nSalvat: %3$s</string>
+    <string name="preview_side_offsets">Taste laterale: stânga %1$s, dreapta %2$s\nPeisaj: stânga %3$s, dreapta %4$s</string>
     <string name="preview_colors_label">Culori (atinge pentru a edita):</string>
     <string name="swatch_keys">Taste</string>
     <string name="swatch_text">Text</string>

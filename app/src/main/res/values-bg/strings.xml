@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Разстояние между редовете: %1$s</string>
     <string name="main_bind_long_press">Дълго натискане</string>
     <string name="main_colors">Цветове</string>
+    <string name="main_side_offsets">Позиции на страничните клавиши</string>
+    <string name="side_offset_left">Леви странични клавиши: %1$s</string>
+    <string name="side_offset_left_landscape">Леви странични клавиши (хоризонтално): %1$s</string>
+    <string name="side_offset_right">Десни странични клавиши: %1$s</string>
+    <string name="side_offset_right_landscape">Десни странични клавиши (хоризонтално): %1$s</string>
+    <string name="side_offset_hint">Преместете леко страничните клавиши, ако влизат в заобления ръб на екрана. ◊ = позиция по подразбиране.</string>
+    <string name="side_offset_direction">← наляво · надясно →</string>
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Предложения за думи</string>
     <string name="main_export">Експорт на настройките</string>
@@ -163,6 +170,11 @@
     <string name="copied">Копирано!</string>
     <string name="restore_layout_title">Възстановяване на подредбата</string>
     <string name="restore_layout_message">Това ще замени текущата подредба и цветове.</string>
+    <string name="restore_layout_and_colors">Подредба и цветове</string>
+    <string name="restore_layout_only">Само подредба</string>
+    <string name="restore_layout_only_message">Това ще замени текущата подредба. Цветовете остават.</string>
+    <string name="restore_colors_only_message">Това ще замени текущите цветове. Подредбата остава.</string>
+    <string name="saved_without_colors">Запазено без цветове (използвани са цветовете на темата)</string>
     <string name="delete_confirm">Изтриване?</string>
     <string name="layout_restored">Подредбата е възстановена!</string>
     <string name="saved_layouts_title">Запазени подредби</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Все още няма запазени подредби</string>
     <string name="transparent_background">Прозрачен фон</string>
     <string name="preview_info">Форма: %1$s | Редове: %2$d\nЗапазено: %3$s</string>
+    <string name="preview_side_offsets">Странични клавиши: ляво %1$s, дясно %2$s\nХоризонтално: ляво %3$s, дясно %4$s</string>
     <string name="preview_colors_label">Цветове (докоснете за редакция):</string>
     <string name="swatch_keys">Клавиши</string>
     <string name="swatch_text">Текст</string>

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Medzera medzi radmi: %1$s</string>
     <string name="main_bind_long_press">Dlhé stlačenie</string>
     <string name="main_colors">Farby</string>
+    <string name="main_side_offsets">Poloha bočných klávesov</string>
+    <string name="side_offset_left">Ľavé bočné klávesy: %1$s</string>
+    <string name="side_offset_left_landscape">Ľavé bočné klávesy (na šírku): %1$s</string>
+    <string name="side_offset_right">Pravé bočné klávesy: %1$s</string>
+    <string name="side_offset_right_landscape">Pravé bočné klávesy (na šírku): %1$s</string>
+    <string name="side_offset_hint">Trochu posuňte bočné klávesy, ak zasahujú do zaobleného okraja displeja. ◊ = predvolená poloha.</string>
+    <string name="side_offset_direction">← doľava · doprava →</string>
     <string name="main_vibration">Vibrácie</string>
     <string name="main_suggestions">Návrhy slov</string>
     <string name="main_export">Exportovať nastavenia</string>
@@ -163,6 +170,11 @@
     <string name="copied">Skopírované!</string>
     <string name="restore_layout_title">Obnoviť rozloženie</string>
     <string name="restore_layout_message">Týmto nahradíte aktuálne rozloženie a farby.</string>
+    <string name="restore_layout_and_colors">Rozloženie a farby</string>
+    <string name="restore_layout_only">Iba rozloženie</string>
+    <string name="restore_layout_only_message">Aktuálne rozloženie sa nahradí. Farby zostanú.</string>
+    <string name="restore_colors_only_message">Aktuálne farby sa nahradia. Rozloženie zostane.</string>
+    <string name="saved_without_colors">Uložené bez farieb (používali sa farby motívu)</string>
     <string name="delete_confirm">Odstrániť?</string>
     <string name="layout_restored">Rozloženie obnovené!</string>
     <string name="saved_layouts_title">Uložené rozloženia</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Zatiaľ žiadne uložené rozloženia</string>
     <string name="transparent_background">Priehľadné pozadie</string>
     <string name="preview_info">Tvar: %1$s | Rady: %2$d\nUložené: %3$s</string>
+    <string name="preview_side_offsets">Bočné klávesy: vľavo %1$s, vpravo %2$s\nNa šírku: vľavo %3$s, vpravo %4$s</string>
     <string name="preview_colors_label">Farby (ťuknutím upravíte):</string>
     <string name="swatch_keys">Klávesy</string>
     <string name="swatch_text">Text</string>

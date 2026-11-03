@@ -52,6 +52,7 @@ import com.example.antarakeyboard.ui.LayoutEditorDialog
 import com.example.antarakeyboard.ui.LongPressEditorDialog
 import com.example.antarakeyboard.ui.ReselectSpinner
 import com.example.antarakeyboard.ui.RgbSettingsDialog
+import com.example.antarakeyboard.ui.SideOffsetsDialog
 import com.example.antarakeyboard.ui.ShapePreviewView
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
 import android.graphics.Color
@@ -171,6 +172,10 @@ class MainActivity : AppCompatActivity() {
 
         btnSetLayout.setOnClickListener {
             openLayoutEditorDialog()
+        }
+
+        findViewById<Button>(R.id.btnSideOffsets).setOnClickListener {
+            showSideOffsetsDialog()
         }
 
         findViewById<Button>(R.id.btnColors).setOnClickListener {
@@ -625,14 +630,19 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Reset colors and/or key layout. Long-press bindings and key shape are always preserved.
-     * The current state is saved as a backup in Saved layouts first.
+     * The current state is saved as a backup in Saved layouts first; plain theme colors are
+     * not kept (the backup is then layout only, and Reset colors makes no backup at all).
      */
     private fun performReset(colors: Boolean, layout: Boolean) {
         val currentRowCount = KeyboardPrefs.getRowCount(this)
+        val hasCustomColors = !KeyboardPrefs.colorsAreThemeDefaults(this)
 
-        // Save the current layout (and colors) as a backup before the reset
-        val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
-        SavedLayoutStorage.saveCurrentLayout(this, getString(R.string.backup_name, timestamp))
+        if (layout || hasCustomColors) {
+            val timestamp = SavedLayoutStorage.formatTimestamp(System.currentTimeMillis())
+            SavedLayoutStorage.saveCurrentLayout(
+                this, getString(R.string.backup_name, timestamp), includeColors = hasCustomColors
+            )
+        }
 
         if (layout) {
             // Resetiraj horizontal center layout
@@ -652,7 +662,7 @@ class MainActivity : AppCompatActivity() {
             // Side buttons back to default for the current row count
             resetSideButtonsForRowCount(currentRowCount)
 
-            // Key height and row spacing sliders back to default
+            // Key height, row spacing and side button position sliders back to default
             KeyboardPrefs.resetKeySizing(this)
             setupKeySizeSlider()
             setupRowSpacingSlider()
@@ -661,8 +671,8 @@ class MainActivity : AppCompatActivity() {
         if (colors) {
             val isDarkTheme = PrefsManager.isDarkMode(this)
 
-            // Save the current colors as the custom theme before the reset
-            LastCustomColors.save(this)
+            // Keep the current colors as "Last custom colors" (only if they are custom)
+            if (hasCustomColors) LastCustomColors.save(this)
 
             // ALL colors back to the theme defaults
             resetAllColorsToThemeDefault(isDarkTheme)
@@ -789,6 +799,17 @@ class MainActivity : AppCompatActivity() {
         RgbSettingsDialog.show(
             this,
             wild,
+            onChanged = { autosaveDirtySection = section },
+            onDismiss = { showSavedToastIfDirty() }
+        )
+    }
+
+    /** Side button positions: autosaving popup with four offset sliders. */
+    private fun showSideOffsetsDialog() {
+        autosaveDirtySection = null
+        val section = getString(R.string.main_side_offsets)
+        SideOffsetsDialog.show(
+            this,
             onChanged = { autosaveDirtySection = section },
             onDismiss = { showSavedToastIfDirty() }
         )
@@ -1032,8 +1053,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout) {
-        SavedLayoutStorage.restoreLayout(this, savedLayout)
+    private fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout, withColors: Boolean) {
+        SavedLayoutStorage.restoreLayout(this, savedLayout, withColors)
+        // Restored colors make Custom the active theme
+        if (withColors && savedLayout.includesColors) {
+            selectCustomTheme()
+            setupThemeSpinner()
+        }
         // The layout may carry its own key height / row spacing
         setupKeySizeSlider()
         setupRowSpacingSlider()
@@ -1048,8 +1074,12 @@ class MainActivity : AppCompatActivity() {
     private inner class SavedLayoutsHost : SavedLayoutsDialog.Host {
         override fun rowsLabel(rows: Int) = this@MainActivity.rowsLabel(rows)
         override fun shapeLabel(shapeName: String) = this@MainActivity.shapeLabel(shapeName)
-        override fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout) =
-            this@MainActivity.restoreSavedLayout(savedLayout)
+        override fun restoreSavedLayout(savedLayout: SavedLayoutStorage.SavedLayout, withColors: Boolean) =
+            this@MainActivity.restoreSavedLayout(savedLayout, withColors)
+        override fun onColorsApplied() {
+            selectCustomTheme()
+            setupThemeSpinner()
+        }
     }
 
     private inner class LayoutEditorHost : LayoutEditorDialog.Host {

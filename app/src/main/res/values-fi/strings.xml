@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Rivien väli: %1$s</string>
     <string name="main_bind_long_press">Pitkä painallus</string>
     <string name="main_colors">Värit</string>
+    <string name="main_side_offsets">Sivunäppäinten sijainti</string>
+    <string name="side_offset_left">Vasemmat sivunäppäimet: %1$s</string>
+    <string name="side_offset_left_landscape">Vasemmat sivunäppäimet (vaaka): %1$s</string>
+    <string name="side_offset_right">Oikeat sivunäppäimet: %1$s</string>
+    <string name="side_offset_right_landscape">Oikeat sivunäppäimet (vaaka): %1$s</string>
+    <string name="side_offset_hint">Siirrä sivunäppäimiä hieman, jos ne ulottuvat pyöristetylle näytön reunalle. ◊ = oletussijainti.</string>
+    <string name="side_offset_direction">← vasemmalle · oikealle →</string>
     <string name="main_vibration">Värinä</string>
     <string name="main_suggestions">Sanaehdotukset</string>
     <string name="main_export">Vie asetukset</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopioitu!</string>
     <string name="restore_layout_title">Palauta asettelu</string>
     <string name="restore_layout_message">Tämä korvaa nykyisen asettelun ja värit.</string>
+    <string name="restore_layout_and_colors">Asettelu ja värit</string>
+    <string name="restore_layout_only">Vain asettelu</string>
+    <string name="restore_layout_only_message">Nykyinen asettelu korvataan. Värit säilyvät.</string>
+    <string name="restore_colors_only_message">Nykyiset värit korvataan. Asettelu säilyy.</string>
+    <string name="saved_without_colors">Tallennettu ilman värejä (käytössä olivat teeman värit)</string>
     <string name="delete_confirm">Poistetaanko?</string>
     <string name="layout_restored">Asettelu palautettu!</string>
     <string name="saved_layouts_title">Tallennetut asettelut</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Ei vielä tallennettuja asetteluja</string>
     <string name="transparent_background">Läpinäkyvä tausta</string>
     <string name="preview_info">Muoto: %1$s | Rivit: %2$d\nTallennettu: %3$s</string>
+    <string name="preview_side_offsets">Sivunäppäimet: vasen %1$s, oikea %2$s\nVaaka: vasen %3$s, oikea %4$s</string>
     <string name="preview_colors_label">Värit (muokkaa napauttamalla):</string>
     <string name="swatch_keys">Näppäimet</string>
     <string name="swatch_text">Teksti</string>

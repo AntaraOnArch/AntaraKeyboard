@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Odstęp między rzędami: %1$s</string>
     <string name="main_bind_long_press">Długie naciśnięcie</string>
     <string name="main_colors">Kolory</string>
+    <string name="main_side_offsets">Położenie klawiszy bocznych</string>
+    <string name="side_offset_left">Lewe klawisze boczne: %1$s</string>
+    <string name="side_offset_left_landscape">Lewe klawisze boczne (poziomo): %1$s</string>
+    <string name="side_offset_right">Prawe klawisze boczne: %1$s</string>
+    <string name="side_offset_right_landscape">Prawe klawisze boczne (poziomo): %1$s</string>
+    <string name="side_offset_hint">Przesuń nieco klawisze boczne, jeśli wchodzą na zaokrągloną krawędź ekranu. ◊ = położenie domyślne.</string>
+    <string name="side_offset_direction">← w lewo · w prawo →</string>
     <string name="main_vibration">Wibracje</string>
     <string name="main_suggestions">Podpowiedzi słów</string>
     <string name="main_export">Eksportuj ustawienia</string>
@@ -163,6 +170,11 @@
     <string name="copied">Skopiowano!</string>
     <string name="restore_layout_title">Przywróć układ</string>
     <string name="restore_layout_message">Spowoduje to zastąpienie obecnego układu i kolorów.</string>
+    <string name="restore_layout_and_colors">Układ i kolory</string>
+    <string name="restore_layout_only">Tylko układ</string>
+    <string name="restore_layout_only_message">Obecny układ zostanie zastąpiony. Kolory pozostaną.</string>
+    <string name="restore_colors_only_message">Obecne kolory zostaną zastąpione. Układ pozostanie.</string>
+    <string name="saved_without_colors">Zapisano bez kolorów (używane były kolory motywu)</string>
     <string name="delete_confirm">Usunąć?</string>
     <string name="layout_restored">Układ przywrócony!</string>
     <string name="saved_layouts_title">Zapisane układy</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Brak zapisanych układów</string>
     <string name="transparent_background">Przezroczyste tło</string>
     <string name="preview_info">Kształt: %1$s | Rzędy: %2$d\nZapisano: %3$s</string>
+    <string name="preview_side_offsets">Klawisze boczne: lewe %1$s, prawe %2$s\nPoziomo: lewe %3$s, prawe %4$s</string>
     <string name="preview_colors_label">Kolory (dotknij, aby edytować):</string>
     <string name="swatch_keys">Klawisze</string>
     <string name="swatch_text">Tekst</string>

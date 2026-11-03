@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Відстань між рядами: %1$s</string>
     <string name="main_bind_long_press">Довге натискання</string>
     <string name="main_colors">Кольори</string>
+    <string name="main_side_offsets">Положення бічних клавіш</string>
+    <string name="side_offset_left">Ліві бічні клавіші: %1$s</string>
+    <string name="side_offset_left_landscape">Ліві бічні клавіші (альбомна): %1$s</string>
+    <string name="side_offset_right">Праві бічні клавіші: %1$s</string>
+    <string name="side_offset_right_landscape">Праві бічні клавіші (альбомна): %1$s</string>
+    <string name="side_offset_hint">Трохи зсуньте бічні клавіші, якщо вони заходять на заокруглений край екрана. ◊ = типове положення.</string>
+    <string name="side_offset_direction">← ліворуч · праворуч →</string>
     <string name="main_vibration">Вібрація</string>
     <string name="main_suggestions">Підказки слів</string>
     <string name="main_export">Експорт налаштувань</string>
@@ -163,6 +170,11 @@
     <string name="copied">Скопійовано!</string>
     <string name="restore_layout_title">Відновити розкладку</string>
     <string name="restore_layout_message">Поточну розкладку й кольори буде замінено.</string>
+    <string name="restore_layout_and_colors">Розкладка й кольори</string>
+    <string name="restore_layout_only">Лише розкладка</string>
+    <string name="restore_layout_only_message">Поточну розкладку буде замінено. Кольори залишаться.</string>
+    <string name="restore_colors_only_message">Поточні кольори буде замінено. Розкладка залишиться.</string>
+    <string name="saved_without_colors">Збережено без кольорів (використовувалися кольори теми)</string>
     <string name="delete_confirm">Видалити?</string>
     <string name="layout_restored">Розкладку відновлено!</string>
     <string name="saved_layouts_title">Збережені розкладки</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Збережених розкладок поки немає</string>
     <string name="transparent_background">Прозорий фон</string>
     <string name="preview_info">Форма: %1$s | Ряди: %2$d\nЗбережено: %3$s</string>
+    <string name="preview_side_offsets">Бічні клавіші: ліворуч %1$s, праворуч %2$s\nАльбомна: ліворуч %3$s, праворуч %4$s</string>
     <string name="preview_colors_label">Кольори (торкніться, щоб змінити):</string>
     <string name="swatch_keys">Клавіші</string>
     <string name="swatch_text">Текст</string>

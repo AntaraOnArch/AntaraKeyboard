@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spazju bejn ir-ringieli: %1$s</string>
     <string name="main_bind_long_press">Għafsa twila</string>
     <string name="main_colors">Kuluri</string>
+    <string name="main_side_offsets">Pożizzjoni tal-buttuni tal-ġenb</string>
+    <string name="side_offset_left">Buttuni tal-ġenb tax-xellug: %1$s</string>
+    <string name="side_offset_left_landscape">Buttuni tal-ġenb tax-xellug (orizzontali): %1$s</string>
+    <string name="side_offset_right">Buttuni tal-ġenb tal-lemin: %1$s</string>
+    <string name="side_offset_right_landscape">Buttuni tal-ġenb tal-lemin (orizzontali): %1$s</string>
+    <string name="side_offset_hint">Ċaqlaq ftit il-buttuni tal-ġenb jekk jidħlu fit-tarf imdawwar tal-iskrin. ◊ = pożizzjoni awtomatika.</string>
+    <string name="side_offset_direction">← xellug · lemin →</string>
     <string name="main_vibration">Vibrazzjoni</string>
     <string name="main_suggestions">Suġġerimenti tal-kliem</string>
     <string name="main_export">Esporta s-settings</string>
@@ -163,6 +170,11 @@
     <string name="copied">Ikkupjat!</string>
     <string name="restore_layout_title">Irrestawra t-tqassim</string>
     <string name="restore_layout_message">Dan se jissostitwixxi t-tqassim u l-kuluri attwali.</string>
+    <string name="restore_layout_and_colors">Tqassim u kuluri</string>
+    <string name="restore_layout_only">Tqassim biss</string>
+    <string name="restore_layout_only_message">It-tqassim attwali se jinbidel. Il-kuluri jibqgħu.</string>
+    <string name="restore_colors_only_message">Il-kuluri attwali se jinbidlu. It-tqassim jibqa’.</string>
+    <string name="saved_without_colors">Issejvjat mingħajr kuluri (kienu qed jintużaw il-kuluri tat-tema)</string>
     <string name="delete_confirm">Tħassar?</string>
     <string name="layout_restored">It-tqassim ġie rrestawrat!</string>
     <string name="saved_layouts_title">Tqassimiet salvati</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Għad m\'hemm l-ebda tqassim salvat</string>
     <string name="transparent_background">Sfond trasparenti</string>
     <string name="preview_info">Forma: %1$s | Ringieli: %2$d\nSalvat: %3$s</string>
+    <string name="preview_side_offsets">Buttuni tal-ġenb: xellug %1$s, lemin %2$s\nOrizzontali: xellug %3$s, lemin %4$s</string>
     <string name="preview_colors_label">Kuluri (ittappja biex teditja):</string>
     <string name="swatch_keys">Ċwievet</string>
     <string name="swatch_text">Test</string>

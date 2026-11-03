@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Rijafstand: %1$s</string>
     <string name="main_bind_long_press">Lang indrukken</string>
     <string name="main_colors">Kleuren</string>
+    <string name="main_side_offsets">Positie van zijtoetsen</string>
+    <string name="side_offset_left">Linker zijtoetsen: %1$s</string>
+    <string name="side_offset_left_landscape">Linker zijtoetsen (liggend): %1$s</string>
+    <string name="side_offset_right">Rechter zijtoetsen: %1$s</string>
+    <string name="side_offset_right_landscape">Rechter zijtoetsen (liggend): %1$s</string>
+    <string name="side_offset_hint">Verschuif de zijtoetsen iets als ze in een afgeronde schermrand vallen. ◊ = standaardpositie.</string>
+    <string name="side_offset_direction">← links · rechts →</string>
     <string name="main_vibration">Trillen</string>
     <string name="main_suggestions">Woordsuggesties</string>
     <string name="main_export">Instellingen exporteren</string>
@@ -163,6 +170,11 @@
     <string name="copied">Gekopieerd!</string>
     <string name="restore_layout_title">Indeling herstellen</string>
     <string name="restore_layout_message">Dit vervangt je huidige indeling en kleuren.</string>
+    <string name="restore_layout_and_colors">Indeling en kleuren</string>
+    <string name="restore_layout_only">Alleen indeling</string>
+    <string name="restore_layout_only_message">Je huidige indeling wordt vervangen. De kleuren blijven.</string>
+    <string name="restore_colors_only_message">Je huidige kleuren worden vervangen. De indeling blijft.</string>
+    <string name="saved_without_colors">Opgeslagen zonder kleuren (themakleuren waren in gebruik)</string>
     <string name="delete_confirm">Verwijderen?</string>
     <string name="layout_restored">Indeling hersteld!</string>
     <string name="saved_layouts_title">Opgeslagen indelingen</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Nog geen opgeslagen indelingen</string>
     <string name="transparent_background">Transparante achtergrond</string>
     <string name="preview_info">Vorm: %1$s | Rijen: %2$d\nOpgeslagen: %3$s</string>
+    <string name="preview_side_offsets">Zijtoetsen: links %1$s, rechts %2$s\nLiggend: links %3$s, rechts %4$s</string>
     <string name="preview_colors_label">Kleuren (tik om te bewerken):</string>
     <string name="swatch_keys">Toetsen</string>
     <string name="swatch_text">Tekst</string>

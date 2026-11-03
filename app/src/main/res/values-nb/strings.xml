@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Radavstand: %1$s</string>
     <string name="main_bind_long_press">Langt trykk</string>
     <string name="main_colors">Farger</string>
+    <string name="main_side_offsets">Plassering av sidetaster</string>
+    <string name="side_offset_left">Venstre sidetaster: %1$s</string>
+    <string name="side_offset_left_landscape">Venstre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_right">Høyre sidetaster: %1$s</string>
+    <string name="side_offset_right_landscape">Høyre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_hint">Flytt sidetastene litt hvis de havner i en avrundet skjermkant. ◊ = standardplassering.</string>
+    <string name="side_offset_direction">← venstre · høyre →</string>
     <string name="main_vibration">Vibrering</string>
     <string name="main_suggestions">Ordforslag</string>
     <string name="main_export">Eksporter innstillinger</string>
@@ -163,6 +170,11 @@
     <string name="copied">Kopiert!</string>
     <string name="restore_layout_title">Gjenopprett oppsett</string>
     <string name="restore_layout_message">Dette erstatter nåværende oppsett og farger.</string>
+    <string name="restore_layout_and_colors">Oppsett og farger</string>
+    <string name="restore_layout_only">Bare oppsett</string>
+    <string name="restore_layout_only_message">Det nåværende oppsettet erstattes. Fargene beholdes.</string>
+    <string name="restore_colors_only_message">De nåværende fargene erstattes. Oppsettet beholdes.</string>
+    <string name="saved_without_colors">Lagret uten farger (temafargene var i bruk)</string>
     <string name="delete_confirm">Slette?</string>
     <string name="layout_restored">Oppsett gjenopprettet!</string>
     <string name="saved_layouts_title">Lagrede oppsett</string>
@@ -174,6 +186,7 @@
     <string name="no_saved_layouts">Ingen lagrede oppsett ennå</string>
     <string name="transparent_background">Gjennomsiktig bakgrunn</string>
     <string name="preview_info">Form: %1$s | Rader: %2$d\nLagret: %3$s</string>
+    <string name="preview_side_offsets">Sidetaster: venstre %1$s, høyre %2$s\nLiggende: venstre %3$s, høyre %4$s</string>
     <string name="preview_colors_label">Farger (trykk for å redigere):</string>
     <string name="swatch_keys">Taster</string>
     <string name="swatch_text">Tekst</string>
