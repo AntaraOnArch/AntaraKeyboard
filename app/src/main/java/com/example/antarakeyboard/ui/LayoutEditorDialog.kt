@@ -153,7 +153,7 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
         SideButtonsPage(activity).setup(pageSideButtons) { markDirty() }
 
         // Emoji picker settings
-        var emojiButtonOrder = EmojiPickerStorage.getButtonOrder(activity).toMutableList()
+        val emojiButtonOrder = EmojiPickerStorage.getButtonOrder(activity).toMutableList()
         var emojiTabsPosition = EmojiPickerStorage.getTabsPosition(activity)
         var emojiButtonsSide = EmojiPickerStorage.getButtonsSide(activity)
 

@@ -18,12 +18,12 @@ import com.example.antarakeyboard.extensions.dp
 /**
  * Side button positions: four sliders that shift the left / right side buttons a few dp
  * left or right, separately for portrait and landscape (e.g. away from a rounded screen edge).
- * The middle (◊) is the default position. Every change is saved at once; [onChanged] lets the
+ * The middle (◊) is the default position. Every change is saved at once; `onChanged` lets the
  * caller show one "<section> saved" toast when the popup closes.
  */
 object SideOffsetsDialog {
 
-    private class Slider(val side: EdgePos.Side, val landscape: Boolean, @StringRes val label: Int)
+    private class Slider(val side: EdgePos.Side, val landscape: Boolean, @param:StringRes val label: Int)
 
     private val SLIDERS = listOf(
         Slider(EdgePos.Side.LEFT, landscape = false, R.string.side_offset_left),

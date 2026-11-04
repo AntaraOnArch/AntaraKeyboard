@@ -19,8 +19,6 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isEmpty
-import androidx.core.view.isNotEmpty
-import androidx.core.view.isVisible
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.AppLanguageSettings
 import com.example.antarakeyboard.data.KeyboardPrefs
@@ -217,7 +215,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             context = this,
             overlayLayerProvider = { overlayLayer },
             themedCtxProvider = { themedCtx },
-            inputConnectionProvider = { currentInputConnection },
             keyHeightProvider = { keyHeight() },
             isPortraitProvider = { isPortrait() },
             currentShapeProvider = { currentShape },

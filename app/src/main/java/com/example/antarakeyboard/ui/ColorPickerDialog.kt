@@ -73,8 +73,6 @@ fun Context.showAdvancedColorPicker(
     }
 
     // Define updatePreview HERE, before colorWheel
-    lateinit var updatePreviewRef: () -> Unit
-
     val updatePreview: () -> Unit = {
         val color = Color.HSVToColor(floatArrayOf(currentHue, currentSat, currentVal))
         previewBar.setBackgroundColor(color)
@@ -171,10 +169,7 @@ fun Context.showAdvancedColorPicker(
         text = "📋"
         isAllCaps = false
         setOnClickListener {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = ClipData.newPlainText("hex", hexInput.text.toString())
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+            copyToClipboard("hex", hexInput.text.toString())
         }
     })
     inputsRow.addView(hexRow)
@@ -190,10 +185,7 @@ fun Context.showAdvancedColorPicker(
         text = "📋"
         isAllCaps = false
         setOnClickListener {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = ClipData.newPlainText("hsl", hslInput.text.toString())
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+            copyToClipboard("hsl", hslInput.text.toString())
         }
     })
     inputsRow.addView(hslRow)
@@ -209,10 +201,7 @@ fun Context.showAdvancedColorPicker(
         text = "📋"
         isAllCaps = false
         setOnClickListener {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = ClipData.newPlainText("rgb", rgbInput.text.toString())
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+            copyToClipboard("rgb", rgbInput.text.toString())
         }
     })
     inputsRow.addView(rgbRow)
@@ -234,6 +223,14 @@ fun Context.showAdvancedColorPicker(
 }
 
 /** RGB → HSL: hue in degrees, saturation and lightness 0..1. */
+// ClipboardManager.primaryClip is read-only in Kotlin (nullable getter), so the setter call stays
+@Suppress("UsePropertyAccessSyntax")
+private fun Context.copyToClipboard(label: String, text: String) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+    Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+}
+
 private fun colorToHSL(color: Int): FloatArray {
     val r = Color.red(color) / 255f
     val g = Color.green(color) / 255f

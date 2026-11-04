@@ -4,7 +4,6 @@ import com.example.antarakeyboard.R
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Typeface
-import android.os.Build
 import android.view.DragEvent
 import android.view.Gravity
 import android.view.View
@@ -32,8 +31,7 @@ class LayoutEditorBinder(
     private fun isLocked(key: KeyConfig): Boolean = key.label in lockedLabels
     private fun isEmptyKey(key: KeyConfig): Boolean = key.label == ""
 
-    private val TAG_SHAKE = 987654321
-    private val USER_EMPTY_MARKER = KeyMarkers.USER_EMPTY
+    private val shakeTagKey = 987654321
 
     private var keyboardContainer: LinearLayout? = null
 
@@ -136,7 +134,7 @@ class LayoutEditorBinder(
         }
 
         val keyView = KeyView(context).apply {
-            text = if (key.label.isBlank()) "" else key.label
+            text = key.label.ifBlank { "" }
             gravity = Gravity.CENTER
             textSize = 16f
             includeFontPadding = false
@@ -194,7 +192,7 @@ class LayoutEditorBinder(
                 setOnClickListener {
                     key.label = ""
                     key.longPressBindings.clear()
-                    key.longPressBindings.add(USER_EMPTY_MARKER)
+                    key.longPressBindings.add(KeyMarkers.USER_EMPTY)
                     afterLayoutChanged()
                 }
             }
@@ -297,12 +295,7 @@ class LayoutEditorBinder(
 
         view.tag = pos
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            view.startDragAndDrop(data, shadow, view, 0)
-        } else {
-            @Suppress("DEPRECATION")
-            view.startDrag(data, shadow, view, 0)
-        }
+        view.startDragAndDrop(data, shadow, view, 0)
     }
 
     private fun handleDrop(
@@ -357,12 +350,12 @@ class LayoutEditorBinder(
         val deg = 8f
 
         shakingViews.forEach { v ->
-            if (v.getTag(TAG_SHAKE) == true) return@forEach
-            v.setTag(TAG_SHAKE, true)
+            if (v.getTag(shakeTagKey) == true) return@forEach
+            v.setTag(shakeTagKey, true)
 
             fun loop() {
                 if (selectedA != null || selectedB != null) {
-                    v.setTag(TAG_SHAKE, false)
+                    v.setTag(shakeTagKey, false)
                     v.rotation = 0f
                     return
                 }
@@ -393,7 +386,7 @@ class LayoutEditorBinder(
 
     private fun stopIdleShake() {
         shakingViews.forEach { v ->
-            v.setTag(TAG_SHAKE, false)
+            v.setTag(shakeTagKey, false)
             v.animate().cancel()
             v.rotation = 0f
         }
@@ -455,10 +448,6 @@ class LayoutEditorBinder(
 
     fun saveExternally() {
         onSaved(cfg)
-    }
-
-    fun hasTwoSelected(): Boolean {
-        return selectedA != null && selectedB != null
     }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {

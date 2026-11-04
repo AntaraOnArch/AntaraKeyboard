@@ -79,11 +79,6 @@ object EdgeSlotsStorage {
         }
     }
 
-    fun defaultSlots(ctx: Context): List<EdgeSlot> {
-        val rowCount = KeyboardPrefs.getRowCount(ctx)
-        return defaultSlots(rowCount)
-    }
-
     fun load(ctx: Context): List<EdgeSlot> {
         val rowCount = normalizeRowCount(KeyboardPrefs.getRowCount(ctx))
         val key = keyForRowCount(rowCount)

@@ -251,7 +251,8 @@ internal object KeySizing {
                 }
             }
 
-            KeyShape.TRIANGLE -> if (spec.landscape) (availW * 0.92f).toInt() else (availW * 0.78f).toInt()
+            // portrait triangles returned above
+            KeyShape.TRIANGLE -> (availW * 0.92f).toInt()
             KeyShape.CIRCLE -> {
                 when {
                     spec.landscape -> availW
@@ -317,10 +318,7 @@ internal object KeySizing {
             }
 
             layoutShape == KeyShape.HEX &&
-                    spec.landscape &&
-                    count >= 7 -> {
-                baseKeyW
-            }
+                    spec.landscape -> baseKeyW
 
             savedRowCount == 3 -> {
                 ((effectiveAvailW - (count - 1) * gap) / count.toFloat())

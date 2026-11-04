@@ -49,9 +49,6 @@ class ColorWheelView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun getHue(): Float = hue
-    fun getSaturation(): Float = saturation
-
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         centerX = w / 2f
@@ -129,5 +126,7 @@ class ColorWheelView @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
+    // Lint (ClickableViewAccessibility) wants performClick overridden when onTouchEvent is
+    @Suppress("RedundantOverride")
     override fun performClick(): Boolean = super.performClick()
 }

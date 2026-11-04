@@ -377,8 +377,6 @@ class EdgeOverlayManager(
             overlayLayer.getLocationOnScreen(ovLoc)
 
             val keySize = landscapeKeySizePxProvider()
-            val rawSideWidthLeft = keySize
-            val rawSideWidthRight = keySize
 
             val visualRows = edgeRowIndices(leftBlock.childCount)
 
@@ -458,7 +456,7 @@ class EdgeOverlayManager(
                         slotType = slot.type
                     )
 
-                    val sideW = (rawSideWidthLeft * tuning.widthScale).toInt()
+                    val sideW = (keySize * tuning.widthScale).toInt()
                         .coerceAtLeast(14.dp(context))
 
                     val left = leftAnchorLeft - sideW + tuning.x.dp(context)
@@ -499,7 +497,7 @@ class EdgeOverlayManager(
                         slotType = slot.type
                     )
 
-                    val sideW = (rawSideWidthRight * tuning.widthScale).toInt()
+                    val sideW = (keySize * tuning.widthScale).toInt()
                         .coerceAtLeast(14.dp(context))
 
                     val left = rightAnchorRight - sideW + tuning.x.dp(context)

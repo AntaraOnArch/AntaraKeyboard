@@ -242,7 +242,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         var currentKeyText = if (hasColors) savedLayout.keyText else drawnKeyText
         var currentSpaceBg = if (hasColors) savedLayout.space1Bg else KeyboardPrefs.resolveSpaceColors(activity, isDark).first
         var currentEnterBg = if (hasColors) savedLayout.enterBg else KeyboardPrefs.getEnterBg(activity)
-        var currentEnterIcon = if (hasColors) savedLayout.enterIcon else KeyboardPrefs.getEnterIcon(activity)
+        val currentEnterIcon = if (hasColors) savedLayout.enterIcon else KeyboardPrefs.getEnterIcon(activity)
         var currentBgColor = if (hasColors) savedLayout.backgroundColor else KeyboardPrefs.resolveKeyboardBackground(activity, isDark)
 
         // Parse the saved layout JSON
@@ -445,7 +445,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         fun addColorSwatch(color: Int, label: String, onColorChanged: (Int) -> Unit): View {
             val container = LinearLayout(activity).apply {
                 orientation = LinearLayout.VERTICAL
-                gravity = android.view.Gravity.CENTER
+                gravity = Gravity.CENTER
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isClickable = true
                 isFocusable = true
@@ -457,7 +457,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             val text = TextView(activity).apply {
                 this.text = label
                 textSize = 11f
-                gravity = android.view.Gravity.CENTER
+                gravity = Gravity.CENTER
             }
             container.addView(swatch)
             container.addView(text)
@@ -509,7 +509,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             orientation = LinearLayout.HORIZONTAL
             // Same height for all buttons, even when one label takes two lines
             isBaselineAligned = false
-            gravity = android.view.Gravity.END
+            gravity = Gravity.END
             setPadding(0, 16.dp(this), 0, 0)
         }
 

@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 /**
  * Settings popup of RGB Smooth / RGB Wild: a live preview (the keyboard's own animation),
  * speed, saturation and brightness. Every change is saved at once (no Save button);
- * [onChanged] lets the caller show one "<theme> saved" toast when the popup closes.
+ * `onChanged` lets the caller show one "<theme> saved" toast when the popup closes.
  */
 object RgbSettingsDialog {
 

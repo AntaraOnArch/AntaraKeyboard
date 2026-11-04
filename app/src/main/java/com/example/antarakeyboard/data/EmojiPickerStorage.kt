@@ -53,7 +53,7 @@ object EmojiPickerStorage {
         return try {
             val type = object : TypeToken<List<String>>() {}.type
             gson.fromJson(json, type)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
@@ -75,11 +75,6 @@ object EmojiPickerStorage {
         prefs.edit { putString(KEY_RECENT_EMOJIS, gson.toJson(limited)) }
     }
 
-    fun clearRecentEmojis(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { remove(KEY_RECENT_EMOJIS) }
-    }
-
     /* ───────── BUTTON ORDER ───────── */
 
     /**
@@ -88,11 +83,7 @@ object EmojiPickerStorage {
      */
     fun getButtonOrder(context: Context): List<EmojiButtonAction> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val json = prefs.getString(KEY_BUTTON_ORDER, null)
-
-        if (json == null) {
-            return defaultButtonOrder()
-        }
+        val json = prefs.getString(KEY_BUTTON_ORDER, null) ?: return defaultButtonOrder()
 
         return try {
             val type = object : TypeToken<List<String>>() {}.type
@@ -100,11 +91,11 @@ object EmojiPickerStorage {
             names.mapNotNull { name ->
                 try {
                     EmojiButtonAction.valueOf(name)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }.takeIf { it.size == 3 } ?: defaultButtonOrder()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             defaultButtonOrder()
         }
     }
@@ -156,7 +147,7 @@ object EmojiPickerStorage {
 
         return try {
             TabsPosition.valueOf(name)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             TabsPosition.LEFT
         }
     }
@@ -174,7 +165,7 @@ object EmojiPickerStorage {
 
         return try {
             ButtonsSide.valueOf(name)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ButtonsSide.RIGHT
         }
     }

@@ -291,23 +291,11 @@ object KeyboardPrefs {
     fun isSpaceLinked(context: Context): Boolean =
         prefs(context).getBoolean(SPACE_LINKED, true)
 
-    fun setSpaceLinked(context: Context, linked: Boolean) {
-        prefs(context).edit { putBoolean(SPACE_LINKED, linked) }
-    }
-
     fun getSpace1Bg(context: Context): Int =
         prefs(context).getInt(SPACE1_BG, 0xFF3E3E3E.toInt())
 
     fun getSpace2Bg(context: Context): Int =
         prefs(context).getInt(SPACE2_BG, 0xFF3E3E3E.toInt())
-
-    fun setSpace1Bg(context: Context, color: Int) {
-        prefs(context).edit { putInt(SPACE1_BG, color) }
-    }
-
-    fun setSpace2Bg(context: Context, color: Int) {
-        prefs(context).edit { putInt(SPACE2_BG, color) }
-    }
 
     /** Sets explicit space colors (and stops following the theme). */
     fun setSpaceColors(context: Context, c1: Int, c2: Int, linked: Boolean) {
@@ -420,16 +408,6 @@ object KeyboardPrefs {
         return if (bg != 0 && text != 0) Pair(bg, text) else null
     }
 
-    fun getKeyIndividualBg(context: Context, keyLabel: String): Int? {
-        val bg = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", 0)
-        return if (bg != 0) bg else null
-    }
-
-    fun getKeyIndividualTextColor(context: Context, keyLabel: String): Int? {
-        val text = prefs(context).getInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_text", 0)
-        return if (text != 0) text else null
-    }
-
     fun setKeyIndividualColors(context: Context, keyLabel: String, bg: Int, textColor: Int) {
         prefs(context).edit {
             putInt("${KEY_INDIVIDUAL_COLORS_PREFIX}${keyLabel}_bg", bg)
@@ -511,14 +489,6 @@ object KeyboardPrefs {
 
     fun getEnterIcon(context: Context): Int =
         prefs(context).getInt(ENTER_ICON, DEFAULT_ENTER_ICON)
-
-    fun setEnterBg(context: Context, color: Int) {
-        prefs(context).edit { putInt(ENTER_BG, color) }
-    }
-
-    fun setEnterIcon(context: Context, color: Int) {
-        prefs(context).edit { putInt(ENTER_ICON, color) }
-    }
 
     fun setEnterColors(context: Context, bg: Int, icon: Int) {
         prefs(context).edit {
@@ -693,9 +663,6 @@ object KeyboardPrefs {
         const val DARK_KEYBOARD_BG = 0xFF000000.toInt()
     }
 
-    fun hasCustomThemeDefaults(context: Context): Boolean =
-        prefs(context).getBoolean(THEME_DEFAULTS_CUSTOM, false)
-
     // Light mode getters
     fun getThemeLightKeyFill(context: Context): Int =
         prefs(context).getInt(THEME_LIGHT_KEY_FILL, FactoryDefaults.LIGHT_KEY_FILL)
@@ -868,12 +835,4 @@ object KeyboardPrefs {
     // Helper to check if any RGB mode is active
     fun isAnyRgbModeEnabled(context: Context): Boolean =
         isRgbSmoothEnabled(context) || isRgbWildEnabled(context)
-
-    // Disable all RGB modes
-    fun disableAllRgbModes(context: Context) {
-        prefs(context).edit {
-            putBoolean(RGB_SMOOTH_ENABLED, false)
-            putBoolean(RGB_WILD_ENABLED, false)
-        }
-    }
 }

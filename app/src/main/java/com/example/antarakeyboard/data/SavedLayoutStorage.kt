@@ -76,7 +76,7 @@ object SavedLayoutStorage {
         return try {
             val type = object : TypeToken<List<SavedLayout>>() {}.type
             gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }

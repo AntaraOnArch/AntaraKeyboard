@@ -272,7 +272,7 @@ class ColorsDialog(
         val grid = GridLayout(activity).apply { columnCount = 5 }
         val rowCount = KeyboardPrefs.getRowCount(activity)
         val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(activity, rowCount)
-        val labels = layout.rows.flatMap { it.keys }
+        val labels = layout.rows.asSequence().flatMap { it.keys }
             .map { it.label }
             .filter { it.isNotBlank() && it !in setOf(" ", "↵", "⇧", "⌫", "😊") }
             .map { if (it.length == 1 && it[0].isLetter()) it.lowercase() else it }

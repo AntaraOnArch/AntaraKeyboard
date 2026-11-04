@@ -28,8 +28,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.os.LocaleListCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
-import androidx.core.view.isEmpty
-import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import com.example.antarakeyboard.data.SettingsBackup
 import com.example.antarakeyboard.data.OpenSourceLicenses
@@ -58,7 +56,6 @@ import com.example.antarakeyboard.ui.SideOffsetsDialog
 import com.example.antarakeyboard.ui.ShapePreviewView
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
 import android.graphics.Color
-import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.SavedLayoutStorage
 import com.example.antarakeyboard.data.LastCustomColors
 import com.example.antarakeyboard.ui.SavedLayoutsDialog

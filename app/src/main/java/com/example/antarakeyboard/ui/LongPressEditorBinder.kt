@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.Gravity
@@ -16,6 +15,7 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.data.LongPressPresets
@@ -24,6 +24,7 @@ import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.service.EmojiCategory
+import java.text.NumberFormat
 
 class LongPressEditorBinder(
     private val context: Context,
@@ -126,8 +127,6 @@ class LongPressEditorBinder(
         buildKeyboardUI()
     }
 
-    fun getUpdatedConfig(): KeyboardConfig = cfg
-
     /** Editable keys that currently have at least one long-press binding (layout order). */
     fun boundKeys(): List<KeyConfig> =
         cfg.rows.flatMap { it.keys }
@@ -202,7 +201,7 @@ class LongPressEditorBinder(
 
         // Same look as the Set layout editor keys
         val keyView = KeyView(context).apply {
-            text = if (key.label.isBlank()) "" else key.label
+            text = key.label.ifBlank { "" }
             gravity = Gravity.CENTER
             textSize = 16f
             includeFontPadding = false
@@ -237,7 +236,7 @@ class LongPressEditorBinder(
         if (!locked && boundCount > 0) {
             wrapper.addView(
                 TextView(context).apply {
-                    text = boundCount.toString()
+                    text = NumberFormat.getIntegerInstance().format(boundCount)
                     textSize = 10f
                     gravity = Gravity.CENTER
                     setTextColor(0xFFFFFFFF.toInt())
@@ -450,7 +449,7 @@ class LongPressEditorBinder(
             onClosed()
         }
         dialog.show()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         dialog.window?.setLayout(dialogW, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 

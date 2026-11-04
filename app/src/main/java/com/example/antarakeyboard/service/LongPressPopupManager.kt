@@ -9,7 +9,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
-import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.LinearLayout
@@ -27,7 +26,6 @@ class LongPressPopupManager(
     private val context: Context,
     private val overlayLayerProvider: () -> FrameLayout,
     private val themedCtxProvider: () -> Context,
-    private val inputConnectionProvider: () -> InputConnection?,
     private val keyHeightProvider: () -> Int,
     private val isPortraitProvider: () -> Boolean,
     private val currentShapeProvider: () -> KeyShape,
@@ -53,9 +51,6 @@ class LongPressPopupManager(
     private var lpPreviewTv: TextView? = null
     private var lpGrid: GridLayout? = null
     private var lpRoot: LinearLayout? = null
-    private var lpHasLiveInserted = false
-
-    private val LIVE_REPLACE = false
 
     val isPopupShowing: Boolean
         get() = longPressPopup != null
@@ -67,7 +62,6 @@ class LongPressPopupManager(
 
         lpChars = chars
         lpSelectedIndex = 0
-        lpHasLiveInserted = false
 
         val colors = colorsProvider(anchor)
         lpColors = colors
@@ -185,7 +179,6 @@ class LongPressPopupManager(
                 lpRoot = null
                 lpChars = emptyList()
                 lpColors = null
-                lpHasLiveInserted = false
             }
         }
 
@@ -199,17 +192,16 @@ class LongPressPopupManager(
         anchor.getLocationOnScreen(anchorLoc)
         overlayLayer.getLocationOnScreen(rootLoc)
 
-        val popupW = maxW
         val popupH = root.measuredHeight
 
-        val desiredX = anchorLoc[0] - rootLoc[0] + anchor.width / 2 - popupW / 2
+        val desiredX = anchorLoc[0] - rootLoc[0] + anchor.width / 2 - maxW / 2
         val desiredY = anchorLoc[1] - rootLoc[1] - popupH - 10.dp(context)
 
         val minPopupOffset = 8.dp(context)
 
         val maxX = (
                 overlayLayer.width -
-                        popupW -
+                        maxW -
                         minPopupOffset
                 ).coerceAtLeast(minPopupOffset)
 
@@ -254,10 +246,6 @@ class LongPressPopupManager(
             }
 
             lpRects = rects
-        }
-
-        if (LIVE_REPLACE) {
-            commitLiveSelected()
         }
     }
 
@@ -313,7 +301,7 @@ class LongPressPopupManager(
         val curRow = lpSelectedIndex / cols
         val curCol = lpSelectedIndex % cols
 
-        var newRow = (curRow + dy).coerceIn(0, rows - 1)
+        val newRow = (curRow + dy).coerceIn(0, rows - 1)
         var newCol = (curCol + dx).coerceIn(0, cols - 1)
         var newIndex = newRow * cols + newCol
 
@@ -328,24 +316,7 @@ class LongPressPopupManager(
         if (newIndex != lpSelectedIndex) {
             lpSelectedIndex = newIndex
             updateLongPressHighlight()
-
-            if (LIVE_REPLACE) {
-                replaceLiveSelected()
-            }
         }
-    }
-
-    private fun commitLiveSelected() {
-        val ch = lpChars.getOrNull(lpSelectedIndex) ?: return
-        inputConnectionProvider()?.commitText(ch, 1)
-        lpHasLiveInserted = true
-    }
-
-    private fun replaceLiveSelected() {
-        if (lpHasLiveInserted) {
-            inputConnectionProvider()?.deleteSurroundingText(1, 0)
-        }
-        commitLiveSelected()
     }
 
     fun hideLongPressPopup() {
@@ -365,11 +336,6 @@ class LongPressPopupManager(
      * Gets the list of screen-space rects for each character in the popup grid.
      */
     fun getLpRects(): List<Rect> = lpRects
-
-    /**
-     * Gets the list of characters displayed in the popup.
-     */
-    fun getLpChars(): List<String> = lpChars
 
     /**
      * Gets the currently selected index.
