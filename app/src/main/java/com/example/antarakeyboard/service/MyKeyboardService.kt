@@ -215,9 +215,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             context = this,
             overlayLayerProvider = { overlayLayer },
             themedCtxProvider = { themedCtx },
-            keyHeightProvider = { keyHeight() },
             isPortraitProvider = { isPortrait() },
             currentShapeProvider = { currentShape },
+            keyHeightStretchProvider = { keyHeightFactor() },
+            rowSpacingPxProvider = { rowSpacingPx() },
             colorsProvider = { anchor -> longPressPopupColors(anchor) },
             rgbBackgroundProvider = { if (rgbAnimator.isRunning) rgbAnimator.newDrawable() else null }
         )
@@ -227,7 +228,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             overlayLayerProvider = { overlayLayer },
             keyboardContainerProvider = { keyboardContainer },
             themedCtxProvider = { themedCtx },
-            landscapeKeySizePxProvider = { landscapeBuilder.keySizePx() },
+            landscapeKeySizePxProvider = { landscapeBuilder.sideButtonSizePx() },
             availableKeyboardWidthPxProvider = { availableKeyboardWidthPx() },
             computeRowSizingProvider = { count, availW ->
                 val sizing = computeRowSizing(count, availW)
@@ -716,8 +717,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         hideLongPressPopup()
         hideEmojiPopup()
 
-        val keyboardHeight = computeTargetKeyboardHeight()
-        emojiPickerManager.show(keyboardHeight)
+        emojiPickerManager.show()
     }
 
 
@@ -736,7 +736,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         return if (isPortrait()) {
-            (screenH * 0.36f).roundToInt().coerceAtLeast(230.dp(this))
+            portraitKeyboardHeight(screenH)
         } else {
             val ratio = when (savedRowCount) {
                 3 -> 0.28f
@@ -755,6 +755,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             (screenH * ratio).roundToInt().coerceAtLeast(minH)
         }
     }
+
+    private fun portraitKeyboardHeight(screenH: Int): Int =
+        (screenH * 0.36f).roundToInt().coerceAtLeast(230.dp(this))
 
     private fun totalVisibleRows(): Int {
         var rows = currentKeyboardConfig.rows.size
@@ -1148,22 +1151,74 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /** Key height factor from the main app slider (1 = tuned default). */
     private fun keyHeightFactor(): Float = KeyScale.clamp(KeyboardPrefs.getKeyScale(this))
 
+    /** Height stretch the keys are drawn with (portrait or landscape). */
+    private fun keyHeightStretch(): Float =
+        if (isLandscape()) landscapeKeyHeightStretch() else portraitKeyHeightStretch()
+
     /**
-     * Height stretch the keys are drawn with: the slider factor times the layout's own default.
+     * Portrait: the slider factor times the layout's own default.
      * 3-row portrait triangles are taller by default (what used to be 150 % on the slider).
      */
-    private fun keyHeightStretch(): Float {
-        val layoutDefault = if (
-            !isLandscape() &&
-            currentShape == KeyShape.TRIANGLE &&
-            KeyboardPrefs.getRowCount(this) == 3
-        ) {
-            KeyScale.THREE_ROW_TRIANGLE_DEFAULT
-        } else {
-            1f
+    private fun portraitKeyHeightStretch(): Float {
+        val threeRows = KeyboardPrefs.getRowCount(this) == 3
+        val layoutDefault = when {
+            threeRows && currentShape == KeyShape.TRIANGLE -> KeyScale.THREE_ROW_TRIANGLE_DEFAULT
+            threeRows && currentShape == KeyShape.CUBE -> KeyScale.THREE_ROW_CUBE_DEFAULT
+            else -> 1f
         }
         return keyHeightFactor() * layoutDefault
     }
+
+    /**
+     * Landscape keys are drawn exactly as tall as the portrait keys (key height slider included):
+     * the stretch turns the shape height of the square landscape key into the portrait one.
+     */
+    private fun landscapeKeyHeightStretch(): Float {
+        var w = landscapeBuilder.keySizePx().toFloat()
+        var h = landscapeBuilder.keyBoxHeightPx().toFloat()
+        if (keysForcedSquare(landscape = true) && landscapeShape() != KeyShape.HEX_TALL) {
+            w = minOf(w, h)
+            h = w
+        }
+        val base = KeyView.shapeHeight(landscapeShape(), w, h)
+        if (base <= 0f) return keyHeightFactor()
+        return portraitKeyShapeHeightPx() / base
+    }
+
+    /**
+     * Row sizing of the widest portrait row, computed the way portrait builds its rows
+     * (screen sides swapped), so it is the same whichever orientation asks.
+     */
+    private fun portraitRowSizing(): KeySizing.RowSizing {
+        val dm = resources.displayMetrics
+        // Same width as availableKeyboardWidthPx() in portrait (the side paddings do not rotate)
+        val portraitW = (minOf(dm.widthPixels, dm.heightPixels) -
+            overlayLayer.paddingLeft - overlayLayer.paddingRight).coerceAtLeast(200.dp(this))
+        val portraitH = maxOf(dm.widthPixels, dm.heightPixels)
+        val spec = sizingSpec().copy(landscape = false)
+        val keyH = KeySizing.keyHeight(spec, totalVisibleRows(), portraitKeyboardHeight(portraitH))
+        val widestRow = currentKeyboardConfig.rows.maxOfOrNull { row ->
+            row.keys.count { !it.longPressBindings.contains(KeyMarkers.EDGE_GHOST) }
+        }?.coerceAtLeast(1) ?: 1
+        return KeySizing.baseRowSizing(spec, widestRow, portraitW) { keyH }
+    }
+
+    /** Drawn shape height of the portrait keys at 100 % on the key height slider (px). */
+    private fun portraitBaseShapeHeightPx(): Float {
+        val sizing = portraitRowSizing()
+        val shape = effectiveShape()
+        var w = sizing.keyW.toFloat()
+        var h = sizing.keyH.toFloat()
+        if (keysForcedSquare(landscape = false) && shape != KeyShape.HEX_TALL) {
+            w = minOf(w, h)
+            h = w
+        }
+        return KeyView.shapeHeight(shape, w, h)
+    }
+
+    /** Drawn key height of the portrait layout (px), key height slider included. */
+    private fun portraitKeyShapeHeightPx(): Float =
+        portraitBaseShapeHeightPx() * portraitKeyHeightStretch()
 
     /** Extra vertical space between rows from the row spacing slider (px, may be negative). */
     private fun rowSpacingPx(): Int =
@@ -1173,13 +1228,16 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
      * Whether keys are drawn square (KeyView.forceSquare). Only portrait triangles
      * and the 3-row portrait cube use their own height; HEX_TALL is never squared.
      */
-    private fun keysForcedSquare(): Boolean {
+    private fun keysForcedSquare(landscape: Boolean = isLandscape()): Boolean {
         val shape = effectiveShape()
         if (shape == KeyShape.HEX_TALL) return false
-        val allowNonSquare = !isLandscape() && (
-            shape == KeyShape.TRIANGLE ||
-                (KeyboardPrefs.getRowCount(this) == 3 && shape == KeyShape.CUBE)
-            )
+        val rows = KeyboardPrefs.getRowCount(this)
+        val allowNonSquare = if (landscape) {
+            // Landscape triangles get a box just as tall as the triangle (LandscapeLayoutBuilder)
+            shape == KeyShape.TRIANGLE
+        } else {
+            shape == KeyShape.TRIANGLE || (rows == 3 && shape == KeyShape.CUBE)
+        }
         return !allowNonSquare
     }
 
@@ -1386,7 +1444,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                                 0
                             } else {
                                 when (savedRowCount) {
-                                    3 -> 1.dp(this@MyKeyboardService)    // 3-row stays as it is
+                                    3 -> -(6.dp(this@MyKeyboardService))    // 3-row: rows a little closer
                                     4 -> -(12.dp(this@MyKeyboardService))   // 4-row: rows closer together
                                     5 -> -(12.dp(this@MyKeyboardService))   // 5-row: a little closer still
                                     else -> 1.dp(this@MyKeyboardService)
@@ -1524,6 +1582,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         override fun effectiveShape() = this@MyKeyboardService.effectiveShape()
         override fun landscapeShape() = this@MyKeyboardService.landscapeShape()
         override fun keyHeightStretch() = this@MyKeyboardService.keyHeightStretch()
+        override fun portraitRowSizing() = this@MyKeyboardService.portraitRowSizing()
+        override fun portraitBaseShapeHeightPx() = this@MyKeyboardService.portraitBaseShapeHeightPx()
         override fun rowSpacingPx() = this@MyKeyboardService.rowSpacingPx()
         override fun createKey(key: KeyConfig) = this@MyKeyboardService.createKey(key)
         override fun keyColors(label: String?) = this@MyKeyboardService.keyColors(label)

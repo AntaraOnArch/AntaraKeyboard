@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB поставки</string>
     <string name="theme_btn_saved_layouts">Зачувани распореди</string>
     <string name="reset_hint">Ресетирај…</string>
-    <string name="reset_colors">Ресетирај бои</string>
-    <string name="reset_layout">Ресетирај распоред</string>
-    <string name="reset_all">Ресетирај сè</string>
+    <string name="reset_none">Ништо</string>
+    <string name="reset_colors">Само бои</string>
+    <string name="reset_layout">Распоред на копчиња</string>
+    <string name="reset_all">Бои и распоред</string>
     <string name="backup_name">Резервна копија %1$s</string>
     <string name="reset_done_all">Распоредот и боите се ресетирани. Претходната состојба е зачувана како копија.</string>
     <string name="reset_done_colors">Боите се ресетирани. Претходната состојба е зачувана како копија.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Внесете каков било текст</string>
     <string name="lp_custom_add">Додај</string>
     <string name="lp_custom_already">Веќе е поврзано со ова копче</string>
+    <string name="lp_max_bindings">На копче може да се поврзат најмногу %1$d</string>
     <string name="lp_custom_bound">Поврзано со ова копче:</string>
     <string name="lp_editor_title">Долго притискање: %1$s</string>
     <string name="lp_nothing_bound">Ништо не е поврзано – допрете ги знаците подолу</string>

@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-innstillinger</string>
     <string name="theme_btn_saved_layouts">Lagrede oppsett</string>
     <string name="reset_hint">Tilbakestill…</string>
-    <string name="reset_colors">Tilbakestill farger</string>
-    <string name="reset_layout">Tilbakestill oppsett</string>
-    <string name="reset_all">Tilbakestill alt</string>
+    <string name="reset_none">Ingenting</string>
+    <string name="reset_colors">Bare farger</string>
+    <string name="reset_layout">Tastoppsett</string>
+    <string name="reset_all">Farger og oppsett</string>
     <string name="backup_name">Sikkerhetskopi %1$s</string>
     <string name="reset_done_all">Oppsett og farger tilbakestilt. Forrige tilstand er lagret som sikkerhetskopi.</string>
     <string name="reset_done_colors">Farger tilbakestilt. Forrige tilstand er lagret som sikkerhetskopi.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Skriv hvilken som helst tekst</string>
     <string name="lp_custom_add">Legg til</string>
     <string name="lp_custom_already">Allerede tilordnet denne tasten</string>
+    <string name="lp_max_bindings">En tast kan ha høyst %1$d tilordninger</string>
     <string name="lp_custom_bound">Tilordnet denne tasten:</string>
     <string name="lp_editor_title">Langt trykk: %1$s</string>
     <string name="lp_nothing_bound">Ingenting tilordnet – trykk på tegnene nedenfor</string>

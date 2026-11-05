@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Nastavitve RGB</string>
     <string name="theme_btn_saved_layouts">Shranjene postavitve</string>
     <string name="reset_hint">Ponastavi…</string>
-    <string name="reset_colors">Ponastavi barve</string>
-    <string name="reset_layout">Ponastavi postavitev</string>
-    <string name="reset_all">Ponastavi vse</string>
+    <string name="reset_none">Nič</string>
+    <string name="reset_colors">Samo barve</string>
+    <string name="reset_layout">Postavitev tipk</string>
+    <string name="reset_all">Barve in postavitev</string>
     <string name="backup_name">Varnostna kopija %1$s</string>
     <string name="reset_done_all">Postavitev in barve ponastavljene. Prejšnje stanje je shranjeno kot kopija.</string>
     <string name="reset_done_colors">Barve ponastavljene. Prejšnje stanje je shranjeno kot kopija.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Vnesite poljubno besedilo</string>
     <string name="lp_custom_add">Dodaj</string>
     <string name="lp_custom_already">Že povezano s to tipko</string>
+    <string name="lp_max_bindings">Na tipko je mogoče povezati največ %1$d</string>
     <string name="lp_custom_bound">Povezano s to tipko:</string>
     <string name="lp_editor_title">Dolg pritisk: %1$s</string>
     <string name="lp_nothing_bound">Nič ni povezano – tapnite znake spodaj</string>

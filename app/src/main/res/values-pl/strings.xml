@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Ustawienia RGB</string>
     <string name="theme_btn_saved_layouts">Zapisane układy</string>
     <string name="reset_hint">Resetuj…</string>
-    <string name="reset_colors">Resetuj kolory</string>
-    <string name="reset_layout">Resetuj układ</string>
-    <string name="reset_all">Resetuj wszystko</string>
+    <string name="reset_none">Nic</string>
+    <string name="reset_colors">Tylko kolory</string>
+    <string name="reset_layout">Układ klawiszy</string>
+    <string name="reset_all">Kolory i układ</string>
     <string name="backup_name">Kopia %1$s</string>
     <string name="reset_done_all">Układ i kolory zresetowane. Poprzedni stan zapisano jako kopię.</string>
     <string name="reset_done_colors">Kolory zresetowane. Poprzedni stan zapisano jako kopię.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Wpisz dowolny tekst</string>
     <string name="lp_custom_add">Dodaj</string>
     <string name="lp_custom_already">Już przypisano do tego klawisza</string>
+    <string name="lp_max_bindings">Do klawisza można przypisać najwyżej %1$d</string>
     <string name="lp_custom_bound">Przypisane do tego klawisza:</string>
     <string name="lp_editor_title">Długie naciśnięcie: %1$s</string>
     <string name="lp_nothing_bound">Nic nie przypisano – dotknij znaków poniżej</string>

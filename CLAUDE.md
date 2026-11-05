@@ -61,7 +61,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 **Key shape note:** with 3 rows, `HEX` is drawn as `HEX_TALL` (`effectiveShape()`).
 
-**Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. Landscape uses the same mechanism. The keyboard height follows (measured from content). 3-row portrait triangles are drawn 1.5× taller at 100 % (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`, applied in `keyHeightStretch()`).
+**Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. **Landscape keys are drawn exactly as tall as the portrait keys** (slider included) with the same mechanism: `landscapeKeyHeightStretch()` turns the landscape key's shape height into `portraitKeyShapeHeightPx()` (portrait sizing computed with the screen sides swapped, widest row – `portraitRowSizing()`, `KeyView.shapeHeight`). Landscape widths (`LandscapeLayoutBuilder.keySizePx()`) keep the portrait proportions: circles are as wide as the portrait key is tall (round, never an ellipse), 4/5-row cubes get a square front, triangles (all row counts) copy the portrait width, horizontal tip overlap (`triOverlapX`) and up/down alternation in a box only as tall as the triangle (`TRIANGLE_HEIGHT_RATIO`), rows 3 dp apart, so no space is lost above, between or below the rows; hexagons and 3-row cubes keep the tuned sizes. Side buttons keep the tuned size (`sideButtonSizePx()`). The keyboard height follows (measured from content). 3-row triangles are drawn 1.5× taller (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`) and 3-row cubes 1.2× taller (`THREE_ROW_CUBE_DEFAULT`) at 100 %, in both orientations (`portraitKeyHeightStretch()`).
 
 **Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `LandscapeLayoutBuilder.rowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
 
@@ -138,6 +138,7 @@ Lets the user bind any special letter or emoji to a key's long press.
 - Keyboard preview is rendered exactly like the Set layout editor (shared `ui/EditorKeyboardRenderer.kt`); a small badge shows how many characters are bound to each key.
 - Tapping a key opens an **emoji-picker-style character picker**: category tabs (special-character groups, all Latin / Cyrillic / Greek letters from `LongPressPresets`, extra symbols from the default layouts, emoji categories), a grid where tapping toggles a binding, and a strip of currently bound characters (tap to remove). Both special characters and **emoji** can be bound.
 - **Protected keys – nothing can be bound** on: either **Space**, **123** (switch to numeric), **Enter**.
+- **At most 46 bindings per key** (exactly seven honeycomb rows: 7+6+7+6+7+6+7) (`MAX_LONG_PRESS_BINDINGS` in `model/KeyboardConfig.kt`): the character picker and Custom text refuse more with a toast (`lp_max_bindings`); keys bound before the limit show only the first 46 in the keyboard popup (nothing stored is removed).
 - **Custom text is inserted exactly as typed**: Shift only changes single-character bindings (`shiftedBinding()` in `model/KeyboardConfig.kt`). In the keyboard's long-press popup long text is shrunk/ellipsized in its cell (`KeyView` label fitting) and shown in the preview line above the grid (at most 3 lines, ellipsized). Previews in the editor (bound list, My binds) are shortened the same way; the bound text itself is never cut.
 - Autosave (no Save button); one "<Section> saved" toast on section switch, closing the popup, or leaving the app.
 
@@ -182,11 +183,11 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 - Shift is a one-tap toggle: outlined arrow `⇧` when off, filled arrow `⬆` when on (`KeyMarkers.SHIFT_OFF/ON`), always in the regular key colors (also on a side button). It resets when the keyboard closes.
 
 ### Keyboard popups
-All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isClippingEnabled = false` so they can extend above the keyboard's top edge (needed for the top row).
+All keyboard popups (except the emoji panel, see below) are `PopupWindow`s anchored to `overlayLayer`. They use `isClippingEnabled = false` so they can extend above the keyboard's top edge (needed for the top row).
 - **Key preview** (`KeyPreviewManager`) – shown above the pressed key. Uses that key's background and text color. Not shown for special keys (space, shift, backspace, enter, 123/ABC), and **never in password fields**.
-- **Long-press popup** (`LongPressPopupManager`) – surface = keyboard background (`popupSurfaceColor()`; theme background when the keyboard is transparent; under an RGB theme it animates with the keyboard). Cells use the pressed key's colors. The selected cell uses the Enter colors.
+- **Long-press popup** (`LongPressPopupManager`) – surface = keyboard background (`popupSurfaceColor()`; theme background when the keyboard is transparent; under an RGB theme it animates with the keyboard). Cells use the pressed key's colors. The selected cell uses the Enter colors. Cells are square and as wide as one column of a 7-column popup, whatever the number of characters (2 letters → narrow popup, not two wide flat cells). With hexagon keys the cells form a honeycomb like the keyboard: every second row is indented by half a cell and holds one cell less, rows interlock by the hexagon tip (`LongPressPopupManager.rowSizes`, unit-tested). The cells follow the **Key height** slider (`KeyView.heightStretch`) and the **Row spacing** slider is added between the popup rows, as on the keyboard. The preview line is styled (size, 3 lines, ellipsized) before the popup is measured, so long custom text keeps the popup right above the key.
 - **Language picker** – opened by the dual-space hold. System default + every translation in its own language (same as the main app); picking one sets the app language and the matching keyboard script immediately. Uses the emoji picker's palette.
-- **Emoji picker** (`EmojiPickerManager`) – categories plus Recent (last 30, `EmojiPickerStorage`), 5 columns, layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
+- **Emoji picker** (`EmojiPickerManager`) – **not a popup**: a panel added to `overlayLayer` that covers the whole keyboard (keys, side buttons, suggestion strip; drawn above them with `translationZ`, takes every touch), so nothing reaches above the keyboard over the text; closed with its X button or when the keyboard closes. Categories plus Recent (last 30, `EmojiPickerStorage`); **Recent opens first once it holds 10 or more emojis** (`RECENT_FIRST_MIN`), otherwise Smileys. Columns follow the panel width (at least 5, ~64 dp per emoji), so landscape shows more per row. Layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
 
 ### Text input behavior
 - **Enter** uses `sendKeyChar('\n')`: runs the editor's action (Search, Send, Go, Done…) unless the field has no action or sets `IME_FLAG_NO_ENTER_ACTION`, then inserts a newline.
@@ -262,7 +263,7 @@ MyKeyboardService (InputMethodService)
 ├── LongPressPopupManager (character selection popup)
 ├── EdgeOverlayManager (side buttons/edge overlay)
 ├── EdgeKeyManager (edge key configuration)
-├── EmojiPickerManager (emoji picker popup)
+├── EmojiPickerManager (emoji picker panel)
 ├── HapticManager (vibration feedback)
 ├── KeyPreviewManager (key press preview popup)
 ├── LanguagePickerPopup (dual-space language list)
@@ -295,7 +296,7 @@ The extracted classes reach their owner (service or activity) through a small `H
 | `LongPressPopupManager` | `service/LongPressPopupManager.kt` | Long press character selection popup |
 | `EdgeOverlayManager` | `service/EdgeOverlayManager.kt` | Side buttons/edge overlay rendering |
 | `EdgeKeyManager` | `service/EdgeKeyManager.kt` | Edge key configuration for layout |
-| `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker with categories and lazy loading |
+| `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker panel (replaces the keyboard while open) with categories and lazy loading |
 | `HapticManager` | `service/HapticManager.kt` | Vibration feedback for key presses |
 | `KeyPreviewManager` | `service/KeyPreviewManager.kt` | Key press preview popup above finger |
 | `KeyTouchListener` | `service/KeyTouchListener.kt` | Touch listener of every key: long press popup, swipe up, dual-space hold, Shift / emoji |
@@ -323,7 +324,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing` and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 

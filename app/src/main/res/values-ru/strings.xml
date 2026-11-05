@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Настройки RGB</string>
     <string name="theme_btn_saved_layouts">Сохранённые раскладки</string>
     <string name="reset_hint">Сбросить…</string>
-    <string name="reset_colors">Сбросить цвета</string>
-    <string name="reset_layout">Сбросить раскладку</string>
-    <string name="reset_all">Сбросить всё</string>
+    <string name="reset_none">Ничего</string>
+    <string name="reset_colors">Только цвета</string>
+    <string name="reset_layout">Раскладка клавиш</string>
+    <string name="reset_all">Цвета и раскладка</string>
     <string name="backup_name">Резервная копия %1$s</string>
     <string name="reset_done_all">Раскладка и цвета сброшены. Предыдущее состояние сохранено как копия.</string>
     <string name="reset_done_colors">Цвета сброшены. Предыдущее состояние сохранено как копия.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Введите любой текст</string>
     <string name="lp_custom_add">Добавить</string>
     <string name="lp_custom_already">Уже привязано к этой клавише</string>
+    <string name="lp_max_bindings">К клавише можно привязать не больше %1$d</string>
     <string name="lp_custom_bound">Привязано к этой клавише:</string>
     <string name="lp_editor_title">Долгое нажатие: %1$s</string>
     <string name="lp_nothing_bound">Ничего не привязано – нажмите на символы ниже</string>

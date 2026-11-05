@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Socruithe RGB</string>
     <string name="theme_btn_saved_layouts">Leaganacha amach sábháilte</string>
     <string name="reset_hint">Athshocraigh…</string>
-    <string name="reset_colors">Athshocraigh dathanna</string>
-    <string name="reset_layout">Athshocraigh leagan amach</string>
-    <string name="reset_all">Athshocraigh gach rud</string>
+    <string name="reset_none">Faic</string>
+    <string name="reset_colors">Dathanna amháin</string>
+    <string name="reset_layout">Leagan amach na n-eochracha</string>
+    <string name="reset_all">Dathanna agus leagan amach</string>
     <string name="backup_name">Cúltaca %1$s</string>
     <string name="reset_done_all">Leagan amach agus dathanna athshocraithe. Sábháladh an staid roimhe mar chúltaca.</string>
     <string name="reset_done_colors">Dathanna athshocraithe. Sábháladh an staid roimhe mar chúltaca.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Clóscríobh téacs ar bith</string>
     <string name="lp_custom_add">Cuir leis</string>
     <string name="lp_custom_already">Ceangailte leis an eochair seo cheana</string>
+    <string name="lp_max_bindings">Is féidir %1$d ar a mhéad a cheangal le heochair</string>
     <string name="lp_custom_bound">Ceangailte leis an eochair seo:</string>
     <string name="lp_editor_title">Brú fada: %1$s</string>
     <string name="lp_nothing_bound">Níl aon rud ceangailte – tapáil carachtair thíos</string>

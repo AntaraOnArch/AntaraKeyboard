@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-Einstellungen</string>
     <string name="theme_btn_saved_layouts">Gespeicherte Layouts</string>
     <string name="reset_hint">Zurücksetzen…</string>
-    <string name="reset_colors">Farben zurücksetzen</string>
-    <string name="reset_layout">Layout zurücksetzen</string>
-    <string name="reset_all">Alles zurücksetzen</string>
+    <string name="reset_none">Nichts</string>
+    <string name="reset_colors">Nur Farben</string>
+    <string name="reset_layout">Tastenlayout</string>
+    <string name="reset_all">Farben und Layout</string>
     <string name="backup_name">Sicherung %1$s</string>
     <string name="reset_done_all">Layout und Farben zurückgesetzt. Vorheriger Stand als Sicherung gespeichert.</string>
     <string name="reset_done_colors">Farben zurückgesetzt. Vorheriger Stand als Sicherung gespeichert.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Beliebigen Text eingeben</string>
     <string name="lp_custom_add">Hinzufügen</string>
     <string name="lp_custom_already">Bereits dieser Taste zugewiesen</string>
+    <string name="lp_max_bindings">Eine Taste kann höchstens %1$d Zuweisungen haben</string>
     <string name="lp_custom_bound">Dieser Taste zugewiesen:</string>
     <string name="lp_editor_title">Langes Drücken: %1$s</string>
     <string name="lp_nothing_bound">Nichts belegt – tippe unten auf Zeichen</string>

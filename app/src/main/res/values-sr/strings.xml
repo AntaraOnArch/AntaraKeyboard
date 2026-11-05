@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB подешавања</string>
     <string name="theme_btn_saved_layouts">Сачувани распореди</string>
     <string name="reset_hint">Ресетуј…</string>
-    <string name="reset_colors">Ресетуј боје</string>
-    <string name="reset_layout">Ресетуј распоред</string>
-    <string name="reset_all">Ресетуј све</string>
+    <string name="reset_none">Ништа</string>
+    <string name="reset_colors">Само боје</string>
+    <string name="reset_layout">Распоред тастера</string>
+    <string name="reset_all">Боје и распоред</string>
     <string name="backup_name">Резервна копија %1$s</string>
     <string name="reset_done_all">Распоред и боје су ресетовани. Претходно стање је сачувано као копија.</string>
     <string name="reset_done_colors">Боје су ресетоване. Претходно стање је сачувано као копија.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Унесите било који текст</string>
     <string name="lp_custom_add">Додај</string>
     <string name="lp_custom_already">Већ је везано за овај тастер</string>
+    <string name="lp_max_bindings">На тастер се може везати највише %1$d</string>
     <string name="lp_custom_bound">Везано за овај тастер:</string>
     <string name="lp_editor_title">Дуги притисак: %1$s</string>
     <string name="lp_nothing_bound">Ништа није везано – додирните знакове испод</string>

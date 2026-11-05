@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB seaded</string>
     <string name="theme_btn_saved_layouts">Salvestatud paigutused</string>
     <string name="reset_hint">Lähtesta…</string>
-    <string name="reset_colors">Lähtesta värvid</string>
-    <string name="reset_layout">Lähtesta paigutus</string>
-    <string name="reset_all">Lähtesta kõik</string>
+    <string name="reset_none">Mitte midagi</string>
+    <string name="reset_colors">Ainult värvid</string>
+    <string name="reset_layout">Klahvide paigutus</string>
+    <string name="reset_all">Värvid ja paigutus</string>
     <string name="backup_name">Varukoopia %1$s</string>
     <string name="reset_done_all">Paigutus ja värvid lähtestati. Eelmine olek salvestati varukoopiana.</string>
     <string name="reset_done_colors">Värvid lähtestati. Eelmine olek salvestati varukoopiana.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Sisesta mis tahes tekst</string>
     <string name="lp_custom_add">Lisa</string>
     <string name="lp_custom_already">Juba selle klahviga seotud</string>
+    <string name="lp_max_bindings">Klahviga saab siduda kõige rohkem %1$d</string>
     <string name="lp_custom_bound">Selle klahviga seotud:</string>
     <string name="lp_editor_title">Pikk vajutus: %1$s</string>
     <string name="lp_nothing_bound">Midagi pole seotud – puuduta allolevaid märke</string>

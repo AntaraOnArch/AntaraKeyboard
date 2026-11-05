@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-asetukset</string>
     <string name="theme_btn_saved_layouts">Tallennetut asettelut</string>
     <string name="reset_hint">Palauta…</string>
-    <string name="reset_colors">Palauta värit</string>
-    <string name="reset_layout">Palauta asettelu</string>
-    <string name="reset_all">Palauta kaikki</string>
+    <string name="reset_none">Ei mitään</string>
+    <string name="reset_colors">Vain värit</string>
+    <string name="reset_layout">Näppäinasettelu</string>
+    <string name="reset_all">Värit ja asettelu</string>
     <string name="backup_name">Varmuuskopio %1$s</string>
     <string name="reset_done_all">Asettelu ja värit palautettu. Aiempi tila tallennettiin varmuuskopioksi.</string>
     <string name="reset_done_colors">Värit palautettu. Aiempi tila tallennettiin varmuuskopioksi.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Kirjoita mitä tahansa tekstiä</string>
     <string name="lp_custom_add">Lisää</string>
     <string name="lp_custom_already">Jo määritetty tälle näppäimelle</string>
+    <string name="lp_max_bindings">Näppäimelle voi määrittää enintään %1$d</string>
     <string name="lp_custom_bound">Määritetty tälle näppäimelle:</string>
     <string name="lp_editor_title">Pitkä painallus: %1$s</string>
     <string name="lp_nothing_bound">Ei määrityksiä – napauta merkkejä alla</string>

@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-stillingar</string>
     <string name="theme_btn_saved_layouts">Vistaðar uppsetningar</string>
     <string name="reset_hint">Endurstilla…</string>
-    <string name="reset_colors">Endurstilla liti</string>
-    <string name="reset_layout">Endurstilla uppsetningu</string>
-    <string name="reset_all">Endurstilla allt</string>
+    <string name="reset_none">Ekkert</string>
+    <string name="reset_colors">Aðeins litir</string>
+    <string name="reset_layout">Uppsetning lykla</string>
+    <string name="reset_all">Litir og uppsetning</string>
     <string name="backup_name">Afrit %1$s</string>
     <string name="reset_done_all">Uppsetning og litir endurstillt. Fyrri staða vistuð sem afrit.</string>
     <string name="reset_done_colors">Litir endurstilltir. Fyrri staða vistuð sem afrit.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Sláðu inn hvaða texta sem er</string>
     <string name="lp_custom_add">Bæta við</string>
     <string name="lp_custom_already">Nú þegar tengt þessum lykli</string>
+    <string name="lp_max_bindings">Hægt er að tengja mest %1$d við lykil</string>
     <string name="lp_custom_bound">Tengt þessum lykli:</string>
     <string name="lp_editor_title">Langt ýtt: %1$s</string>
     <string name="lp_nothing_bound">Ekkert tengt – ýttu á stafi hér fyrir neðan</string>

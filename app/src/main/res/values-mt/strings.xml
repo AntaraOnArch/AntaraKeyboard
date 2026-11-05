@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Settings RGB</string>
     <string name="theme_btn_saved_layouts">Tqassimiet salvati</string>
     <string name="reset_hint">Irrisettja…</string>
-    <string name="reset_colors">Irrisettja l-kuluri</string>
-    <string name="reset_layout">Irrisettja t-tqassim</string>
-    <string name="reset_all">Irrisettja kollox</string>
+    <string name="reset_none">Xejn</string>
+    <string name="reset_colors">Il-kuluri biss</string>
+    <string name="reset_layout">Tqassim tat-tasti</string>
+    <string name="reset_all">Kuluri u tqassim</string>
     <string name="backup_name">Backup %1$s</string>
     <string name="reset_done_all">It-tqassim u l-kuluri ġew irrisettjati. L-istat preċedenti ġie salvat bħala backup.</string>
     <string name="reset_done_colors">Il-kuluri ġew irrisettjati. L-istat preċedenti ġie salvat bħala backup.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Ikteb kwalunkwe test</string>
     <string name="lp_custom_add">Żid</string>
     <string name="lp_custom_already">Diġà assoċjat ma\' din iċ-ċavetta</string>
+    <string name="lp_max_bindings">Ċavetta tista\' jkollha l-aktar %1$d assoċjazzjonijiet</string>
     <string name="lp_custom_bound">Assoċjat ma\' din iċ-ċavetta:</string>
     <string name="lp_editor_title">Għafsa twila: %1$s</string>
     <string name="lp_nothing_bound">Xejn assoċjat – ittappja l-karattri hawn taħt</string>

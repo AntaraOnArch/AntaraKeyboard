@@ -14,6 +14,7 @@ import com.example.antarakeyboard.model.KeyMarkers
 import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.RowConfig
 import com.example.antarakeyboard.ui.KeyView
+import kotlin.math.roundToInt
 
 /**
  * Which letter keys go to the left and right half of each landscape row (pure, unit-tested).
@@ -60,7 +61,7 @@ internal object LandscapeSplit {
  * Landscape layout: the letter rows split into a left and a right half with the Horizontal
  * "island" (center symbols) between them. Sizes and offsets are tuned per row count and shape.
  */
-class LandscapeLayoutBuilder(
+internal class LandscapeLayoutBuilder(
     private val context: Context,
     private val host: Host
 ) {
@@ -74,6 +75,10 @@ class LandscapeLayoutBuilder(
         fun effectiveShape(): KeyShape
         fun landscapeShape(): KeyShape
         fun keyHeightStretch(): Float
+        /** Sizing of the widest portrait row (landscape triangles copy its box and overlap). */
+        fun portraitRowSizing(): KeySizing.RowSizing
+        /** Drawn shape height of the portrait keys at 100 % on the key height slider. */
+        fun portraitBaseShapeHeightPx(): Float
         fun rowSpacingPx(): Int
         fun createKey(key: KeyConfig): KeyView
         fun keyColors(label: String?): Pair<Int, Int>
@@ -85,8 +90,14 @@ class LandscapeLayoutBuilder(
 
     private var spaceIndex = 0
 
+    /**
+     * Triangles copy the portrait width, tip overlap and up/down alternation; their box is only
+     * as tall as the drawn triangle, so no empty space is left above, between or below the rows.
+     */
+    private fun portraitTriangles(): Boolean = host.currentShape == KeyShape.TRIANGLE
+
     private fun keyGapPx(): Int = when (host.landscapeShape()) {
-        KeyShape.TRIANGLE -> 0.dp(context)
+        KeyShape.TRIANGLE -> if (portraitTriangles()) -host.portraitRowSizing().triOverlapX else 0
         KeyShape.CIRCLE -> 2.dp(context)
         KeyShape.CUBE -> 2.dp(context)
         else -> 2.dp(context)
@@ -267,7 +278,29 @@ class LandscapeLayoutBuilder(
         return overlap - host.rowSpacingPx()
     }
 
+    /**
+     * Width of a letter key. Circles get the portrait key height (a circle, not an ellipse),
+     * 4/5-row cubes a square front as tall as in portrait, triangles the portrait width;
+     * the height then follows the portrait keys through the height stretch.
+     */
     fun keySizePx(): Int {
+        val rows = KeyboardPrefs.getRowCount(context)
+        return when {
+            host.currentShape == KeyShape.CIRCLE ->
+                host.portraitBaseShapeHeightPx().roundToInt()
+            host.currentShape == KeyShape.CUBE && rows >= 4 ->
+                (host.portraitBaseShapeHeightPx() / CUBE_FRONT_FILL).roundToInt()
+            portraitTriangles() -> host.portraitRowSizing().keyW
+            else -> sideButtonSizePx()
+        }
+    }
+
+    /** Height of the letter key box before the height stretch. */
+    fun keyBoxHeightPx(): Int =
+        if (portraitTriangles()) (keySizePx() * TRIANGLE_HEIGHT_RATIO).roundToInt() else keySizePx()
+
+    /** Tuned landscape key size; the side buttons keep it. */
+    fun sideButtonSizePx(): Int {
         val savedRowCount = KeyboardPrefs.getRowCount(context)
 
         return when (host.currentShape) {
@@ -323,9 +356,10 @@ class LandscapeLayoutBuilder(
                 }
             }
 
-            KeyShape.TRIANGLE -> {
-                if (savedRowCount == 5) 3.dp(context)
-                else (keySize * 0.18f).toInt()
+            KeyShape.TRIANGLE -> when {
+                portraitTriangles() -> -(TRIANGLE_ROW_GAP_DP.dp(context))
+                savedRowCount == 5 -> 3.dp(context)
+                else -> (keySize * 0.18f).toInt()
             }
 
             KeyShape.CIRCLE -> if (savedRowCount == 5) 5.dp(context) else 4.dp(context)
@@ -342,7 +376,9 @@ class LandscapeLayoutBuilder(
         val keySize = keySizePx()
         val rowOverlap = rowOverlapScaled(keySize)
         val keyGap = keyGapPx()
-        val halfStep = (keySize / 2f).toInt()
+        val keyBoxH = keyBoxHeightPx()
+        // Overlapping triangles step by their width minus the overlap
+        val halfStep = ((keySize + minOf(keyGap, 0)) / 2f).toInt()
 
         host.currentRows.forEachIndexed { rowIndex, row ->
             val keys = LandscapeSplit.leftKeys(row.keys, rowIndex, KeyboardPrefs.getRowCount(context))
@@ -402,10 +438,12 @@ class LandscapeLayoutBuilder(
                 spaceIndex = host.applySpecialKeyColors(kv, key, spaceIndex)
 
                 if (kv.shape == KeyShape.TRIANGLE) {
-                    kv.triangleFlipped = ((startIndex + i) % 2 == 1)
+                    // 4/5 rows alternate like portrait (row index included), so the tips interlock
+                    val rowFlip = if (portraitTriangles()) rowIndex else 0
+                    kv.triangleFlipped = ((rowFlip + startIndex + i) % 2 == 1)
                 }
 
-                val lp = LinearLayout.LayoutParams(keySize, keySize).apply {
+                val lp = LinearLayout.LayoutParams(keySize, keyBoxH).apply {
                     if (i > 0) leftMargin = keyGap
                 }
 
@@ -419,7 +457,9 @@ class LandscapeLayoutBuilder(
         val keySize = keySizePx()
         val rowOverlap = rowOverlapScaled(keySize)
         val keyGap = keyGapPx()
-        val halfStep = (keySize / 2f).toInt()
+        val keyBoxH = keyBoxHeightPx()
+        // Overlapping triangles step by their width minus the overlap
+        val halfStep = ((keySize + minOf(keyGap, 0)) / 2f).toInt()
         val savedRowCount = KeyboardPrefs.getRowCount(context)
         val baseRightInset = when (savedRowCount) {
             3 -> 14.dp(context)    // all 3 right rows left of the side button
@@ -467,10 +507,12 @@ class LandscapeLayoutBuilder(
                 spaceIndex = host.applySpecialKeyColors(kv, key, spaceIndex)
 
                 if (kv.shape == KeyShape.TRIANGLE) {
-                    kv.triangleFlipped = ((startIndex + i) % 2 == 1)
+                    // 4/5 rows alternate like portrait (row index included), so the tips interlock
+                    val rowFlip = if (portraitTriangles()) rowIndex else 0
+                    kv.triangleFlipped = ((rowFlip + startIndex + i) % 2 == 1)
                 }
 
-                val lp = LinearLayout.LayoutParams(keySize, keySize).apply {
+                val lp = LinearLayout.LayoutParams(keySize, keyBoxH).apply {
                     if (i > 0) leftMargin = keyGap
                 }
 
@@ -582,5 +624,16 @@ class LandscapeLayoutBuilder(
 
             container.addView(rowLayout, rowLp)
         }
+    }
+
+    private companion object {
+        /** A cube front is inset 6 % on each side of its box (KeyView.buildCubeFront). */
+        const val CUBE_FRONT_FILL = 0.88f
+
+        /** A triangle is 0.4 × 1.4 of its width tall (KeyView.buildTriangle). */
+        const val TRIANGLE_HEIGHT_RATIO = 0.56f
+
+        /** Gap between landscape triangle rows. */
+        const val TRIANGLE_ROW_GAP_DP = 3
     }
 }

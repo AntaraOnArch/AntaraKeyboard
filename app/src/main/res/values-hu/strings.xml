@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-beállítások</string>
     <string name="theme_btn_saved_layouts">Mentett kiosztások</string>
     <string name="reset_hint">Visszaállítás…</string>
-    <string name="reset_colors">Színek visszaállítása</string>
-    <string name="reset_layout">Kiosztás visszaállítása</string>
-    <string name="reset_all">Minden visszaállítása</string>
+    <string name="reset_none">Semmi</string>
+    <string name="reset_colors">Csak a színek</string>
+    <string name="reset_layout">Billentyűkiosztás</string>
+    <string name="reset_all">Színek és kiosztás</string>
     <string name="backup_name">Biztonsági mentés %1$s</string>
     <string name="reset_done_all">Kiosztás és színek visszaállítva. Az előző állapot mentésként elérhető.</string>
     <string name="reset_done_colors">Színek visszaállítva. Az előző állapot mentésként elérhető.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Írjon be bármilyen szöveget</string>
     <string name="lp_custom_add">Hozzáadás</string>
     <string name="lp_custom_already">Már hozzá van rendelve ehhez a billentyűhöz</string>
+    <string name="lp_max_bindings">Egy billentyűhöz legfeljebb %1$d hozzárendelés tartozhat</string>
     <string name="lp_custom_bound">Ehhez a billentyűhöz rendelve:</string>
     <string name="lp_editor_title">Hosszú nyomás: %1$s</string>
     <string name="lp_nothing_bound">Nincs hozzárendelés – koppintson a lenti karakterekre</string>

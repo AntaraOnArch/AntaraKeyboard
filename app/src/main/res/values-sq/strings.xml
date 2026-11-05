@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Cilësimet RGB</string>
     <string name="theme_btn_saved_layouts">Paraqitjet e ruajtura</string>
     <string name="reset_hint">Rivendos…</string>
-    <string name="reset_colors">Rivendos ngjyrat</string>
-    <string name="reset_layout">Rivendos paraqitjen</string>
-    <string name="reset_all">Rivendos të gjitha</string>
+    <string name="reset_none">Asgjë</string>
+    <string name="reset_colors">Vetëm ngjyrat</string>
+    <string name="reset_layout">Paraqitja e tasteve</string>
+    <string name="reset_all">Ngjyrat dhe paraqitja</string>
     <string name="backup_name">Kopje rezervë %1$s</string>
     <string name="reset_done_all">Paraqitja dhe ngjyrat u rivendosën. Gjendja e mëparshme u ruajt si kopje.</string>
     <string name="reset_done_colors">Ngjyrat u rivendosën. Gjendja e mëparshme u ruajt si kopje.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Shkruaj çfarëdo teksti</string>
     <string name="lp_custom_add">Shto</string>
     <string name="lp_custom_already">Tashmë i lidhur me këtë tast</string>
+    <string name="lp_max_bindings">Një tast mund të ketë më së shumti %1$d lidhje</string>
     <string name="lp_custom_bound">Të lidhura me këtë tast:</string>
     <string name="lp_editor_title">Shtypje e gjatë: %1$s</string>
     <string name="lp_nothing_bound">Asgjë e lidhur – prek karakteret më poshtë</string>

@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB nustatymai</string>
     <string name="theme_btn_saved_layouts">Išsaugoti išdėstymai</string>
     <string name="reset_hint">Atkurti…</string>
-    <string name="reset_colors">Atkurti spalvas</string>
-    <string name="reset_layout">Atkurti išdėstymą</string>
-    <string name="reset_all">Atkurti viską</string>
+    <string name="reset_none">Nieko</string>
+    <string name="reset_colors">Tik spalvos</string>
+    <string name="reset_layout">Klavišų išdėstymas</string>
+    <string name="reset_all">Spalvos ir išdėstymas</string>
     <string name="backup_name">Atsarginė kopija %1$s</string>
     <string name="reset_done_all">Išdėstymas ir spalvos atkurti. Ankstesnė būsena išsaugota kaip kopija.</string>
     <string name="reset_done_colors">Spalvos atkurtos. Ankstesnė būsena išsaugota kaip kopija.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Įveskite bet kokį tekstą</string>
     <string name="lp_custom_add">Pridėti</string>
     <string name="lp_custom_already">Jau priskirta šiam klavišui</string>
+    <string name="lp_max_bindings">Klavišui galima priskirti ne daugiau kaip %1$d</string>
     <string name="lp_custom_bound">Priskirta šiam klavišui:</string>
     <string name="lp_editor_title">Ilgas paspaudimas: %1$s</string>
     <string name="lp_nothing_bound">Nieko nepriskirta – palieskite simbolius žemiau</string>

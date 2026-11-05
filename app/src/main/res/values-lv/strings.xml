@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB iestatījumi</string>
     <string name="theme_btn_saved_layouts">Saglabātie izkārtojumi</string>
     <string name="reset_hint">Atiestatīt…</string>
-    <string name="reset_colors">Atiestatīt krāsas</string>
-    <string name="reset_layout">Atiestatīt izkārtojumu</string>
-    <string name="reset_all">Atiestatīt visu</string>
+    <string name="reset_none">Neko</string>
+    <string name="reset_colors">Tikai krāsas</string>
+    <string name="reset_layout">Taustiņu izkārtojums</string>
+    <string name="reset_all">Krāsas un izkārtojums</string>
     <string name="backup_name">Dublējums %1$s</string>
     <string name="reset_done_all">Izkārtojums un krāsas atiestatītas. Iepriekšējais stāvoklis saglabāts kā dublējums.</string>
     <string name="reset_done_colors">Krāsas atiestatītas. Iepriekšējais stāvoklis saglabāts kā dublējums.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Ierakstiet jebkuru tekstu</string>
     <string name="lp_custom_add">Pievienot</string>
     <string name="lp_custom_already">Jau piesaistīts šim taustiņam</string>
+    <string name="lp_max_bindings">Taustiņam var piesaistīt ne vairāk kā %1$d</string>
     <string name="lp_custom_bound">Piesaistīts šim taustiņam:</string>
     <string name="lp_editor_title">Ilgā nospiešana: %1$s</string>
     <string name="lp_nothing_bound">Nekas nav piesaistīts – pieskarieties rakstzīmēm zemāk</string>

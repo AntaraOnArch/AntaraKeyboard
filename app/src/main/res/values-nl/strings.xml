@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-instellingen</string>
     <string name="theme_btn_saved_layouts">Opgeslagen indelingen</string>
     <string name="reset_hint">Resetten…</string>
-    <string name="reset_colors">Kleuren resetten</string>
-    <string name="reset_layout">Indeling resetten</string>
-    <string name="reset_all">Alles resetten</string>
+    <string name="reset_none">Niets</string>
+    <string name="reset_colors">Alleen kleuren</string>
+    <string name="reset_layout">Toetsindeling</string>
+    <string name="reset_all">Kleuren en indeling</string>
     <string name="backup_name">Back-up %1$s</string>
     <string name="reset_done_all">Indeling en kleuren gereset. Vorige staat opgeslagen als back-up.</string>
     <string name="reset_done_colors">Kleuren gereset. Vorige staat opgeslagen als back-up.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Typ een tekst</string>
     <string name="lp_custom_add">Toevoegen</string>
     <string name="lp_custom_already">Al gekoppeld aan deze toets</string>
+    <string name="lp_max_bindings">Een toets kan maximaal %1$d koppelingen hebben</string>
     <string name="lp_custom_bound">Gekoppeld aan deze toets:</string>
     <string name="lp_editor_title">Lang indrukken: %1$s</string>
     <string name="lp_nothing_bound">Niets gekoppeld – tik hieronder op tekens</string>

@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-indstillinger</string>
     <string name="theme_btn_saved_layouts">Gemte layouts</string>
     <string name="reset_hint">Nulstil…</string>
-    <string name="reset_colors">Nulstil farver</string>
-    <string name="reset_layout">Nulstil layout</string>
-    <string name="reset_all">Nulstil alt</string>
+    <string name="reset_none">Intet</string>
+    <string name="reset_colors">Kun farver</string>
+    <string name="reset_layout">Tastlayout</string>
+    <string name="reset_all">Farver og layout</string>
     <string name="backup_name">Sikkerhedskopi %1$s</string>
     <string name="reset_done_all">Layout og farver nulstillet. Den tidligere tilstand er gemt som sikkerhedskopi.</string>
     <string name="reset_done_colors">Farver nulstillet. Den tidligere tilstand er gemt som sikkerhedskopi.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Skriv en vilkårlig tekst</string>
     <string name="lp_custom_add">Tilføj</string>
     <string name="lp_custom_already">Allerede tildelt denne tast</string>
+    <string name="lp_max_bindings">En tast kan højst have %1$d tildelinger</string>
     <string name="lp_custom_bound">Tildelt denne tast:</string>
     <string name="lp_editor_title">Langt tryk: %1$s</string>
     <string name="lp_nothing_bound">Intet tildelt – tryk på tegnene nedenfor</string>

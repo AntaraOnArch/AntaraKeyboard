@@ -278,7 +278,15 @@ class MainActivity : AppCompatActivity() {
         val resetOptions = listOf(
             R.string.reset_hint, R.string.reset_colors, R.string.reset_layout, R.string.reset_all
         ).map { getString(it) }
-        spinnerReset.adapter = ArrayAdapter(this, R.layout.main_spinner_item, resetOptions).apply {
+        // Closed: "Reset…"; in the open list the first entry reads "None" (leaves it unchanged)
+        val resetNone = getString(R.string.reset_none)
+        spinnerReset.adapter = object : ArrayAdapter<String>(this, R.layout.main_spinner_item, resetOptions) {
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent)
+                if (position == 0) (view as? TextView)?.text = resetNone
+                return view
+            }
+        }.apply {
             setDropDownViewResource(R.layout.main_spinner_dropdown_item)
         }
         spinnerReset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

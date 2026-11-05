@@ -15,6 +15,7 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.graphics.drawable.toDrawable
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
@@ -23,6 +24,7 @@ import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
+import com.example.antarakeyboard.model.MAX_LONG_PRESS_BINDINGS
 import com.example.antarakeyboard.service.EmojiCategory
 import java.text.NumberFormat
 
@@ -161,9 +163,19 @@ class LongPressEditorBinder(
         }
     }
 
-    /** Binds [text] to [key]'s long press (autosaved). False if blank or already bound. */
+    /** True when [key] already holds [MAX_LONG_PRESS_BINDINGS] bindings. */
+    fun isFull(key: KeyConfig): Boolean = visibleBindings(key).size >= MAX_LONG_PRESS_BINDINGS
+
+    /** Toast shown when a binding is refused because the key is full. */
+    fun showFullToast() {
+        Toast.makeText(
+            context, context.getString(R.string.lp_max_bindings, MAX_LONG_PRESS_BINDINGS), Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    /** Binds [text] to [key]'s long press (autosaved). False if blank, already bound or the key is full. */
     fun addBinding(key: KeyConfig, text: String): Boolean {
-        if (text.isBlank() || text in key.longPressBindings) return false
+        if (text.isBlank() || text in key.longPressBindings || isFull(key)) return false
         key.longPressBindings.add(text)
         onChanged(cfg)
         buildKeyboardUI()
@@ -361,6 +373,10 @@ class LongPressEditorBinder(
             if (item in key.longPressBindings) {
                 key.longPressBindings.remove(item)
             } else {
+                if (isFull(key)) {
+                    showFullToast()
+                    return
+                }
                 key.longPressBindings.add(item)
             }
             cellViews[item]?.forEach { styleCell(it, item) }

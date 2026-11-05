@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Réglages RGB</string>
     <string name="theme_btn_saved_layouts">Dispositions enregistrées</string>
     <string name="reset_hint">Réinitialiser…</string>
-    <string name="reset_colors">Réinitialiser les couleurs</string>
-    <string name="reset_layout">Réinitialiser la disposition</string>
-    <string name="reset_all">Tout réinitialiser</string>
+    <string name="reset_none">Rien</string>
+    <string name="reset_colors">Couleurs uniquement</string>
+    <string name="reset_layout">Disposition des touches</string>
+    <string name="reset_all">Couleurs et disposition</string>
     <string name="backup_name">Sauvegarde %1$s</string>
     <string name="reset_done_all">Disposition et couleurs réinitialisées. L\'état précédent est sauvegardé.</string>
     <string name="reset_done_colors">Couleurs réinitialisées. L\'état précédent est sauvegardé.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Saisissez un texte</string>
     <string name="lp_custom_add">Ajouter</string>
     <string name="lp_custom_already">Déjà associé à cette touche</string>
+    <string name="lp_max_bindings">Une touche peut avoir au maximum %1$d associations</string>
     <string name="lp_custom_bound">Associé à cette touche :</string>
     <string name="lp_editor_title">Appui long : %1$s</string>
     <string name="lp_nothing_bound">Rien d\'associé – touchez les caractères ci-dessous</string>

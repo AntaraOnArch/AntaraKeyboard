@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Definições RGB</string>
     <string name="theme_btn_saved_layouts">Disposições guardadas</string>
     <string name="reset_hint">Repor…</string>
-    <string name="reset_colors">Repor cores</string>
-    <string name="reset_layout">Repor disposição</string>
-    <string name="reset_all">Repor tudo</string>
+    <string name="reset_none">Nada</string>
+    <string name="reset_colors">Apenas cores</string>
+    <string name="reset_layout">Disposição das teclas</string>
+    <string name="reset_all">Cores e disposição</string>
     <string name="backup_name">Cópia %1$s</string>
     <string name="reset_done_all">Disposição e cores repostas. O estado anterior foi guardado como cópia.</string>
     <string name="reset_done_colors">Cores repostas. O estado anterior foi guardado como cópia.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Escreva qualquer texto</string>
     <string name="lp_custom_add">Adicionar</string>
     <string name="lp_custom_already">Já associado a esta tecla</string>
+    <string name="lp_max_bindings">Uma tecla pode ter no máximo %1$d associações</string>
     <string name="lp_custom_bound">Associado a esta tecla:</string>
     <string name="lp_editor_title">Toque longo: %1$s</string>
     <string name="lp_nothing_bound">Nada associado – toque nos caracteres abaixo</string>

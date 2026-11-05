@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Настройки на RGB</string>
     <string name="theme_btn_saved_layouts">Запазени подредби</string>
     <string name="reset_hint">Нулиране…</string>
-    <string name="reset_colors">Нулиране на цветовете</string>
-    <string name="reset_layout">Нулиране на подредбата</string>
-    <string name="reset_all">Нулиране на всичко</string>
+    <string name="reset_none">Нищо</string>
+    <string name="reset_colors">Само цветовете</string>
+    <string name="reset_layout">Подредба на клавишите</string>
+    <string name="reset_all">Цветове и подредба</string>
     <string name="backup_name">Резервно копие %1$s</string>
     <string name="reset_done_all">Подредбата и цветовете са нулирани. Предишното състояние е запазено като копие.</string>
     <string name="reset_done_colors">Цветовете са нулирани. Предишното състояние е запазено като копие.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Въведете какъвто и да е текст</string>
     <string name="lp_custom_add">Добавяне</string>
     <string name="lp_custom_already">Вече е свързано с този клавиш</string>
+    <string name="lp_max_bindings">Към един клавиш могат да се свържат най-много %1$d</string>
     <string name="lp_custom_bound">Свързано с този клавиш:</string>
     <string name="lp_editor_title">Дълго натискане: %1$s</string>
     <string name="lp_nothing_bound">Нищо не е свързано – докоснете символите по-долу</string>

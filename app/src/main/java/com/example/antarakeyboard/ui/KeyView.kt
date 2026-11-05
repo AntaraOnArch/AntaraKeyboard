@@ -279,16 +279,7 @@ class KeyView @JvmOverloads constructor(
         if (w != measuredWidth || h != measuredHeight) setMeasuredDimension(w, h)
     }
 
-    /** Height of the drawn shape inside a w×h box at 100 % (see the build* functions). */
-    private fun baseShapeHeight(w: Float, h: Float): Float = when (shape) {
-        KeyShape.HEX -> min(w, h) * 0.96f
-        KeyShape.HEX_TALL -> h * 0.96f
-        KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
-        KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
-        KeyShape.CIRCLE,
-        KeyShape.HEX_HALF_LEFT,
-        KeyShape.HEX_HALF_RIGHT -> h
-    }
+    private fun baseShapeHeight(w: Float, h: Float): Float = shapeHeight(shape, w, h)
 
     /** Shapes whose proportions are fixed: built at 100 % and stretched vertically afterward. */
     private fun stretchesByTransform(): Boolean = when (shape) {
@@ -637,8 +628,19 @@ class KeyView @JvmOverloads constructor(
 
     private fun dpF(v: Float): Float = v.dpF(resources)
 
-    private companion object {
+    companion object {
         // Smallest size a long label shrinks to before it is ellipsized
-        const val MIN_LABEL_SP = 8f
+        private const val MIN_LABEL_SP = 8f
+
+        /** Height of the drawn [shape] inside a w×h box at 100 % (see the build* functions). */
+        fun shapeHeight(shape: KeyShape, w: Float, h: Float): Float = when (shape) {
+            KeyShape.HEX -> min(w, h) * 0.96f
+            KeyShape.HEX_TALL -> h * 0.96f
+            KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
+            KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
+            KeyShape.CIRCLE,
+            KeyShape.HEX_HALF_LEFT,
+            KeyShape.HEX_HALF_RIGHT -> h
+        }
     }
 }

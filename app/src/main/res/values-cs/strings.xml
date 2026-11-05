@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Nastavení RGB</string>
     <string name="theme_btn_saved_layouts">Uložená rozložení</string>
     <string name="reset_hint">Obnovit…</string>
-    <string name="reset_colors">Obnovit barvy</string>
-    <string name="reset_layout">Obnovit rozložení</string>
-    <string name="reset_all">Obnovit vše</string>
+    <string name="reset_none">Nic</string>
+    <string name="reset_colors">Jen barvy</string>
+    <string name="reset_layout">Rozložení kláves</string>
+    <string name="reset_all">Barvy a rozložení</string>
     <string name="backup_name">Záloha %1$s</string>
     <string name="reset_done_all">Rozložení a barvy obnoveny. Předchozí stav uložen jako záloha.</string>
     <string name="reset_done_colors">Barvy obnoveny. Předchozí stav uložen jako záloha.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Napište libovolný text</string>
     <string name="lp_custom_add">Přidat</string>
     <string name="lp_custom_already">Už je přiřazeno této klávese</string>
+    <string name="lp_max_bindings">Klávesa může mít nejvýše %1$d přiřazení</string>
     <string name="lp_custom_bound">Přiřazeno této klávese:</string>
     <string name="lp_editor_title">Dlouhé stisknutí: %1$s</string>
     <string name="lp_nothing_bound">Nic nepřiřazeno – klepněte na znaky níže</string>

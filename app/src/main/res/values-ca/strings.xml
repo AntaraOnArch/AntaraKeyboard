@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Configuració RGB</string>
     <string name="theme_btn_saved_layouts">Disposicions desades</string>
     <string name="reset_hint">Restableix…</string>
-    <string name="reset_colors">Restableix els colors</string>
-    <string name="reset_layout">Restableix la disposició</string>
-    <string name="reset_all">Restableix-ho tot</string>
+    <string name="reset_none">Res</string>
+    <string name="reset_colors">Només els colors</string>
+    <string name="reset_layout">Disposició de les tecles</string>
+    <string name="reset_all">Colors i disposició</string>
     <string name="backup_name">Còpia %1$s</string>
     <string name="reset_done_all">S\'han restablert la disposició i els colors. L\'estat anterior s\'ha desat com a còpia.</string>
     <string name="reset_done_colors">S\'han restablert els colors. L\'estat anterior s\'ha desat com a còpia.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Escriu qualsevol text</string>
     <string name="lp_custom_add">Afegeix</string>
     <string name="lp_custom_already">Ja està assignat a aquesta tecla</string>
+    <string name="lp_max_bindings">Una tecla pot tenir com a màxim %1$d assignacions</string>
     <string name="lp_custom_bound">Assignat a aquesta tecla:</string>
     <string name="lp_editor_title">Pulsació llarga: %1$s</string>
     <string name="lp_nothing_bound">No hi ha res assignat – toca els caràcters de sota</string>

@@ -17,6 +17,9 @@ object KeyScale {
     /** 3-row portrait triangles are drawn this much taller at 100 % on the slider. */
     const val THREE_ROW_TRIANGLE_DEFAULT = 1.5f
 
+    /** 3-row cubes are drawn this much taller at 100 % on the slider (easier to hit). */
+    const val THREE_ROW_CUBE_DEFAULT = 1.2f
+
     /** Row spacing slider range in dp (0 = tuned default). */
     const val ROW_SPACING_MIN_DP = -8
     const val ROW_SPACING_MAX_DP = 16

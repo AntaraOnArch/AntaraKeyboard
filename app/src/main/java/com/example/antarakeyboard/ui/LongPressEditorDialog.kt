@@ -202,6 +202,10 @@ class LongPressEditorDialog(
                     // Inserted exactly as typed (spaces included); only blank text is refused
                     val text = input.text.toString()
                     if (text.isBlank()) return@setOnClickListener
+                    if (binder.isFull(key)) {
+                        binder.showFullToast()
+                        return@setOnClickListener
+                    }
                     if (binder.addBinding(key, text)) {
                         markDirty(sectionOptions[3])
                         buildCustomTextPage()

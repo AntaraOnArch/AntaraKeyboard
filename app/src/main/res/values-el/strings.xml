@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Ρυθμίσεις RGB</string>
     <string name="theme_btn_saved_layouts">Αποθηκευμένες διατάξεις</string>
     <string name="reset_hint">Επαναφορά…</string>
-    <string name="reset_colors">Επαναφορά χρωμάτων</string>
-    <string name="reset_layout">Επαναφορά διάταξης</string>
-    <string name="reset_all">Επαναφορά όλων</string>
+    <string name="reset_none">Τίποτα</string>
+    <string name="reset_colors">Μόνο χρώματα</string>
+    <string name="reset_layout">Διάταξη πλήκτρων</string>
+    <string name="reset_all">Χρώματα και διάταξη</string>
     <string name="backup_name">Αντίγραφο %1$s</string>
     <string name="reset_done_all">Έγινε επαναφορά διάταξης και χρωμάτων. Η προηγούμενη κατάσταση αποθηκεύτηκε ως αντίγραφο.</string>
     <string name="reset_done_colors">Έγινε επαναφορά χρωμάτων. Η προηγούμενη κατάσταση αποθηκεύτηκε ως αντίγραφο.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Πληκτρολογήστε οποιοδήποτε κείμενο</string>
     <string name="lp_custom_add">Προσθήκη</string>
     <string name="lp_custom_already">Έχει ήδη αντιστοιχιστεί σε αυτό το πλήκτρο</string>
+    <string name="lp_max_bindings">Ένα πλήκτρο μπορεί να έχει έως %1$d αντιστοιχίσεις</string>
     <string name="lp_custom_bound">Αντιστοιχισμένα σε αυτό το πλήκτρο:</string>
     <string name="lp_editor_title">Παρατεταμένο πάτημα: %1$s</string>
     <string name="lp_nothing_bound">Τίποτα δεν έχει αντιστοιχιστεί – πατήστε χαρακτήρες παρακάτω</string>

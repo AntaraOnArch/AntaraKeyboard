@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Ajustes RGB</string>
     <string name="theme_btn_saved_layouts">Distribuciones guardadas</string>
     <string name="reset_hint">Restablecer…</string>
-    <string name="reset_colors">Restablecer colores</string>
-    <string name="reset_layout">Restablecer distribución</string>
-    <string name="reset_all">Restablecer todo</string>
+    <string name="reset_none">Nada</string>
+    <string name="reset_colors">Solo colores</string>
+    <string name="reset_layout">Distribución de teclas</string>
+    <string name="reset_all">Colores y distribución</string>
     <string name="backup_name">Copia %1$s</string>
     <string name="reset_done_all">Distribución y colores restablecidos. Se guardó una copia del estado anterior.</string>
     <string name="reset_done_colors">Colores restablecidos. Se guardó una copia del estado anterior.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Escribe cualquier texto</string>
     <string name="lp_custom_add">Añadir</string>
     <string name="lp_custom_already">Ya asignado a esta tecla</string>
+    <string name="lp_max_bindings">Una tecla puede tener como máximo %1$d asignaciones</string>
     <string name="lp_custom_bound">Asignado a esta tecla:</string>
     <string name="lp_editor_title">Pulsación larga: %1$s</string>
     <string name="lp_nothing_bound">Nada asignado – toca los caracteres de abajo</string>

@@ -51,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-inställningar</string>
     <string name="theme_btn_saved_layouts">Sparade layouter</string>
     <string name="reset_hint">Återställ…</string>
-    <string name="reset_colors">Återställ färger</string>
-    <string name="reset_layout">Återställ layout</string>
-    <string name="reset_all">Återställ allt</string>
+    <string name="reset_none">Inget</string>
+    <string name="reset_colors">Endast färger</string>
+    <string name="reset_layout">Tangentlayout</string>
+    <string name="reset_all">Färger och layout</string>
     <string name="backup_name">Säkerhetskopia %1$s</string>
     <string name="reset_done_all">Layout och färger återställda. Tidigare läge sparat som säkerhetskopia.</string>
     <string name="reset_done_colors">Färger återställda. Tidigare läge sparat som säkerhetskopia.</string>
@@ -118,6 +119,7 @@
     <string name="lp_custom_hint">Skriv valfri text</string>
     <string name="lp_custom_add">Lägg till</string>
     <string name="lp_custom_already">Redan kopplad till den här tangenten</string>
+    <string name="lp_max_bindings">En tangent kan ha högst %1$d kopplingar</string>
     <string name="lp_custom_bound">Kopplat till den här tangenten:</string>
     <string name="lp_editor_title">Långt tryck: %1$s</string>
     <string name="lp_nothing_bound">Inget kopplat – tryck på tecknen nedan</string>
