@@ -1,3 +1,6 @@
+// bundle.language.enableSplit and generateLocaleConfig are AGP APIs still marked @Incubating
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -9,7 +12,9 @@ android {
     defaultConfig {
         applicationId = "com.example.antarakeyboard"
         minSdk = 24
-        targetSdk = 36
+        // Android 17 target behavior changes reviewed: none apply to this app (no network, widgets, reflection…)
+        //noinspection EditedTargetSdkVersion
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 

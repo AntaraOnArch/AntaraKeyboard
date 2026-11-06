@@ -127,6 +127,6 @@ class ColorWheelView @JvmOverloads constructor(
     }
 
     // Lint (ClickableViewAccessibility) wants performClick overridden when onTouchEvent is
-    @Suppress("RedundantOverride")
+    @Suppress("RedundantOverride", "EmptyMethod")
     override fun performClick(): Boolean = super.performClick()
 }

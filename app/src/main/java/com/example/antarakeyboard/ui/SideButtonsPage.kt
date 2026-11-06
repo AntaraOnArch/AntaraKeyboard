@@ -284,13 +284,20 @@ class SideButtonsPage(private val activity: Activity) {
             orientation = LinearLayout.VERTICAL
         }
 
+        // Picking an action or a character closes the picker
+        var dialog: AlertDialog? = null
+        fun select(slot: EdgeSlot) {
+            onSelected(slot)
+            dialog?.dismiss()
+        }
+
         actions.forEach { (type, label) ->
             val b = Button(activity).apply {
                 text = label
                 isAllCaps = false
             }
             b.setOnClickListener {
-                onSelected(oldSlot.copy(type = type, value = null))
+                select(oldSlot.copy(type = type, value = null))
             }
             actionsRow.addView(b)
         }
@@ -316,7 +323,7 @@ class SideButtonsPage(private val activity: Activity) {
                 setPadding(0, 0, 0, 0)
             }
             b.setOnClickListener {
-                onSelected(oldSlot.copy(type = EdgeActionType.CHAR, value = ch))
+                select(oldSlot.copy(type = EdgeActionType.CHAR, value = ch))
             }
 
             val lp = GridLayout.LayoutParams().apply {
@@ -336,7 +343,7 @@ class SideButtonsPage(private val activity: Activity) {
             )
         )
 
-        AlertDialog.Builder(activity)
+        dialog = AlertDialog.Builder(activity)
             .setTitle(R.string.edge_choose_title)
             .setView(root)
             .setNegativeButton(R.string.action_close, null)

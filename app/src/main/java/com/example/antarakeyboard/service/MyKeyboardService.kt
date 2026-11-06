@@ -6,8 +6,11 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.inputmethodservice.InputMethodService
 import android.os.Build
+import android.os.ResultReceiver
+import android.os.SystemClock
 import android.view.ContextThemeWrapper
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -109,7 +112,17 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private companion object {
         const val DUAL_SPACE_HOLD_MS = 4000L
+        /** A hide this soon after an input started is the app restarting (rotation), not the user. */
+        const val INPUT_RESTART_HIDE_MS = 500L
     }
+
+    /**
+     * Text field the user left the emoji panel open in (null = closed). It stays open there through
+     * rotations and input restarts until its X button or another text field closes it.
+     */
+    private var emojiOpenInEditor: String? = null
+    /** When the current input connection started (see hideSoftInput). */
+    private var inputStartedAt = 0L
 
     // RGB animation
     private val rgbAnimator by lazy { RgbBackgroundAnimator(this, serviceScope, ::applyRgbFrame) }
@@ -264,7 +277,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 }
 
                 override fun onClose() {
-                    hideEmojiPopup()
+                    closeEmojiPicker()
                 }
             },
             colorsProvider = { emojiPickerColors() }
@@ -396,6 +409,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         targetKeyboardHeightPx = computeTargetKeyboardHeight()
         overlayLayer.post { redrawKeyboard() }
+        // Another text field closes the emoji panel; in the same one it comes back
+        if (emojiOpenInEditor != editorKey(info)) emojiOpenInEditor = null
+        restoreEmojiPanel()
     }
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
@@ -447,6 +463,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
      * Context whose resources use the app language. Android 13+ applies per-app locales to the
      * whole process (and calls onConfigurationChanged), so only older versions need the override.
      */
+    // Language splits are disabled in build.gradle.kts (bundle.language.enableSplit), so every
+    // translation is installed and no Play Core download is needed
+    @SuppressLint("AppBundleLocaleChanges")
     private fun localizedContext(): Context {
         val tag = PrefsManager.getAppLanguage(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || tag.isEmpty()) return this
@@ -473,6 +492,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         // Recreate (onCreateInputView releases popups and jobs of the old view) keyboard view to adapt to new configuration
         recreateInputView()
+        restoreEmojiPanel()
     }
 
     private fun resetTransientState() {
@@ -711,6 +731,40 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
 
+
+    // Back hides the keyboard as usual and forgets an open emoji panel, so the keyboard comes back
+    // without it (rotations and input restarts never send Back, so they keep the panel)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && emojiOpenInEditor != null) closeEmojiPicker()
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        super.onStartInput(attribute, restarting)
+        inputStartedAt = SystemClock.uptimeMillis()
+    }
+
+    override fun onWindowShown() {
+        super.onWindowShown()
+        restoreEmojiPanel()
+    }
+
+    /**
+     * The keyboard hidden on purpose (the navigation bar's hide button, or the app) forgets an open
+     * emoji panel like Back does, so it comes back with the letters. Some apps (Google search) also
+     * hide it while they restart after a rotation, a few ms after the new input started
+     * ([onStartInput]); such a hide keeps the panel. This is not a limit on how long the panel
+     * stays open: a rotation keeps it however long it has been open.
+     */
+    override fun onCreateInputMethodInterface(): AbstractInputMethodImpl = object : InputMethodImpl() {
+        override fun hideSoftInput(flags: Int, resultReceiver: ResultReceiver?) {
+            // An app restarting after a rotation hides right after its new input started: keep the panel
+            val partOfInputRestart = SystemClock.uptimeMillis() - inputStartedAt < INPUT_RESTART_HIDE_MS
+            if (emojiOpenInEditor != null && !partOfInputRestart) closeEmojiPicker()
+            super.hideSoftInput(flags, resultReceiver)
+        }
+    }
+
     private fun showEmojiPicker() {
         // A delete/restore swipe must never keep running behind the picker
         stopSwipeGestures()
@@ -718,6 +772,28 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         hideEmojiPopup()
 
         emojiPickerManager.show()
+        emojiOpenInEditor = editorKey(currentInputEditorInfo)
+    }
+
+    private fun closeEmojiPicker() {
+        emojiOpenInEditor = null
+        hideEmojiPopup()
+    }
+
+    private fun editorKey(info: EditorInfo?): String = "${info?.packageName}/${info?.fieldId}"
+
+    /**
+     * Shows the emoji panel again on the current input view if the user left it open. Rotating
+     * recreates the view, and some apps (e.g. Google search) also restart the input a moment later,
+     * so this runs after each of those steps; a panel already showing is left alone.
+     */
+    private fun restoreEmojiPanel() {
+        if (emojiOpenInEditor == null) return
+        overlayLayer.post {
+            if (emojiOpenInEditor != null && ::emojiPickerManager.isInitialized && !emojiPickerManager.isShowing) {
+                showEmojiPicker()
+            }
+        }
     }
 
 

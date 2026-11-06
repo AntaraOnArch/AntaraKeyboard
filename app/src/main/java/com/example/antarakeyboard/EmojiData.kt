@@ -704,18 +704,18 @@ object EmojiData {
 
     val flags: List<String> = (
             listOf(
-                "🏁", // kockasta
-                "🚩", // trokutasta
+                "🏁", // chequered
+                "🚩", // triangular
                 "🎌", // crossed flags
-                "🏴", // crna
-                "🏳️", // bijela
+                "🏴", // black
+                "🏳️", // white
                 "🏳️‍🌈",
                 "🏳️‍⚧️",
                 "🏴‍☠️"
             ) +
                     flagCodes.map(::regionalFlag) +
                     listOf(
-                        subdivisionFlag("gbeng"), // Engleska
+                        subdivisionFlag("gbeng"), // England
                         subdivisionFlag("gbsct"), // Scotland
                         subdivisionFlag("gbwls")  // Wales
                     )

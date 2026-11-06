@@ -187,7 +187,7 @@ All keyboard popups (except the emoji panel, see below) are `PopupWindow`s ancho
 - **Key preview** (`KeyPreviewManager`) – shown above the pressed key. Uses that key's background and text color. Not shown for special keys (space, shift, backspace, enter, 123/ABC), and **never in password fields**.
 - **Long-press popup** (`LongPressPopupManager`) – surface = keyboard background (`popupSurfaceColor()`; theme background when the keyboard is transparent; under an RGB theme it animates with the keyboard). Cells use the pressed key's colors. The selected cell uses the Enter colors. Cells are square and as wide as one column of a 7-column popup, whatever the number of characters (2 letters → narrow popup, not two wide flat cells). With hexagon keys the cells form a honeycomb like the keyboard: every second row is indented by half a cell and holds one cell less, rows interlock by the hexagon tip (`LongPressPopupManager.rowSizes`, unit-tested). The cells follow the **Key height** slider (`KeyView.heightStretch`) and the **Row spacing** slider is added between the popup rows, as on the keyboard. The preview line is styled (size, 3 lines, ellipsized) before the popup is measured, so long custom text keeps the popup right above the key.
 - **Language picker** – opened by the dual-space hold. System default + every translation in its own language (same as the main app); picking one sets the app language and the matching keyboard script immediately. Uses the emoji picker's palette.
-- **Emoji picker** (`EmojiPickerManager`) – **not a popup**: a panel added to `overlayLayer` that covers the whole keyboard (keys, side buttons, suggestion strip; drawn above them with `translationZ`, takes every touch), so nothing reaches above the keyboard over the text; closed with its X button or when the keyboard closes. Categories plus Recent (last 30, `EmojiPickerStorage`); **Recent opens first once it holds 10 or more emojis** (`RECENT_FIRST_MIN`), otherwise Smileys. Columns follow the panel width (at least 5, ~64 dp per emoji), so landscape shows more per row. Layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
+- **Emoji picker** (`EmojiPickerManager`) – **not a popup**: a panel added to `overlayLayer` that covers the whole keyboard (keys, side buttons, suggestion strip; drawn above them with `translationZ`, takes every touch), so nothing reaches above the keyboard over the text; stays open in that text field until its **X** button, the system **Back** (button or gesture, `onKeyDown`) or any deliberate hide (navigation bar ∨ button or the app: `hideSoftInput` in `onCreateInputMethodInterface`) – the keyboard hides as usual and comes back with the letters. Google search hides the keyboard by itself while it restarts after a rotation, 15–30 ms after the new input starts; a hide within `INPUT_RESTART_HIDE_MS` (500 ms) of `onStartInput` is that restart and keeps the panel (measured on device: no other event tells the two apart) or another text field closes it (`emojiOpenInEditor`, package + field id): rotations and apps that restart the input bring it back however long it has been open (`restoreEmojiPanel()` from `onStartInputView`, `onWindowShown`, `onConfigurationChanged`). Categories plus Recent (last 30, `EmojiPickerStorage`); **Recent opens first once it holds 10 or more emojis** (`RECENT_FIRST_MIN`), otherwise Smileys. Columns follow the panel width (at least 5, ~64 dp per emoji), so landscape shows more per row. Layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
 
 ### Text input behavior
 - **Enter** uses `sendKeyChar('\n')`: runs the editor's action (Search, Send, Go, Done…) unless the field has no action or sets `IME_FLAG_NO_ENTER_ACTION`, then inserts a newline.
@@ -222,7 +222,7 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 - **When adding a new SharedPreferences file, add it to `SettingsBackup.FILES`.** If a stored key or value changes meaning, bump `SettingsBackup.VERSION` and migrate older files in `decode()`.
 
 ### Word suggestions
-- Only a **preview strip** of up to 3 words above the keys (`service/SuggestionStrip.kt`; its view is a child of `overlayLayer` above `keyboardContainer` – keyboardContainer's children must stay key rows only, the side-button overlay indexes them). Tapping a word replaces the word being typed and adds a space. **No auto-correct and no learning**: nothing typed is stored.
+- Only a **preview strip** of up to 3 words above the keys (`service/SuggestionStrip.kt`; its view is a child of `overlayLayer` above `keyboardContainer` – keyboardContainer's children must stay key rows only, the side-button overlay indexes them). Tapping a word replaces the word being typed and adds a space. **No autocorrect and no learning**: nothing typed is stored.
 - Engine (`service/suggest/`): `WordSuggester` = completions by prefix from the frequency list + spelling corrections via **SymSpellKt** (`com.darkrockstudios:symspellkt`, MIT; edit distance 2, prefix length 5 ≈ 18 MB per 50k words; distance 1 for words ≤ 4 letters, no corrections below 3 letters). Suggestions keep the typed capitalization. `SuggestionStrip` decides when it shows and which dictionary it uses; `SuggestionController` loads one dictionary at a time in the background; `SuggestionDictionaries.forKeyboard()` picks it: Serbian Cyrillic script → `sr_cyrl`, Russian → `ru`, Greek → `el`, Bulgarian/Ukrainian/Macedonian/Belarusian → none; the Latin keyboard follows the app/device language (hr, sr → `sr_latn`, bs, de, otherwise `en`).
 - SymSpellKt declares minSdk 26 but is pure Kotlin, so the manifest overrides it (`tools:overrideLibrary`) to keep minSdk 24.
 - Refreshed from `onUpdateSelection`. The app's request is respected: in passwords, numbers, e-mail/URL fields and fields with `TYPE_TEXT_FLAG_NO_SUGGESTIONS` (e.g. Chrome's address bar, the Google search widget) the strip is **not shown at all** (`InputTypes.allowsSuggestions`), so the keyboard is shorter there.
@@ -246,7 +246,7 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
 - (none)
 
-**Target SDK**: 36 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
+**Target SDK**: 37 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
 
 ## Architecture
 
@@ -328,7 +328,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 ### Data Models
 
-```kotlin
+```text
 KeyboardConfig
 ├── rows: List<RowConfig>
 │   └── keys: List<KeyConfig> (label + longPressBindings)
@@ -359,7 +359,7 @@ All configuration stored in SharedPreferences with Gson serialization:
 ### UI Binders
 
 Customization dialogs in `ui/`:
-- `LayoutEditorBinder` - Drag-drop key arrangement
+- `LayoutEditorBinder` - Drag-and-drop key arrangement
 - `LongPressEditorBinder` - Configure character bindings per key
 - `ColorWheelView` - HSV color picker
 - `ShapePreviewView` - Key shape visualization

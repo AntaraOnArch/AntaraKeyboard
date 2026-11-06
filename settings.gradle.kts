@@ -1,3 +1,6 @@
+// repositoriesMode is the standard Android template API, still @Incubating in Gradle
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google {

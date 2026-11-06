@@ -623,7 +623,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (layout) {
-            // Resetiraj horizontal center layout
+            // Reset horizontal center layout
             KeyboardPrefs.clearHorizontalCenterLayoutForRowCount(this, currentRowCount)
             KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(this, currentRowCount, defaultHorizontalCenterLayout)
 
