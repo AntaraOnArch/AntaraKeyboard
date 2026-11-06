@@ -997,16 +997,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Buttons under the Theme dropdown: RGB settings while an RGB theme is active, and Saved
-     * layouts whenever there is something to restore (a saved layout or "Last custom colors"),
-     * whatever the theme – side by side when both show.
+     * RGB settings (under the Theme dropdown) while an RGB theme is active; Saved layouts (under
+     * Set layout) whenever there is something to restore (a saved layout or "Last custom colors").
      */
     private fun updateThemeSettingsButton() {
         val rgb = themeOptions.getOrNull(currentThemePosition).let { it == THEME_RGB_SMOOTH || it == THEME_RGB_WILD }
         val saved = LastCustomColors.exists(this) || SavedLayoutStorage.getSavedLayouts(this).isNotEmpty()
         btnThemeSettings.isVisible = rgb
         btnSavedLayouts.isVisible = saved
-        findViewById<View>(R.id.themeButtonsGap).isVisible = rgb && saved
     }
 
     private fun applyThemeSelection(theme: String) {
@@ -1070,10 +1068,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private inner class LayoutEditorHost : LayoutEditorDialog.Host {
-        override val savedLayoutsDialog get() = this@MainActivity.savedLayoutsDialog
         override fun markDirty(section: String) { autosaveDirtySection = section }
-        override fun clearDirty() { autosaveDirtySection = null }
         override fun flushSavedToast() = showSavedToastIfDirty()
-        override fun rowsLabel(rows: Int) = this@MainActivity.rowsLabel(rows)
     }
 }

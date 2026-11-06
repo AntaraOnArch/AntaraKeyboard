@@ -86,6 +86,7 @@
     <string name="color_icon">Ikonfarve</string>
     <string name="color_text">Tekstfarve</string>
     <string name="color_use_theme">Brug temafarver</string>
+    <string name="color_no_background">Ingen baggrund</string>
     <string name="color_all_keys_same">Alle taster samme farve</string>
     <string name="color_key_use_default">Standard for denne tast</string>
     <string name="bg_mode_theme">Efter tema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Bogstavlayout</string>
     <string name="layout_section_numeric">Tallayout</string>
+    <string name="layout_section_keys">Bogstaver og tal</string>
     <string name="layout_section_side">Sideknapper</string>
     <string name="layout_section_horizontal">Vandret midte</string>
     <string name="layout_section_emoji">Emoji-indstillinger</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Luk</string>
     <string name="emoji_btn_backspace">Tilbage</string>
     <string name="emoji_btn_space">Mellemrum</string>
-    <string name="saved_layouts_header">-- Gemte layouts (%1$d) --</string>
-    <string name="saved_layouts_label">Gemte layouts:</string>
-    <string name="swap_selected">Byt valgte</string>
-    <string name="select_two_keys">Vælg 2 taster</string>
     <string name="color_picker_brightness">Lysstyrke</string>
     <string name="copied">Kopieret!</string>
     <string name="restore_layout_title">Gendan layout</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Kun farver</string>
     <string name="custom_colors_applied">Egne farver anvendt</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ingen gemte layouts endnu</string>
     <string name="transparent_background">Gennemsigtig baggrund</string>
     <string name="preview_info">Form: %1$s | Rækker: %2$d\nGemt: %3$s</string>

@@ -86,6 +86,7 @@
     <string name="color_icon">Dath na deilbhíní</string>
     <string name="color_text">Dath an téacs</string>
     <string name="color_use_theme">Úsáid dathanna an téama</string>
+    <string name="color_no_background">Gan chúlra</string>
     <string name="color_all_keys_same">An dath céanna ar gach eochair</string>
     <string name="color_key_use_default">Dath réamhshocraithe don eochair seo</string>
     <string name="bg_mode_theme">De réir téama</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Leagan amach litreacha</string>
     <string name="layout_section_numeric">Leagan amach uimhreacha</string>
+    <string name="layout_section_keys">Litreacha agus uimhreacha</string>
     <string name="layout_section_side">Eochracha taoibh</string>
     <string name="layout_section_horizontal">Lár cothrománach</string>
     <string name="layout_section_emoji">Socruithe emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Dún</string>
     <string name="emoji_btn_backspace">Cúlspás</string>
     <string name="emoji_btn_space">Spás</string>
-    <string name="saved_layouts_header">-- Leaganacha amach sábháilte (%1$d) --</string>
-    <string name="saved_layouts_label">Leaganacha amach sábháilte:</string>
-    <string name="swap_selected">Malartaigh na cinn roghnaithe</string>
-    <string name="select_two_keys">Roghnaigh 2 eochair</string>
     <string name="color_picker_brightness">Gile</string>
     <string name="copied">Cóipeáilte!</string>
     <string name="restore_layout_title">Athchóirigh leagan amach</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Dathanna amháin</string>
     <string name="custom_colors_applied">Dathanna saincheaptha curtha i bhfeidhm</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Níl aon leagan amach sábháilte fós</string>
     <string name="transparent_background">Cúlra trédhearcach</string>
     <string name="preview_info">Cruth: %1$s | Sraitheanna: %2$d\nSábháilte: %3$s</string>

@@ -466,6 +466,41 @@ object KeyboardPrefs {
         }
 
     /**
+     * Side button icon color while the side buttons use the theme: the theme's icon color
+     * ([themeIcon]), turned dark on a light keyboard background and light on a dark one, so the
+     * icons never disappear when the background and the Light/Dark theme don't match.
+     * Transparent and RGB backgrounds keep the theme color.
+     */
+    fun themeSideIconColor(context: Context, isDark: Boolean, themeIcon: Int): Int {
+        if (isAnyRgbModeEnabled(context)) return themeIcon
+        val bg = resolveKeyboardBackground(context, isDark)
+        return contrastingIconColor(bg, themeIcon)
+    }
+
+    /** [icon] if it stands out on [bg], otherwise black on a light or white on a dark background. */
+    internal fun contrastingIconColor(bg: Int, icon: Int): Int {
+        if ((bg ushr 24) == 0) return icon
+        val bgLight = luminance(bg) > 0.5
+        val iconLight = luminance(icon) > 0.5
+        return when {
+            bgLight && iconLight -> 0xFF000000.toInt()
+            !bgLight && !iconLight -> 0xFFFFFFFF.toInt()
+            else -> icon
+        }
+    }
+
+    // Relative luminance (WCAG) of an ARGB color, 0 (black) … 1 (white)
+    private fun luminance(color: Int): Double {
+        fun channel(c: Int): Double {
+            val v = c / 255.0
+            return if (v <= 0.03928) v / 12.92 else Math.pow((v + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * channel((color shr 16) and 0xFF) +
+            0.7152 * channel((color shr 8) and 0xFF) +
+            0.0722 * channel(color and 0xFF)
+    }
+
+    /**
      * True when the keyboard shows plain theme colors (what Reset colors sets): keys, space and
      * side buttons use the theme, background by theme, default Enter colors. Such colors are not
      * worth keeping in a backup or as "Last custom colors" – the theme brings them back anyway.

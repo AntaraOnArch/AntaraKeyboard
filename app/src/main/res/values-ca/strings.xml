@@ -86,6 +86,7 @@
     <string name="color_icon">Color de la icona</string>
     <string name="color_text">Color del text</string>
     <string name="color_use_theme">Utilitza els colors del tema</string>
+    <string name="color_no_background">Sense fons</string>
     <string name="color_all_keys_same">Totes les tecles del mateix color</string>
     <string name="color_key_use_default">Color predeterminat per a aquesta tecla</string>
     <string name="bg_mode_theme">Segons el tema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Disposició de lletres</string>
     <string name="layout_section_numeric">Disposició numèrica</string>
+    <string name="layout_section_keys">Lletres i números</string>
     <string name="layout_section_side">Tecles laterals</string>
     <string name="layout_section_horizontal">Centre horitzontal</string>
     <string name="layout_section_emoji">Configuració dels emojis</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Tanca</string>
     <string name="emoji_btn_backspace">Retrocés</string>
     <string name="emoji_btn_space">Espai</string>
-    <string name="saved_layouts_header">-- Disposicions desades (%1$d) --</string>
-    <string name="saved_layouts_label">Disposicions desades:</string>
-    <string name="swap_selected">Intercanvia la selecció</string>
-    <string name="select_two_keys">Selecciona 2 tecles</string>
     <string name="color_picker_brightness">Brillantor</string>
     <string name="copied">S\'ha copiat!</string>
     <string name="restore_layout_title">Restaura la disposició</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Només colors</string>
     <string name="custom_colors_applied">S\'han aplicat els colors personalitzats</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Encara no hi ha disposicions desades</string>
     <string name="transparent_background">Fons transparent</string>
     <string name="preview_info">Forma: %1$s | Files: %2$d\nDesat: %3$s</string>

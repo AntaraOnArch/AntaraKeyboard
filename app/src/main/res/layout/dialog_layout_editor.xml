@@ -21,27 +21,47 @@
         android:layout_weight="1"
         android:layout_marginTop="16dp">
 
-        <LinearLayout
+        <!-- Letters and numbers on one page; scrolls only when the screen is too short -->
+        <ScrollView
             android:id="@+id/pageLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tvLayoutTitle"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/layout_section_alphabet"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingBottom="12dp" />
+                android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@+id/layoutEditorContainer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvLayoutTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/layout_section_alphabet"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:paddingBottom="4dp" />
+
+                <FrameLayout
+                    android:id="@+id/layoutEditorContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvNumericTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/layout_section_numeric"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:paddingBottom="4dp" />
+
+                <FrameLayout
+                    android:id="@+id/numericEditorContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </ScrollView>
 
         <LinearLayout
             android:id="@+id/pageSideButtons"
@@ -61,29 +81,6 @@
 
             <FrameLayout
                 android:id="@+id/sideButtonsEditorContainer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/pageNumeric"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/tvNumericTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/layout_section_numeric"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingBottom="12dp" />
-
-            <FrameLayout
-                android:id="@+id/numericEditorContainer"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
@@ -126,46 +123,5 @@
         </ScrollView>
 
     </FrameLayout>
-
-    <LinearLayout
-        android:id="@+id/bottomActions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="vertical">
-
-        <!-- Saved layouts dropdown -->
-        <LinearLayout
-            android:id="@+id/savedLayoutsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/saved_layouts_label"
-                android:textSize="14sp"
-                android:paddingStart="0dp"
-                android:paddingEnd="8dp" />
-
-            <Spinner
-                android:id="@+id/spinnerSavedLayouts"
-                style="@style/MainSpinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnSwapSelected"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/swap_selected"
-            android:textAllCaps="false" />
-    </LinearLayout>
 
 </LinearLayout>

@@ -86,6 +86,7 @@
     <string name="color_icon">Symbolfarbe</string>
     <string name="color_text">Textfarbe</string>
     <string name="color_use_theme">Designfarben verwenden</string>
+    <string name="color_no_background">Kein Hintergrund</string>
     <string name="color_all_keys_same">Alle Tasten gleiche Farbe</string>
     <string name="color_key_use_default">Standard für diese Taste</string>
     <string name="bg_mode_theme">Nach Design</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Buchstabenlayout</string>
     <string name="layout_section_numeric">Zahlenlayout</string>
+    <string name="layout_section_keys">Buchstaben und Zahlen</string>
     <string name="layout_section_side">Seitentasten</string>
     <string name="layout_section_horizontal">Horizontale Mitte</string>
     <string name="layout_section_emoji">Emoji-Einstellungen</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Schließen</string>
     <string name="emoji_btn_backspace">Rücktaste</string>
     <string name="emoji_btn_space">Leertaste</string>
-    <string name="saved_layouts_header">-- Gespeicherte Layouts (%1$d) --</string>
-    <string name="saved_layouts_label">Gespeicherte Layouts:</string>
-    <string name="swap_selected">Auswahl tauschen</string>
-    <string name="select_two_keys">2 Tasten auswählen</string>
     <string name="color_picker_brightness">Helligkeit</string>
     <string name="copied">Kopiert!</string>
     <string name="restore_layout_title">Layout wiederherstellen</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Nur Farben</string>
     <string name="custom_colors_applied">Eigene Farben angewendet</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Noch keine gespeicherten Layouts</string>
     <string name="transparent_background">Transparenter Hintergrund</string>
     <string name="preview_info">Form: %1$s | Reihen: %2$d\nGespeichert: %3$s</string>

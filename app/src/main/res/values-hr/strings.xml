@@ -86,6 +86,7 @@
     <string name="color_icon">Boja ikone</string>
     <string name="color_text">Boja teksta</string>
     <string name="color_use_theme">Koristi boje teme</string>
+    <string name="color_no_background">Bez pozadine</string>
     <string name="color_all_keys_same">Sve tipke iste boje</string>
     <string name="color_key_use_default">Zadana boja za ovu tipku</string>
     <string name="bg_mode_theme">Prema temi</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Raspored slova</string>
     <string name="layout_section_numeric">Raspored brojeva</string>
+    <string name="layout_section_keys">Slova i brojevi</string>
     <string name="layout_section_side">Bočne tipke</string>
     <string name="layout_section_horizontal">Vodoravna sredina</string>
     <string name="layout_section_emoji">Postavke emojija</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Zatvori</string>
     <string name="emoji_btn_backspace">Brisanje</string>
     <string name="emoji_btn_space">Razmak</string>
-    <string name="saved_layouts_header">-- Spremljeni rasporedi (%1$d) --</string>
-    <string name="saved_layouts_label">Spremljeni rasporedi:</string>
-    <string name="swap_selected">Zamijeni odabrane</string>
-    <string name="select_two_keys">Odaberi 2 tipke</string>
     <string name="color_picker_brightness">Svjetlina</string>
     <string name="copied">Kopirano!</string>
     <string name="restore_layout_title">Vrati raspored</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Samo boje</string>
     <string name="custom_colors_applied">Vlastite boje primijenjene</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Još nema spremljenih rasporeda</string>
     <string name="transparent_background">Prozirna pozadina</string>
     <string name="preview_info">Oblik: %1$s | Redovi: %2$d\nSpremljeno: %3$s</string>

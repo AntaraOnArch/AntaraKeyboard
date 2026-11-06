@@ -86,6 +86,7 @@
     <string name="color_icon">Culoarea pictogramei</string>
     <string name="color_text">Culoarea textului</string>
     <string name="color_use_theme">Folosește culorile temei</string>
+    <string name="color_no_background">Fără fundal</string>
     <string name="color_all_keys_same">Toate tastele de aceeași culoare</string>
     <string name="color_key_use_default">Culoare implicită pentru această tastă</string>
     <string name="bg_mode_theme">După temă</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Aranjamentul literelor</string>
     <string name="layout_section_numeric">Aranjament numeric</string>
+    <string name="layout_section_keys">Litere și cifre</string>
     <string name="layout_section_side">Taste laterale</string>
     <string name="layout_section_horizontal">Centru orizontal</string>
     <string name="layout_section_emoji">Setări emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Închide</string>
     <string name="emoji_btn_backspace">Ștergere</string>
     <string name="emoji_btn_space">Spațiu</string>
-    <string name="saved_layouts_header">-- Aranjamente salvate (%1$d) --</string>
-    <string name="saved_layouts_label">Aranjamente salvate:</string>
-    <string name="swap_selected">Schimbă selecția</string>
-    <string name="select_two_keys">Selectează 2 taste</string>
     <string name="color_picker_brightness">Luminozitate</string>
     <string name="copied">Copiat!</string>
     <string name="restore_layout_title">Restabilește aranjamentul</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Doar culori</string>
     <string name="custom_colors_applied">Culorile personalizate au fost aplicate</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Încă nu există aranjamente salvate</string>
     <string name="transparent_background">Fundal transparent</string>
     <string name="preview_info">Formă: %1$s | Rânduri: %2$d\nSalvat: %3$s</string>

@@ -86,6 +86,7 @@
     <string name="color_icon">Ikonas krāsa</string>
     <string name="color_text">Teksta krāsa</string>
     <string name="color_use_theme">Izmantot motīva krāsas</string>
+    <string name="color_no_background">Bez fona</string>
     <string name="color_all_keys_same">Visi taustiņi vienā krāsā</string>
     <string name="color_key_use_default">Noklusējuma krāsa šim taustiņam</string>
     <string name="bg_mode_theme">Pēc motīva</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Burtu izkārtojums</string>
     <string name="layout_section_numeric">Ciparu izkārtojums</string>
+    <string name="layout_section_keys">Burti un cipari</string>
     <string name="layout_section_side">Sānu taustiņi</string>
     <string name="layout_section_horizontal">Horizontālais centrs</string>
     <string name="layout_section_emoji">Emocijzīmju iestatījumi</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Aizvērt</string>
     <string name="emoji_btn_backspace">Atpakaļatkāpe</string>
     <string name="emoji_btn_space">Atstarpe</string>
-    <string name="saved_layouts_header">-- Saglabātie izkārtojumi (%1$d) --</string>
-    <string name="saved_layouts_label">Saglabātie izkārtojumi:</string>
-    <string name="swap_selected">Samainīt atlasītos</string>
-    <string name="select_two_keys">Atlasiet 2 taustiņus</string>
     <string name="color_picker_brightness">Spilgtums</string>
     <string name="copied">Nokopēts!</string>
     <string name="restore_layout_title">Atjaunot izkārtojumu</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Tikai krāsas</string>
     <string name="custom_colors_applied">Savas krāsas lietotas</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Vēl nav saglabātu izkārtojumu</string>
     <string name="transparent_background">Caurspīdīgs fons</string>
     <string name="preview_info">Forma: %1$s | Rindas: %2$d\nSaglabāts: %3$s</string>

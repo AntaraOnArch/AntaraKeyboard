@@ -86,6 +86,7 @@
     <string name="color_icon">Pictogramkleur</string>
     <string name="color_text">Tekstkleur</string>
     <string name="color_use_theme">Themakleuren gebruiken</string>
+    <string name="color_no_background">Geen achtergrond</string>
     <string name="color_all_keys_same">Alle toetsen dezelfde kleur</string>
     <string name="color_key_use_default">Standaard voor deze toets</string>
     <string name="bg_mode_theme">Volgens thema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Letterindeling</string>
     <string name="layout_section_numeric">Cijferindeling</string>
+    <string name="layout_section_keys">Letters en cijfers</string>
     <string name="layout_section_side">Zijtoetsen</string>
     <string name="layout_section_horizontal">Horizontaal midden</string>
     <string name="layout_section_emoji">Emoji-instellingen</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Sluiten</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spatie</string>
-    <string name="saved_layouts_header">-- Opgeslagen indelingen (%1$d) --</string>
-    <string name="saved_layouts_label">Opgeslagen indelingen:</string>
-    <string name="swap_selected">Selectie wisselen</string>
-    <string name="select_two_keys">Selecteer 2 toetsen</string>
     <string name="color_picker_brightness">Helderheid</string>
     <string name="copied">Gekopieerd!</string>
     <string name="restore_layout_title">Indeling herstellen</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Alleen kleuren</string>
     <string name="custom_colors_applied">Eigen kleuren toegepast</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Nog geen opgeslagen indelingen</string>
     <string name="transparent_background">Transparante achtergrond</string>
     <string name="preview_info">Vorm: %1$s | Rijen: %2$d\nOpgeslagen: %3$s</string>

@@ -86,6 +86,7 @@
     <string name="color_icon">Цвят на иконата</string>
     <string name="color_text">Цвят на текста</string>
     <string name="color_use_theme">Цветове на темата</string>
+    <string name="color_no_background">Без фон</string>
     <string name="color_all_keys_same">Всички клавиши в един цвят</string>
     <string name="color_key_use_default">Цвят по подразбиране за този клавиш</string>
     <string name="bg_mode_theme">Според темата</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Подредба на буквите</string>
     <string name="layout_section_numeric">Цифрова подредба</string>
+    <string name="layout_section_keys">Букви и цифри</string>
     <string name="layout_section_side">Странични клавиши</string>
     <string name="layout_section_horizontal">Хоризонтален център</string>
     <string name="layout_section_emoji">Настройки на емоджи</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Затваряне</string>
     <string name="emoji_btn_backspace">Изтриване</string>
     <string name="emoji_btn_space">Интервал</string>
-    <string name="saved_layouts_header">-- Запазени подредби (%1$d) --</string>
-    <string name="saved_layouts_label">Запазени подредби:</string>
-    <string name="swap_selected">Размяна на избраните</string>
-    <string name="select_two_keys">Изберете 2 клавиша</string>
     <string name="color_picker_brightness">Яркост</string>
     <string name="copied">Копирано!</string>
     <string name="restore_layout_title">Възстановяване на подредбата</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Само цветове</string>
     <string name="custom_colors_applied">Персоналните цветове са приложени</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Все още няма запазени подредби</string>
     <string name="transparent_background">Прозрачен фон</string>
     <string name="preview_info">Форма: %1$s | Редове: %2$d\nЗапазено: %3$s</string>

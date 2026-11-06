@@ -86,6 +86,7 @@
     <string name="color_icon">Ikooni värv</string>
     <string name="color_text">Teksti värv</string>
     <string name="color_use_theme">Kasuta teema värve</string>
+    <string name="color_no_background">Taust puudub</string>
     <string name="color_all_keys_same">Kõik klahvid sama värvi</string>
     <string name="color_key_use_default">Vaikevärv selle klahvi jaoks</string>
     <string name="bg_mode_theme">Teema järgi</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Tähtede paigutus</string>
     <string name="layout_section_numeric">Numbrite paigutus</string>
+    <string name="layout_section_keys">Tähed ja numbrid</string>
     <string name="layout_section_side">Külgklahvid</string>
     <string name="layout_section_horizontal">Horisontaalne keskosa</string>
     <string name="layout_section_emoji">Emotikonide seaded</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Sulge</string>
     <string name="emoji_btn_backspace">Tagasilüke</string>
     <string name="emoji_btn_space">Tühik</string>
-    <string name="saved_layouts_header">-- Salvestatud paigutused (%1$d) --</string>
-    <string name="saved_layouts_label">Salvestatud paigutused:</string>
-    <string name="swap_selected">Vaheta valitud</string>
-    <string name="select_two_keys">Vali 2 klahvi</string>
     <string name="color_picker_brightness">Heledus</string>
     <string name="copied">Kopeeritud!</string>
     <string name="restore_layout_title">Taasta paigutus</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Ainult värvid</string>
     <string name="custom_colors_applied">Oma värvid rakendatud</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Salvestatud paigutusi veel pole</string>
     <string name="transparent_background">Läbipaistev taust</string>
     <string name="preview_info">Kuju: %1$s | Read: %2$d\nSalvestatud: %3$s</string>

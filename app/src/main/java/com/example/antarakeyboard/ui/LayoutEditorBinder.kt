@@ -26,7 +26,9 @@ class LayoutEditorBinder(
     private val onSaved: (KeyboardConfig) -> Unit,
     private val lockedLabels: Set<String> = setOf("⇧", "⌫"),
     private val onEmptyKeyClick: ((KeyConfig) -> Unit)? = null,
-    private val allowClearKeys: Boolean = false
+    private val allowClearKeys: Boolean = false,
+    /** The "Set layout" heading above the keys; off where the page already has its own titles. */
+    private val showHeader: Boolean = true
 ) {
     private fun isLocked(key: KeyConfig): Boolean = key.label in lockedLabels
     private fun isEmptyKey(key: KeyConfig): Boolean = key.label == ""
@@ -43,7 +45,6 @@ class LayoutEditorBinder(
     )
 
     private var selectedA: KeyPos? = null
-    private var selectedB: KeyPos? = null
 
     private val keyToView = linkedMapOf<KeyPos, KeyView>()
     private val shakingViews = mutableListOf<View>()
@@ -62,12 +63,14 @@ class LayoutEditorBinder(
             )
         }
 
-        root.addView(TextView(context).apply {
-            text = context.getString(R.string.main_set_layout)
-            textSize = 18f
-            setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, 10.dp(context))
-        })
+        if (showHeader) {
+            root.addView(TextView(context).apply {
+                text = context.getString(R.string.main_set_layout)
+                textSize = 18f
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, 0, 0, 10.dp(context))
+            })
+        }
 
         val scroll = ScrollView(context).apply {
             isFillViewport = true
@@ -111,7 +114,6 @@ class LayoutEditorBinder(
         bounceViews.clear()
 
         selectedA = null
-        selectedB = null
 
         EditorKeyboardRenderer(context).render(container, cfg) { key, row, col ->
             createKeyView(key = key, pos = KeyPos(row, col), userShape = userShape)
@@ -224,16 +226,19 @@ class LayoutEditorBinder(
         val key = keyAt(pos) ?: return
         if (isEmptyKey(key)) return
 
-        if (selectedA == null || selectedA == pos) {
-            selectedA = pos
-        } else if (selectedB == null || selectedB == pos) {
-            selectedB = pos
-        } else {
-            clearSelection()
-            selectedA = pos
+        // First tap selects a key, a tap on another key swaps the two (tap the same key to deselect)
+        val first = selectedA
+        when (first) {
+            null -> {
+                selectedA = pos
+                applySelectionUI()
+            }
+            pos -> clearSelection()
+            else -> {
+                swapPositions(first, pos)
+                afterLayoutChanged()
+            }
         }
-
-        applySelectionUI()
     }
 
     private fun afterLayoutChanged() {
@@ -245,7 +250,6 @@ class LayoutEditorBinder(
 
     private fun clearSelection() {
         selectedA = null
-        selectedB = null
         applySelectionUI()
     }
 
@@ -262,7 +266,7 @@ class LayoutEditorBinder(
     }
 
     private fun applySelectionUI() {
-        val hasSelection = selectedA != null || selectedB != null
+        val hasSelection = selectedA != null
         if (hasSelection) {
             stopIdleShake()
         } else {
@@ -273,7 +277,7 @@ class LayoutEditorBinder(
             val pos = entry.key
             val view = entry.value
 
-            val isSel = pos == selectedA || pos == selectedB
+            val isSel = pos == selectedA
 
             if (isSel) {
                 view.customBgColor = 0xFFFFFFFF.toInt()
@@ -345,7 +349,7 @@ class LayoutEditorBinder(
     }
 
     private fun startIdleShake() {
-        if (selectedA != null || selectedB != null) return
+        if (selectedA != null) return
 
         val deg = 8f
 
@@ -354,7 +358,7 @@ class LayoutEditorBinder(
             v.setTag(shakeTagKey, true)
 
             fun loop() {
-                if (selectedA != null || selectedB != null) {
+                if (selectedA != null) {
                     v.setTag(shakeTagKey, false)
                     v.rotation = 0f
                     return
@@ -432,18 +436,6 @@ class LayoutEditorBinder(
         }
 
         bounceViews.clear()
-    }
-
-    fun swapSelectedExternally(): Boolean {
-        val a = selectedA
-        val b = selectedB
-
-        if (a == null || b == null) return false
-
-        swapPositions(a, b)
-        afterLayoutChanged()
-
-        return true
     }
 
     fun saveExternally() {

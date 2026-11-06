@@ -86,6 +86,7 @@
     <string name="color_icon">Kolor ikony</string>
     <string name="color_text">Kolor tekstu</string>
     <string name="color_use_theme">Użyj kolorów motywu</string>
+    <string name="color_no_background">Bez tła</string>
     <string name="color_all_keys_same">Wszystkie klawisze w tym samym kolorze</string>
     <string name="color_key_use_default">Domyślny kolor tego klawisza</string>
     <string name="bg_mode_theme">Według motywu</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Układ liter</string>
     <string name="layout_section_numeric">Układ cyfr</string>
+    <string name="layout_section_keys">Litery i cyfry</string>
     <string name="layout_section_side">Klawisze boczne</string>
     <string name="layout_section_horizontal">Środek poziomy</string>
     <string name="layout_section_emoji">Ustawienia emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Zamknij</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spacja</string>
-    <string name="saved_layouts_header">-- Zapisane układy (%1$d) --</string>
-    <string name="saved_layouts_label">Zapisane układy:</string>
-    <string name="swap_selected">Zamień zaznaczone</string>
-    <string name="select_two_keys">Zaznacz 2 klawisze</string>
     <string name="color_picker_brightness">Jasność</string>
     <string name="copied">Skopiowano!</string>
     <string name="restore_layout_title">Przywróć układ</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Tylko kolory</string>
     <string name="custom_colors_applied">Zastosowano własne kolory</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Brak zapisanych układów</string>
     <string name="transparent_background">Przezroczyste tło</string>
     <string name="preview_info">Kształt: %1$s | Rzędy: %2$d\nZapisano: %3$s</string>

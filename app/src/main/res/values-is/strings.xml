@@ -86,6 +86,7 @@
     <string name="color_icon">Litur tákns</string>
     <string name="color_text">Litur texta</string>
     <string name="color_use_theme">Nota liti þema</string>
+    <string name="color_no_background">Enginn bakgrunnur</string>
     <string name="color_all_keys_same">Allir lyklar í sama lit</string>
     <string name="color_key_use_default">Sjálfgefinn litur fyrir þennan lykil</string>
     <string name="bg_mode_theme">Eftir þema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Uppsetning stafa</string>
     <string name="layout_section_numeric">Uppsetning talna</string>
+    <string name="layout_section_keys">Stafir og tölur</string>
     <string name="layout_section_side">Hliðarlyklar</string>
     <string name="layout_section_horizontal">Lárétt miðja</string>
     <string name="layout_section_emoji">Stillingar tjáknmynda</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Loka</string>
     <string name="emoji_btn_backspace">Bakklykill</string>
     <string name="emoji_btn_space">Bil</string>
-    <string name="saved_layouts_header">-- Vistaðar uppsetningar (%1$d) --</string>
-    <string name="saved_layouts_label">Vistaðar uppsetningar:</string>
-    <string name="swap_selected">Víxla völdum</string>
-    <string name="select_two_keys">Veldu 2 lykla</string>
     <string name="color_picker_brightness">Birta</string>
     <string name="copied">Afritað!</string>
     <string name="restore_layout_title">Endurheimta uppsetningu</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Aðeins litir</string>
     <string name="custom_colors_applied">Eigin litir notaðir</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Engar vistaðar uppsetningar enn</string>
     <string name="transparent_background">Gegnsær bakgrunnur</string>
     <string name="preview_info">Lögun: %1$s | Raðir: %2$d\nVistað: %3$s</string>

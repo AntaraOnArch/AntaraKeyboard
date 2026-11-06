@@ -86,6 +86,7 @@
     <string name="color_icon">Color del icono</string>
     <string name="color_text">Color del texto</string>
     <string name="color_use_theme">Usar colores del tema</string>
+    <string name="color_no_background">Sin fondo</string>
     <string name="color_all_keys_same">Todas las teclas del mismo color</string>
     <string name="color_key_use_default">Color predeterminado para esta tecla</string>
     <string name="bg_mode_theme">Según el tema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Distribución de letras</string>
     <string name="layout_section_numeric">Distribución numérica</string>
+    <string name="layout_section_keys">Letras y números</string>
     <string name="layout_section_side">Teclas laterales</string>
     <string name="layout_section_horizontal">Centro horizontal</string>
     <string name="layout_section_emoji">Ajustes de emojis</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Cerrar</string>
     <string name="emoji_btn_backspace">Retroceso</string>
     <string name="emoji_btn_space">Espacio</string>
-    <string name="saved_layouts_header">-- Distribuciones guardadas (%1$d) --</string>
-    <string name="saved_layouts_label">Distribuciones guardadas:</string>
-    <string name="swap_selected">Intercambiar selección</string>
-    <string name="select_two_keys">Selecciona 2 teclas</string>
     <string name="color_picker_brightness">Brillo</string>
     <string name="copied">¡Copiado!</string>
     <string name="restore_layout_title">Restaurar distribución</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Solo colores</string>
     <string name="custom_colors_applied">Colores personalizados aplicados</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Aún no hay distribuciones guardadas</string>
     <string name="transparent_background">Fondo transparente</string>
     <string name="preview_info">Forma: %1$s | Filas: %2$d\nGuardado: %3$s</string>

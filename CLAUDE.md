@@ -72,13 +72,14 @@ In screen order (`res/layout/activity_main.xml`):
 1. **Enable** – opens Android system settings so the user can enable the keyboard (IME).
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
+   Right under it **Saved layouts** (whenever a saved layout or "Last custom colors" exists, **whatever the theme**) opens the Saved layouts popup (see [Themes](#themes)).
 4. **Key shape** and **Keyboard rows** (3 / 4 / 5) dropdowns side by side in one row, the shape preview under them.
 5. **Key height** and **Row spacing** sliders.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
 8. **Side button positions** and **Colors** (same row) – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots); popup for coloring every part of the keyboard (sections below).
 9. **Language** and **Theme** dropdowns side by side. Language: System default + every translation, each named in its own language (`data/AppLanguages.kt`).
-    Theme: Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)). Below it **RGB settings** (only while an RGB theme is active) and **Saved layouts** (whenever a saved layout or "Last custom colors" exists, **whatever the theme**, for a quick restore); side by side when both show (`updateThemeSettingsButton`).
+    Theme: Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)). Below it **RGB settings** (only while an RGB theme is active; `updateThemeSettingsButton` also shows/hides Saved layouts).
 10. **Vibration** and **Word suggestions** switches (on / off).
 11. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
 
@@ -90,13 +91,17 @@ In screen order (`res/layout/activity_main.xml`):
 
 All tabs autosave; there is no Save button. A single "<Section> saved" toast is shown when the user switches to another tab, closes the popup, or leaves the app — only if something changed in that tab (never per individual edit).
 
-#### Layout (opened by default)
-- Arranges the letter keys across rows.
-- **Swap**: select two keys, then press the **Swap** button at the bottom of the popup to exchange their positions.
-- **Drag and drop** one key onto another also swaps them.
+There is no Swap button and no saved-layouts dropdown in this popup (saved layouts have their own button on the main screen).
+
+**Swap** (letters, numbers, horizontal): tap a key to select it, tap another key to swap the two at once (tap the selected key again to deselect); **drag and drop** one key onto another also swaps them.
+
+#### Letters and numbers (opened by default)
+- One page with the letter layout and the numeric layout under it ("Alphabet layout" / "Numeric layout" titles, scrolls only when the screen is too short).
+- Letters: arranges the letter keys across rows.
+- Numbers: the rules of the Numeric section below.
 - Autosave.
 
-#### Emoji
+#### Emoji (last section)
 - Configures the emoji picker's **category slider position**: top / bottom / left / right.
 - Three **fixed buttons**: **X** (close), **Backspace**, **Space**. The user chooses their **order** and whether they appear on the **left or right** side of the screen.
 - Autosave.
@@ -107,10 +112,10 @@ All tabs autosave; there is no Save button. A single "<Section> saved" toast is 
   - 4 rows → 4 side buttons
   - 3 rows → 3 side buttons
 - **Drag and drop** reorders side buttons.
-- **Tap** a side button → popup with special characters to assign.
+- **Tap** a side button → popup with the actions and special characters to assign; picking one closes it.
 - Autosave.
 
-#### Numeric
+#### Numeric (part of the Letters and numbers page)
 - Shows the numeric layout matching the selected row count (and symbols chosen in the main app); here the numeric layout is fully configured.
 - **Protected keys** – must ALWAYS be present; only their position may change, never removed:
   `ABC (back to letters)`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `Enter`.
@@ -159,7 +164,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 |---------|---------|
 | **Space** | "Use theme colors" (theme space fill), or each space key colored separately / both the same color (`space_use_theme`, independent of the Keys setting) |
 | **Enter** | Background color + icon color |
-| **Side buttons** | "Use theme colors", or a custom background + icon color |
+| **Side buttons** | "Use theme colors" (no background; the theme icon color, turned dark on a light keyboard background and light on a dark one – `KeyboardPrefs.themeSideIconColor`), or a custom icon color with a custom background or **No background** (transparent) |
 | **Keys** | "Use theme colors"; otherwise "All keys same color" (one background + text color) or per-key colors (tap a key → small popup; stored as `key_individual_<label>_bg/_text`, letters lowercased; "Use default for this key" clears it) |
 | **Background** | Default by theme / Dark / Light / Custom color (`KeyboardPrefs.BackgroundMode`, resolved by `resolveKeyboardBackground`). Dark and Light use the theme-default backgrounds. Transparent is chosen in the Theme dropdown, not here |
 | **Theme defaults** | Edits the Light and Dark default palettes (key fill, key text, space fill, keyboard background) that "use theme" options fall back to. Factory values are in `KeyboardPrefs.FactoryDefaults` |
@@ -218,7 +223,7 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 - **Export** writes one JSON file through the system "save as" picker (`ActivityResultContracts.CreateDocument`, no storage permission). **Import** reads it through `OpenDocument`, asks for confirmation, saves the current state as a "Backup" in Saved layouts, applies the file, re-applies theme and language, and recreates the screen.
 - Format (`data/SettingsBackup.kt`): `{"format": "antara-keyboard-settings", "version": 1, "exportedAt": …, "data": {"<prefs file>": {"<key>": {"type": "int|long|float|boolean|string|string_set", "value": …}}}}`. It contains **no package or class names**, so backups move between any builds – this is the migration path when the applicationId changes from `com.example…` before release (a new applicationId is a new app with empty settings).
 - Included prefs files: `SettingsBackup.FILES` (keyboard_prefs, theme_prefs, custom_theme_prefs, edge_slots, global_lp_prefs, emoji_picker_prefs, saved_layouts_prefs). **Recent emojis are excluded** (privacy) and are never overwritten by an import.
-- Import replaces each included file completely; files missing from the backup are left alone. Wrong `format`, broken JSON or files over 2 MB are rejected; a higher `version` asks the user to update; unknown files/types are skipped.
+- Import replaces each included file completely; files missing from the backup are left alone. The main screen's pref-backed widgets (sliders, dropdowns, switches) have `android:saveEnabled="false"`, so after the import's `recreate()` they show the imported values, not the old widget state. Wrong `format`, broken JSON or files over 2 MB are rejected; a higher `version` asks the user to update; unknown files/types are skipped.
 - **When adding a new SharedPreferences file, add it to `SettingsBackup.FILES`.** If a stored key or value changes meaning, bump `SettingsBackup.VERSION` and migrate older files in `decode()`.
 
 ### Word suggestions
@@ -244,7 +249,7 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 
 ### Known gaps (code vs spec)
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
-- (none)
+- Set layout → Numeric / Horizontal: the code removes a symbol with its small **×** badge and opens the picker on a tap of the **empty** slot; a tap on a symbol selects it for a tap-to-swap. The spec above says a tap removes the symbol and opens the picker at once.
 
 **Target SDK**: 37 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
 
@@ -324,7 +329,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 

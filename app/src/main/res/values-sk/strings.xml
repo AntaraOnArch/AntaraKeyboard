@@ -86,6 +86,7 @@
     <string name="color_icon">Farba ikony</string>
     <string name="color_text">Farba textu</string>
     <string name="color_use_theme">Použiť farby motívu</string>
+    <string name="color_no_background">Bez pozadia</string>
     <string name="color_all_keys_same">Všetky klávesy rovnakou farbou</string>
     <string name="color_key_use_default">Predvolená farba pre tento kláves</string>
     <string name="bg_mode_theme">Podľa motívu</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Rozloženie písmen</string>
     <string name="layout_section_numeric">Rozloženie čísel</string>
+    <string name="layout_section_keys">Písmená a číslice</string>
     <string name="layout_section_side">Bočné klávesy</string>
     <string name="layout_section_horizontal">Vodorovný stred</string>
     <string name="layout_section_emoji">Nastavenia emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Zavrieť</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Medzerník</string>
-    <string name="saved_layouts_header">-- Uložené rozloženia (%1$d) --</string>
-    <string name="saved_layouts_label">Uložené rozloženia:</string>
-    <string name="swap_selected">Vymeniť vybrané</string>
-    <string name="select_two_keys">Vyberte 2 klávesy</string>
     <string name="color_picker_brightness">Jas</string>
     <string name="copied">Skopírované!</string>
     <string name="restore_layout_title">Obnoviť rozloženie</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Iba farby</string>
     <string name="custom_colors_applied">Vlastné farby použité</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Zatiaľ žiadne uložené rozloženia</string>
     <string name="transparent_background">Priehľadné pozadie</string>
     <string name="preview_info">Tvar: %1$s | Rady: %2$d\nUložené: %3$s</string>

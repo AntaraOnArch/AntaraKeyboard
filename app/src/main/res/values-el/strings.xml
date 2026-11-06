@@ -86,6 +86,7 @@
     <string name="color_icon">Χρώμα εικονιδίου</string>
     <string name="color_text">Χρώμα κειμένου</string>
     <string name="color_use_theme">Χρήση χρωμάτων θέματος</string>
+    <string name="color_no_background">Χωρίς φόντο</string>
     <string name="color_all_keys_same">Ίδιο χρώμα σε όλα τα πλήκτρα</string>
     <string name="color_key_use_default">Προεπιλεγμένο χρώμα για αυτό το πλήκτρο</string>
     <string name="bg_mode_theme">Σύμφωνα με το θέμα</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">Σ%1$d</string>
     <string name="layout_section_alphabet">Διάταξη γραμμάτων</string>
     <string name="layout_section_numeric">Αριθμητική διάταξη</string>
+    <string name="layout_section_keys">Γράμματα και αριθμοί</string>
     <string name="layout_section_side">Πλευρικά πλήκτρα</string>
     <string name="layout_section_horizontal">Οριζόντιο κέντρο</string>
     <string name="layout_section_emoji">Ρυθμίσεις emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Κλείσιμο</string>
     <string name="emoji_btn_backspace">Διαγραφή</string>
     <string name="emoji_btn_space">Διάστημα</string>
-    <string name="saved_layouts_header">-- Αποθηκευμένες διατάξεις (%1$d) --</string>
-    <string name="saved_layouts_label">Αποθηκευμένες διατάξεις:</string>
-    <string name="swap_selected">Εναλλαγή επιλεγμένων</string>
-    <string name="select_two_keys">Επιλέξτε 2 πλήκτρα</string>
     <string name="color_picker_brightness">Φωτεινότητα</string>
     <string name="copied">Αντιγράφηκε!</string>
     <string name="restore_layout_title">Επαναφορά διάταξης</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Μόνο χρώματα</string>
     <string name="custom_colors_applied">Εφαρμόστηκαν τα προσαρμοσμένα χρώματα</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Δεν υπάρχουν ακόμη αποθηκευμένες διατάξεις</string>
     <string name="transparent_background">Διαφανές φόντο</string>
     <string name="preview_info">Σχήμα: %1$s | Σειρές: %2$d\nΑποθηκεύτηκε: %3$s</string>

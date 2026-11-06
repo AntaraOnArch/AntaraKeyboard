@@ -86,6 +86,7 @@
     <string name="color_icon">Ikonfarge</string>
     <string name="color_text">Tekstfarge</string>
     <string name="color_use_theme">Bruk temafarger</string>
+    <string name="color_no_background">Ingen bakgrunn</string>
     <string name="color_all_keys_same">Alle taster samme farge</string>
     <string name="color_key_use_default">Standard for denne tasten</string>
     <string name="bg_mode_theme">Etter tema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Bokstavoppsett</string>
     <string name="layout_section_numeric">Talloppsett</string>
+    <string name="layout_section_keys">Bokstaver og tall</string>
     <string name="layout_section_side">Sideknapper</string>
     <string name="layout_section_horizontal">Vannrett midte</string>
     <string name="layout_section_emoji">Emoji-innstillinger</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Lukk</string>
     <string name="emoji_btn_backspace">Tilbake</string>
     <string name="emoji_btn_space">Mellomrom</string>
-    <string name="saved_layouts_header">-- Lagrede oppsett (%1$d) --</string>
-    <string name="saved_layouts_label">Lagrede oppsett:</string>
-    <string name="swap_selected">Bytt valgte</string>
-    <string name="select_two_keys">Velg 2 taster</string>
     <string name="color_picker_brightness">Lysstyrke</string>
     <string name="copied">Kopiert!</string>
     <string name="restore_layout_title">Gjenopprett oppsett</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Bare farger</string>
     <string name="custom_colors_applied">Egne farger brukt</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ingen lagrede oppsett ennå</string>
     <string name="transparent_background">Gjennomsiktig bakgrunn</string>
     <string name="preview_info">Form: %1$s | Rader: %2$d\nLagret: %3$s</string>

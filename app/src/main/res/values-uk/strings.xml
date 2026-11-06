@@ -86,6 +86,7 @@
     <string name="color_icon">Колір значка</string>
     <string name="color_text">Колір тексту</string>
     <string name="color_use_theme">Кольори теми</string>
+    <string name="color_no_background">Без фону</string>
     <string name="color_all_keys_same">Усі клавіші одного кольору</string>
     <string name="color_key_use_default">Типовий колір для цієї клавіші</string>
     <string name="bg_mode_theme">За темою</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Розкладка літер</string>
     <string name="layout_section_numeric">Цифрова розкладка</string>
+    <string name="layout_section_keys">Літери та цифри</string>
     <string name="layout_section_side">Бічні клавіші</string>
     <string name="layout_section_horizontal">Горизонтальний центр</string>
     <string name="layout_section_emoji">Налаштування емодзі</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Закрити</string>
     <string name="emoji_btn_backspace">Видалення</string>
     <string name="emoji_btn_space">Пробіл</string>
-    <string name="saved_layouts_header">-- Збережені розкладки (%1$d) --</string>
-    <string name="saved_layouts_label">Збережені розкладки:</string>
-    <string name="swap_selected">Поміняти вибрані</string>
-    <string name="select_two_keys">Виберіть 2 клавіші</string>
     <string name="color_picker_brightness">Яскравість</string>
     <string name="copied">Скопійовано!</string>
     <string name="restore_layout_title">Відновити розкладку</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Лише кольори</string>
     <string name="custom_colors_applied">Власні кольори застосовано</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Збережених розкладок поки немає</string>
     <string name="transparent_background">Прозорий фон</string>
     <string name="preview_info">Форма: %1$s | Ряди: %2$d\nЗбережено: %3$s</string>

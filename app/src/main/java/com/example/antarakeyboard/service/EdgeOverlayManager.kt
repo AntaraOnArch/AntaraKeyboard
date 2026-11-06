@@ -16,6 +16,7 @@ import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
@@ -574,7 +575,9 @@ class EdgeOverlayManager(
             KeyboardPrefs.getSideButtonsBg(context)
         }
         val sideTextColor = if (useThemeBg) {
-            themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)
+            KeyboardPrefs.themeSideIconColor(
+                context, PrefsManager.isDarkMode(context), themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)
+            )
         } else {
             KeyboardPrefs.getSideButtonsTextColor(context)
         }

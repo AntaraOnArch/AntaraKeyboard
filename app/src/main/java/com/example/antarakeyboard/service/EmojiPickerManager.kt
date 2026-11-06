@@ -175,8 +175,6 @@ class EmojiPickerManager(
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setBackgroundColor(colors.background)
-            clipChildren = false
-            clipToPadding = false
         }
 
         val tabsContainer = createCategoryTabsVertical()
@@ -231,8 +229,6 @@ class EmojiPickerManager(
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(colors.background)
-            clipChildren = false
-            clipToPadding = false
         }
 
         val tabsContainer = createCategoryTabsHorizontal()

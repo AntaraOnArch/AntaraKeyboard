@@ -86,6 +86,7 @@
     <string name="color_icon">Цвет значка</string>
     <string name="color_text">Цвет текста</string>
     <string name="color_use_theme">Цвета темы</string>
+    <string name="color_no_background">Без фона</string>
     <string name="color_all_keys_same">Все клавиши одного цвета</string>
     <string name="color_key_use_default">Цвет по умолчанию для этой клавиши</string>
     <string name="bg_mode_theme">По теме</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Раскладка букв</string>
     <string name="layout_section_numeric">Цифровая раскладка</string>
+    <string name="layout_section_keys">Буквы и цифры</string>
     <string name="layout_section_side">Боковые клавиши</string>
     <string name="layout_section_horizontal">Горизонтальный центр</string>
     <string name="layout_section_emoji">Настройки эмодзи</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Закрыть</string>
     <string name="emoji_btn_backspace">Удаление</string>
     <string name="emoji_btn_space">Пробел</string>
-    <string name="saved_layouts_header">-- Сохранённые раскладки (%1$d) --</string>
-    <string name="saved_layouts_label">Сохранённые раскладки:</string>
-    <string name="swap_selected">Поменять выбранные</string>
-    <string name="select_two_keys">Выберите 2 клавиши</string>
     <string name="color_picker_brightness">Яркость</string>
     <string name="copied">Скопировано!</string>
     <string name="restore_layout_title">Восстановить раскладку</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Только цвета</string>
     <string name="custom_colors_applied">Свои цвета применены</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Сохранённых раскладок пока нет</string>
     <string name="transparent_background">Прозрачный фон</string>
     <string name="preview_info">Форма: %1$s | Ряды: %2$d\nСохранено: %3$s</string>

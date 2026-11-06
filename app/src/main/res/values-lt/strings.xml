@@ -86,6 +86,7 @@
     <string name="color_icon">Piktogramos spalva</string>
     <string name="color_text">Teksto spalva</string>
     <string name="color_use_theme">Naudoti temos spalvas</string>
+    <string name="color_no_background">Be fono</string>
     <string name="color_all_keys_same">Visi klavišai tos pačios spalvos</string>
     <string name="color_key_use_default">Numatytoji šio klavišo spalva</string>
     <string name="bg_mode_theme">Pagal temą</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Raidžių išdėstymas</string>
     <string name="layout_section_numeric">Skaitmenų išdėstymas</string>
+    <string name="layout_section_keys">Raidės ir skaičiai</string>
     <string name="layout_section_side">Šoniniai klavišai</string>
     <string name="layout_section_horizontal">Horizontalus centras</string>
     <string name="layout_section_emoji">Jaustukų nustatymai</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Uždaryti</string>
     <string name="emoji_btn_backspace">Trynimas</string>
     <string name="emoji_btn_space">Tarpas</string>
-    <string name="saved_layouts_header">-- Išsaugoti išdėstymai (%1$d) --</string>
-    <string name="saved_layouts_label">Išsaugoti išdėstymai:</string>
-    <string name="swap_selected">Sukeisti pasirinktus</string>
-    <string name="select_two_keys">Pasirinkite 2 klavišus</string>
     <string name="color_picker_brightness">Ryškumas</string>
     <string name="copied">Nukopijuota!</string>
     <string name="restore_layout_title">Atkurti išdėstymą</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Tik spalvos</string>
     <string name="custom_colors_applied">Savos spalvos pritaikytos</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Išsaugotų išdėstymų dar nėra</string>
     <string name="transparent_background">Permatomas fonas</string>
     <string name="preview_info">Forma: %1$s | Eilutės: %2$d\nIšsaugota: %3$s</string>

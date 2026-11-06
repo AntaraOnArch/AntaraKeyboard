@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.toColorInt
+import androidx.core.widget.doAfterTextChanged
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dp
 
@@ -72,13 +73,18 @@ fun Context.showAdvancedColorPicker(
         layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
     }
 
+    // True while updatePreview writes the hex field, so the hex watcher ignores that change
+    var writingHex = false
+
     // Define updatePreview HERE, before colorWheel
     val updatePreview: () -> Unit = {
         val color = Color.HSVToColor(floatArrayOf(currentHue, currentSat, currentVal))
         previewBar.setBackgroundColor(color)
 
         val hex = String.format("#%06X", color and 0xFFFFFF)
+        writingHex = true
         hexInput.setText(hex.substring(1))
+        writingHex = false
 
         val rr = Color.red(color)
         val gg = Color.green(color)
@@ -130,19 +136,31 @@ fun Context.showAdvancedColorPicker(
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     })
 
-    // Hex input listener
+    // Hex input: applied as soon as it is a valid color (and again on the keyboard action),
+    // so typing a hex value and tapping Done works without pressing Enter first
+    fun parsedHex(): Int? {
+        val hexText = hexInput.text.toString().trim().removePrefix("#")
+        if (hexText.length != 6) return null
+        return try { "#$hexText".toColorInt() } catch (_: IllegalArgumentException) { null }
+    }
+
+    fun applyHex(parsedColor: Int) {
+        Color.RGBToHSV(Color.red(parsedColor), Color.green(parsedColor), Color.blue(parsedColor), hsv)
+        // Slider first: its listener rounds the brightness to whole percent, the exact value follows
+        brightnessSeek.progress = (hsv[2] * 100).toInt()
+        currentHue = hsv[0]
+        currentSat = hsv[1]
+        currentVal = hsv[2]
+        colorWheel.setHueSaturation(currentHue, currentSat)
+        updatePreview()
+    }
+
+    hexInput.doAfterTextChanged {
+        if (!writingHex) parsedHex()?.let(::applyHex)
+    }
+
     hexInput.setOnEditorActionListener { _, _, _ ->
-        val hexText = hexInput.text.toString()
-        try {
-            val parsedColor = "#$hexText".toColorInt()
-            Color.RGBToHSV(Color.red(parsedColor), Color.green(parsedColor), Color.blue(parsedColor), hsv)
-            currentHue = hsv[0]
-            currentSat = hsv[1]
-            currentVal = hsv[2]
-            colorWheel.setHueSaturation(currentHue, currentSat)
-            brightnessSeek.progress = (currentVal * 100).toInt()
-            updatePreview()
-        } catch (_: IllegalArgumentException) {}
+        parsedHex()?.let(::applyHex)
         true
     }
 

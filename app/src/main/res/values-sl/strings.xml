@@ -86,6 +86,7 @@
     <string name="color_icon">Barva ikone</string>
     <string name="color_text">Barva besedila</string>
     <string name="color_use_theme">Uporabi barve teme</string>
+    <string name="color_no_background">Brez ozadja</string>
     <string name="color_all_keys_same">Vse tipke iste barve</string>
     <string name="color_key_use_default">Privzeta barva za to tipko</string>
     <string name="bg_mode_theme">Glede na temo</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Postavitev črk</string>
     <string name="layout_section_numeric">Postavitev številk</string>
+    <string name="layout_section_keys">Črke in številke</string>
     <string name="layout_section_side">Stranske tipke</string>
     <string name="layout_section_horizontal">Vodoravna sredina</string>
     <string name="layout_section_emoji">Nastavitve čustvenčkov</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Zapri</string>
     <string name="emoji_btn_backspace">Vračalka</string>
     <string name="emoji_btn_space">Preslednica</string>
-    <string name="saved_layouts_header">-- Shranjene postavitve (%1$d) --</string>
-    <string name="saved_layouts_label">Shranjene postavitve:</string>
-    <string name="swap_selected">Zamenjaj izbrani</string>
-    <string name="select_two_keys">Izberite 2 tipki</string>
     <string name="color_picker_brightness">Svetlost</string>
     <string name="copied">Kopirano!</string>
     <string name="restore_layout_title">Obnovi postavitev</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Samo barve</string>
     <string name="custom_colors_applied">Barve po meri uporabljene</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Še ni shranjenih postavitev</string>
     <string name="transparent_background">Prosojno ozadje</string>
     <string name="preview_info">Oblika: %1$s | Vrstice: %2$d\nShranjeno: %3$s</string>

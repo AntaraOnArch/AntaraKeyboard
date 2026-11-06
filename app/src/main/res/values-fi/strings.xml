@@ -86,6 +86,7 @@
     <string name="color_icon">Kuvakkeen väri</string>
     <string name="color_text">Tekstin väri</string>
     <string name="color_use_theme">Käytä teeman värejä</string>
+    <string name="color_no_background">Ei taustaa</string>
     <string name="color_all_keys_same">Kaikki näppäimet samanvärisiä</string>
     <string name="color_key_use_default">Oletusväri tälle näppäimelle</string>
     <string name="bg_mode_theme">Teeman mukaan</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Kirjainasettelu</string>
     <string name="layout_section_numeric">Numeroasettelu</string>
+    <string name="layout_section_keys">Kirjaimet ja numerot</string>
     <string name="layout_section_side">Sivunäppäimet</string>
     <string name="layout_section_horizontal">Vaakasuora keskiosa</string>
     <string name="layout_section_emoji">Emoji-asetukset</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Sulje</string>
     <string name="emoji_btn_backspace">Askelpalautin</string>
     <string name="emoji_btn_space">Välilyönti</string>
-    <string name="saved_layouts_header">-- Tallennetut asettelut (%1$d) --</string>
-    <string name="saved_layouts_label">Tallennetut asettelut:</string>
-    <string name="swap_selected">Vaihda valitut</string>
-    <string name="select_two_keys">Valitse 2 näppäintä</string>
     <string name="color_picker_brightness">Kirkkaus</string>
     <string name="copied">Kopioitu!</string>
     <string name="restore_layout_title">Palauta asettelu</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Vain värit</string>
     <string name="custom_colors_applied">Omat värit otettu käyttöön</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ei vielä tallennettuja asetteluja</string>
     <string name="transparent_background">Läpinäkyvä tausta</string>
     <string name="preview_info">Muoto: %1$s | Rivit: %2$d\nTallennettu: %3$s</string>

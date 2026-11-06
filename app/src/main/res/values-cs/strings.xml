@@ -86,6 +86,7 @@
     <string name="color_icon">Barva ikony</string>
     <string name="color_text">Barva textu</string>
     <string name="color_use_theme">Použít barvy motivu</string>
+    <string name="color_no_background">Bez pozadí</string>
     <string name="color_all_keys_same">Všechny klávesy stejnou barvou</string>
     <string name="color_key_use_default">Výchozí barva pro tuto klávesu</string>
     <string name="bg_mode_theme">Podle motivu</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Rozložení písmen</string>
     <string name="layout_section_numeric">Rozložení čísel</string>
+    <string name="layout_section_keys">Písmena a číslice</string>
     <string name="layout_section_side">Boční klávesy</string>
     <string name="layout_section_horizontal">Vodorovný střed</string>
     <string name="layout_section_emoji">Nastavení emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Zavřít</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Mezerník</string>
-    <string name="saved_layouts_header">-- Uložená rozložení (%1$d) --</string>
-    <string name="saved_layouts_label">Uložená rozložení:</string>
-    <string name="swap_selected">Prohodit vybrané</string>
-    <string name="select_two_keys">Vyberte 2 klávesy</string>
     <string name="color_picker_brightness">Jas</string>
     <string name="copied">Zkopírováno!</string>
     <string name="restore_layout_title">Obnovit rozložení</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Pouze barvy</string>
     <string name="custom_colors_applied">Vlastní barvy použity</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Zatím žádná uložená rozložení</string>
     <string name="transparent_background">Průhledné pozadí</string>
     <string name="preview_info">Tvar: %1$s | Řady: %2$d\nUloženo: %3$s</string>

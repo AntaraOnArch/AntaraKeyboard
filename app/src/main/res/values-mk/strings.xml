@@ -86,6 +86,7 @@
     <string name="color_icon">Боја на иконата</string>
     <string name="color_text">Боја на текстот</string>
     <string name="color_use_theme">Користи бои на темата</string>
+    <string name="color_no_background">Без позадина</string>
     <string name="color_all_keys_same">Сите копчиња во иста боја</string>
     <string name="color_key_use_default">Стандардна боја за ова копче</string>
     <string name="bg_mode_theme">Според темата</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Распоред на букви</string>
     <string name="layout_section_numeric">Распоред на бројки</string>
+    <string name="layout_section_keys">Букви и бројки</string>
     <string name="layout_section_side">Странични копчиња</string>
     <string name="layout_section_horizontal">Хоризонтална средина</string>
     <string name="layout_section_emoji">Поставки за емоџи</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Затвори</string>
     <string name="emoji_btn_backspace">Бришење</string>
     <string name="emoji_btn_space">Празно место</string>
-    <string name="saved_layouts_header">-- Зачувани распореди (%1$d) --</string>
-    <string name="saved_layouts_label">Зачувани распореди:</string>
-    <string name="swap_selected">Замени ги избраните</string>
-    <string name="select_two_keys">Изберете 2 копчиња</string>
     <string name="color_picker_brightness">Осветленост</string>
     <string name="copied">Копирано!</string>
     <string name="restore_layout_title">Врати распоред</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Само бои</string>
     <string name="custom_colors_applied">Сопствените бои се применети</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Сè уште нема зачувани распореди</string>
     <string name="transparent_background">Проѕирна позадина</string>
     <string name="preview_info">Облик: %1$s | Редови: %2$d\nЗачувано: %3$s</string>

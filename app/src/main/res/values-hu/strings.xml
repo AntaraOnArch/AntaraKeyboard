@@ -86,6 +86,7 @@
     <string name="color_icon">Ikon színe</string>
     <string name="color_text">Szöveg színe</string>
     <string name="color_use_theme">Téma színeinek használata</string>
+    <string name="color_no_background">Nincs háttér</string>
     <string name="color_all_keys_same">Minden billentyű azonos színű</string>
     <string name="color_key_use_default">Alapszín ehhez a billentyűhöz</string>
     <string name="bg_mode_theme">Téma szerint</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Betűkiosztás</string>
     <string name="layout_section_numeric">Számkiosztás</string>
+    <string name="layout_section_keys">Betűk és számok</string>
     <string name="layout_section_side">Oldalsó billentyűk</string>
     <string name="layout_section_horizontal">Vízszintes közép</string>
     <string name="layout_section_emoji">Emodzsi-beállítások</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Bezárás</string>
     <string name="emoji_btn_backspace">Törlés</string>
     <string name="emoji_btn_space">Szóköz</string>
-    <string name="saved_layouts_header">-- Mentett kiosztások (%1$d) --</string>
-    <string name="saved_layouts_label">Mentett kiosztások:</string>
-    <string name="swap_selected">Kijelöltek cseréje</string>
-    <string name="select_two_keys">Jelöljön ki 2 billentyűt</string>
     <string name="color_picker_brightness">Fényerő</string>
     <string name="copied">Másolva!</string>
     <string name="restore_layout_title">Kiosztás visszaállítása</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Csak színek</string>
     <string name="custom_colors_applied">Egyéni színek alkalmazva</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Még nincs mentett kiosztás</string>
     <string name="transparent_background">Átlátszó háttér</string>
     <string name="preview_info">Forma: %1$s | Sorok: %2$d\nMentve: %3$s</string>

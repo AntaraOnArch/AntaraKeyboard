@@ -88,6 +88,7 @@
     <string name="color_icon">Icon color</string>
     <string name="color_text">Text color</string>
     <string name="color_use_theme">Use theme colors</string>
+    <string name="color_no_background">No background</string>
     <string name="color_all_keys_same">All keys same color</string>
     <string name="color_key_use_default">Use default for this key</string>
     <string name="bg_mode_theme">Default by theme</string>
@@ -151,6 +152,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Alphabet layout</string>
     <string name="layout_section_numeric">Numeric layout</string>
+    <string name="layout_section_keys">Letters and numbers</string>
     <string name="layout_section_side">Side buttons</string>
     <string name="layout_section_horizontal">Horizontal center</string>
     <string name="layout_section_emoji">Emoji picker settings</string>
@@ -164,10 +166,6 @@
     <string name="emoji_btn_close">Close</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Space</string>
-    <string name="saved_layouts_header">-- Saved layouts (%1$d) --</string>
-    <string name="saved_layouts_label">Saved layouts:</string>
-    <string name="swap_selected">Swap selected</string>
-    <string name="select_two_keys">Select 2 keys</string>
     <string name="color_picker_brightness">Brightness</string>
     <string name="copied">Copied!</string>
     <string name="restore_layout_title">Restore layout</string>
@@ -184,7 +182,6 @@
     <string name="colors_only">Colors only</string>
     <string name="custom_colors_applied">Custom colors applied</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">No saved layouts yet</string>
     <string name="transparent_background">Transparent background</string>
     <string name="preview_info">Shape: %1$s | Rows: %2$d\nSaved: %3$s</string>

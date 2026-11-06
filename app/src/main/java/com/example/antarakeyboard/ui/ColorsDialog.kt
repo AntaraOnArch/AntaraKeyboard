@@ -218,7 +218,10 @@ class ColorsDialog(
         // Theme look = no background + theme icon color; start from it so turning the theme off keeps the look
         var bg = if (useThemeBg) Color.TRANSPARENT else KeyboardPrefs.getSideButtonsBg(activity)
         var textColor = if (useThemeBg) {
-            activity.themeColor(R.attr.edgeIconText, if (PrefsManager.isDarkMode(activity)) Color.WHITE else Color.BLACK)
+            val isDark = PrefsManager.isDarkMode(activity)
+            KeyboardPrefs.themeSideIconColor(
+                activity, isDark, activity.themeColor(R.attr.edgeIconText, if (isDark) Color.WHITE else Color.BLACK)
+            )
         } else {
             KeyboardPrefs.getSideButtonsTextColor(activity)
         }
@@ -228,23 +231,44 @@ class ColorsDialog(
             onChanged()
         }
 
-        val bgBtn = colorButton(activity.getString(R.string.color_background), bg) { picked -> bg = picked; save() }
+        // Last visible background, brought back when "No background" is turned off
+        var lastBg = if (Color.alpha(bg) == 0) DEFAULT_SIDE_BG else bg
+
+        val bgBtn = colorButton(activity.getString(R.string.color_background), lastBg) { picked ->
+            bg = picked; lastBg = picked; save()
+        }
         val textBtn = colorButton(activity.getString(R.string.color_icon), textColor) { picked -> textColor = picked; save() }
-        bgBtn.isEnabled = !useThemeBg
-        textBtn.isEnabled = !useThemeBg
+
+        // Custom icon color with no background at all (only the icon on the keyboard background)
+        val noBgCb = CheckBox(activity).apply {
+            text = activity.getString(R.string.color_no_background)
+            isChecked = Color.alpha(bg) == 0
+            setOnCheckedChangeListener { _, isChecked ->
+                bg = if (isChecked) Color.TRANSPARENT else lastBg
+                bgBtn.isEnabled = !useThemeBg && !isChecked
+                save()
+            }
+        }
+
+        fun updateEnabled() {
+            noBgCb.isEnabled = !useThemeBg
+            bgBtn.isEnabled = !useThemeBg && !noBgCb.isChecked
+            textBtn.isEnabled = !useThemeBg
+        }
+        updateEnabled()
 
         val cb = CheckBox(activity).apply {
             text = activity.getString(R.string.color_use_theme)
             isChecked = useThemeBg
             setOnCheckedChangeListener { _, isChecked ->
                 useThemeBg = isChecked
-                bgBtn.isEnabled = !isChecked
-                textBtn.isEnabled = !isChecked
+                updateEnabled()
                 save()
             }
         }
 
         page.addSpaced(cb)
+        page.addSpaced(noBgCb)
         page.addSpaced(bgBtn)
         page.addSpaced(textBtn)
     }
@@ -497,5 +521,10 @@ class ColorsDialog(
                     .show()
             }
         })
+    }
+
+    private companion object {
+        /** Side button background offered when "No background" is turned off and none was set. */
+        const val DEFAULT_SIDE_BG = 0xFF3A3A3A.toInt()
     }
 }

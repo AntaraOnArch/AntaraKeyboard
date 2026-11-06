@@ -86,6 +86,7 @@
     <string name="color_icon">Kulur tal-ikona</string>
     <string name="color_text">Kulur tat-test</string>
     <string name="color_use_theme">Uża l-kuluri tat-tema</string>
+    <string name="color_no_background">Mingħajr sfond</string>
     <string name="color_all_keys_same">Iċ-ċwievet kollha bl-istess kulur</string>
     <string name="color_key_use_default">Kulur default għal din iċ-ċavetta</string>
     <string name="bg_mode_theme">Skont it-tema</string>
@@ -149,6 +150,7 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Tqassim tal-ittri</string>
     <string name="layout_section_numeric">Tqassim numeriku</string>
+    <string name="layout_section_keys">Ittri u numri</string>
     <string name="layout_section_side">Ċwievet tal-ġenb</string>
     <string name="layout_section_horizontal">Ċentru orizzontali</string>
     <string name="layout_section_emoji">Settings tal-emoji</string>
@@ -162,10 +164,6 @@
     <string name="emoji_btn_close">Agħlaq</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spazju</string>
-    <string name="saved_layouts_header">-- Tqassimiet salvati (%1$d) --</string>
-    <string name="saved_layouts_label">Tqassimiet salvati:</string>
-    <string name="swap_selected">Aqleb dawk magħżula</string>
-    <string name="select_two_keys">Agħżel 2 ċwievet</string>
     <string name="color_picker_brightness">Luminożità</string>
     <string name="copied">Ikkupjat!</string>
     <string name="restore_layout_title">Irrestawra t-tqassim</string>
@@ -182,7 +180,6 @@
     <string name="colors_only">Kuluri biss</string>
     <string name="custom_colors_applied">Il-kuluri personalizzati ġew applikati</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Għad m\'hemm l-ebda tqassim salvat</string>
     <string name="transparent_background">Sfond trasparenti</string>
     <string name="preview_info">Forma: %1$s | Ringieli: %2$d\nSalvat: %3$s</string>
