@@ -114,6 +114,11 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         const val DUAL_SPACE_HOLD_MS = 4000L
         /** A hide this soon after an input started is the app restarting (rotation), not the user. */
         const val INPUT_RESTART_HIDE_MS = 500L
+        /**
+         * A hide or input restart this close to a rotation (before or after it) belongs to the
+         * rotation: the app may hide while its old window goes away, before the new config arrives.
+         */
+        const val ROTATION_WINDOW_MS = 1500L
     }
 
     /**
@@ -123,6 +128,10 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var emojiOpenInEditor: String? = null
     /** When the current input connection started (see hideSoftInput). */
     private var inputStartedAt = 0L
+    /** When the last configuration change (rotation) arrived. */
+    private var configChangedAt = -ROTATION_WINDOW_MS
+    /** A hide that may still turn out to be part of a rotation; it closes the panel if none follows. */
+    private var pendingEmojiCloseJob: Job? = null
 
     // RGB animation
     private val rgbAnimator by lazy { RgbBackgroundAnimator(this, serviceScope, ::applyRgbFrame) }
@@ -409,8 +418,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         targetKeyboardHeightPx = computeTargetKeyboardHeight()
         overlayLayer.post { redrawKeyboard() }
-        // Another text field closes the emoji panel; in the same one it comes back
-        if (emojiOpenInEditor != editorKey(info)) emojiOpenInEditor = null
+        // Another text field closes the emoji panel; in the same one it comes back. Right after a
+        // rotation the app's recreated field may report another id, so the same app is enough
+        val key = editorKey(info)
+        if (emojiOpenInEditor != key) {
+            val sameAppAfterRotation = recentlyRotated() &&
+                emojiOpenInEditor?.substringBefore('/') == info?.packageName
+            emojiOpenInEditor = if (sameAppAfterRotation) key else null
+        }
         restoreEmojiPanel()
     }
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -489,6 +504,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        configChangedAt = SystemClock.uptimeMillis()
+        // A hide that came just before the rotation was the app's old window going away
+        pendingEmojiCloseJob?.cancel()
 
         // Recreate (onCreateInputView releases popups and jobs of the old view) keyboard view to adapt to new configuration
         recreateInputView()
@@ -752,18 +770,30 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /**
      * The keyboard hidden on purpose (the navigation bar's hide button, or the app) forgets an open
      * emoji panel like Back does, so it comes back with the letters. Some apps (Google search) also
-     * hide it while they restart after a rotation, a few ms after the new input started
-     * ([onStartInput]); such a hide keeps the panel. This is not a limit on how long the panel
-     * stays open: a rotation keeps it however long it has been open.
+     * hide it while they restart after a rotation – right after the new input started
+     * ([onStartInput]), or even before the new configuration reaches the keyboard
+     * ([onConfigurationChanged]); such a hide keeps the panel. A hide with no rotation around it
+     * closes the panel once [ROTATION_WINDOW_MS] has passed without one. This is not a limit on how
+     * long the panel stays open: a rotation keeps it however long it has been open.
      */
     override fun onCreateInputMethodInterface(): AbstractInputMethodImpl = object : InputMethodImpl() {
         override fun hideSoftInput(flags: Int, resultReceiver: ResultReceiver?) {
-            // An app restarting after a rotation hides right after its new input started: keep the panel
-            val partOfInputRestart = SystemClock.uptimeMillis() - inputStartedAt < INPUT_RESTART_HIDE_MS
-            if (emojiOpenInEditor != null && !partOfInputRestart) closeEmojiPicker()
+            if (emojiOpenInEditor != null && !partOfRotation()) {
+                pendingEmojiCloseJob?.cancel()
+                pendingEmojiCloseJob = serviceScope.launch {
+                    delay(ROTATION_WINDOW_MS.milliseconds)
+                    closeEmojiPicker()
+                }
+            }
             super.hideSoftInput(flags, resultReceiver)
         }
     }
+
+    private fun recentlyRotated() = SystemClock.uptimeMillis() - configChangedAt < ROTATION_WINDOW_MS
+
+    /** An app restarting after a rotation hides right after its new input started, or around the rotation. */
+    private fun partOfRotation() =
+        SystemClock.uptimeMillis() - inputStartedAt < INPUT_RESTART_HIDE_MS || recentlyRotated()
 
     private fun showEmojiPicker() {
         // A delete/restore swipe must never keep running behind the picker
@@ -771,11 +801,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         hideLongPressPopup()
         hideEmojiPopup()
 
+        pendingEmojiCloseJob?.cancel()
         emojiPickerManager.show()
         emojiOpenInEditor = editorKey(currentInputEditorInfo)
     }
 
     private fun closeEmojiPicker() {
+        pendingEmojiCloseJob?.cancel()
         emojiOpenInEditor = null
         hideEmojiPopup()
     }
