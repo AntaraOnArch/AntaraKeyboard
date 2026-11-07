@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Disposição das letras</string>
     <string name="layout_section_numeric">Disposição numérica</string>
     <string name="layout_section_keys">Letras e números</string>
+    <string name="layout_preset_label">Modelo:</string>
+    <string name="layout_preset_custom">Disposição própria</string>
     <string name="layout_section_side">Teclas laterais</string>
     <string name="layout_section_horizontal">Centro horizontal</string>
     <string name="layout_section_emoji">Definições de emojis</string>

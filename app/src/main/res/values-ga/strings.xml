@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Leagan amach litreacha</string>
     <string name="layout_section_numeric">Leagan amach uimhreacha</string>
     <string name="layout_section_keys">Litreacha agus uimhreacha</string>
+    <string name="layout_preset_label">Teimpléad:</string>
+    <string name="layout_preset_custom">Leagan amach féin</string>
     <string name="layout_section_side">Eochracha taoibh</string>
     <string name="layout_section_horizontal">Lár cothrománach</string>
     <string name="layout_section_emoji">Socruithe emoji</string>

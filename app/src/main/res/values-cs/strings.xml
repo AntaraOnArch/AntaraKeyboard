@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Rozložení písmen</string>
     <string name="layout_section_numeric">Rozložení čísel</string>
     <string name="layout_section_keys">Písmena a číslice</string>
+    <string name="layout_preset_label">Předloha:</string>
+    <string name="layout_preset_custom">Vlastní rozložení</string>
     <string name="layout_section_side">Boční klávesy</string>
     <string name="layout_section_horizontal">Vodorovný střed</string>
     <string name="layout_section_emoji">Nastavení emoji</string>

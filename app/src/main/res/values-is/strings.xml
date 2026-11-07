@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Uppsetning stafa</string>
     <string name="layout_section_numeric">Uppsetning talna</string>
     <string name="layout_section_keys">Stafir og tölur</string>
+    <string name="layout_preset_label">Sniðmát:</string>
+    <string name="layout_preset_custom">Eigin uppsetning</string>
     <string name="layout_section_side">Hliðarlyklar</string>
     <string name="layout_section_horizontal">Lárétt miðja</string>
     <string name="layout_section_emoji">Stillingar tjáknmynda</string>

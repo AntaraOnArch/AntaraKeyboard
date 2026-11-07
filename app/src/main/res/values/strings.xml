@@ -153,6 +153,8 @@
     <string name="layout_section_alphabet">Alphabet layout</string>
     <string name="layout_section_numeric">Numeric layout</string>
     <string name="layout_section_keys">Letters and numbers</string>
+    <string name="layout_preset_label">Preset:</string>
+    <string name="layout_preset_custom">Custom layout</string>
     <string name="layout_section_side">Side buttons</string>
     <string name="layout_section_horizontal">Horizontal center</string>
     <string name="layout_section_emoji">Emoji picker settings</string>

@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Disposició de lletres</string>
     <string name="layout_section_numeric">Disposició numèrica</string>
     <string name="layout_section_keys">Lletres i números</string>
+    <string name="layout_preset_label">Plantilla:</string>
+    <string name="layout_preset_custom">Distribució pròpia</string>
     <string name="layout_section_side">Tecles laterals</string>
     <string name="layout_section_horizontal">Centre horitzontal</string>
     <string name="layout_section_emoji">Configuració dels emojis</string>

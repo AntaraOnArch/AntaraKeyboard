@@ -53,6 +53,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 **Default long-press letters** (`data/LongPressPresets.kt`, `defaultsFor(preset, language)`):
 - **Latin keyboard** – the special letters of the app/device language on their base letter (`KeyboardPrefs.languageTag()`; e.g. hr/bs/sr c → č ć, d → đ, s → š, z → ž; de a → ä, s → ß; …, ~30 languages). English and unknown languages get common accents (no symbols). `system` is also Latin, even on a Serbian device.
 - **Cyrillic keyboard** – only that script's special letters on the matching key (Serbian c → ч ћ, d → ђ џ, s → ш, z → ж, l → љ, n → њ; Macedonian, Russian, Ukrainian, Bulgarian, Belarusian likewise). Plain letters are never bound – the key already types them.
+- **Per-language list:** the comment above `object LongPressPresets` lists every language's default long-press letters (count and letters per key, without user binds); update it when the defaults change.
 - **Every language reaches its whole alphabet** through keys + default long press (`LongPressPresetsTest.scriptKeyboardsReachTheirWholeAlphabet`; every translated Latin language has its own list).
 - **Greek keyboard** – the accented vowels on their vowel key (a → ά, e → έ, h → ή, i → ί ϊ ΐ, o → ό, y → ύ ϋ ΰ, v → ώ).
 - **Each script gives only its own letters:** the popup hides single letters of the other scripts – Latin, Cyrillic, Greek (`LongPressPresets.visibleFor`); custom text, emoji and symbols show in all.
@@ -97,6 +98,7 @@ There is no Swap button and no saved-layouts dropdown in this popup (saved layou
 
 #### Letters and numbers (opened by default)
 - One page with the letter layout and the numeric layout under it ("Alphabet layout" / "Numeric layout" titles, scrolls only when the screen is too short).
+- **Preset** dropdown above the letters: *Custom layout*, QWERTZ, QWERTY, AZERTY, Dvorak, Colemak, Neo2, Workman (`data/LayoutPresets.kt`, unit-tested). A preset relabels the **default** layout of the current row count: every QWERTZ letter's key gets the preset's letter from the same physical key, so our shape (honeycomb, 4/5 rows) stays; letters a preset has where QWERTZ has punctuation (Dvorak s, Colemak o …) fill the leftover keys in reading order. On 3 rows QWERTY/QWERTZ/AZERTY/Colemak/Workman are exact. Neo2's ä ö ü ß go on long press of a o u s (`KeyboardPrefs.alphabetLayoutWithPreset`). The dropdown shows the preset the layout matches (`LayoutPresets.detect`); any manual swap turns it to *Custom layout*, and picking *Custom layout* brings back the last hand-made arrangement of this popup session.
 - Letters: arranges the letter keys across rows.
 - Numbers: the rules of the Numeric section below.
 - Autosave.
@@ -329,7 +331,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`), the layout presets (`LayoutPresetsTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 

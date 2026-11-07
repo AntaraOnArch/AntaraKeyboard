@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Betűkiosztás</string>
     <string name="layout_section_numeric">Számkiosztás</string>
     <string name="layout_section_keys">Betűk és számok</string>
+    <string name="layout_preset_label">Sablon:</string>
+    <string name="layout_preset_custom">Saját kiosztás</string>
     <string name="layout_section_side">Oldalsó billentyűk</string>
     <string name="layout_section_horizontal">Vízszintes közép</string>
     <string name="layout_section_emoji">Emodzsi-beállítások</string>

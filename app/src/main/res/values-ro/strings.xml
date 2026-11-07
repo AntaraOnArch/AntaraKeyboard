@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Aranjamentul literelor</string>
     <string name="layout_section_numeric">Aranjament numeric</string>
     <string name="layout_section_keys">Litere și cifre</string>
+    <string name="layout_preset_label">Șablon:</string>
+    <string name="layout_preset_custom">Aranjament propriu</string>
     <string name="layout_section_side">Taste laterale</string>
     <string name="layout_section_horizontal">Centru orizontal</string>
     <string name="layout_section_emoji">Setări emoji</string>

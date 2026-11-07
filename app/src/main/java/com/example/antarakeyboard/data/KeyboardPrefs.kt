@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
+import com.example.antarakeyboard.model.MAX_LONG_PRESS_BINDINGS
 import com.example.antarakeyboard.ui.defaultFourRowKeyboardLayout
 import com.example.antarakeyboard.ui.defaultFourRowNumericLayout
 import com.example.antarakeyboard.ui.defaultHorizontalCenterLayout
@@ -138,7 +139,7 @@ object KeyboardPrefs {
 
     /* ───────── DEFAULT LAYOUTS ───────── */
 
-    private fun defaultAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
+    fun defaultAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
         return when (rowCount) {
             3 -> defaultThreeRowKeyboardLayoutQwertz
             4 -> defaultFourRowKeyboardLayout
@@ -552,6 +553,27 @@ object KeyboardPrefs {
         return GlobalLongPressStorage.applyNumericBindsToLayout(
             context, baseLayout, defaultNumericLayoutForRowCount(rowCount)
         )
+    }
+
+    /**
+     * The default alphabet layout of [rowCount] with the letters of [preset] (see [LayoutPresets])
+     * and the global long-press binds. A preset's letters without a key of their own (Neo2 ä ö ü ß)
+     * are added to the global binds of their base letter first. Not saved: the editor saves it.
+     */
+    fun alphabetLayoutWithPreset(context: Context, rowCount: Int, preset: LayoutPresets.Preset): KeyboardConfig {
+        if (preset.extraLongPress.isNotEmpty()) {
+            val binds = GlobalLongPressStorage.loadAlphabetBinds(context).toMutableMap()
+            preset.extraLongPress.forEach { (key, letters) ->
+                val current = binds[key].orEmpty()
+                val added = letters.filter { it !in current }
+                if (added.isNotEmpty() && current.size + added.size <= MAX_LONG_PRESS_BINDINGS) {
+                    binds[key] = current + added
+                }
+            }
+            GlobalLongPressStorage.saveAlphabetBinds(context, binds)
+        }
+        val default = defaultAlphabetLayoutForRowCount(rowCount)
+        return GlobalLongPressStorage.applyAlphabetBindsToLayout(context, LayoutPresets.apply(default, preset), default)
     }
 
     /**

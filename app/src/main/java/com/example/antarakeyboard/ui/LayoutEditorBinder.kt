@@ -241,11 +241,15 @@ class LayoutEditorBinder(
         }
     }
 
+    /** Called after every change of the layout (swap, preset, cleared key). */
+    var onLayoutChanged: (() -> Unit)? = null
+
     private fun afterLayoutChanged() {
         buildKeyboardUI()
         clearSelection()
         // Autosave
         onSaved(cfg)
+        onLayoutChanged?.invoke()
     }
 
     private fun clearSelection() {
@@ -440,6 +444,18 @@ class LayoutEditorBinder(
 
     fun saveExternally() {
         onSaved(cfg)
+    }
+
+    /** The layout as currently edited. */
+    fun currentLayout(): KeyboardConfig = cfg
+
+    /** Replaces the whole layout (a chosen preset), redraws it and autosaves. */
+    fun replaceLayout(layout: KeyboardConfig) {
+        stopAllAnims()
+        cfg.rows.clear()
+        cfg.rows.addAll(deepCopy(layout).ensureSpaceMarkers().rows)
+        afterLayoutChanged()
+        startIdleShake()
     }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {

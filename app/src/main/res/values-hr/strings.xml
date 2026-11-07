@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Raspored slova</string>
     <string name="layout_section_numeric">Raspored brojeva</string>
     <string name="layout_section_keys">Slova i brojevi</string>
+    <string name="layout_preset_label">Predložak:</string>
+    <string name="layout_preset_custom">Vlastiti raspored</string>
     <string name="layout_section_side">Bočne tipke</string>
     <string name="layout_section_horizontal">Vodoravna sredina</string>
     <string name="layout_section_emoji">Postavke emojija</string>

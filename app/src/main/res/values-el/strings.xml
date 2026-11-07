@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Διάταξη γραμμάτων</string>
     <string name="layout_section_numeric">Αριθμητική διάταξη</string>
     <string name="layout_section_keys">Γράμματα και αριθμοί</string>
+    <string name="layout_preset_label">Πρότυπο:</string>
+    <string name="layout_preset_custom">Δική σας διάταξη</string>
     <string name="layout_section_side">Πλευρικά πλήκτρα</string>
     <string name="layout_section_horizontal">Οριζόντιο κέντρο</string>
     <string name="layout_section_emoji">Ρυθμίσεις emoji</string>

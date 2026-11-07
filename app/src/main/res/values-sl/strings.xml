@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Postavitev črk</string>
     <string name="layout_section_numeric">Postavitev številk</string>
     <string name="layout_section_keys">Črke in številke</string>
+    <string name="layout_preset_label">Predloga:</string>
+    <string name="layout_preset_custom">Lastna razporeditev</string>
     <string name="layout_section_side">Stranske tipke</string>
     <string name="layout_section_horizontal">Vodoravna sredina</string>
     <string name="layout_section_emoji">Nastavitve čustvenčkov</string>

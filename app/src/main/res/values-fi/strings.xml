@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Kirjainasettelu</string>
     <string name="layout_section_numeric">Numeroasettelu</string>
     <string name="layout_section_keys">Kirjaimet ja numerot</string>
+    <string name="layout_preset_label">Malli:</string>
+    <string name="layout_preset_custom">Oma asettelu</string>
     <string name="layout_section_side">Sivunäppäimet</string>
     <string name="layout_section_horizontal">Vaakasuora keskiosa</string>
     <string name="layout_section_emoji">Emoji-asetukset</string>

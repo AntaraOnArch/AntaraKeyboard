@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Tqassim tal-ittri</string>
     <string name="layout_section_numeric">Tqassim numeriku</string>
     <string name="layout_section_keys">Ittri u numri</string>
+    <string name="layout_preset_label">Mudell:</string>
+    <string name="layout_preset_custom">Tqassim tiegħek</string>
     <string name="layout_section_side">Ċwievet tal-ġenb</string>
     <string name="layout_section_horizontal">Ċentru orizzontali</string>
     <string name="layout_section_emoji">Settings tal-emoji</string>

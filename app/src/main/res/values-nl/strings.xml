@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Letterindeling</string>
     <string name="layout_section_numeric">Cijferindeling</string>
     <string name="layout_section_keys">Letters en cijfers</string>
+    <string name="layout_preset_label">Sjabloon:</string>
+    <string name="layout_preset_custom">Eigen indeling</string>
     <string name="layout_section_side">Zijtoetsen</string>
     <string name="layout_section_horizontal">Horizontaal midden</string>
     <string name="layout_section_emoji">Emoji-instellingen</string>

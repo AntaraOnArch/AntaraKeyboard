@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Paraqitja e shkronjave</string>
     <string name="layout_section_numeric">Paraqitja numerike</string>
     <string name="layout_section_keys">Shkronja dhe numra</string>
+    <string name="layout_preset_label">Shabllon:</string>
+    <string name="layout_preset_custom">Paraqitje e vetja</string>
     <string name="layout_section_side">Tastet anësore</string>
     <string name="layout_section_horizontal">Qendra horizontale</string>
     <string name="layout_section_emoji">Cilësimet e emoji</string>

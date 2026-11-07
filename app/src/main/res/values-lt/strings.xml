@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Raidžių išdėstymas</string>
     <string name="layout_section_numeric">Skaitmenų išdėstymas</string>
     <string name="layout_section_keys">Raidės ir skaičiai</string>
+    <string name="layout_preset_label">Šablonas:</string>
+    <string name="layout_preset_custom">Savas išdėstymas</string>
     <string name="layout_section_side">Šoniniai klavišai</string>
     <string name="layout_section_horizontal">Horizontalus centras</string>
     <string name="layout_section_emoji">Jaustukų nustatymai</string>

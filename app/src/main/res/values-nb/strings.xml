@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Bokstavoppsett</string>
     <string name="layout_section_numeric">Talloppsett</string>
     <string name="layout_section_keys">Bokstaver og tall</string>
+    <string name="layout_preset_label">Mal:</string>
+    <string name="layout_preset_custom">Egen layout</string>
     <string name="layout_section_side">Sideknapper</string>
     <string name="layout_section_horizontal">Vannrett midte</string>
     <string name="layout_section_emoji">Emoji-innstillinger</string>

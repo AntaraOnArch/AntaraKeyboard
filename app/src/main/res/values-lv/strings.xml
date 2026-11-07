@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Burtu izkārtojums</string>
     <string name="layout_section_numeric">Ciparu izkārtojums</string>
     <string name="layout_section_keys">Burti un cipari</string>
+    <string name="layout_preset_label">Veidne:</string>
+    <string name="layout_preset_custom">Savs izkārtojums</string>
     <string name="layout_section_side">Sānu taustiņi</string>
     <string name="layout_section_horizontal">Horizontālais centrs</string>
     <string name="layout_section_emoji">Emocijzīmju iestatījumi</string>

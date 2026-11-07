@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Раскладка літар</string>
     <string name="layout_section_numeric">Лічбавая раскладка</string>
     <string name="layout_section_keys">Літары і лічбы</string>
+    <string name="layout_preset_label">Шаблон:</string>
+    <string name="layout_preset_custom">Уласная раскладка</string>
     <string name="layout_section_side">Бакавыя клавішы</string>
     <string name="layout_section_horizontal">Гарызантальны цэнтр</string>
     <string name="layout_section_emoji">Налады эмодзі</string>

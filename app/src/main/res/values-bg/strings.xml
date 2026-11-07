@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Подредба на буквите</string>
     <string name="layout_section_numeric">Цифрова подредба</string>
     <string name="layout_section_keys">Букви и цифри</string>
+    <string name="layout_preset_label">Шаблон:</string>
+    <string name="layout_preset_custom">Собствена подредба</string>
     <string name="layout_section_side">Странични клавиши</string>
     <string name="layout_section_horizontal">Хоризонтален център</string>
     <string name="layout_section_emoji">Настройки на емоджи</string>

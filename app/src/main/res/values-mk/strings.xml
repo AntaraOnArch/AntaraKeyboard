@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Распоред на букви</string>
     <string name="layout_section_numeric">Распоред на бројки</string>
     <string name="layout_section_keys">Букви и бројки</string>
+    <string name="layout_preset_label">Шаблон:</string>
+    <string name="layout_preset_custom">Сопствен распоред</string>
     <string name="layout_section_side">Странични копчиња</string>
     <string name="layout_section_horizontal">Хоризонтална средина</string>
     <string name="layout_section_emoji">Поставки за емоџи</string>

@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Buchstabenlayout</string>
     <string name="layout_section_numeric">Zahlenlayout</string>
     <string name="layout_section_keys">Buchstaben und Zahlen</string>
+    <string name="layout_preset_label">Vorlage:</string>
+    <string name="layout_preset_custom">Eigenes Layout</string>
     <string name="layout_section_side">Seitentasten</string>
     <string name="layout_section_horizontal">Horizontale Mitte</string>
     <string name="layout_section_emoji">Emoji-Einstellungen</string>

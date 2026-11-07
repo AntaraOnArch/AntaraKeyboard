@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Układ liter</string>
     <string name="layout_section_numeric">Układ cyfr</string>
     <string name="layout_section_keys">Litery i cyfry</string>
+    <string name="layout_preset_label">Szablon:</string>
+    <string name="layout_preset_custom">Własny układ</string>
     <string name="layout_section_side">Klawisze boczne</string>
     <string name="layout_section_horizontal">Środek poziomy</string>
     <string name="layout_section_emoji">Ustawienia emoji</string>

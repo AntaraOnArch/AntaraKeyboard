@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Distribución de letras</string>
     <string name="layout_section_numeric">Distribución numérica</string>
     <string name="layout_section_keys">Letras y números</string>
+    <string name="layout_preset_label">Plantilla:</string>
+    <string name="layout_preset_custom">Distribución propia</string>
     <string name="layout_section_side">Teclas laterales</string>
     <string name="layout_section_horizontal">Centro horizontal</string>
     <string name="layout_section_emoji">Ajustes de emojis</string>

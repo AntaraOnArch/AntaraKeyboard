@@ -15,6 +15,45 @@ import java.util.Locale
  * The lists hold every letter of the language that the plain keys don't type, so each language
  * reaches its whole alphabet. Uppercase keys get the uppercase letters. User-added bindings are kept separately by
  * [KeyboardPrefs.applyLongPressPreset] when the defaults change.
+ *
+ * Defaults per app language (lower case; Shift gives upper case; the user's own binds come after
+ * these and are not listed). Keys are named by their Latin position. Keep this list in sync with
+ * the maps below – checked on a device for all 35 languages on 2026-11-06:
+ *   Albanian (sq, Latin) – 2: c ç · e ë
+ *   Belarusian (be, Cyrillic) – 8: a я · c ч · e ё э · u ў ю · z ж · g ґ
+ *   Bosnian (bs, Latin) – 5: c č ć · d đ · s š · z ž
+ *   Bulgarian (bg, Cyrillic) – 7: a я · c ч · s ш щ · u ю · z ж · y ь
+ *   Catalan (ca, Latin) – 11: a à · c ç · e è é · i í ï · l l·l · o ò ó · u ú ü
+ *   Croatian (hr, Latin) – 5: c č ć · d đ · s š · z ž
+ *   Czech (cs, Latin) – 15: a á · c č · d ď · e é ě · i í · n ň · o ó · r ř · s š · t ť · u ú ů · y ý · z ž
+ *   Danish (da, Latin) – 4: a å æ · e é · o ø
+ *   Dutch (nl, Latin) – 11: a á · e é ë è ê · i ï í · o ó ö · u ú ü
+ *   English (en, Latin) – 36: a á à â ä ã å æ · c ç č ć · d đ · e é è ê ë · i í ì î ï · n ñ · o ó ò ô ö õ ø œ · s š ß · u ú ù û ü · y ý ÿ · z ž
+ *   Estonian (et, Latin) – 6: a ä · o õ ö · u ü · s š · z ž
+ *   Finnish (fi, Latin) – 5: a ä å · o ö · s š · z ž
+ *   French (fr, Latin) – 16: a à â æ · c ç · e é è ê ë · i î ï · o ô œ · u ù û ü · y ÿ
+ *   German (de, Latin) – 4: a ä · o ö · u ü · s ß
+ *   Greek (el, Greek) – 11: a ά · e έ · h ή · i ί ϊ ΐ · o ό · y ύ ϋ ΰ · v ώ
+ *   Hungarian (hu, Latin) – 9: a á · e é · i í · o ó ö ő · u ú ü ű
+ *   Icelandic (is, Latin) – 10: a á æ · d ð · e é · i í · o ó ö · t þ · u ú · y ý
+ *   Irish (ga, Latin) – 5: a á · e é · i í · o ó · u ú
+ *   Italian (it, Latin) – 6: a à · e è é · i ì · o ò · u ù
+ *   Latvian (lv, Latin) – 11: a ā · c č · e ē · g ģ · i ī · k ķ · l ļ · n ņ · s š · u ū · z ž
+ *   Lithuanian (lt, Latin) – 9: a ą · c č · e ę ė · i į · s š · u ų ū · z ž
+ *   Macedonian (mk, Cyrillic) – 9: c ч · d џ · g ѓ · k ќ · s ш · z ж ѕ · l љ · n њ
+ *   Maltese (mt, Latin) – 9: a à · c ċ · e è · g ġ · h ħ · i ì · o ò · u ù · z ż
+ *   Norwegian (nb, Latin) – 4: a å æ · e é · o ø
+ *   Polish (pl, Latin) – 9: a ą · c ć · e ę · l ł · n ń · o ó · s ś · z ż ź
+ *   Portuguese (pt, Latin) – 12: a á à â ã · c ç · e é ê · i í · o ó ô õ · u ú
+ *   Romanian (ro, Latin) – 5: a ă â · i î · s ș · t ț
+ *   Russian (ru, Cyrillic) – 9: a я · c ч · e ё э · s ш щ · u ю · z ж · x ъ
+ *   Serbian (Cyrillic) (sr, Cyrillic) – 8: c ч ћ · d ђ џ · s ш · z ж · l љ · n њ
+ *   Serbian (Latin) (sr-Latn, Latin) – 5: c č ć · d đ · s š · z ž
+ *   Slovak (sk, Latin) – 17: a á ä · c č · d ď · e é · i í · l ĺ ľ · n ň · o ó ô · r ŕ · s š · t ť · u ú · y ý · z ž
+ *   Slovenian (sl, Latin) – 3: c č · s š · z ž
+ *   Spanish (es, Latin) – 7: a á · e é · i í · n ñ · o ó · u ú ü
+ *   Swedish (sv, Latin) – 4: a å ä · e é · o ö
+ *   Ukrainian (uk, Cyrillic) – 9: a я · c ч · e є · g ґ · i ї · s ш щ · u ю · z ж
  */
 object LongPressPresets {
 

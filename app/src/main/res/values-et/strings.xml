@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Tähtede paigutus</string>
     <string name="layout_section_numeric">Numbrite paigutus</string>
     <string name="layout_section_keys">Tähed ja numbrid</string>
+    <string name="layout_preset_label">Mall:</string>
+    <string name="layout_preset_custom">Oma paigutus</string>
     <string name="layout_section_side">Külgklahvid</string>
     <string name="layout_section_horizontal">Horisontaalne keskosa</string>
     <string name="layout_section_emoji">Emotikonide seaded</string>

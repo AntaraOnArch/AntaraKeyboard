@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Bogstavlayout</string>
     <string name="layout_section_numeric">Tallayout</string>
     <string name="layout_section_keys">Bogstaver og tal</string>
+    <string name="layout_preset_label">Skabelon:</string>
+    <string name="layout_preset_custom">Eget layout</string>
     <string name="layout_section_side">Sideknapper</string>
     <string name="layout_section_horizontal">Vandret midte</string>
     <string name="layout_section_emoji">Emoji-indstillinger</string>

@@ -151,6 +151,8 @@
     <string name="layout_section_alphabet">Layout lettere</string>
     <string name="layout_section_numeric">Layout numerico</string>
     <string name="layout_section_keys">Lettere e numeri</string>
+    <string name="layout_preset_label">Modello:</string>
+    <string name="layout_preset_custom">Layout personalizzato</string>
     <string name="layout_section_side">Tasti laterali</string>
     <string name="layout_section_horizontal">Centro orizzontale</string>
     <string name="layout_section_emoji">Impostazioni emoji</string>

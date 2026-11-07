@@ -22,6 +22,7 @@ import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.EmojiPickerStorage
 import com.example.antarakeyboard.data.GlobalLongPressStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.LayoutPresets
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyboardConfig
 
@@ -134,6 +135,7 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
         )
 
         layoutBinder.bindInto(layoutEditorContainer)
+        setupLayoutPresets(dialog, rowCount, layoutBinder)
         numericBinder.bindInto(numericEditorContainer)
         horizontalBinder.bindInto(horizontalEditorContainer)
 
@@ -317,6 +319,58 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
         )
         showPage(0)
     }
+
+    /**
+     * "Preset" dropdown above the letters: "Custom layout" + every [LayoutPresets] layout. Picking a
+     * preset relabels the default layout of this row count; "Custom layout" brings back the last
+     * hand-made arrangement. Manual swaps switch the dropdown to "Custom layout".
+     */
+    private fun setupLayoutPresets(dialog: Dialog, rowCount: Int, binder: LayoutEditorBinder) {
+        val spinner = dialog.findViewById<Spinner>(R.id.spinnerLayoutPreset)
+        val defaultLayout = KeyboardPrefs.defaultAlphabetLayoutForRowCount(rowCount)
+        val options = listOf(activity.getString(R.string.layout_preset_custom)) + LayoutPresets.ALL.map { it.name }
+        spinner.adapter = ArrayAdapter(activity, R.layout.main_spinner_item, options).apply {
+            setDropDownViewResource(R.layout.main_spinner_dropdown_item)
+        }
+
+        fun detectedPosition(): Int =
+            LayoutPresets.detect(binder.currentLayout(), defaultLayout)?.let { LayoutPresets.ALL.indexOf(it) + 1 } ?: 0
+
+        // Last hand-made arrangement, restored by "Custom layout"
+        var lastCustom: KeyboardConfig? = if (detectedPosition() == 0) copyLayout(binder.currentLayout()) else null
+        var shown = detectedPosition()
+        spinner.setSelection(shown, false)
+
+        binder.onLayoutChanged = {
+            val pos = detectedPosition()
+            if (pos == 0) lastCustom = copyLayout(binder.currentLayout())
+            if (pos != shown) {
+                shown = pos
+                spinner.setSelection(pos, false)
+            }
+        }
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position == shown) return
+                shown = position
+                if (position == 0) {
+                    lastCustom?.let { binder.replaceLayout(it) }
+                } else {
+                    binder.replaceLayout(
+                        KeyboardPrefs.alphabetLayoutWithPreset(activity, rowCount, LayoutPresets.ALL[position - 1])
+                    )
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun copyLayout(layout: KeyboardConfig) = layout.copy(
+        rows = layout.rows.map { row ->
+            row.copy(keys = row.keys.map { it.copy(longPressBindings = it.longPressBindings.toMutableList()) }.toMutableList())
+        }.toMutableList()
+    )
 
     private fun showSpecialCharPicker(onPicked: (String) -> Unit) {
         val all = mutableListOf("∅")
