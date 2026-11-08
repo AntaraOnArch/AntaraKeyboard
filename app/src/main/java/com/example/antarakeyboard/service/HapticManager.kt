@@ -32,27 +32,11 @@ class HapticManager(context: Context) {
     }
 
     /**
-     * Light tap feedback for regular key press
-     */
-    fun onKeyPress() {
-        if (!enabled) return
-        vibrate(DURATION_KEY_PRESS)
-    }
-
-    /**
      * Slightly stronger feedback for special keys (shift, backspace, enter)
      */
     fun onSpecialKey() {
         if (!enabled) return
         vibrate(DURATION_SPECIAL_KEY)
-    }
-
-    /**
-     * Quick tick for gesture activation (swipe start)
-     */
-    fun onGestureStart() {
-        if (!enabled) return
-        vibrate(DURATION_GESTURE)
     }
 
     /**
@@ -85,9 +69,7 @@ class HapticManager(context: Context) {
     }
 
     companion object {
-        private const val DURATION_KEY_PRESS = 10L      // Light tap
         private const val DURATION_SPECIAL_KEY = 20L    // Shift, backspace, enter
-        private const val DURATION_GESTURE = 15L        // Swipe activation
         private const val DURATION_LONG_PRESS = 30L     // Long press trigger
     }
 }

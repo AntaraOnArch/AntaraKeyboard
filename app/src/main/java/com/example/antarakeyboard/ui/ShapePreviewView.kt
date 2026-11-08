@@ -9,6 +9,9 @@ import android.util.AttributeSet
 import android.view.View
 import android.graphics.RectF
 import com.example.antarakeyboard.model.KeyShape
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 class ShapePreviewView @JvmOverloads constructor(
     ctx: Context,
@@ -50,9 +53,9 @@ class ShapePreviewView @JvmOverloads constructor(
 
         val p = Path()
         for (i in 0..5) {
-            val angle = Math.toRadians((60 * i - 30).toDouble())
-            val x = (cx + r * Math.cos(angle)).toFloat()
-            val y = (cy + r * Math.sin(angle)).toFloat()
+            val angle = (60 * i - 30) * PI / 180
+            val x = (cx + r * cos(angle)).toFloat()
+            val y = (cy + r * sin(angle)).toFloat()
             if (i == 0) p.moveTo(x, y) else p.lineTo(x, y)
         }
 
@@ -100,39 +103,3 @@ class ShapePreviewView @JvmOverloads constructor(
         )
     }
 }
-
-//    private fun drawCube(c: Canvas) {
-//        val w = width.toFloat()
-//        val h = height.toFloat()
-//        val pad = minOf(w, h) * 0.20f
-//        val dx = pad * 0.65f
-//        val dy = pad * 0.65f
-//
-//        val front = Path().apply {
-//            moveTo(pad, pad + dy)
-//            lineTo(w - pad - dx, pad + dy)
-//            lineTo(w - pad - dx, h - pad)
-//            lineTo(pad, h - pad)
-//            close()
-//        }
-//
-//        val top = Path().apply {
-//            moveTo(pad, pad + dy)
-//            lineTo(pad + dx, pad)
-//            lineTo(w - pad, pad)
-//            lineTo(w - pad - dx, pad + dy)
-//            close()
-//        }
-//
-//        val side = Path().apply {
-//            moveTo(w - pad - dx, pad + dy)
-//            lineTo(w - pad, pad)
-//            lineTo(w - pad, h - pad - dy)
-//            lineTo(w - pad - dx, h - pad)
-//            close()
-//        }
-//
-//        c.drawPath(front, paint)
-//        c.drawPath(top, paint)
-//        c.drawPath(side, paint)
-//    } abe

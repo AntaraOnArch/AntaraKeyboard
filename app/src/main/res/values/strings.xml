@@ -12,6 +12,13 @@
     <string name="main_row_spacing">Row spacing: %1$s</string>
     <string name="main_bind_long_press">Bind long press</string>
     <string name="main_colors">Colors</string>
+    <string name="main_side_offsets">Side button positions</string>
+    <string name="side_offset_left">Left side buttons: %1$s</string>
+    <string name="side_offset_left_landscape">Left side buttons (landscape): %1$s</string>
+    <string name="side_offset_right">Right side buttons: %1$s</string>
+    <string name="side_offset_right_landscape">Right side buttons (landscape): %1$s</string>
+    <string name="side_offset_hint">Move the side buttons a little if they reach into a rounded screen edge. ◊ = default position.</string>
+    <string name="side_offset_direction">← left · right →</string>
     <string name="main_vibration">Vibration feedback</string>
     <string name="main_suggestions">Word suggestions</string>
     <string name="main_export">Export settings</string>
@@ -37,8 +44,6 @@
     <string name="shape_triangle">Triangle</string>
     <string name="shape_circle">Circle</string>
     <string name="shape_cube">Cube</string>
-    <string name="option_on">On</string>
-    <string name="option_off">Off</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_transparent">Transparent</string>
@@ -48,9 +53,10 @@
     <string name="theme_btn_rgb_settings">RGB settings</string>
     <string name="theme_btn_saved_layouts">Saved layouts</string>
     <string name="reset_hint">Reset…</string>
-    <string name="reset_colors">Reset colors</string>
-    <string name="reset_layout">Reset layout</string>
-    <string name="reset_all">Reset all</string>
+    <string name="reset_none">None</string>
+    <string name="reset_colors">Colors only</string>
+    <string name="reset_layout">Key layout</string>
+    <string name="reset_all">Colors and layout</string>
     <string name="backup_name">Backup %1$s</string>
     <string name="reset_done_all">Layout and colors reset. Previous saved as backup.</string>
     <string name="reset_done_colors">Colors reset. Previous saved as backup.</string>
@@ -82,6 +88,7 @@
     <string name="color_icon">Icon color</string>
     <string name="color_text">Text color</string>
     <string name="color_use_theme">Use theme colors</string>
+    <string name="color_no_background">No background</string>
     <string name="color_all_keys_same">All keys same color</string>
     <string name="color_key_use_default">Use default for this key</string>
     <string name="bg_mode_theme">Default by theme</string>
@@ -101,7 +108,6 @@
     <string name="rgb_insane_chill">Insane ← → Chill</string>
     <string name="rgb_saturation">Saturation: %1$d%%</string>
     <string name="rgb_brightness">Brightness: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s settings saved</string>
     <string name="lp_section_alphabet">Alphabet long press</string>
     <string name="lp_section_numeric">Numeric long press</string>
     <string name="lp_section_my_binds">My binds</string>
@@ -116,6 +122,7 @@
     <string name="lp_custom_hint">Type any text</string>
     <string name="lp_custom_add">Add</string>
     <string name="lp_custom_already">Already bound to this key</string>
+    <string name="lp_max_bindings">Maximum bindings per key: %1$d</string>
     <string name="lp_custom_bound">Bound to this key:</string>
     <string name="lp_editor_title">Long press: %1$s</string>
     <string name="lp_nothing_bound">Nothing bound – tap characters below</string>
@@ -145,6 +152,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Alphabet layout</string>
     <string name="layout_section_numeric">Numeric layout</string>
+    <string name="layout_section_keys">Letters and numbers</string>
+    <string name="layout_preset_label">Preset:</string>
+    <string name="layout_preset_custom">Custom layout</string>
     <string name="layout_section_side">Side buttons</string>
     <string name="layout_section_horizontal">Horizontal center</string>
     <string name="layout_section_emoji">Emoji picker settings</string>
@@ -158,14 +168,15 @@
     <string name="emoji_btn_close">Close</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Space</string>
-    <string name="saved_layouts_header">-- Saved layouts (%1$d) --</string>
-    <string name="saved_layouts_label">Saved layouts:</string>
-    <string name="swap_selected">Swap selected</string>
-    <string name="select_two_keys">Select 2 keys</string>
     <string name="color_picker_brightness">Brightness</string>
     <string name="copied">Copied!</string>
     <string name="restore_layout_title">Restore layout</string>
     <string name="restore_layout_message">This will replace your current layout and colors.</string>
+    <string name="restore_layout_and_colors">Layout and colors</string>
+    <string name="restore_layout_only">Layout only</string>
+    <string name="restore_layout_only_message">This will replace your current layout. Your colors stay.</string>
+    <string name="restore_colors_only_message">This will replace your current colors. Your layout stays.</string>
+    <string name="saved_without_colors">Saved without colors (theme colors were in use)</string>
     <string name="delete_confirm">Delete?</string>
     <string name="layout_restored">Layout restored!</string>
     <string name="saved_layouts_title">Saved layouts</string>
@@ -173,10 +184,10 @@
     <string name="colors_only">Colors only</string>
     <string name="custom_colors_applied">Custom colors applied</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">No saved layouts yet</string>
     <string name="transparent_background">Transparent background</string>
     <string name="preview_info">Shape: %1$s | Rows: %2$d\nSaved: %3$s</string>
+    <string name="preview_side_offsets">Side buttons: left %1$s, right %2$s\nLandscape: left %3$s, right %4$s</string>
     <string name="preview_colors_label">Colors (tap to edit):</string>
     <string name="swatch_keys">Keys</string>
     <string name="swatch_text">Text</string>

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Rijafstand: %1$s</string>
     <string name="main_bind_long_press">Lang indrukken</string>
     <string name="main_colors">Kleuren</string>
+    <string name="main_side_offsets">Positie van zijtoetsen</string>
+    <string name="side_offset_left">Linker zijtoetsen: %1$s</string>
+    <string name="side_offset_left_landscape">Linker zijtoetsen (liggend): %1$s</string>
+    <string name="side_offset_right">Rechter zijtoetsen: %1$s</string>
+    <string name="side_offset_right_landscape">Rechter zijtoetsen (liggend): %1$s</string>
+    <string name="side_offset_hint">Verschuif de zijtoetsen iets als ze in een afgeronde schermrand vallen. ◊ = standaardpositie.</string>
+    <string name="side_offset_direction">← links · rechts →</string>
     <string name="main_vibration">Trillen</string>
     <string name="main_suggestions">Woordsuggesties</string>
     <string name="main_export">Instellingen exporteren</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Driehoek</string>
     <string name="shape_circle">Cirkel</string>
     <string name="shape_cube">Kubus</string>
-    <string name="option_on">Aan</string>
-    <string name="option_off">Uit</string>
     <string name="theme_light">Licht</string>
     <string name="theme_dark">Donker</string>
     <string name="theme_transparent">Transparant</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-instellingen</string>
     <string name="theme_btn_saved_layouts">Opgeslagen indelingen</string>
     <string name="reset_hint">Resetten…</string>
-    <string name="reset_colors">Kleuren resetten</string>
-    <string name="reset_layout">Indeling resetten</string>
-    <string name="reset_all">Alles resetten</string>
+    <string name="reset_none">Niets</string>
+    <string name="reset_colors">Alleen kleuren</string>
+    <string name="reset_layout">Toetsindeling</string>
+    <string name="reset_all">Kleuren en indeling</string>
     <string name="backup_name">Back-up %1$s</string>
     <string name="reset_done_all">Indeling en kleuren gereset. Vorige staat opgeslagen als back-up.</string>
     <string name="reset_done_colors">Kleuren gereset. Vorige staat opgeslagen als back-up.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Pictogramkleur</string>
     <string name="color_text">Tekstkleur</string>
     <string name="color_use_theme">Themakleuren gebruiken</string>
+    <string name="color_no_background">Geen achtergrond</string>
     <string name="color_all_keys_same">Alle toetsen dezelfde kleur</string>
     <string name="color_key_use_default">Standaard voor deze toets</string>
     <string name="bg_mode_theme">Volgens thema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Gek ← → Rustig</string>
     <string name="rgb_saturation">Verzadiging: %1$d%%</string>
     <string name="rgb_brightness">Helderheid: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s-instellingen opgeslagen</string>
     <string name="lp_section_alphabet">Lang indrukken – letters</string>
     <string name="lp_section_numeric">Lang indrukken – cijfers</string>
     <string name="lp_section_my_binds">Mijn koppelingen</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Typ een tekst</string>
     <string name="lp_custom_add">Toevoegen</string>
     <string name="lp_custom_already">Al gekoppeld aan deze toets</string>
+    <string name="lp_max_bindings">Een toets kan maximaal %1$d koppelingen hebben</string>
     <string name="lp_custom_bound">Gekoppeld aan deze toets:</string>
     <string name="lp_editor_title">Lang indrukken: %1$s</string>
     <string name="lp_nothing_bound">Niets gekoppeld – tik hieronder op tekens</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Letterindeling</string>
     <string name="layout_section_numeric">Cijferindeling</string>
+    <string name="layout_section_keys">Letters en cijfers</string>
+    <string name="layout_preset_label">Sjabloon:</string>
+    <string name="layout_preset_custom">Eigen indeling</string>
     <string name="layout_section_side">Zijtoetsen</string>
     <string name="layout_section_horizontal">Horizontaal midden</string>
     <string name="layout_section_emoji">Emoji-instellingen</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Sluiten</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spatie</string>
-    <string name="saved_layouts_header">-- Opgeslagen indelingen (%1$d) --</string>
-    <string name="saved_layouts_label">Opgeslagen indelingen:</string>
-    <string name="swap_selected">Selectie wisselen</string>
-    <string name="select_two_keys">Selecteer 2 toetsen</string>
     <string name="color_picker_brightness">Helderheid</string>
     <string name="copied">Gekopieerd!</string>
     <string name="restore_layout_title">Indeling herstellen</string>
     <string name="restore_layout_message">Dit vervangt je huidige indeling en kleuren.</string>
+    <string name="restore_layout_and_colors">Indeling en kleuren</string>
+    <string name="restore_layout_only">Alleen indeling</string>
+    <string name="restore_layout_only_message">Je huidige indeling wordt vervangen. De kleuren blijven.</string>
+    <string name="restore_colors_only_message">Je huidige kleuren worden vervangen. De indeling blijft.</string>
+    <string name="saved_without_colors">Opgeslagen zonder kleuren (themakleuren waren in gebruik)</string>
     <string name="delete_confirm">Verwijderen?</string>
     <string name="layout_restored">Indeling hersteld!</string>
     <string name="saved_layouts_title">Opgeslagen indelingen</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Alleen kleuren</string>
     <string name="custom_colors_applied">Eigen kleuren toegepast</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Nog geen opgeslagen indelingen</string>
     <string name="transparent_background">Transparante achtergrond</string>
     <string name="preview_info">Vorm: %1$s | Rijen: %2$d\nOpgeslagen: %3$s</string>
+    <string name="preview_side_offsets">Zijtoetsen: links %1$s, rechts %2$s\nLiggend: links %3$s, rechts %4$s</string>
     <string name="preview_colors_label">Kleuren (tik om te bewerken):</string>
     <string name="swatch_keys">Toetsen</string>
     <string name="swatch_text">Tekst</string>

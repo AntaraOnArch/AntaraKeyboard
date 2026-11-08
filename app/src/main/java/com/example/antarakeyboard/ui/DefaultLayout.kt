@@ -24,7 +24,7 @@ val defaultKeyboardLayout: KeyboardConfig = KeyboardConfig(
     specialLeft = mutableListOf(),
     specialRight = mutableListOf(),
     rows = mutableListOf(
-        // 1) w e t z i o
+        // 1) w, e, t, z, i, o
         RowConfig(
             mutableListOf(
                 KeyConfig("w"), KeyConfig("e"), KeyConfig("t"),
@@ -32,7 +32,7 @@ val defaultKeyboardLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 2) q a r g u l p
+        // 2) q, a, r, g, u, l, p
         RowConfig(
             mutableListOf(
                 KeyConfig("q"), KeyConfig("a"), KeyConfig("r"),
@@ -243,7 +243,7 @@ val defaultFourRowNumericLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 4) ~ < > ! space space abc ↵
+        // 4) ~ < > ! 2× space abc ↵
         RowConfig(
             mutableListOf(
                 KeyConfig("~"), KeyConfig("<"), KeyConfig(">"), KeyConfig("!"),
@@ -279,7 +279,7 @@ val defaultThreeRowNumericLayout: KeyboardConfig = KeyboardConfig(
             )
         ),
 
-        // 3) % @ # & _ ! ~ space space abc ↵
+        // 3) % @ # & _ ! ~ 2× space abc ↵
         RowConfig(
             mutableListOf(
                 KeyConfig("%"), KeyConfig("@"), KeyConfig("#"), KeyConfig("&"),
@@ -292,44 +292,3 @@ val defaultThreeRowNumericLayout: KeyboardConfig = KeyboardConfig(
 ).also { cfg ->
     cfg.addCommonSymbolLongPress()
 }
-
-/* =========================
-   UPPERCASE HELPERS
-   ========================= */
-
-private fun KeyboardConfig.toUppercaseLetters(): KeyboardConfig {
-    fun up(k: KeyConfig): KeyConfig {
-        val lbl = k.label
-        val newLbl =
-            if (lbl.length == 1 && lbl[0].isLetter()) lbl.uppercase()
-            else lbl
-
-        return k.copy(
-            label = newLbl,
-            longPressBindings = k.longPressBindings.toMutableList()
-        )
-    }
-
-    return copy(
-        rows = rows.map { row ->
-            row.copy(keys = row.keys.map(::up).toMutableList())
-        }.toMutableList(),
-        specialLeft = specialLeft.map(::up).toMutableList(),
-        specialRight = specialRight.map(::up).toMutableList()
-    )
-}
-
-val defaultKeyboardLayoutUpper: KeyboardConfig =
-    defaultKeyboardLayout.toUppercaseLetters().also { cfg ->
-        cfg.addCommonSymbolLongPress()
-    }
-
-val defaultFourRowKeyboardLayoutUpper: KeyboardConfig =
-    defaultFourRowKeyboardLayout.toUppercaseLetters().also { cfg ->
-        cfg.addCommonSymbolLongPress()
-    }
-
-val defaultThreeRowKeyboardLayoutQwertzUpper: KeyboardConfig =
-    defaultThreeRowKeyboardLayoutQwertz.toUppercaseLetters().also { cfg ->
-        cfg.addCommonSymbolLongPress()
-    }

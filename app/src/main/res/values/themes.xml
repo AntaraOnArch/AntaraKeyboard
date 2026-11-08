@@ -70,8 +70,14 @@
     <style name="MainSpinner">
         <item name="android:background">@drawable/spinner_background</item>
         <item name="android:minHeight">48dp</item>
-        <item name="android:paddingStart">12dp</item>
-        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <!-- Room for the arrow at the right edge -->
+        <item name="android:paddingEnd">38dp</item>
+        <!-- The open list: rounded surface as wide as the dropdown, below it (above when
+             there is no room) -->
+        <item name="android:popupBackground">@drawable/spinner_popup_background</item>
+        <item name="android:dropDownWidth">match_parent</item>
+        <item name="android:popupElevation">8dp</item>
     </style>
 
 </resources>

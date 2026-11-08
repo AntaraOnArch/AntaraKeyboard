@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selected item of the main screen dropdowns: one line, shrinks to fit a half-width dropdown -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    app:autoSizeMaxTextSize="18sp"
+    app:autoSizeMinTextSize="12sp"
+    app:autoSizeTextType="uniform" />

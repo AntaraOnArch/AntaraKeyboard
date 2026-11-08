@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Bil milli raða: %1$s</string>
     <string name="main_bind_long_press">Langt ýtt</string>
     <string name="main_colors">Litir</string>
+    <string name="main_side_offsets">Staðsetning hliðarhnappa</string>
+    <string name="side_offset_left">Vinstri hliðarhnappar: %1$s</string>
+    <string name="side_offset_left_landscape">Vinstri hliðarhnappar (lárétt): %1$s</string>
+    <string name="side_offset_right">Hægri hliðarhnappar: %1$s</string>
+    <string name="side_offset_right_landscape">Hægri hliðarhnappar (lárétt): %1$s</string>
+    <string name="side_offset_hint">Færðu hliðarhnappana aðeins ef þeir ná inn á ávalan skjábrún. ◊ = sjálfgefin staðsetning.</string>
+    <string name="side_offset_direction">← vinstri · hægri →</string>
     <string name="main_vibration">Titringur</string>
     <string name="main_suggestions">Orðatillögur</string>
     <string name="main_export">Flytja út stillingar</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Þríhyrningur</string>
     <string name="shape_circle">Hringur</string>
     <string name="shape_cube">Teningur</string>
-    <string name="option_on">Kveikt</string>
-    <string name="option_off">Slökkt</string>
     <string name="theme_light">Ljóst</string>
     <string name="theme_dark">Dökkt</string>
     <string name="theme_transparent">Gegnsætt</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-stillingar</string>
     <string name="theme_btn_saved_layouts">Vistaðar uppsetningar</string>
     <string name="reset_hint">Endurstilla…</string>
-    <string name="reset_colors">Endurstilla liti</string>
-    <string name="reset_layout">Endurstilla uppsetningu</string>
-    <string name="reset_all">Endurstilla allt</string>
+    <string name="reset_none">Ekkert</string>
+    <string name="reset_colors">Aðeins litir</string>
+    <string name="reset_layout">Uppsetning lykla</string>
+    <string name="reset_all">Litir og uppsetning</string>
     <string name="backup_name">Afrit %1$s</string>
     <string name="reset_done_all">Uppsetning og litir endurstillt. Fyrri staða vistuð sem afrit.</string>
     <string name="reset_done_colors">Litir endurstilltir. Fyrri staða vistuð sem afrit.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Litur tákns</string>
     <string name="color_text">Litur texta</string>
     <string name="color_use_theme">Nota liti þema</string>
+    <string name="color_no_background">Enginn bakgrunnur</string>
     <string name="color_all_keys_same">Allir lyklar í sama lit</string>
     <string name="color_key_use_default">Sjálfgefinn litur fyrir þennan lykil</string>
     <string name="bg_mode_theme">Eftir þema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Brjálað ← → Rólegt</string>
     <string name="rgb_saturation">Mettun: %1$d%%</string>
     <string name="rgb_brightness">Birta: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s-stillingar vistaðar</string>
     <string name="lp_section_alphabet">Langt ýtt – stafir</string>
     <string name="lp_section_numeric">Langt ýtt – tölur</string>
     <string name="lp_section_my_binds">Mínar tengingar</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Sláðu inn hvaða texta sem er</string>
     <string name="lp_custom_add">Bæta við</string>
     <string name="lp_custom_already">Nú þegar tengt þessum lykli</string>
+    <string name="lp_max_bindings">Hægt er að tengja mest %1$d við lykil</string>
     <string name="lp_custom_bound">Tengt þessum lykli:</string>
     <string name="lp_editor_title">Langt ýtt: %1$s</string>
     <string name="lp_nothing_bound">Ekkert tengt – ýttu á stafi hér fyrir neðan</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Uppsetning stafa</string>
     <string name="layout_section_numeric">Uppsetning talna</string>
+    <string name="layout_section_keys">Stafir og tölur</string>
+    <string name="layout_preset_label">Sniðmát:</string>
+    <string name="layout_preset_custom">Eigin uppsetning</string>
     <string name="layout_section_side">Hliðarlyklar</string>
     <string name="layout_section_horizontal">Lárétt miðja</string>
     <string name="layout_section_emoji">Stillingar tjáknmynda</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Loka</string>
     <string name="emoji_btn_backspace">Bakklykill</string>
     <string name="emoji_btn_space">Bil</string>
-    <string name="saved_layouts_header">-- Vistaðar uppsetningar (%1$d) --</string>
-    <string name="saved_layouts_label">Vistaðar uppsetningar:</string>
-    <string name="swap_selected">Víxla völdum</string>
-    <string name="select_two_keys">Veldu 2 lykla</string>
     <string name="color_picker_brightness">Birta</string>
     <string name="copied">Afritað!</string>
     <string name="restore_layout_title">Endurheimta uppsetningu</string>
     <string name="restore_layout_message">Þetta kemur í stað núverandi uppsetningar og lita.</string>
+    <string name="restore_layout_and_colors">Uppsetning og litir</string>
+    <string name="restore_layout_only">Aðeins uppsetning</string>
+    <string name="restore_layout_only_message">Núverandi uppsetningu verður skipt út. Litirnir haldast.</string>
+    <string name="restore_colors_only_message">Núverandi litum verður skipt út. Uppsetningin helst.</string>
+    <string name="saved_without_colors">Vistað án lita (litir þemans voru í notkun)</string>
     <string name="delete_confirm">Eyða?</string>
     <string name="layout_restored">Uppsetning endurheimt!</string>
     <string name="saved_layouts_title">Vistaðar uppsetningar</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Aðeins litir</string>
     <string name="custom_colors_applied">Eigin litir notaðir</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Engar vistaðar uppsetningar enn</string>
     <string name="transparent_background">Gegnsær bakgrunnur</string>
     <string name="preview_info">Lögun: %1$s | Raðir: %2$d\nVistað: %3$s</string>
+    <string name="preview_side_offsets">Hliðarhnappar: vinstri %1$s, hægri %2$s\nLárétt: vinstri %3$s, hægri %4$s</string>
     <string name="preview_colors_label">Litir (ýttu til að breyta):</string>
     <string name="swatch_keys">Lyklar</string>
     <string name="swatch_text">Texti</string>

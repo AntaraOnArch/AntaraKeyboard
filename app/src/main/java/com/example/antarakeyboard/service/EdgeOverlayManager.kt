@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.service
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.TypedValue
@@ -10,10 +11,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.isEmpty
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
+import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
@@ -109,7 +112,7 @@ class EdgeOverlayManager(
         overlayLayer.post {
             clearEdgeSlots()
 
-            if (keyboardContainer.childCount == 0) return@post
+            if (keyboardContainer.isEmpty()) return@post
             if (overlayLayer.width <= 0 || overlayLayer.height <= 0) {
                 overlayLayer.post { drawEdgeSlots() }
                 return@post
@@ -137,13 +140,13 @@ class EdgeOverlayManager(
 
             fun firstKey(row: View): View? {
                 val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
+                if (vg.isEmpty()) return null
                 return vg.getChildAt(0)
             }
 
             fun lastKey(row: View): View? {
                 val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
+                if (vg.isEmpty()) return null
                 return vg.getChildAt(vg.childCount - 1)
             }
 
@@ -151,6 +154,7 @@ class EdgeOverlayManager(
                 tag: String,
                 slot: EdgeSlot,
                 tuning: SideButtonTuning,
+                side: EdgePos.Side,
                 left: Int,
                 top: Int,
                 width: Int,
@@ -178,10 +182,11 @@ class EdgeOverlayManager(
                     FrameLayout.LayoutParams(width, finalHeight).apply {
                         gravity = Gravity.START
 
+                        // The user's offset applies after the clamp, so it always moves the button
                         leftMargin = left.coerceIn(
                             -sideOutset,
                             overlayLayer.width - width + sideOutset
-                        )
+                        ) + sideOffsetPx(side, landscape = false)
 
                         topMargin = safeOverlayTop(
                             requestedTop = top + (height - finalHeight) / 2,
@@ -246,6 +251,7 @@ class EdgeOverlayManager(
                             tag = "edge_slot_left_$visualIndex",
                             slot = slot,
                             tuning = tuning,
+                            side = EdgePos.Side.LEFT,
                             left = rowLeft - width + tuning.x.dp(context),
                             top = baseTop + tuning.y.dp(context),
                             width = width,
@@ -269,6 +275,7 @@ class EdgeOverlayManager(
                             tag = "edge_slot_right_$visualIndex",
                             slot = slot,
                             tuning = tuning,
+                            side = EdgePos.Side.RIGHT,
                             left = rowRight + tuning.x.dp(context),
                             top = baseTop + tuning.y.dp(context),
                             width = width,
@@ -331,6 +338,7 @@ class EdgeOverlayManager(
                     },
                     slot = binding.slot,
                     tuning = tuning,
+                    side = binding.side,
                     left = left,
                     top = baseTop + tuning.y.dp(context),
                     width = width,
@@ -347,7 +355,7 @@ class EdgeOverlayManager(
         val keyboardContainer = keyboardContainerProvider()
 
         overlayLayer.post {
-            if (keyboardContainer.childCount == 0) return@post
+            if (keyboardContainer.isEmpty()) return@post
 
             val root = keyboardContainer.getChildAt(0) as? ViewGroup ?: return@post
             if (root.childCount < 3) return@post
@@ -370,8 +378,6 @@ class EdgeOverlayManager(
             overlayLayer.getLocationOnScreen(ovLoc)
 
             val keySize = landscapeKeySizePxProvider()
-            val rawSideWidthLeft = keySize
-            val rawSideWidthRight = keySize
 
             val visualRows = edgeRowIndices(leftBlock.childCount)
 
@@ -382,13 +388,13 @@ class EdgeOverlayManager(
 
             fun firstChild(row: View): View? {
                 val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
+                if (vg.isEmpty()) return null
                 return vg.getChildAt(0)
             }
 
             fun lastChild(row: View): View? {
                 val vg = row as? ViewGroup ?: return null
-                if (vg.childCount == 0) return null
+                if (vg.isEmpty()) return null
                 return vg.getChildAt(vg.childCount - 1)
             }
 
@@ -451,7 +457,7 @@ class EdgeOverlayManager(
                         slotType = slot.type
                     )
 
-                    val sideW = (rawSideWidthLeft * tuning.widthScale).toInt()
+                    val sideW = (keySize * tuning.widthScale).toInt()
                         .coerceAtLeast(14.dp(context))
 
                     val left = leftAnchorLeft - sideW + tuning.x.dp(context)
@@ -473,7 +479,7 @@ class EdgeOverlayManager(
                             leftMargin = left.coerceIn(
                                 -sideW / 2,
                                 overlayLayer.width - sideW
-                            )
+                            ) + sideOffsetPx(EdgePos.Side.LEFT, landscape = true)
 
                             topMargin = safeOverlayTop(
                                 requestedTop = top + (leftAnchor.height - sideH) / 2,
@@ -492,7 +498,7 @@ class EdgeOverlayManager(
                         slotType = slot.type
                     )
 
-                    val sideW = (rawSideWidthRight * tuning.widthScale).toInt()
+                    val sideW = (keySize * tuning.widthScale).toInt()
                         .coerceAtLeast(14.dp(context))
 
                     val left = rightAnchorRight - sideW + tuning.x.dp(context)
@@ -514,7 +520,7 @@ class EdgeOverlayManager(
                             leftMargin = left.coerceIn(
                                 0,
                                 overlayLayer.width - sideW
-                            )
+                            ) + sideOffsetPx(EdgePos.Side.RIGHT, landscape = true)
 
                             topMargin = safeOverlayTop(
                                 requestedTop = top + (rightAnchor.height - sideH) / 2,
@@ -526,6 +532,10 @@ class EdgeOverlayManager(
             }
         }
     }
+
+    /** Main app "side button positions" slider for this side and orientation, in px. */
+    private fun sideOffsetPx(side: EdgePos.Side, landscape: Boolean): Int =
+        KeyboardPrefs.getSideOffsetDp(context, side, landscape).dp(context)
 
     /* ───────── PERFORM EDGE ACTION ───────── */
 
@@ -543,6 +553,8 @@ class EdgeOverlayManager(
 
     /* ───────── CREATE SIDE BUTTON VIEW ───────── */
 
+    // A plain FrameLayout; the touch listener calls performClick on ACTION_UP
+    @SuppressLint("ClickableViewAccessibility")
     private fun createSideButtonView(
         tagName: String,
         slot: EdgeSlot,
@@ -553,15 +565,7 @@ class EdgeOverlayManager(
         val isShifted = actionCallback.isShifted()
 
         // 1. Label
-        val label = when (slot.type) {
-            EdgeActionType.SHIFT -> if (isShifted) KeyMarkers.SHIFT_ON else KeyMarkers.SHIFT_OFF
-            EdgeActionType.BACKSPACE -> "⌫"
-            EdgeActionType.ENTER -> "↵"
-            EdgeActionType.SPACE -> "␣"
-            EdgeActionType.CHAR -> slot.value ?: ""
-            EdgeActionType.EMOJI_PICKER -> "😊"
-            EdgeActionType.NONE -> ""
-        }
+        val label = sideButtonLabel(slot, isShifted)
 
         // 2. Colors
         val useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(context)
@@ -571,7 +575,9 @@ class EdgeOverlayManager(
             KeyboardPrefs.getSideButtonsBg(context)
         }
         val sideTextColor = if (useThemeBg) {
-            themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)
+            KeyboardPrefs.themeSideIconColor(
+                context, PrefsManager.isDarkMode(context), themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)
+            )
         } else {
             KeyboardPrefs.getSideButtonsTextColor(context)
         }
@@ -695,120 +701,10 @@ class EdgeOverlayManager(
         return requestedTop.coerceIn(minTop, maxTop)
     }
 
-    private fun edgeRowIndices(totalRows: Int): List<Int> {
-        if (totalRows <= 0) return emptyList()
+    private fun edgeRowIndices(totalRows: Int): List<Int> = sideButtonKeyRows(totalRows)
 
-        return when (totalRows) {
-            3 -> listOf(0, 1, 2)
-            4 -> listOf(0, 1, 2, 3)
-            5 -> listOf(0, 2, 4)
-            else -> listOf(0, totalRows / 2, totalRows - 1).distinct()
-        }
-    }
-
-    private fun activeEdgeBindings(totalRows: Int): List<EdgeBinding> {
-        return when (totalRows) {
-            3 -> threeRowEdgeBindings()
-            4 -> fourRowEdgeBindings()
-            else -> {
-                EdgeSlotsStorage.load(context)
-                    .filter { it.type != EdgeActionType.NONE }
-                    .map { slot ->
-                        EdgeBinding(
-                            visualIndex = (slot.index / 2).coerceIn(0, 2),
-                            side = slot.side,
-                            slot = slot
-                        )
-                    }
-            }
-        }
-    }
-
-    private fun threeRowEdgeBindings(): List<EdgeBinding> {
-        val slots = EdgeSlotsStorage.load(context)
-        val result = mutableListOf<EdgeBinding>()
-
-        // 3-row rule:
-        // row 1 -> RIGHT
-        // row 2 -> LEFT
-        // row 3 -> RIGHT
-
-        slots.getOrNull(0)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 0,
-                side = EdgePos.Side.RIGHT,
-                slot = it.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        slots.getOrNull(1)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 1,
-                side = EdgePos.Side.LEFT,
-                slot = it.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        slots.getOrNull(2)?.takeIf { it.type != EdgeActionType.NONE }?.let {
-            result += EdgeBinding(
-                visualIndex = 2,
-                side = EdgePos.Side.RIGHT,
-                slot = it.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        return result
-    }
-
-    private fun fourRowEdgeBindings(): List<EdgeBinding> {
-        val slots = EdgeSlotsStorage.load(context)
-        val result = mutableListOf<EdgeBinding>()
-
-        // 4-row rule:
-        // row 1 -> right
-        // row 2 -> left
-        // row 3 -> right
-        // row 4 -> left
-
-        val slot0 = slots.getOrNull(0)
-        val slot1 = slots.getOrNull(1)
-        val slot2 = slots.getOrNull(2)
-        val slot3 = slots.getOrNull(3)
-
-        if (slot0 != null && slot0.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 0,
-                side = EdgePos.Side.RIGHT,
-                slot = slot0.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        if (slot1 != null && slot1.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 1,
-                side = EdgePos.Side.LEFT,
-                slot = slot1.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        if (slot2 != null && slot2.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 2,
-                side = EdgePos.Side.RIGHT,
-                slot = slot2.copy(side = EdgePos.Side.RIGHT)
-            )
-        }
-
-        if (slot3 != null && slot3.type != EdgeActionType.NONE) {
-            result += EdgeBinding(
-                visualIndex = 3,
-                side = EdgePos.Side.LEFT,
-                slot = slot3.copy(side = EdgePos.Side.LEFT)
-            )
-        }
-
-        return result
-    }
+    private fun activeEdgeBindings(totalRows: Int): List<EdgeBinding> =
+        edgeBindings(totalRows, EdgeSlotsStorage.load(context))
 
     private fun sideButtonTuning(
         isLandscapeMode: Boolean,
@@ -983,4 +879,46 @@ class EdgeOverlayManager(
 
     private fun edgeIconActiveColor(ctx: Context): Int =
         themeColor(ctx, R.attr.edgeIconTextActive, edgeIconTextColor(ctx))
+
+    companion object {
+        /** Key rows that carry side buttons: all rows with 3 or 4 rows, rows 0, 2, 4 with 5. */
+        fun sideButtonKeyRows(totalRows: Int): List<Int> = when {
+            totalRows <= 0 -> emptyList()
+            totalRows == 3 -> listOf(0, 1, 2)
+            totalRows == 4 -> listOf(0, 1, 2, 3)
+            totalRows == 5 -> listOf(0, 2, 4)
+            else -> listOf(0, totalRows / 2, totalRows - 1).distinct()
+        }
+
+        /**
+         * Which side button goes where. [EdgeBinding.visualIndex] indexes [sideButtonKeyRows].
+         * 3 and 4 rows: slot i on row i, sides alternate right, left, right(, left).
+         * 5 rows: slots 0/1 on the first side-button row, 2/3 on the second, 4/5 on the third,
+         * each on its own stored side. Empty slots are left out.
+         */
+        fun edgeBindings(totalRows: Int, slots: List<EdgeSlot>): List<EdgeBinding> = when (totalRows) {
+            3, 4 -> (0 until totalRows).mapNotNull { row ->
+                val slot = slots.getOrNull(row)?.takeIf { it.type != EdgeActionType.NONE }
+                    ?: return@mapNotNull null
+                val side = if (row % 2 == 0) EdgePos.Side.RIGHT else EdgePos.Side.LEFT
+                EdgeBinding(visualIndex = row, side = side, slot = slot.copy(side = side))
+            }
+            else -> slots
+                .filter { it.type != EdgeActionType.NONE }
+                .map { slot ->
+                    EdgeBinding(visualIndex = (slot.index / 2).coerceIn(0, 2), side = slot.side, slot = slot)
+                }
+        }
+
+        /** The symbol a side button shows (Shift in its off state). */
+        fun sideButtonLabel(slot: EdgeSlot, isShifted: Boolean = false): String = when (slot.type) {
+            EdgeActionType.SHIFT -> if (isShifted) KeyMarkers.SHIFT_ON else KeyMarkers.SHIFT_OFF
+            EdgeActionType.BACKSPACE -> "⌫"
+            EdgeActionType.ENTER -> "↵"
+            EdgeActionType.SPACE -> "␣"
+            EdgeActionType.CHAR -> slot.value ?: ""
+            EdgeActionType.EMOJI_PICKER -> "😊"
+            EdgeActionType.NONE -> ""
+        }
+    }
 }

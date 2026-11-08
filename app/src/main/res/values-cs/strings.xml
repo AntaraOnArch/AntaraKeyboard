@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Mezera mezi řadami: %1$s</string>
     <string name="main_bind_long_press">Dlouhé stisknutí</string>
     <string name="main_colors">Barvy</string>
+    <string name="main_side_offsets">Poloha bočních kláves</string>
+    <string name="side_offset_left">Levé boční klávesy: %1$s</string>
+    <string name="side_offset_left_landscape">Levé boční klávesy (na šířku): %1$s</string>
+    <string name="side_offset_right">Pravé boční klávesy: %1$s</string>
+    <string name="side_offset_right_landscape">Pravé boční klávesy (na šířku): %1$s</string>
+    <string name="side_offset_hint">Posuňte boční klávesy trochu, pokud zasahují do zaobleného okraje displeje. ◊ = výchozí poloha.</string>
+    <string name="side_offset_direction">← doleva · doprava →</string>
     <string name="main_vibration">Vibrace</string>
     <string name="main_suggestions">Návrhy slov</string>
     <string name="main_export">Exportovat nastavení</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trojúhelník</string>
     <string name="shape_circle">Kruh</string>
     <string name="shape_cube">Krychle</string>
-    <string name="option_on">Zapnuto</string>
-    <string name="option_off">Vypnuto</string>
     <string name="theme_light">Světlý</string>
     <string name="theme_dark">Tmavý</string>
     <string name="theme_transparent">Průhledný</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Nastavení RGB</string>
     <string name="theme_btn_saved_layouts">Uložená rozložení</string>
     <string name="reset_hint">Obnovit…</string>
-    <string name="reset_colors">Obnovit barvy</string>
-    <string name="reset_layout">Obnovit rozložení</string>
-    <string name="reset_all">Obnovit vše</string>
+    <string name="reset_none">Nic</string>
+    <string name="reset_colors">Jen barvy</string>
+    <string name="reset_layout">Rozložení kláves</string>
+    <string name="reset_all">Barvy a rozložení</string>
     <string name="backup_name">Záloha %1$s</string>
     <string name="reset_done_all">Rozložení a barvy obnoveny. Předchozí stav uložen jako záloha.</string>
     <string name="reset_done_colors">Barvy obnoveny. Předchozí stav uložen jako záloha.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Barva ikony</string>
     <string name="color_text">Barva textu</string>
     <string name="color_use_theme">Použít barvy motivu</string>
+    <string name="color_no_background">Bez pozadí</string>
     <string name="color_all_keys_same">Všechny klávesy stejnou barvou</string>
     <string name="color_key_use_default">Výchozí barva pro tuto klávesu</string>
     <string name="bg_mode_theme">Podle motivu</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Šíleně ← → Klidně</string>
     <string name="rgb_saturation">Sytost: %1$d %%</string>
     <string name="rgb_brightness">Jas: %1$d %%</string>
-    <string name="rgb_settings_saved">Nastavení %1$s uloženo</string>
     <string name="lp_section_alphabet">Dlouhé stisknutí – písmena</string>
     <string name="lp_section_numeric">Dlouhé stisknutí – čísla</string>
     <string name="lp_section_my_binds">Moje přiřazení</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Napište libovolný text</string>
     <string name="lp_custom_add">Přidat</string>
     <string name="lp_custom_already">Už je přiřazeno této klávese</string>
+    <string name="lp_max_bindings">Klávesa může mít nejvýše %1$d přiřazení</string>
     <string name="lp_custom_bound">Přiřazeno této klávese:</string>
     <string name="lp_editor_title">Dlouhé stisknutí: %1$s</string>
     <string name="lp_nothing_bound">Nic nepřiřazeno – klepněte na znaky níže</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Rozložení písmen</string>
     <string name="layout_section_numeric">Rozložení čísel</string>
+    <string name="layout_section_keys">Písmena a číslice</string>
+    <string name="layout_preset_label">Předloha:</string>
+    <string name="layout_preset_custom">Vlastní rozložení</string>
     <string name="layout_section_side">Boční klávesy</string>
     <string name="layout_section_horizontal">Vodorovný střed</string>
     <string name="layout_section_emoji">Nastavení emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Zavřít</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Mezerník</string>
-    <string name="saved_layouts_header">-- Uložená rozložení (%1$d) --</string>
-    <string name="saved_layouts_label">Uložená rozložení:</string>
-    <string name="swap_selected">Prohodit vybrané</string>
-    <string name="select_two_keys">Vyberte 2 klávesy</string>
     <string name="color_picker_brightness">Jas</string>
     <string name="copied">Zkopírováno!</string>
     <string name="restore_layout_title">Obnovit rozložení</string>
     <string name="restore_layout_message">Tím nahradíte aktuální rozložení a barvy.</string>
+    <string name="restore_layout_and_colors">Rozložení a barvy</string>
+    <string name="restore_layout_only">Jen rozložení</string>
+    <string name="restore_layout_only_message">Aktuální rozložení bude nahrazeno. Barvy zůstanou.</string>
+    <string name="restore_colors_only_message">Aktuální barvy budou nahrazeny. Rozložení zůstane.</string>
+    <string name="saved_without_colors">Uloženo bez barev (používaly se barvy motivu)</string>
     <string name="delete_confirm">Smazat?</string>
     <string name="layout_restored">Rozložení obnoveno!</string>
     <string name="saved_layouts_title">Uložená rozložení</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Pouze barvy</string>
     <string name="custom_colors_applied">Vlastní barvy použity</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Zatím žádná uložená rozložení</string>
     <string name="transparent_background">Průhledné pozadí</string>
     <string name="preview_info">Tvar: %1$s | Řady: %2$d\nUloženo: %3$s</string>
+    <string name="preview_side_offsets">Boční klávesy: vlevo %1$s, vpravo %2$s\nNa šířku: vlevo %3$s, vpravo %4$s</string>
     <string name="preview_colors_label">Barvy (klepnutím upravíte):</string>
     <string name="swatch_keys">Klávesy</string>
     <string name="swatch_text">Text</string>

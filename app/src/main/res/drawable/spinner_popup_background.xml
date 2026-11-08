@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Open dropdown list: same surface, border and corners as the closed dropdown.
+     Spinner shrinks the list by its own start / end padding (MainSpinner: 14dp / 38dp) and
+     shifts it by start padding minus this padding, so the same values here make the list
+     exactly as wide as the dropdown. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/main_spinner_bg" />
+    <stroke
+        android:width="1.5dp"
+        android:color="@color/main_spinner_border" />
+    <corners android:radius="12dp" />
+    <padding
+        android:bottom="6dp"
+        android:left="14dp"
+        android:right="38dp"
+        android:top="6dp" />
+</shape>

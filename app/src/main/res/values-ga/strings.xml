@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spás idir sraitheanna: %1$s</string>
     <string name="main_bind_long_press">Brú fada</string>
     <string name="main_colors">Dathanna</string>
+    <string name="main_side_offsets">Suíomh na gcnaipí taoibh</string>
+    <string name="side_offset_left">Cnaipí taoibh ar chlé: %1$s</string>
+    <string name="side_offset_left_landscape">Cnaipí taoibh ar chlé (tírdhreach): %1$s</string>
+    <string name="side_offset_right">Cnaipí taoibh ar dheis: %1$s</string>
+    <string name="side_offset_right_landscape">Cnaipí taoibh ar dheis (tírdhreach): %1$s</string>
+    <string name="side_offset_hint">Bog na cnaipí taoibh beagán má shíneann siad isteach in imeall cruinn an scáileáin. ◊ = suíomh réamhshocraithe.</string>
+    <string name="side_offset_direction">← ar chlé · ar dheis →</string>
     <string name="main_vibration">Creathadh</string>
     <string name="main_suggestions">Moltaí focal</string>
     <string name="main_export">Easpórtáil socruithe</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triantán</string>
     <string name="shape_circle">Ciorcal</string>
     <string name="shape_cube">Ciúb</string>
-    <string name="option_on">Air</string>
-    <string name="option_off">As</string>
     <string name="theme_light">Geal</string>
     <string name="theme_dark">Dorcha</string>
     <string name="theme_transparent">Trédhearcach</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Socruithe RGB</string>
     <string name="theme_btn_saved_layouts">Leaganacha amach sábháilte</string>
     <string name="reset_hint">Athshocraigh…</string>
-    <string name="reset_colors">Athshocraigh dathanna</string>
-    <string name="reset_layout">Athshocraigh leagan amach</string>
-    <string name="reset_all">Athshocraigh gach rud</string>
+    <string name="reset_none">Faic</string>
+    <string name="reset_colors">Dathanna amháin</string>
+    <string name="reset_layout">Leagan amach na n-eochracha</string>
+    <string name="reset_all">Dathanna agus leagan amach</string>
     <string name="backup_name">Cúltaca %1$s</string>
     <string name="reset_done_all">Leagan amach agus dathanna athshocraithe. Sábháladh an staid roimhe mar chúltaca.</string>
     <string name="reset_done_colors">Dathanna athshocraithe. Sábháladh an staid roimhe mar chúltaca.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Dath na deilbhíní</string>
     <string name="color_text">Dath an téacs</string>
     <string name="color_use_theme">Úsáid dathanna an téama</string>
+    <string name="color_no_background">Gan chúlra</string>
     <string name="color_all_keys_same">An dath céanna ar gach eochair</string>
     <string name="color_key_use_default">Dath réamhshocraithe don eochair seo</string>
     <string name="bg_mode_theme">De réir téama</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Craiceáilte ← → Socair</string>
     <string name="rgb_saturation">Sáithiú: %1$d%%</string>
     <string name="rgb_brightness">Gile: %1$d%%</string>
-    <string name="rgb_settings_saved">Socruithe %1$s sábháilte</string>
     <string name="lp_section_alphabet">Brú fada – litreacha</string>
     <string name="lp_section_numeric">Brú fada – uimhreacha</string>
     <string name="lp_section_my_binds">Mo cheangail</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Clóscríobh téacs ar bith</string>
     <string name="lp_custom_add">Cuir leis</string>
     <string name="lp_custom_already">Ceangailte leis an eochair seo cheana</string>
+    <string name="lp_max_bindings">Is féidir %1$d ar a mhéad a cheangal le heochair</string>
     <string name="lp_custom_bound">Ceangailte leis an eochair seo:</string>
     <string name="lp_editor_title">Brú fada: %1$s</string>
     <string name="lp_nothing_bound">Níl aon rud ceangailte – tapáil carachtair thíos</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Leagan amach litreacha</string>
     <string name="layout_section_numeric">Leagan amach uimhreacha</string>
+    <string name="layout_section_keys">Litreacha agus uimhreacha</string>
+    <string name="layout_preset_label">Teimpléad:</string>
+    <string name="layout_preset_custom">Leagan amach féin</string>
     <string name="layout_section_side">Eochracha taoibh</string>
     <string name="layout_section_horizontal">Lár cothrománach</string>
     <string name="layout_section_emoji">Socruithe emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Dún</string>
     <string name="emoji_btn_backspace">Cúlspás</string>
     <string name="emoji_btn_space">Spás</string>
-    <string name="saved_layouts_header">-- Leaganacha amach sábháilte (%1$d) --</string>
-    <string name="saved_layouts_label">Leaganacha amach sábháilte:</string>
-    <string name="swap_selected">Malartaigh na cinn roghnaithe</string>
-    <string name="select_two_keys">Roghnaigh 2 eochair</string>
     <string name="color_picker_brightness">Gile</string>
     <string name="copied">Cóipeáilte!</string>
     <string name="restore_layout_title">Athchóirigh leagan amach</string>
     <string name="restore_layout_message">Cuirfidh sé seo in ionad do leagan amach agus do dhathanna reatha.</string>
+    <string name="restore_layout_and_colors">Leagan amach agus dathanna</string>
+    <string name="restore_layout_only">Leagan amach amháin</string>
+    <string name="restore_layout_only_message">Cuirfear leagan amach eile in ionad an leagain amach reatha. Fanann na dathanna.</string>
+    <string name="restore_colors_only_message">Cuirfear dathanna eile in ionad na ndathanna reatha. Fanann an leagan amach.</string>
+    <string name="saved_without_colors">Sábháilte gan dathanna (bhí dathanna an téama in úsáid)</string>
     <string name="delete_confirm">Scrios?</string>
     <string name="layout_restored">Leagan amach athchóirithe!</string>
     <string name="saved_layouts_title">Leaganacha amach sábháilte</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Dathanna amháin</string>
     <string name="custom_colors_applied">Dathanna saincheaptha curtha i bhfeidhm</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Níl aon leagan amach sábháilte fós</string>
     <string name="transparent_background">Cúlra trédhearcach</string>
     <string name="preview_info">Cruth: %1$s | Sraitheanna: %2$d\nSábháilte: %3$s</string>
+    <string name="preview_side_offsets">Cnaipí taoibh: clé %1$s, deis %2$s\nTírdhreach: clé %3$s, deis %4$s</string>
     <string name="preview_colors_label">Dathanna (tapáil chun eagarthóireacht):</string>
     <string name="swatch_keys">Eochracha</string>
     <string name="swatch_text">Téacs</string>

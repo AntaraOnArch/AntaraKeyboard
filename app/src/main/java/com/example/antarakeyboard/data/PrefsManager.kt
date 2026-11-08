@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 /**
  * Theme preferences shared by the main app and the keyboard service (`theme_prefs`).
@@ -31,7 +32,7 @@ object PrefsManager {
         theme(context).getBoolean(KEY_DARK_MODE, true)
 
     fun setDarkMode(context: Context, isDark: Boolean) {
-        theme(context).edit().putBoolean(KEY_DARK_MODE, isDark).apply()
+        theme(context).edit { putBoolean(KEY_DARK_MODE, isDark) }
     }
 
     /** True while a saved layout ("Custom" theme) is the active theme. */
@@ -39,7 +40,7 @@ object PrefsManager {
         theme(context).getBoolean(KEY_USE_CUSTOM_THEME, false)
 
     fun setCustomTheme(context: Context, enabled: Boolean) {
-        theme(context).edit().putBoolean(KEY_USE_CUSTOM_THEME, enabled).apply()
+        theme(context).edit { putBoolean(KEY_USE_CUSTOM_THEME, enabled) }
     }
 
     /**
@@ -50,6 +51,6 @@ object PrefsManager {
         theme(context).getString(KEY_APP_LANGUAGE, "") ?: ""
 
     fun setAppLanguage(context: Context, tag: String) {
-        theme(context).edit().putString(KEY_APP_LANGUAGE, tag).apply()
+        theme(context).edit { putString(KEY_APP_LANGUAGE, tag) }
     }
 }

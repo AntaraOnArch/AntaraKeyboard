@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Radavstånd: %1$s</string>
     <string name="main_bind_long_press">Långt tryck</string>
     <string name="main_colors">Färger</string>
+    <string name="main_side_offsets">Placering av sidoknappar</string>
+    <string name="side_offset_left">Vänstra sidoknappar: %1$s</string>
+    <string name="side_offset_left_landscape">Vänstra sidoknappar (liggande): %1$s</string>
+    <string name="side_offset_right">Högra sidoknappar: %1$s</string>
+    <string name="side_offset_right_landscape">Högra sidoknappar (liggande): %1$s</string>
+    <string name="side_offset_hint">Flytta sidoknapparna lite om de hamnar i en rundad skärmkant. ◊ = standardplacering.</string>
+    <string name="side_offset_direction">← vänster · höger →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordförslag</string>
     <string name="main_export">Exportera inställningar</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triangel</string>
     <string name="shape_circle">Cirkel</string>
     <string name="shape_cube">Kub</string>
-    <string name="option_on">På</string>
-    <string name="option_off">Av</string>
     <string name="theme_light">Ljust</string>
     <string name="theme_dark">Mörkt</string>
     <string name="theme_transparent">Genomskinligt</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-inställningar</string>
     <string name="theme_btn_saved_layouts">Sparade layouter</string>
     <string name="reset_hint">Återställ…</string>
-    <string name="reset_colors">Återställ färger</string>
-    <string name="reset_layout">Återställ layout</string>
-    <string name="reset_all">Återställ allt</string>
+    <string name="reset_none">Inget</string>
+    <string name="reset_colors">Endast färger</string>
+    <string name="reset_layout">Tangentlayout</string>
+    <string name="reset_all">Färger och layout</string>
     <string name="backup_name">Säkerhetskopia %1$s</string>
     <string name="reset_done_all">Layout och färger återställda. Tidigare läge sparat som säkerhetskopia.</string>
     <string name="reset_done_colors">Färger återställda. Tidigare läge sparat som säkerhetskopia.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Ikonfärg</string>
     <string name="color_text">Textfärg</string>
     <string name="color_use_theme">Använd temafärger</string>
+    <string name="color_no_background">Ingen bakgrund</string>
     <string name="color_all_keys_same">Alla tangenter samma färg</string>
     <string name="color_key_use_default">Standard för den här tangenten</string>
     <string name="bg_mode_theme">Enligt tema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Galet ← → Lugnt</string>
     <string name="rgb_saturation">Mättnad: %1$d %%</string>
     <string name="rgb_brightness">Ljusstyrka: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-inställningar sparade</string>
     <string name="lp_section_alphabet">Långt tryck – bokstäver</string>
     <string name="lp_section_numeric">Långt tryck – siffror</string>
     <string name="lp_section_my_binds">Mina kopplingar</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Skriv valfri text</string>
     <string name="lp_custom_add">Lägg till</string>
     <string name="lp_custom_already">Redan kopplad till den här tangenten</string>
+    <string name="lp_max_bindings">En tangent kan ha högst %1$d kopplingar</string>
     <string name="lp_custom_bound">Kopplat till den här tangenten:</string>
     <string name="lp_editor_title">Långt tryck: %1$s</string>
     <string name="lp_nothing_bound">Inget kopplat – tryck på tecknen nedan</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Bokstavslayout</string>
     <string name="layout_section_numeric">Sifferlayout</string>
+    <string name="layout_section_keys">Bokstäver och siffror</string>
+    <string name="layout_preset_label">Mall:</string>
+    <string name="layout_preset_custom">Egen layout</string>
     <string name="layout_section_side">Sidoknappar</string>
     <string name="layout_section_horizontal">Horisontellt mitt</string>
     <string name="layout_section_emoji">Emoji-inställningar</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Stäng</string>
     <string name="emoji_btn_backspace">Backsteg</string>
     <string name="emoji_btn_space">Mellanslag</string>
-    <string name="saved_layouts_header">-- Sparade layouter (%1$d) --</string>
-    <string name="saved_layouts_label">Sparade layouter:</string>
-    <string name="swap_selected">Byt plats på valda</string>
-    <string name="select_two_keys">Välj 2 tangenter</string>
     <string name="color_picker_brightness">Ljusstyrka</string>
     <string name="copied">Kopierat!</string>
     <string name="restore_layout_title">Återställ layout</string>
     <string name="restore_layout_message">Detta ersätter din nuvarande layout och dina färger.</string>
+    <string name="restore_layout_and_colors">Layout och färger</string>
+    <string name="restore_layout_only">Endast layout</string>
+    <string name="restore_layout_only_message">Din nuvarande layout ersätts. Färgerna behålls.</string>
+    <string name="restore_colors_only_message">Dina nuvarande färger ersätts. Layouten behålls.</string>
+    <string name="saved_without_colors">Sparad utan färger (temafärgerna användes)</string>
     <string name="delete_confirm">Radera?</string>
     <string name="layout_restored">Layout återställd!</string>
     <string name="saved_layouts_title">Sparade layouter</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Endast färger</string>
     <string name="custom_colors_applied">Egna färger tillämpade</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Inga sparade layouter än</string>
     <string name="transparent_background">Genomskinlig bakgrund</string>
     <string name="preview_info">Form: %1$s | Rader: %2$d\nSparad: %3$s</string>
+    <string name="preview_side_offsets">Sidoknappar: vänster %1$s, höger %2$s\nLiggande: vänster %3$s, höger %4$s</string>
     <string name="preview_colors_label">Färger (tryck för att redigera):</string>
     <string name="swatch_keys">Tangenter</string>
     <string name="swatch_text">Text</string>

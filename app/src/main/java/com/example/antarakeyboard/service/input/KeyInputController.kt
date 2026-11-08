@@ -155,7 +155,7 @@ class KeyInputController(
                 val absDx = abs(dx)
                 val absDy = abs(dy)
 
-                if (dy < -24.dp(service.resources) && absDy > absDx) {
+                if (dy < -(24.dp(service.resources)) && absDy > absDx) {
 
                     when {
 

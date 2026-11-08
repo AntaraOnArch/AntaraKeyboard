@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Radavstand: %1$s</string>
     <string name="main_bind_long_press">Langt trykk</string>
     <string name="main_colors">Farger</string>
+    <string name="main_side_offsets">Plassering av sidetaster</string>
+    <string name="side_offset_left">Venstre sidetaster: %1$s</string>
+    <string name="side_offset_left_landscape">Venstre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_right">Høyre sidetaster: %1$s</string>
+    <string name="side_offset_right_landscape">Høyre sidetaster (liggende): %1$s</string>
+    <string name="side_offset_hint">Flytt sidetastene litt hvis de havner i en avrundet skjermkant. ◊ = standardplassering.</string>
+    <string name="side_offset_direction">← venstre · høyre →</string>
     <string name="main_vibration">Vibrering</string>
     <string name="main_suggestions">Ordforslag</string>
     <string name="main_export">Eksporter innstillinger</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trekant</string>
     <string name="shape_circle">Sirkel</string>
     <string name="shape_cube">Kube</string>
-    <string name="option_on">På</string>
-    <string name="option_off">Av</string>
     <string name="theme_light">Lyst</string>
     <string name="theme_dark">Mørkt</string>
     <string name="theme_transparent">Gjennomsiktig</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-innstillinger</string>
     <string name="theme_btn_saved_layouts">Lagrede oppsett</string>
     <string name="reset_hint">Tilbakestill…</string>
-    <string name="reset_colors">Tilbakestill farger</string>
-    <string name="reset_layout">Tilbakestill oppsett</string>
-    <string name="reset_all">Tilbakestill alt</string>
+    <string name="reset_none">Ingenting</string>
+    <string name="reset_colors">Bare farger</string>
+    <string name="reset_layout">Tastoppsett</string>
+    <string name="reset_all">Farger og oppsett</string>
     <string name="backup_name">Sikkerhetskopi %1$s</string>
     <string name="reset_done_all">Oppsett og farger tilbakestilt. Forrige tilstand er lagret som sikkerhetskopi.</string>
     <string name="reset_done_colors">Farger tilbakestilt. Forrige tilstand er lagret som sikkerhetskopi.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Ikonfarge</string>
     <string name="color_text">Tekstfarge</string>
     <string name="color_use_theme">Bruk temafarger</string>
+    <string name="color_no_background">Ingen bakgrunn</string>
     <string name="color_all_keys_same">Alle taster samme farge</string>
     <string name="color_key_use_default">Standard for denne tasten</string>
     <string name="bg_mode_theme">Etter tema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Vilt ← → Rolig</string>
     <string name="rgb_saturation">Metning: %1$d %%</string>
     <string name="rgb_brightness">Lysstyrke: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-innstillinger lagret</string>
     <string name="lp_section_alphabet">Langt trykk – bokstaver</string>
     <string name="lp_section_numeric">Langt trykk – tall</string>
     <string name="lp_section_my_binds">Mine tilordninger</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Skriv hvilken som helst tekst</string>
     <string name="lp_custom_add">Legg til</string>
     <string name="lp_custom_already">Allerede tilordnet denne tasten</string>
+    <string name="lp_max_bindings">En tast kan ha høyst %1$d tilordninger</string>
     <string name="lp_custom_bound">Tilordnet denne tasten:</string>
     <string name="lp_editor_title">Langt trykk: %1$s</string>
     <string name="lp_nothing_bound">Ingenting tilordnet – trykk på tegnene nedenfor</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Bokstavoppsett</string>
     <string name="layout_section_numeric">Talloppsett</string>
+    <string name="layout_section_keys">Bokstaver og tall</string>
+    <string name="layout_preset_label">Mal:</string>
+    <string name="layout_preset_custom">Egen layout</string>
     <string name="layout_section_side">Sideknapper</string>
     <string name="layout_section_horizontal">Vannrett midte</string>
     <string name="layout_section_emoji">Emoji-innstillinger</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Lukk</string>
     <string name="emoji_btn_backspace">Tilbake</string>
     <string name="emoji_btn_space">Mellomrom</string>
-    <string name="saved_layouts_header">-- Lagrede oppsett (%1$d) --</string>
-    <string name="saved_layouts_label">Lagrede oppsett:</string>
-    <string name="swap_selected">Bytt valgte</string>
-    <string name="select_two_keys">Velg 2 taster</string>
     <string name="color_picker_brightness">Lysstyrke</string>
     <string name="copied">Kopiert!</string>
     <string name="restore_layout_title">Gjenopprett oppsett</string>
     <string name="restore_layout_message">Dette erstatter nåværende oppsett og farger.</string>
+    <string name="restore_layout_and_colors">Oppsett og farger</string>
+    <string name="restore_layout_only">Bare oppsett</string>
+    <string name="restore_layout_only_message">Det nåværende oppsettet erstattes. Fargene beholdes.</string>
+    <string name="restore_colors_only_message">De nåværende fargene erstattes. Oppsettet beholdes.</string>
+    <string name="saved_without_colors">Lagret uten farger (temafargene var i bruk)</string>
     <string name="delete_confirm">Slette?</string>
     <string name="layout_restored">Oppsett gjenopprettet!</string>
     <string name="saved_layouts_title">Lagrede oppsett</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Bare farger</string>
     <string name="custom_colors_applied">Egne farger brukt</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ingen lagrede oppsett ennå</string>
     <string name="transparent_background">Gjennomsiktig bakgrunn</string>
     <string name="preview_info">Form: %1$s | Rader: %2$d\nLagret: %3$s</string>
+    <string name="preview_side_offsets">Sidetaster: venstre %1$s, høyre %2$s\nLiggende: venstre %3$s, høyre %4$s</string>
     <string name="preview_colors_label">Farger (trykk for å redigere):</string>
     <string name="swatch_keys">Taster</string>
     <string name="swatch_text">Tekst</string>

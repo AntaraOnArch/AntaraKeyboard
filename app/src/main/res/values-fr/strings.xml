@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Clavier Antara</string>
     <string name="main_enable">Activer</string>
     <string name="main_choose">Choisir</string>
@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Espacement des rangées : %1$s</string>
     <string name="main_bind_long_press">Appui long</string>
     <string name="main_colors">Couleurs</string>
+    <string name="main_side_offsets">Position des touches latérales</string>
+    <string name="side_offset_left">Touches latérales gauches: %1$s</string>
+    <string name="side_offset_left_landscape">Touches latérales gauches (paysage): %1$s</string>
+    <string name="side_offset_right">Touches latérales droites: %1$s</string>
+    <string name="side_offset_right_landscape">Touches latérales droites (paysage): %1$s</string>
+    <string name="side_offset_hint">Décalez légèrement les touches latérales si elles débordent sur un bord d’écran arrondi. ◊ = position par défaut.</string>
+    <string name="side_offset_direction">← gauche · droite →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Suggestions de mots</string>
     <string name="main_export">Exporter les réglages</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triangle</string>
     <string name="shape_circle">Cercle</string>
     <string name="shape_cube">Cube</string>
-    <string name="option_on">Activé</string>
-    <string name="option_off">Désactivé</string>
     <string name="theme_light">Clair</string>
     <string name="theme_dark">Sombre</string>
     <string name="theme_transparent">Transparent</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Réglages RGB</string>
     <string name="theme_btn_saved_layouts">Dispositions enregistrées</string>
     <string name="reset_hint">Réinitialiser…</string>
-    <string name="reset_colors">Réinitialiser les couleurs</string>
-    <string name="reset_layout">Réinitialiser la disposition</string>
-    <string name="reset_all">Tout réinitialiser</string>
+    <string name="reset_none">Rien</string>
+    <string name="reset_colors">Couleurs uniquement</string>
+    <string name="reset_layout">Disposition des touches</string>
+    <string name="reset_all">Couleurs et disposition</string>
     <string name="backup_name">Sauvegarde %1$s</string>
     <string name="reset_done_all">Disposition et couleurs réinitialisées. L\'état précédent est sauvegardé.</string>
     <string name="reset_done_colors">Couleurs réinitialisées. L\'état précédent est sauvegardé.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Couleur de l\'icône</string>
     <string name="color_text">Couleur du texte</string>
     <string name="color_use_theme">Utiliser les couleurs du thème</string>
+    <string name="color_no_background">Sans arrière-plan</string>
     <string name="color_all_keys_same">Même couleur pour toutes les touches</string>
     <string name="color_key_use_default">Couleur par défaut pour cette touche</string>
     <string name="bg_mode_theme">Selon le thème</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Fou ← → Calme</string>
     <string name="rgb_saturation">Saturation : %1$d %%</string>
     <string name="rgb_brightness">Luminosité : %1$d %%</string>
-    <string name="rgb_settings_saved">Réglages %1$s enregistrés</string>
     <string name="lp_section_alphabet">Appui long – lettres</string>
     <string name="lp_section_numeric">Appui long – chiffres</string>
     <string name="lp_section_my_binds">Mes associations</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Saisissez un texte</string>
     <string name="lp_custom_add">Ajouter</string>
     <string name="lp_custom_already">Déjà associé à cette touche</string>
+    <string name="lp_max_bindings">Une touche peut avoir au maximum %1$d associations</string>
     <string name="lp_custom_bound">Associé à cette touche :</string>
     <string name="lp_editor_title">Appui long : %1$s</string>
     <string name="lp_nothing_bound">Rien d\'associé – touchez les caractères ci-dessous</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Disposition des lettres</string>
     <string name="layout_section_numeric">Disposition des chiffres</string>
+    <string name="layout_section_keys">Lettres et chiffres</string>
+    <string name="layout_preset_label">Modèle :</string>
+    <string name="layout_preset_custom">Disposition personnalisée</string>
     <string name="layout_section_side">Touches latérales</string>
     <string name="layout_section_horizontal">Centre horizontal</string>
     <string name="layout_section_emoji">Réglages des emojis</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Fermer</string>
     <string name="emoji_btn_backspace">Retour arrière</string>
     <string name="emoji_btn_space">Espace</string>
-    <string name="saved_layouts_header">-- Dispositions enregistrées (%1$d) --</string>
-    <string name="saved_layouts_label">Dispositions enregistrées :</string>
-    <string name="swap_selected">Échanger la sélection</string>
-    <string name="select_two_keys">Sélectionnez 2 touches</string>
     <string name="color_picker_brightness">Luminosité</string>
     <string name="copied">Copié !</string>
     <string name="restore_layout_title">Restaurer la disposition</string>
     <string name="restore_layout_message">Cela remplacera votre disposition et vos couleurs actuelles.</string>
+    <string name="restore_layout_and_colors">Disposition et couleurs</string>
+    <string name="restore_layout_only">Disposition seule</string>
+    <string name="restore_layout_only_message">Votre disposition actuelle sera remplacée. Les couleurs restent.</string>
+    <string name="restore_colors_only_message">Vos couleurs actuelles seront remplacées. La disposition reste.</string>
+    <string name="saved_without_colors">Enregistré sans couleurs (les couleurs du thème étaient utilisées)</string>
     <string name="delete_confirm">Supprimer ?</string>
     <string name="layout_restored">Disposition restaurée !</string>
     <string name="saved_layouts_title">Dispositions enregistrées</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Couleurs uniquement</string>
     <string name="custom_colors_applied">Couleurs personnalisées appliquées</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Aucune disposition enregistrée</string>
     <string name="transparent_background">Arrière-plan transparent</string>
     <string name="preview_info">Forme : %1$s | Rangées : %2$d\nEnregistré : %3$s</string>
+    <string name="preview_side_offsets">Touches latérales : gauche %1$s, droite %2$s\nPaysage : gauche %3$s, droite %4$s</string>
     <string name="preview_colors_label">Couleurs (touchez pour modifier) :</string>
     <string name="swatch_keys">Touches</string>
     <string name="swatch_text">Texte</string>
@@ -227,7 +238,8 @@
     <string name="emoji_no_recent">Aucun emoji récent</string>
     <string name="emoji_empty_category">Aucun emoji dans cette catégorie</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d rangée</item>
         <item quantity="many">%d rangées</item>
         <item quantity="other">%d rangées</item>

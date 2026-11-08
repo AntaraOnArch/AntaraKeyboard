@@ -1,6 +1,7 @@
 package com.example.antarakeyboard.data
 
 import android.content.Context
+import androidx.core.content.edit
 import com.example.antarakeyboard.model.EdgeActionType
 import com.example.antarakeyboard.model.EdgeSlot
 import org.json.JSONArray
@@ -76,11 +77,6 @@ object EdgeSlotsStorage {
                 EdgeSlot(5, EdgePos.Side.RIGHT, EdgeActionType.NONE),
             )
         }
-    }
-
-    fun defaultSlots(ctx: Context): List<EdgeSlot> {
-        val rowCount = KeyboardPrefs.getRowCount(ctx)
-        return defaultSlots(rowCount)
     }
 
     fun load(ctx: Context): List<EdgeSlot> {
@@ -159,9 +155,7 @@ object EdgeSlotsStorage {
         }
 
         ctx.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(key, arr.toString())
-            .apply()
+            .edit { putString(key, arr.toString()) }
     }
 
     fun reset(ctx: Context) {

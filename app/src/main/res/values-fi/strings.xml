@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Rivien väli: %1$s</string>
     <string name="main_bind_long_press">Pitkä painallus</string>
     <string name="main_colors">Värit</string>
+    <string name="main_side_offsets">Sivunäppäinten sijainti</string>
+    <string name="side_offset_left">Vasemmat sivunäppäimet: %1$s</string>
+    <string name="side_offset_left_landscape">Vasemmat sivunäppäimet (vaaka): %1$s</string>
+    <string name="side_offset_right">Oikeat sivunäppäimet: %1$s</string>
+    <string name="side_offset_right_landscape">Oikeat sivunäppäimet (vaaka): %1$s</string>
+    <string name="side_offset_hint">Siirrä sivunäppäimiä hieman, jos ne ulottuvat pyöristetylle näytön reunalle. ◊ = oletussijainti.</string>
+    <string name="side_offset_direction">← vasemmalle · oikealle →</string>
     <string name="main_vibration">Värinä</string>
     <string name="main_suggestions">Sanaehdotukset</string>
     <string name="main_export">Vie asetukset</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Kolmio</string>
     <string name="shape_circle">Ympyrä</string>
     <string name="shape_cube">Kuutio</string>
-    <string name="option_on">Päällä</string>
-    <string name="option_off">Pois</string>
     <string name="theme_light">Vaalea</string>
     <string name="theme_dark">Tumma</string>
     <string name="theme_transparent">Läpinäkyvä</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB-asetukset</string>
     <string name="theme_btn_saved_layouts">Tallennetut asettelut</string>
     <string name="reset_hint">Palauta…</string>
-    <string name="reset_colors">Palauta värit</string>
-    <string name="reset_layout">Palauta asettelu</string>
-    <string name="reset_all">Palauta kaikki</string>
+    <string name="reset_none">Ei mitään</string>
+    <string name="reset_colors">Vain värit</string>
+    <string name="reset_layout">Näppäinasettelu</string>
+    <string name="reset_all">Värit ja asettelu</string>
     <string name="backup_name">Varmuuskopio %1$s</string>
     <string name="reset_done_all">Asettelu ja värit palautettu. Aiempi tila tallennettiin varmuuskopioksi.</string>
     <string name="reset_done_colors">Värit palautettu. Aiempi tila tallennettiin varmuuskopioksi.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Kuvakkeen väri</string>
     <string name="color_text">Tekstin väri</string>
     <string name="color_use_theme">Käytä teeman värejä</string>
+    <string name="color_no_background">Ei taustaa</string>
     <string name="color_all_keys_same">Kaikki näppäimet samanvärisiä</string>
     <string name="color_key_use_default">Oletusväri tälle näppäimelle</string>
     <string name="bg_mode_theme">Teeman mukaan</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Hurja ← → Rauhallinen</string>
     <string name="rgb_saturation">Kylläisyys: %1$d %%</string>
     <string name="rgb_brightness">Kirkkaus: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s-asetukset tallennettu</string>
     <string name="lp_section_alphabet">Pitkä painallus – kirjaimet</string>
     <string name="lp_section_numeric">Pitkä painallus – numerot</string>
     <string name="lp_section_my_binds">Omat määritykset</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Kirjoita mitä tahansa tekstiä</string>
     <string name="lp_custom_add">Lisää</string>
     <string name="lp_custom_already">Jo määritetty tälle näppäimelle</string>
+    <string name="lp_max_bindings">Näppäimelle voi määrittää enintään %1$d</string>
     <string name="lp_custom_bound">Määritetty tälle näppäimelle:</string>
     <string name="lp_editor_title">Pitkä painallus: %1$s</string>
     <string name="lp_nothing_bound">Ei määrityksiä – napauta merkkejä alla</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Kirjainasettelu</string>
     <string name="layout_section_numeric">Numeroasettelu</string>
+    <string name="layout_section_keys">Kirjaimet ja numerot</string>
+    <string name="layout_preset_label">Malli:</string>
+    <string name="layout_preset_custom">Oma asettelu</string>
     <string name="layout_section_side">Sivunäppäimet</string>
     <string name="layout_section_horizontal">Vaakasuora keskiosa</string>
     <string name="layout_section_emoji">Emoji-asetukset</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Sulje</string>
     <string name="emoji_btn_backspace">Askelpalautin</string>
     <string name="emoji_btn_space">Välilyönti</string>
-    <string name="saved_layouts_header">-- Tallennetut asettelut (%1$d) --</string>
-    <string name="saved_layouts_label">Tallennetut asettelut:</string>
-    <string name="swap_selected">Vaihda valitut</string>
-    <string name="select_two_keys">Valitse 2 näppäintä</string>
     <string name="color_picker_brightness">Kirkkaus</string>
     <string name="copied">Kopioitu!</string>
     <string name="restore_layout_title">Palauta asettelu</string>
     <string name="restore_layout_message">Tämä korvaa nykyisen asettelun ja värit.</string>
+    <string name="restore_layout_and_colors">Asettelu ja värit</string>
+    <string name="restore_layout_only">Vain asettelu</string>
+    <string name="restore_layout_only_message">Nykyinen asettelu korvataan. Värit säilyvät.</string>
+    <string name="restore_colors_only_message">Nykyiset värit korvataan. Asettelu säilyy.</string>
+    <string name="saved_without_colors">Tallennettu ilman värejä (käytössä olivat teeman värit)</string>
     <string name="delete_confirm">Poistetaanko?</string>
     <string name="layout_restored">Asettelu palautettu!</string>
     <string name="saved_layouts_title">Tallennetut asettelut</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Vain värit</string>
     <string name="custom_colors_applied">Omat värit otettu käyttöön</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ei vielä tallennettuja asetteluja</string>
     <string name="transparent_background">Läpinäkyvä tausta</string>
     <string name="preview_info">Muoto: %1$s | Rivit: %2$d\nTallennettu: %3$s</string>
+    <string name="preview_side_offsets">Sivunäppäimet: vasen %1$s, oikea %2$s\nVaaka: vasen %3$s, oikea %4$s</string>
     <string name="preview_colors_label">Värit (muokkaa napauttamalla):</string>
     <string name="swatch_keys">Näppäimet</string>
     <string name="swatch_text">Teksti</string>

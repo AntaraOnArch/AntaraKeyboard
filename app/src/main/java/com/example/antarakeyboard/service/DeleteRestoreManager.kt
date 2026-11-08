@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Manages delete/restore swipe gestures and backspace hold functionality.
@@ -147,7 +148,7 @@ class DeleteRestoreManager(
         deleteOneForSwipe()
         deleteRepeatJob = scope.launch {
             while (isActive) {
-                delay(deleteRepeatMs)
+                delay(deleteRepeatMs.milliseconds)
                 deleteOneForSwipe()
             }
         }
@@ -182,7 +183,7 @@ class DeleteRestoreManager(
         restoreOneForSwipe()
         restoreRepeatJob = scope.launch {
             while (isActive) {
-                delay(restoreRepeatMs)
+                delay(restoreRepeatMs.milliseconds)
                 restoreOneForSwipe()
             }
         }
@@ -214,7 +215,7 @@ class DeleteRestoreManager(
         deleteOneForSwipe()
         backspaceHoldJob = scope.launch {
             while (isActive) {
-                delay(backspaceHoldMs)
+                delay(backspaceHoldMs.milliseconds)
                 deleteOneForSwipe()
             }
         }
@@ -240,7 +241,7 @@ class DeleteRestoreManager(
         cancelPendingBackspaceHold()
 
         backspaceStartHoldJob = scope.launch {
-            delay(ViewConfiguration.getLongPressTimeout().toLong())
+            delay(ViewConfiguration.getLongPressTimeout().milliseconds)
             startBackspaceHold()
         }
     }

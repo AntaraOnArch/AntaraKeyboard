@@ -5,7 +5,7 @@ import kotlin.math.roundToInt
 /**
  * Key height and row spacing sliders (main app).
  *
- * Key height changes only the drawn key height ([KeyView.heightStretch]); key widths and the
+ * Key height changes only the drawn key height ([com.example.antarakeyboard.ui.KeyView.heightStretch]); key widths and the
  * spacing between keys and rows stay as tuned. Row spacing adds (or removes) vertical space
  * between rows and touches nothing else.
  */
@@ -16,6 +16,9 @@ object KeyScale {
 
     /** 3-row portrait triangles are drawn this much taller at 100 % on the slider. */
     const val THREE_ROW_TRIANGLE_DEFAULT = 1.5f
+
+    /** 3-row cubes are drawn this much taller at 100 % on the slider (easier to hit). */
+    const val THREE_ROW_CUBE_DEFAULT = 1.2f
 
     /** Row spacing slider range in dp (0 = tuned default). */
     const val ROW_SPACING_MIN_DP = -8
@@ -28,7 +31,7 @@ object KeyScale {
     /**
      * Honeycomb row overlap for hexagons of height [hexHeight] (at 100 %) stretched by [stretch].
      * A hexagon tip is a quarter of its height; the overlap grows by exactly the tip growth,
-     * so neighbouring rows stay interlocked with the same gap.
+     * so neighboring rows stay interlocked with the same gap.
      */
     fun honeycombOverlap(baseOverlap: Int, hexHeight: Float, stretch: Float): Int =
         (baseOverlap + hexHeight * 0.25f * (stretch - 1f)).roundToInt()

@@ -1,9 +1,9 @@
 package com.example.antarakeyboard.service
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
-import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import com.example.antarakeyboard.EmojiData
@@ -73,7 +72,7 @@ interface EmojiPickerCallback {
 }
 
 /**
- * Manages the emoji picker popup with:
+ * Emoji picker panel, shown in place of the keyboard (inside overlayLayer, same size) with:
  * - Category tabs on the left
  * - Emoji grid in the center
  * - 3 action buttons on the right (configurable order)
@@ -99,74 +98,65 @@ class EmojiPickerManager(
     private var colors = Colors(0xFF1E1E1E.toInt(), 0xFF2A2A2A.toInt(), 0xFF3A3A3A.toInt(), Color.WHITE, 0x88FFFFFF.toInt())
     private var loadJob: Job? = null
 
-    private var popup: PopupWindow? = null
+    private var panel: View? = null
+    private var columns = MIN_COLUMNS
     private var currentCategory: EmojiCategory = EmojiCategory.SMILEYS
     private var categoryTabs: Map<EmojiCategory, View> = emptyMap()
     private var emojiContainer: LinearLayout? = null
     private var loadedCategories: MutableSet<EmojiCategory> = mutableSetOf()
 
-    val isShowing: Boolean
-        get() = popup != null
-
-    fun show(keyboardHeight: Int) {
+    fun show() {
         hide()
         colors = colorsProvider()
 
         val overlayLayer = overlayLayerProvider()
-        val screenWidth = context.resources.displayMetrics.widthPixels
 
         // Read layout settings
         val tabsPosition = EmojiPickerStorage.getTabsPosition(context)
         val buttonsSide = EmojiPickerStorage.getButtonsSide(context)
-
-        // Dimensions
-        val popupWidth = (screenWidth * 0.85f).toInt().coerceAtLeast(280.dp(context))
-        val popupHeight = (keyboardHeight * 0.88f).toInt()
 
         val categoryTabSize = 36.dp(context)
         val actionButtonSize = 44.dp(context)
 
         val isTabsHorizontal = tabsPosition == TabsPosition.TOP || tabsPosition == TabsPosition.BOTTOM
 
+        // Used emojis open first once there are enough of them to be worth it
+        currentCategory = if (EmojiPickerStorage.getRecentEmojis(context).size >= RECENT_FIRST_MIN) {
+            EmojiCategory.RECENT
+        } else {
+            EmojiCategory.SMILEYS
+        }
+
+        // Columns follow the grid's width: more emojis per row in landscape
+        val overlayW = overlayLayer.width.takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels
+        val gridW = overlayW - actionButtonSize - (if (isTabsHorizontal) 0 else categoryTabSize) - 8.dp(context)
+        columns = (gridW / EMOJI_CELL_MIN_W.dp(context)).coerceAtLeast(MIN_COLUMNS)
+
         // Build layout based on settings
         val root = if (isTabsHorizontal) {
-            buildHorizontalTabsLayout(
-                popupWidth, popupHeight,
-                categoryTabSize, actionButtonSize,
-                tabsPosition, buttonsSide
-            )
+            buildHorizontalTabsLayout(categoryTabSize, actionButtonSize, tabsPosition, buttonsSide)
         } else {
-            buildVerticalTabsLayout(
-                popupWidth, popupHeight,
-                categoryTabSize, actionButtonSize,
-                tabsPosition, buttonsSide
-            )
+            buildVerticalTabsLayout(categoryTabSize, actionButtonSize, tabsPosition, buttonsSide)
+        }.apply {
+            tag = PANEL_TAG
+            // Takes every touch, so nothing reaches the keys or the background swipe below
+            isClickable = true
+            // Drawn (and touched) above the keys and side buttons, without a shadow
+            translationZ = PANEL_Z.dp(context).toFloat()
+            outlineProvider = null
         }
 
-        // Create popup
-        popup = PopupWindow(
-            root,
-            popupWidth,
-            popupHeight,
-            false // Not focusable to allow keyboard interaction
+        // Replaces the keyboard in place: as large as the keyboard (side and top padding included,
+        // the bottom keeps the navigation inset), nothing reaches above it over the text
+        overlayLayer.addView(root, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         ).apply {
-            isOutsideTouchable = true
-            isFocusable = false
-            elevation = 12.dp(context).toFloat()
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setOnDismissListener {
-                popup = null
-                loadJob?.cancel()
-                loadJob = null
-                loadedCategories.clear()
-            }
-        }
-
-        // Position: center horizontally, align with keyboard
-        val x = (overlayLayer.width - popupWidth) / 2
-        val y = (overlayLayer.height - popupHeight - 4.dp(context)).coerceAtLeast(0)
-
-        popup?.showAtLocation(overlayLayer, Gravity.NO_GRAVITY, x, y)
+            leftMargin = -overlayLayer.paddingLeft
+            rightMargin = -overlayLayer.paddingRight
+            topMargin = -overlayLayer.paddingTop
+        })
+        panel = root
 
         // Load initial category
         loadCategory(currentCategory)
@@ -174,11 +164,9 @@ class EmojiPickerManager(
 
     /**
      * Build layout with tabs on LEFT or RIGHT (vertical tabs)
-     * Structure: [tabs?] [buttons?] [grid] [buttons?] [tabs?]
+     * Structure: tabs?, buttons?, grid, buttons?, tabs?
      */
     private fun buildVerticalTabsLayout(
-        popupWidth: Int,
-        popupHeight: Int,
         tabSize: Int,
         buttonSize: Int,
         tabsPosition: TabsPosition,
@@ -187,12 +175,10 @@ class EmojiPickerManager(
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setBackgroundColor(colors.background)
-            clipChildren = false
-            clipToPadding = false
         }
 
-        val tabsContainer = createCategoryTabsVertical(tabSize, popupHeight)
-        val actionsContainer = createActionButtonsVertical(buttonSize, popupHeight)
+        val tabsContainer = createCategoryTabsVertical()
+        val actionsContainer = createActionButtonsVertical()
         val gridContainer = createEmojiGridContainer()
 
         // Order depends on settings
@@ -231,12 +217,10 @@ class EmojiPickerManager(
 
     /**
      * Build layout with tabs on TOP or BOTTOM (horizontal tabs)
-     * Structure: Vertical [tabs?] [content row] [tabs?]
-     * Content row: [buttons?] [grid] [buttons?]
+     * Structure: vertical tabs?, content row, tabs?
+     * Content row: buttons?, grid, buttons?
      */
     private fun buildHorizontalTabsLayout(
-        popupWidth: Int,
-        popupHeight: Int,
         tabSize: Int,
         buttonSize: Int,
         tabsPosition: TabsPosition,
@@ -245,12 +229,10 @@ class EmojiPickerManager(
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(colors.background)
-            clipChildren = false
-            clipToPadding = false
         }
 
-        val tabsContainer = createCategoryTabsHorizontal(tabSize)
-        val actionsContainer = createActionButtonsVertical(buttonSize, popupHeight - tabSize)
+        val tabsContainer = createCategoryTabsHorizontal()
+        val actionsContainer = createActionButtonsVertical()
         val gridContainer = createEmojiGridContainer()
 
         // Content row (horizontal: buttons + grid + buttons)
@@ -280,15 +262,22 @@ class EmojiPickerManager(
         return root
     }
 
+    val isShowing: Boolean get() = panel != null
+
     fun hide() {
-        popup?.dismiss()
-        popup = null
+        val view = panel ?: return
+        panel = null
+        (view.parent as? ViewGroup)?.removeView(view)
+        loadJob?.cancel()
+        loadJob = null
+        loadedCategories.clear()
+        emojiContainer = null
     }
 
     /**
      * Create vertical category tabs (for LEFT/RIGHT position)
      */
-    private fun createCategoryTabsVertical(width: Int, height: Int): View {
+    private fun createCategoryTabsVertical(): View {
         val scroll = ScrollView(context).apply {
             isVerticalScrollBarEnabled = false
             setBackgroundColor(colors.panel)
@@ -330,7 +319,7 @@ class EmojiPickerManager(
     /**
      * Create horizontal category tabs (for TOP/BOTTOM position)
      */
-    private fun createCategoryTabsHorizontal(height: Int): View {
+    private fun createCategoryTabsHorizontal(): View {
         val scroll = HorizontalScrollView(context).apply {
             isHorizontalScrollBarEnabled = false
             setBackgroundColor(colors.panel)
@@ -369,6 +358,8 @@ class EmojiPickerManager(
         return scroll
     }
 
+    // The touch listener only blocks the parent from intercepting and returns false
+    @SuppressLint("ClickableViewAccessibility")
     private fun createEmojiGridContainer(): View {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -421,7 +412,7 @@ class EmojiPickerManager(
     /**
      * Create vertical action buttons (stacked top to bottom)
      */
-    private fun createActionButtonsVertical(width: Int, height: Int): View {
+    private fun createActionButtonsVertical(): View {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -430,13 +421,14 @@ class EmojiPickerManager(
         }
 
         val buttonOrder = EmojiPickerStorage.getButtonOrder(context)
-        val buttonHeight = (height - 24.dp(context)) / 3
 
+        // The three buttons share the panel's height
         buttonOrder.forEach { action ->
-            val btn = createActionButton(action, width - 8.dp(context), buttonHeight)
+            val btn = createActionButton(action)
             container.addView(btn, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                buttonHeight
+                0,
+                1f
             ).apply {
                 bottomMargin = 4.dp(context)
             })
@@ -445,7 +437,10 @@ class EmojiPickerManager(
         return container
     }
 
-    private fun createActionButton(action: EmojiButtonAction, width: Int, height: Int): View {
+    // The touch listener only adds visual feedback and returns false; clicks still go through
+    // onClick (and performClick), so calling performClick here would fire twice
+    @SuppressLint("ClickableViewAccessibility")
+    private fun createActionButton(action: EmojiButtonAction): View {
         return TextView(context).apply {
             text = EmojiPickerStorage.getButtonLabel(action)
             textSize = when (action) {
@@ -542,8 +537,7 @@ class EmojiPickerManager(
                     return@withContext
                 }
 
-                // Create emoji rows (5 per row)
-                val columns = 5
+                // Emoji rows; the column count was set from the panel's width in show()
                 val chunked = emojis.chunked(columns)
 
                 chunked.forEach { rowEmojis ->
@@ -575,6 +569,9 @@ class EmojiPickerManager(
         }
     }
 
+    // The touch listener only adds visual feedback and returns false; clicks still go through
+    // onClick (and performClick), so calling performClick here would fire twice
+    @SuppressLint("ClickableViewAccessibility")
     private fun createEmojiButton(emoji: String): View {
         return TextView(context).apply {
             text = emoji
@@ -604,5 +601,15 @@ class EmojiPickerManager(
                 false
             }
         }
+    }
+
+    private companion object {
+        const val PANEL_TAG = "emoji_panel"
+        /** Recent opens first from this many used emojis on. */
+        const val RECENT_FIRST_MIN = 10
+        const val MIN_COLUMNS = 5
+        /** Narrowest emoji cell in dp; decides how many emojis fit in a row. */
+        const val EMOJI_CELL_MIN_W = 64
+        const val PANEL_Z = 16
     }
 }
