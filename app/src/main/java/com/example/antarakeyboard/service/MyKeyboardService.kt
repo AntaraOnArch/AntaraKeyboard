@@ -776,6 +776,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
      * closes the panel once [ROTATION_WINDOW_MS] has passed without one. This is not a limit on how
      * long the panel stays open: a rotation keeps it however long it has been open.
      */
+    // Deprecated, but the only hook for a deliberate hide; there is no replacement.
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onCreateInputMethodInterface(): AbstractInputMethodImpl = object : InputMethodImpl() {
         override fun hideSoftInput(flags: Int, resultReceiver: ResultReceiver?) {
             if (emojiOpenInEditor != null && !partOfRotation()) {

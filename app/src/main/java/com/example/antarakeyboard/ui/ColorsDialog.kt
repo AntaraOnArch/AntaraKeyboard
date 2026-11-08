@@ -36,6 +36,19 @@ class ColorsDialog(
     private val onDismiss: () -> Unit
 ) {
 
+    companion object {
+        // Sections of the dropdown, in its order (Help speed links open one directly)
+        const val SECTION_SPACE = 0
+        const val SECTION_ENTER = 1
+        const val SECTION_SIDE = 2
+        const val SECTION_KEYS = 3
+        const val SECTION_BACKGROUND = 4
+        const val SECTION_THEME_DEFAULTS = 5
+
+        /** Side button background offered when "No background" is turned off and none was set. */
+        private const val DEFAULT_SIDE_BG = 0xFF3A3A3A.toInt()
+    }
+
     // Section name shown in the dropdown → name used in the "<name> saved" toast
     private val colorSections = listOf(
         R.string.colors_section_space to R.string.colors_saved_space,
@@ -46,7 +59,7 @@ class ColorsDialog(
         R.string.colors_section_theme_defaults to R.string.colors_section_theme_defaults
     )
 
-    fun show() {
+    fun show(initialSection: Int = SECTION_SPACE) {
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_colors)
@@ -77,6 +90,7 @@ class ColorsDialog(
             }
         }
 
+        spinnerSection.setSelection(initialSection, false)
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (position == currentSection) return
@@ -91,7 +105,7 @@ class ColorsDialog(
             onDismiss()
         }
 
-        showSection(0)
+        showSection(initialSection)
         dialog.show()
         dialog.window?.setLayout(
             (activity.resources.displayMetrics.widthPixels * 0.92f).toInt(),
@@ -521,10 +535,5 @@ class ColorsDialog(
                     .show()
             }
         })
-    }
-
-    private companion object {
-        /** Side button background offered when "No background" is turned off and none was set. */
-        const val DEFAULT_SIDE_BG = 0xFF3A3A3A.toInt()
     }
 }

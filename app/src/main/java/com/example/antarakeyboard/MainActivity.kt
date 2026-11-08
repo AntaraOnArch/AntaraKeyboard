@@ -3,6 +3,7 @@ package com.example.antarakeyboard
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
@@ -50,6 +51,8 @@ import com.example.antarakeyboard.ui.ColorsDialog
 import com.example.antarakeyboard.extensions.themeColor
 import com.example.antarakeyboard.ui.LayoutEditorDialog
 import com.example.antarakeyboard.ui.LongPressEditorDialog
+import com.example.antarakeyboard.ui.HelpDialog
+import com.example.antarakeyboard.ui.flashHighlight
 import com.example.antarakeyboard.ui.ReselectSpinner
 import com.example.antarakeyboard.ui.RgbSettingsDialog
 import com.example.antarakeyboard.ui.SideOffsetsDialog
@@ -62,6 +65,7 @@ import com.example.antarakeyboard.ui.SavedLayoutsDialog
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var mainScroll: ScrollView
     private lateinit var preview: ShapePreviewView
     private lateinit var spinnerKeyShape: Spinner
     private lateinit var spinnerRowCount: Spinner
@@ -110,6 +114,9 @@ class MainActivity : AppCompatActivity() {
         private const val THEME_CUSTOM = "Custom"
         private const val THEME_RGB_SMOOTH = "RGB Smooth"
         private const val THEME_RGB_WILD = "RGB Wild"
+
+        // Help speed link to a main-screen control: time for the smooth scroll before it flashes
+        private const val JUMP_SCROLL_MS = 300L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Handle system bar insets (status bar + navigation bar)
-        val mainScroll = findViewById<ScrollView>(R.id.mainScroll)
+        mainScroll = findViewById(R.id.mainScroll)
         val mainRoot = findViewById<LinearLayout>(R.id.mainRoot)
 
         ViewCompat.setOnApplyWindowInsetsListener(mainScroll) { _, insets ->
@@ -154,6 +161,8 @@ class MainActivity : AppCompatActivity() {
             )
             insets
         }
+
+        findViewById<View>(R.id.btnHelp).setOnClickListener { showHelp() }
 
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
@@ -761,7 +770,7 @@ class MainActivity : AppCompatActivity() {
        COLORS POPUP
        ========================= */
 
-    private fun openColorsDialog() {
+    private fun openColorsDialog(section: Int = ColorsDialog.SECTION_SPACE) {
         autosaveDirtySection = null
         ColorsDialog(
             this,
@@ -769,7 +778,7 @@ class MainActivity : AppCompatActivity() {
             flushSavedToast = ::showSavedToastIfDirty,
             // Background changes can leave the Transparent theme
             onDismiss = ::setupThemeSpinner
-        ).show()
+        ).show(section)
     }
 
     /** RGB Smooth / RGB Wild settings: autosaving popup with a live preview. */
@@ -845,13 +854,13 @@ class MainActivity : AppCompatActivity() {
         resetSideButtonsForRowCount(rowCount)
     }
 
-    private fun openLongPressEditorDialog() {
+    private fun openLongPressEditorDialog(section: Int = LongPressEditorDialog.SECTION_ALPHABET) {
         autosaveDirtySection = null
         LongPressEditorDialog(
             this,
             markDirty = { autosaveDirtySection = it },
             flushSavedToast = ::showSavedToastIfDirty
-        ).show()
+        ).show(section)
     }
 
     private fun showSavedToastIfDirty() {
@@ -866,9 +875,134 @@ class MainActivity : AppCompatActivity() {
         showSavedToastIfDirty()
     }
 
-    private fun openLayoutEditorDialog() {
+    private fun openLayoutEditorDialog(section: Int = LayoutEditorDialog.SECTION_KEYS) {
         autosaveDirtySection = null
-        LayoutEditorDialog(this, LayoutEditorHost()).show()
+        LayoutEditorDialog(this, LayoutEditorHost()).show(section)
+    }
+
+    /**
+     * Help popup (? next to the title): every function with a short answer, grouped like the
+     * screen, plus the keyboard gestures. Tap = answer with an Open speed link: popups open
+     * directly, popups with sections on that section; controls on the main screen are scrolled
+     * into view and flash, dropdowns open as well. Saved layouts and RGB settings are listed only
+     * while their buttons are shown.
+     */
+    private fun showHelp() {
+        fun entry(titleRes: Int, answerRes: Int, action: (() -> Unit)? = null) =
+            HelpDialog.Entry(getString(titleRes), getString(answerRes), action)
+        fun button(id: Int): () -> Unit = { findViewById<View>(id).performClick() }
+        fun spinner(id: Int): () -> Unit = {
+            val spinner = findViewById<Spinner>(id)
+            // Label + dropdown sit in one column, except Reset (next to Bind long press)
+            jumpTo(if (id == R.id.spinnerReset) spinner else spinner.parent as View) { spinner.performClick() }
+        }
+        fun slider(labelId: Int, seekId: Int, answerRes: Int): HelpDialog.Entry {
+            val label = findViewById<TextView>(labelId)
+            // The label shows the current value ("Key height: 100%")
+            return HelpDialog.Entry(label.text.toString(), getString(answerRes)) {
+                jumpTo(label, findViewById(seekId))
+            }
+        }
+        fun switch(id: Int): () -> Unit = { jumpTo(findViewById(id)) }
+
+        HelpDialog.show(this, listOf(
+            HelpDialog.Group(getString(R.string.help_group_keyboard), listOf(
+                entry(R.string.main_enable, R.string.help_enable, button(R.id.btnEnableKeyboard)),
+                entry(R.string.main_choose, R.string.help_choose, button(R.id.btnChooseKeyboard)),
+                entry(R.string.main_key_shape, R.string.help_key_shape, spinner(R.id.spinnerKeyShape)),
+                entry(R.string.main_keyboard_rows, R.string.help_rows, spinner(R.id.spinnerRowCount)),
+                slider(R.id.tvKeySize, R.id.seekKeySize, R.string.help_key_height),
+                slider(R.id.tvRowSpacing, R.id.seekRowSpacing, R.string.help_row_spacing),
+                entry(R.string.main_side_offsets, R.string.help_side_offsets) { showSideOffsetsDialog() }
+            )),
+            HelpDialog.Group(getString(R.string.main_set_layout), listOfNotNull(
+                entry(R.string.layout_section_keys, R.string.help_layout_keys) {
+                    openLayoutEditorDialog(LayoutEditorDialog.SECTION_KEYS)
+                },
+                entry(R.string.layout_section_side, R.string.help_layout_side) {
+                    openLayoutEditorDialog(LayoutEditorDialog.SECTION_SIDE)
+                },
+                entry(R.string.layout_section_horizontal, R.string.help_layout_horizontal) {
+                    openLayoutEditorDialog(LayoutEditorDialog.SECTION_HORIZONTAL)
+                },
+                entry(R.string.layout_section_emoji, R.string.help_layout_emoji) {
+                    openLayoutEditorDialog(LayoutEditorDialog.SECTION_EMOJI)
+                },
+                if (btnSavedLayouts.isVisible) {
+                    entry(R.string.theme_btn_saved_layouts, R.string.help_saved_layouts) { openSavedLayouts() }
+                } else null
+            )),
+            HelpDialog.Group(getString(R.string.main_bind_long_press), listOf(
+                entry(R.string.lp_section_alphabet, R.string.help_lp_alphabet) {
+                    openLongPressEditorDialog(LongPressEditorDialog.SECTION_ALPHABET)
+                },
+                entry(R.string.lp_section_numeric, R.string.help_lp_numeric) {
+                    openLongPressEditorDialog(LongPressEditorDialog.SECTION_NUMERIC)
+                },
+                entry(R.string.lp_section_my_binds, R.string.help_lp_my_binds) {
+                    openLongPressEditorDialog(LongPressEditorDialog.SECTION_MY_BINDS)
+                },
+                entry(R.string.lp_section_custom, R.string.help_lp_custom) {
+                    openLongPressEditorDialog(LongPressEditorDialog.SECTION_CUSTOM_TEXT)
+                }
+            )),
+            HelpDialog.Group(getString(R.string.main_colors), listOf(
+                entry(R.string.colors_section_space, R.string.help_colors_space) {
+                    openColorsDialog(ColorsDialog.SECTION_SPACE)
+                },
+                entry(R.string.colors_section_enter, R.string.help_colors_enter) {
+                    openColorsDialog(ColorsDialog.SECTION_ENTER)
+                },
+                entry(R.string.colors_section_side, R.string.help_colors_side) {
+                    openColorsDialog(ColorsDialog.SECTION_SIDE)
+                },
+                entry(R.string.colors_section_keys, R.string.help_colors_keys) {
+                    openColorsDialog(ColorsDialog.SECTION_KEYS)
+                },
+                entry(R.string.colors_section_background, R.string.help_colors_background) {
+                    openColorsDialog(ColorsDialog.SECTION_BACKGROUND)
+                },
+                entry(R.string.colors_section_theme_defaults, R.string.help_colors_theme_defaults) {
+                    openColorsDialog(ColorsDialog.SECTION_THEME_DEFAULTS)
+                }
+            )),
+            HelpDialog.Group(getString(R.string.help_group_app), listOfNotNull(
+                entry(R.string.main_language, R.string.help_language, spinner(R.id.spinnerLanguage)),
+                entry(R.string.main_theme, R.string.help_theme, spinner(R.id.spinnerTheme)),
+                if (btnThemeSettings.isVisible) {
+                    entry(R.string.theme_btn_rgb_settings, R.string.help_rgb) { openThemeSettings() }
+                } else null,
+                entry(R.string.main_vibration, R.string.help_vibration, switch(R.id.switchVibration)),
+                entry(R.string.main_suggestions, R.string.help_suggestions, switch(R.id.switchSuggestions)),
+                entry(R.string.reset_hint, R.string.help_reset, spinner(R.id.spinnerReset)),
+                entry(R.string.main_export, R.string.help_export, button(R.id.btnExportSettings)),
+                entry(R.string.main_import, R.string.help_import, button(R.id.btnImportSettings)),
+                entry(R.string.main_about, R.string.help_about) { showAboutDialog() }
+            )),
+            // Gestures only have an answer (nothing to open)
+            HelpDialog.Group(getString(R.string.help_group_gestures), listOf(
+                entry(R.string.help_q_capitals, R.string.help_capitals),
+                entry(R.string.help_q_delete, R.string.help_delete),
+                entry(R.string.help_q_special, R.string.help_special),
+                entry(R.string.help_q_punctuation, R.string.help_punctuation),
+                entry(R.string.help_q_emoji, R.string.help_emoji)
+            ))
+        ))
+    }
+
+    /**
+     * Scrolls [targets] (the first one a quarter below the top of the screen) into view, flashes
+     * them once the scroll has settled and then runs [then] (e.g. opens a dropdown).
+     */
+    private fun jumpTo(vararg targets: View, then: (() -> Unit)? = null) {
+        val rect = Rect()
+        targets.first().getDrawingRect(rect)
+        mainScroll.offsetDescendantRectToMyCoords(targets.first(), rect)
+        mainScroll.smoothScrollTo(0, (rect.top - mainScroll.height / 4).coerceAtLeast(0))
+        mainScroll.postDelayed({
+            targets.forEach { it.flashHighlight() }
+            then?.invoke()
+        }, JUMP_SCROLL_MS)
     }
 
     private fun applyShape(shape: KeyShape) {

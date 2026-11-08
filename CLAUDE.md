@@ -70,6 +70,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 In screen order (`res/layout/activity_main.xml`):
 
+0. **Help (?)** – round question-mark button at the end of the title row (`ui/HelpDialog`, built by `MainActivity.showHelp()`): an FAQ-style popup listing every function with a short answer (`help_*` strings), grouped Keyboard / Set layout / Bind long press / Colors / App, plus **Gestures on the keyboard** (answer only). **A tap** opens / closes the answer (accordion, chevron turns); under the answer an **Open** button is the speed link: it closes the popup and goes there – popups open directly, popups with a section dropdown open on that section (`show(initialSection)`, `SECTION_*` constants in `LayoutEditorDialog`, `LongPressEditorDialog`, `ColorsDialog`); controls on the main screen (dropdowns, sliders, switches) are smooth-scrolled into view and flash an accent outline twice (`ui/Highlight.kt` `flashHighlight()`), dropdowns also open. Saved layouts and RGB settings are listed only while their buttons are shown. **A new main-screen function gets an entry (title, answer, link) here too.**
 1. **Enable** – opens Android system settings so the user can enable the keyboard (IME).
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
@@ -323,6 +324,7 @@ The extracted classes reach their owner (service or activity) through a small `H
 | `ColorsDialog` / `ColorPickerDialog` | `ui/` | Colors popup; `Context.showAdvancedColorPicker` (wheel, brightness, hex/HSL/RGB) |
 | `SavedLayoutsDialog` | `ui/SavedLayoutsDialog.kt` | Saved layouts list, actions menu and preview |
 | `RgbSettingsDialog` | `ui/RgbSettingsDialog.kt` | RGB theme settings with live preview |
+| `HelpDialog` | `ui/HelpDialog.kt` | Help / FAQ popup: accordion entries (tap = answer + Open speed link) built by `MainActivity.showHelp()`; `ui/Highlight.kt` flashes the control a link jumps to |
 | `SideOffsetsDialog` | `ui/SideOffsetsDialog.kt` | Side button positions (offset sliders); sliders from `ui/DialogSliders.kt` |
 | `EditorKeyboardRenderer` | `ui/EditorKeyboardRenderer.kt` | Shared keyboard preview for the Set layout and Bind long press editors |
 | `SavedLayoutStorage` | `data/SavedLayoutStorage.kt` | Backups / saved layouts (Theme → Custom) |

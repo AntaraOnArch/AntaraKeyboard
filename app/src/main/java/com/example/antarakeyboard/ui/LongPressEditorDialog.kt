@@ -30,9 +30,17 @@ class LongPressEditorDialog(
     private val flushSavedToast: () -> Unit
 ) {
 
+    companion object {
+        // Sections of the dropdown, in its order (Help speed links open one directly)
+        const val SECTION_ALPHABET = 0
+        const val SECTION_NUMERIC = 1
+        const val SECTION_MY_BINDS = 2
+        const val SECTION_CUSTOM_TEXT = 3
+    }
+
     // Text built from data (names, key labels, color values), not from UI strings
     @SuppressLint("SetTextI18n")
-    fun show() {
+    fun show(initialSection: Int = SECTION_ALPHABET) {
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_longpress_editor)
@@ -260,9 +268,12 @@ class LongPressEditorDialog(
             if (page == 3) buildCustomTextPage()
         }
 
+        spinnerSection.setSelection(initialSection, false)
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position != currentPage) flushSavedToast()
+                // The first callback reports the section already shown
+                if (position == currentPage) return
+                flushSavedToast()
                 showPage(position)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -278,6 +289,6 @@ class LongPressEditorDialog(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
-        showPage(0)
+        showPage(initialSection)
     }
 }

@@ -37,9 +37,17 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
         fun flushSavedToast()
     }
 
+    companion object {
+        // Sections of the dropdown, in its order (Help speed links open one directly)
+        const val SECTION_KEYS = 0
+        const val SECTION_SIDE = 1
+        const val SECTION_HORIZONTAL = 2
+        const val SECTION_EMOJI = 3
+    }
+
     // Text built from data (names, key labels, color values), not from UI strings
     @SuppressLint("SetTextI18n")
-    fun show() {
+    fun show(initialSection: Int = SECTION_KEYS) {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_layout_editor)
 
@@ -300,9 +308,12 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
             if (page == 3) setupEmojiPickerPage()
         }
 
+        spinnerSection.setSelection(initialSection, false)
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position != currentPage) host.flushSavedToast()
+                // The first callback reports the section already shown
+                if (position == currentPage) return
+                host.flushSavedToast()
                 showPage(position)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -317,7 +328,7 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
             (activity.resources.displayMetrics.widthPixels * 0.94f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        showPage(0)
+        showPage(initialSection)
     }
 
     /**
