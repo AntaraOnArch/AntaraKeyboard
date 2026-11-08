@@ -38,7 +38,7 @@ class EdgeKeyManager(private val context: Context) {
         val slots = EdgeSlotsStorage.load(context).filter { it.type != EdgeActionType.NONE }
         if (slots.isEmpty()) return copy
 
-        val labelsToHideFromMainLayout = buildSet<String> {
+        val labelsToHideFromMainLayout = buildSet {
             slots.forEach { s ->
                 when (s.type) {
                     EdgeActionType.SHIFT -> add("⇧")

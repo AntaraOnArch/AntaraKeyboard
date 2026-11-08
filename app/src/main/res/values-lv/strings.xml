@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Atstarpe starp rindām: %1$s</string>
     <string name="main_bind_long_press">Ilgā nospiešana</string>
     <string name="main_colors">Krāsas</string>
+    <string name="main_side_offsets">Sānu taustiņu novietojums</string>
+    <string name="side_offset_left">Kreisie sānu taustiņi: %1$s</string>
+    <string name="side_offset_left_landscape">Kreisie sānu taustiņi (ainava): %1$s</string>
+    <string name="side_offset_right">Labie sānu taustiņi: %1$s</string>
+    <string name="side_offset_right_landscape">Labie sānu taustiņi (ainava): %1$s</string>
+    <string name="side_offset_hint">Nedaudz pārvietojiet sānu taustiņus, ja tie sniedzas noapaļotajā ekrāna malā. ◊ = noklusējuma novietojums.</string>
+    <string name="side_offset_direction">← pa kreisi · pa labi →</string>
     <string name="main_vibration">Vibrācija</string>
     <string name="main_suggestions">Vārdu ieteikumi</string>
     <string name="main_export">Eksportēt iestatījumus</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trijstūris</string>
     <string name="shape_circle">Aplis</string>
     <string name="shape_cube">Kubs</string>
-    <string name="option_on">Ieslēgts</string>
-    <string name="option_off">Izslēgts</string>
     <string name="theme_light">Gaišs</string>
     <string name="theme_dark">Tumšs</string>
     <string name="theme_transparent">Caurspīdīgs</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB iestatījumi</string>
     <string name="theme_btn_saved_layouts">Saglabātie izkārtojumi</string>
     <string name="reset_hint">Atiestatīt…</string>
-    <string name="reset_colors">Atiestatīt krāsas</string>
-    <string name="reset_layout">Atiestatīt izkārtojumu</string>
-    <string name="reset_all">Atiestatīt visu</string>
+    <string name="reset_none">Neko</string>
+    <string name="reset_colors">Tikai krāsas</string>
+    <string name="reset_layout">Taustiņu izkārtojums</string>
+    <string name="reset_all">Krāsas un izkārtojums</string>
     <string name="backup_name">Dublējums %1$s</string>
     <string name="reset_done_all">Izkārtojums un krāsas atiestatītas. Iepriekšējais stāvoklis saglabāts kā dublējums.</string>
     <string name="reset_done_colors">Krāsas atiestatītas. Iepriekšējais stāvoklis saglabāts kā dublējums.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Ikonas krāsa</string>
     <string name="color_text">Teksta krāsa</string>
     <string name="color_use_theme">Izmantot motīva krāsas</string>
+    <string name="color_no_background">Bez fona</string>
     <string name="color_all_keys_same">Visi taustiņi vienā krāsā</string>
     <string name="color_key_use_default">Noklusējuma krāsa šim taustiņam</string>
     <string name="bg_mode_theme">Pēc motīva</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Traki ← → Mierīgi</string>
     <string name="rgb_saturation">Piesātinājums: %1$d%%</string>
     <string name="rgb_brightness">Spilgtums: %1$d%%</string>
-    <string name="rgb_settings_saved">%1$s iestatījumi saglabāti</string>
     <string name="lp_section_alphabet">Ilgā nospiešana – burti</string>
     <string name="lp_section_numeric">Ilgā nospiešana – cipari</string>
     <string name="lp_section_my_binds">Manas piesaistes</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Ierakstiet jebkuru tekstu</string>
     <string name="lp_custom_add">Pievienot</string>
     <string name="lp_custom_already">Jau piesaistīts šim taustiņam</string>
+    <string name="lp_max_bindings">Taustiņam var piesaistīt ne vairāk kā %1$d</string>
     <string name="lp_custom_bound">Piesaistīts šim taustiņam:</string>
     <string name="lp_editor_title">Ilgā nospiešana: %1$s</string>
     <string name="lp_nothing_bound">Nekas nav piesaistīts – pieskarieties rakstzīmēm zemāk</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Burtu izkārtojums</string>
     <string name="layout_section_numeric">Ciparu izkārtojums</string>
+    <string name="layout_section_keys">Burti un cipari</string>
+    <string name="layout_preset_label">Veidne:</string>
+    <string name="layout_preset_custom">Savs izkārtojums</string>
     <string name="layout_section_side">Sānu taustiņi</string>
     <string name="layout_section_horizontal">Horizontālais centrs</string>
     <string name="layout_section_emoji">Emocijzīmju iestatījumi</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Aizvērt</string>
     <string name="emoji_btn_backspace">Atpakaļatkāpe</string>
     <string name="emoji_btn_space">Atstarpe</string>
-    <string name="saved_layouts_header">-- Saglabātie izkārtojumi (%1$d) --</string>
-    <string name="saved_layouts_label">Saglabātie izkārtojumi:</string>
-    <string name="swap_selected">Samainīt atlasītos</string>
-    <string name="select_two_keys">Atlasiet 2 taustiņus</string>
     <string name="color_picker_brightness">Spilgtums</string>
     <string name="copied">Nokopēts!</string>
     <string name="restore_layout_title">Atjaunot izkārtojumu</string>
     <string name="restore_layout_message">Tas aizstās pašreizējo izkārtojumu un krāsas.</string>
+    <string name="restore_layout_and_colors">Izkārtojums un krāsas</string>
+    <string name="restore_layout_only">Tikai izkārtojums</string>
+    <string name="restore_layout_only_message">Pašreizējais izkārtojums tiks aizstāts. Krāsas paliek.</string>
+    <string name="restore_colors_only_message">Pašreizējās krāsas tiks aizstātas. Izkārtojums paliek.</string>
+    <string name="saved_without_colors">Saglabāts bez krāsām (tika izmantotas motīva krāsas)</string>
     <string name="delete_confirm">Dzēst?</string>
     <string name="layout_restored">Izkārtojums atjaunots!</string>
     <string name="saved_layouts_title">Saglabātie izkārtojumi</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Tikai krāsas</string>
     <string name="custom_colors_applied">Savas krāsas lietotas</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Vēl nav saglabātu izkārtojumu</string>
     <string name="transparent_background">Caurspīdīgs fons</string>
     <string name="preview_info">Forma: %1$s | Rindas: %2$d\nSaglabāts: %3$s</string>
+    <string name="preview_side_offsets">Sānu taustiņi: pa kreisi %1$s, pa labi %2$s\nAinava: pa kreisi %3$s, pa labi %4$s</string>
     <string name="preview_colors_label">Krāsas (pieskarieties, lai rediģētu):</string>
     <string name="swatch_keys">Taustiņi</string>
     <string name="swatch_text">Teksts</string>

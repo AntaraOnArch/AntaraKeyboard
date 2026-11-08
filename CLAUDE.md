@@ -36,13 +36,13 @@ This section is the authoritative description of intended behavior. When changin
 
 | Option | Values | Where it is chosen |
 |--------|--------|--------------------|
-| Row count | 3, 4 or 5 rows | Main app – **Keyboard rows** dropdown |
+| Row count | 3, 4 or 5 rows | Main app – **Keyboard rows** dropdown (next to Key shape) |
 | Key shape | Hexagon, Triangle, Circle, Cube | Main app – **Key shape** dropdown (with live preview) |
 | Key height | 60 %–150 % (5 % steps, default 100 %) | Main app – **Key height** slider |
 | Row spacing | −8 dp … +16 dp (1 dp steps, default 0) | Main app – **Row spacing** slider |
 | Language (and with it the keyboard script) | System default or any of the 35 languages | Main app – **Language** dropdown, or on the keyboard – **hold BOTH space keys for 4 seconds** → the same language list; Android 13+ also system Settings → Apps → Antara → Language |
-| Vibration feedback | On / Off | Main app – **Vibration feedback** dropdown |
-| Word suggestions | On / Off (default Off) | Main app – **Word suggestions** dropdown |
+| Vibration feedback | On / Off | Main app – **Vibration** switch |
+| Word suggestions | On / Off (default Off) | Main app – **Word suggestions** switch |
 
 Everything that depends on layout (Set layout editors, long-press bindings, side buttons, numeric layout) automatically adapts to the currently selected row count and key shape.
 
@@ -53,6 +53,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 **Default long-press letters** (`data/LongPressPresets.kt`, `defaultsFor(preset, language)`):
 - **Latin keyboard** – the special letters of the app/device language on their base letter (`KeyboardPrefs.languageTag()`; e.g. hr/bs/sr c → č ć, d → đ, s → š, z → ž; de a → ä, s → ß; …, ~30 languages). English and unknown languages get common accents (no symbols). `system` is also Latin, even on a Serbian device.
 - **Cyrillic keyboard** – only that script's special letters on the matching key (Serbian c → ч ћ, d → ђ џ, s → ш, z → ж, l → љ, n → њ; Macedonian, Russian, Ukrainian, Bulgarian, Belarusian likewise). Plain letters are never bound – the key already types them.
+- **Per-language list:** the comment above `object LongPressPresets` lists every language's default long-press letters (count and letters per key, without user binds); update it when the defaults change.
 - **Every language reaches its whole alphabet** through keys + default long press (`LongPressPresetsTest.scriptKeyboardsReachTheirWholeAlphabet`; every translated Latin language has its own list).
 - **Greek keyboard** – the accented vowels on their vowel key (a → ά, e → έ, h → ή, i → ί ϊ ΐ, o → ό, y → ύ ϋ ΰ, v → ώ).
 - **Each script gives only its own letters:** the popup hides single letters of the other scripts – Latin, Cyrillic, Greek (`LongPressPresets.visibleFor`); custom text, emoji and symbols show in all.
@@ -61,9 +62,9 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 **Key shape note:** with 3 rows, `HEX` is drawn as `HEX_TALL` (`effectiveShape()`).
 
-**Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. Landscape uses the same mechanism. The keyboard height follows (measured from content). 3-row portrait triangles are drawn 1.5× taller at 100 % (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`, applied in `keyHeightStretch()`).
+**Key height:** the slider changes **only the height of the drawn keys** – never key widths or any spacing between keys or rows. Stored as `key_scale` in `keyboard_prefs`. `KeyView.heightStretch` does the work: the view keeps its tuned box, builds the shape at 100 % and stretches it vertically (hexagons and triangles via a matrix; circle and cube simply fill the taller box), and grows by exactly the shape's growth, so the space around every shape stays the same. The only spacing value that changes is the honeycomb overlap of hexagon rows, which grows by the tip growth (`KeyScale.honeycombOverlap`) so rows stay interlocked with the same gap; triangle/cube/circle row margins are untouched. **Landscape keys are drawn exactly as tall as the portrait keys** (slider included) with the same mechanism: `landscapeKeyHeightStretch()` turns the landscape key's shape height into `portraitKeyShapeHeightPx()` (portrait sizing computed with the screen sides swapped, widest row – `portraitRowSizing()`, `KeyView.shapeHeight`). Landscape widths (`LandscapeLayoutBuilder.keySizePx()`) keep the portrait proportions: circles are as wide as the portrait key is tall (round, never an ellipse), 4/5-row cubes get a square front, triangles (all row counts) copy the portrait width, horizontal tip overlap (`triOverlapX`) and up/down alternation in a box only as tall as the triangle (`TRIANGLE_HEIGHT_RATIO`), rows 3 dp apart, so no space is lost above, between or below the rows; hexagons and 3-row cubes keep the tuned sizes. Side buttons keep the tuned size (`sideButtonSizePx()`). The keyboard height follows (measured from content). 3-row triangles are drawn 1.5× taller (`KeyScale.THREE_ROW_TRIANGLE_DEFAULT`) and 3-row cubes 1.2× taller (`THREE_ROW_CUBE_DEFAULT`) at 100 %, in both orientations (`portraitKeyHeightStretch()`).
 
-**Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `landscapeRowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
+**Row spacing:** adds `row_spacing_dp` (in `keyboard_prefs`) to the vertical gap between rows – the top margin of every row after the first in portrait (`buildRow`), and through `LandscapeLayoutBuilder.rowOverlapScaled()` in landscape. It changes nothing else (key sizes, honeycomb overlap and horizontal spacing stay).
 
 ### Main app buttons
 
@@ -72,15 +73,18 @@ In screen order (`res/layout/activity_main.xml`):
 1. **Enable** – opens Android system settings so the user can enable the keyboard (IME).
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
-4. **Key shape** dropdown – with shape preview.
-5. **Keyboard rows** dropdown – 3 / 4 / 5, followed by the **Key height** and **Row spacing** sliders.
+   Right under it **Saved layouts** (whenever a saved layout or "Last custom colors" exists, **whatever the theme**) opens the Saved layouts popup (see [Themes](#themes)).
+4. **Key shape** and **Keyboard rows** (3 / 4 / 5) dropdowns side by side in one row, the shape preview under them.
+5. **Key height** and **Row spacing** sliders.
 6. **Bind LongPress** button and **Reset…** dropdown (same row) – long-press binding popup (tabs below); Reset colors / Reset layout / Reset all, see [Reset](#reset).
 7. **Export settings** / **Import settings** (same row) – JSON backup file, see [Settings export / import](#settings-export--import).
-8. **Colors** – popup for coloring every part of the keyboard (sections below).
-9. **Vibration feedback** dropdown – On / Off, followed by the **Word suggestions** dropdown – On / Off.
-10. **Language** dropdown – System default + every translation, each named in its own language (`data/AppLanguages.kt`).
-11. **Theme** dropdown – Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)), plus a context button below it (**RGB settings** or **Saved layouts**).
-12. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
+8. **Side button positions** and **Colors** (same row) – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots); popup for coloring every part of the keyboard (sections below).
+9. **Language** and **Theme** dropdowns side by side. Language: System default + every translation, each named in its own language (`data/AppLanguages.kt`).
+    Theme: Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)). Below it **RGB settings** (only while an RGB theme is active; `updateThemeSettingsButton` also shows/hides Saved layouts).
+10. **Vibration** and **Word suggestions** switches (on / off).
+11. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
+
+**Dropdowns** use `@style/MainSpinner` (chevron arrow at the right edge, `drawable/spinner_background.xml` with `paddingMode="stack"`) and `layout/main_spinner_item.xml` (one line, auto-shrinks to fit half width); the open list is a rounded surface exactly as wide as the dropdown (`drawable/spinner_popup_background.xml`, whose start/end padding must equal MainSpinner's paddingStart/End) with `layout/main_spinner_dropdown_item.xml` entries. In a side-by-side row of buttons, give one `wrap_content` height and the other `match_parent` (both `match_parent` collapses the row).
 
 **All popups share a uniform look** (same styling, section dropdown, spacing). Popup height fits its content (wrap content), scrolling only when the screen is too short — no fixed heights. New dialogs must follow the same style.
 
@@ -88,13 +92,18 @@ In screen order (`res/layout/activity_main.xml`):
 
 All tabs autosave; there is no Save button. A single "<Section> saved" toast is shown when the user switches to another tab, closes the popup, or leaves the app — only if something changed in that tab (never per individual edit).
 
-#### Layout (opened by default)
-- Arranges the letter keys across rows.
-- **Swap**: select two keys, then press the **Swap** button at the bottom of the popup to exchange their positions.
-- **Drag and drop** one key onto another also swaps them.
+There is no Swap button and no saved-layouts dropdown in this popup (saved layouts have their own button on the main screen).
+
+**Swap** (letters, numbers, horizontal): tap a key to select it, tap another key to swap the two at once (tap the selected key again to deselect); **drag and drop** one key onto another also swaps them.
+
+#### Letters and numbers (opened by default)
+- One page with the letter layout and the numeric layout under it ("Alphabet layout" / "Numeric layout" titles, scrolls only when the screen is too short).
+- **Preset** dropdown above the letters: *Custom layout*, QWERTZ, QWERTY, AZERTY, Dvorak, Colemak, Neo2, Workman (`data/LayoutPresets.kt`, unit-tested). A preset relabels the **default** layout of the current row count: every QWERTZ letter's key gets the preset's letter from the same physical key, so our shape (honeycomb, 4/5 rows) stays; letters a preset has where QWERTZ has punctuation (Dvorak s, Colemak o …) fill the leftover keys in reading order. On 3 rows QWERTY/QWERTZ/AZERTY/Colemak/Workman are exact. Neo2's ä ö ü ß go on long press of a o u s (`KeyboardPrefs.alphabetLayoutWithPreset`). The dropdown shows the preset the layout matches (`LayoutPresets.detect`); any manual swap turns it to *Custom layout*, and picking *Custom layout* brings back the last hand-made arrangement of this popup session.
+- Letters: arranges the letter keys across rows.
+- Numbers: the rules of the Numeric section below.
 - Autosave.
 
-#### Emoji
+#### Emoji (last section)
 - Configures the emoji picker's **category slider position**: top / bottom / left / right.
 - Three **fixed buttons**: **X** (close), **Backspace**, **Space**. The user chooses their **order** and whether they appear on the **left or right** side of the screen.
 - Autosave.
@@ -105,10 +114,10 @@ All tabs autosave; there is no Save button. A single "<Section> saved" toast is 
   - 4 rows → 4 side buttons
   - 3 rows → 3 side buttons
 - **Drag and drop** reorders side buttons.
-- **Tap** a side button → popup with special characters to assign.
+- **Tap** a side button → popup with the actions and special characters to assign; picking one closes it.
 - Autosave.
 
-#### Numeric
+#### Numeric (part of the Letters and numbers page)
 - Shows the numeric layout matching the selected row count (and symbols chosen in the main app); here the numeric layout is fully configured.
 - **Protected keys** – must ALWAYS be present; only their position may change, never removed:
   `ABC (back to letters)`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `Enter`.
@@ -136,13 +145,15 @@ Lets the user bind any special letter or emoji to a key's long press.
 - Keyboard preview is rendered exactly like the Set layout editor (shared `ui/EditorKeyboardRenderer.kt`); a small badge shows how many characters are bound to each key.
 - Tapping a key opens an **emoji-picker-style character picker**: category tabs (special-character groups, all Latin / Cyrillic / Greek letters from `LongPressPresets`, extra symbols from the default layouts, emoji categories), a grid where tapping toggles a binding, and a strip of currently bound characters (tap to remove). Both special characters and **emoji** can be bound.
 - **Protected keys – nothing can be bound** on: either **Space**, **123** (switch to numeric), **Enter**.
+- **At most 46 bindings per key** (exactly seven honeycomb rows: 7+6+7+6+7+6+7) (`MAX_LONG_PRESS_BINDINGS` in `model/KeyboardConfig.kt`): the character picker and Custom text refuse more with a toast (`lp_max_bindings`); keys bound before the limit show only the first 46 in the keyboard popup (nothing stored is removed).
 - **Custom text is inserted exactly as typed**: Shift only changes single-character bindings (`shiftedBinding()` in `model/KeyboardConfig.kt`). In the keyboard's long-press popup long text is shrunk/ellipsized in its cell (`KeyView` label fitting) and shown in the preview line above the grid (at most 3 lines, ellipsized). Previews in the editor (bound list, My binds) are shortened the same way; the bound text itself is never cut.
 - Autosave (no Save button); one "<Section> saved" toast on section switch, closing the popup, or leaving the app.
 
 ### Reset
 Dropdown with three options; each first saves the current state as a "Backup <time>" in Saved layouts.
-- **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. The pre-reset colors are also kept as "Last custom colors".
-- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons, and the **key height / row spacing sliders back to default**.
+- **Theme default colors are never backed up:** when the keyboard shows plain theme colors (`KeyboardPrefs.colorsAreThemeDefaults`: keys, space, side buttons use the theme, background by theme, default Enter), the backup is **layout only** (`SavedLayout.hasColors = false`), Reset colors makes no backup at all and does not overwrite "Last custom colors".
+- **Reset colors** – default colors of the currently selected Light/Dark theme (the app's own setting, not the OS theme); turns RGB themes off. Custom pre-reset colors are also kept as "Last custom colors".
+- **Reset layout** – default letter positions, numeric and horizontal layouts, default side buttons, and the **key height / row spacing / side button position sliders back to default**.
 - **Reset all** – both of the above.
 - **Preserved** (never reset): long-press bindings and the selected key shape.
 - Reset layout only touches the **current row count**.
@@ -155,7 +166,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 |---------|---------|
 | **Space** | "Use theme colors" (theme space fill), or each space key colored separately / both the same color (`space_use_theme`, independent of the Keys setting) |
 | **Enter** | Background color + icon color |
-| **Side buttons** | "Use theme colors", or a custom background + icon color |
+| **Side buttons** | "Use theme colors" (no background; the theme icon color, turned dark on a light keyboard background and light on a dark one – `KeyboardPrefs.themeSideIconColor`), or a custom icon color with a custom background or **No background** (transparent) |
 | **Keys** | "Use theme colors"; otherwise "All keys same color" (one background + text color) or per-key colors (tap a key → small popup; stored as `key_individual_<label>_bg/_text`, letters lowercased; "Use default for this key" clears it) |
 | **Background** | Default by theme / Dark / Light / Custom color (`KeyboardPrefs.BackgroundMode`, resolved by `resolveKeyboardBackground`). Dark and Light use the theme-default backgrounds. Transparent is chosen in the Theme dropdown, not here |
 | **Theme defaults** | Edits the Light and Dark default palettes (key fill, key text, space fill, keyboard background) that "use theme" options fall back to. Factory values are in `KeyboardPrefs.FactoryDefaults` |
@@ -165,8 +176,8 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 ### Themes
 - Main-app dropdown offers **Light** and **Dark** mode. This is the app's own setting (`theme_prefs` → `dark_mode`, default dark), independent of the OS theme. It switches both the main app and the keyboard (`Theme.AntaraKeyboard.Light/Dark`). The keyboard recreates its view when the mode changes.
 - **Transparent** makes the keyboard background see-through (`BackgroundMode.TRANSPARENT`); keys keep the current Light/Dark colors and popups use the theme background as their surface. Choosing any other theme, or a background in Colors → Background, brings the theme background back.
-- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. A saved layout also stores the key height and row spacing (`SavedLayout.keyScale` / `rowSpacingDp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. While Custom is active, picking **Custom** in the dropdown again, or the **Saved layouts** button below it, reopens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
-- **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (speed / saturation / brightness). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
+- **Custom** appears when there are saved layouts (or saved custom colors). Selecting it opens a **Saved layouts** popup listing every saved layout (plus "Last custom colors"); tapping one gives Preview / Restore / Rename / Delete. **Layout and colors restore separately:** Restore offers *Layout and colors* / *Layout only* / *Colors only* (each confirmed); an entry saved without colors (`includesColors` false) offers only its layout, and its preview draws it in the current colors without color editing or Apply Colors. Layout only never changes the theme. A saved layout also stores the key height, row spacing and side button positions (`SavedLayout.keyScale` / `rowSpacingDp` / `sideOffset*Dp`, nullable for layouts saved before they existed) and restores them with the layout. Preview draws real keys with the saved shape, row count, key height, row spacing and colors, plus the saved side buttons on their rows shifted by the saved portrait side button positions (same row rules as the keyboard, `EdgeOverlayManager.edgeBindings` / `sideButtonKeyRows`; only 3- and 4-row hexagon layouts shift every second row), shows a "Transparent background" note at the top when the saved background is transparent, and lets the user edit the saved colors and then **Apply Colors** (colors only, also saved back into that entry) or **Restore Layout** (layout + colors). Restoring or applying colors makes Custom the active theme; closing the popup without applying anything reverts the dropdown to the previous theme. Picking **Custom** in the dropdown again while it is active, or the **Saved layouts** button below it (shown in every theme), opens the popup (the dropdown is a `ui/ReselectSpinner`, which reports re-picking the selected item).
+- **RGB Smooth** and **RGB Wild** (animated rainbow background) are also themes in this dropdown. Selecting one activates it immediately (no separate enable toggle) and opens its settings popup (`ui/RgbSettingsDialog`: speed / saturation / brightness, autosaved, one "<theme> saved" toast on close; its live preview runs the keyboard's own `RgbBackgroundAnimator`). Selecting any other theme turns RGB off. While an RGB theme is active, picking it again or the **RGB settings** button below the dropdown reopens that popup.
 
 ### Keyboard gestures (on the keyboard)
 - Swipe up on a letter → capital letter.
@@ -179,11 +190,11 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 - Shift is a one-tap toggle: outlined arrow `⇧` when off, filled arrow `⬆` when on (`KeyMarkers.SHIFT_OFF/ON`), always in the regular key colors (also on a side button). It resets when the keyboard closes.
 
 ### Keyboard popups
-All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isClippingEnabled = false` so they can extend above the keyboard's top edge (needed for the top row).
+All keyboard popups (except the emoji panel, see below) are `PopupWindow`s anchored to `overlayLayer`. They use `isClippingEnabled = false` so they can extend above the keyboard's top edge (needed for the top row).
 - **Key preview** (`KeyPreviewManager`) – shown above the pressed key. Uses that key's background and text color. Not shown for special keys (space, shift, backspace, enter, 123/ABC), and **never in password fields**.
-- **Long-press popup** (`LongPressPopupManager`) – surface = keyboard background (`popupSurfaceColor()`; theme background when the keyboard is transparent; under an RGB theme it animates with the keyboard). Cells use the pressed key's colors. The selected cell uses the Enter colors.
+- **Long-press popup** (`LongPressPopupManager`) – surface = keyboard background (`popupSurfaceColor()`; theme background when the keyboard is transparent; under an RGB theme it animates with the keyboard). Cells use the pressed key's colors. The selected cell uses the Enter colors. Cells are square and as wide as one column of a 7-column popup, whatever the number of characters (2 letters → narrow popup, not two wide flat cells). With hexagon keys the cells form a honeycomb like the keyboard: every second row is indented by half a cell and holds one cell less, rows interlock by the hexagon tip (`LongPressPopupManager.rowSizes`, unit-tested). The cells follow the **Key height** slider (`KeyView.heightStretch`) and the **Row spacing** slider is added between the popup rows, as on the keyboard. The preview line is styled (size, 3 lines, ellipsized) before the popup is measured, so long custom text keeps the popup right above the key.
 - **Language picker** – opened by the dual-space hold. System default + every translation in its own language (same as the main app); picking one sets the app language and the matching keyboard script immediately. Uses the emoji picker's palette.
-- **Emoji picker** (`EmojiPickerManager`) – categories plus Recent (last 30, `EmojiPickerStorage`), 5 columns, layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
+- **Emoji picker** (`EmojiPickerManager`) – **not a popup**: a panel added to `overlayLayer` that covers the whole keyboard (keys, side buttons, suggestion strip; drawn above them with `translationZ`, takes every touch), so nothing reaches above the keyboard over the text; stays open in that text field until its **X** button, the system **Back** (button or gesture, `onKeyDown`) or any deliberate hide (navigation bar ∨ button or the app: `hideSoftInput` in `onCreateInputMethodInterface`) – the keyboard hides as usual and comes back with the letters. Google search hides the keyboard by itself while it restarts after a rotation, 15–30 ms after the new input starts; a hide within `INPUT_RESTART_HIDE_MS` (500 ms) of `onStartInput` or within `ROTATION_WINDOW_MS` (1.5 s) of `onConfigurationChanged` is that restart and keeps the panel; any other hide closes it only if no rotation follows within `ROTATION_WINDOW_MS` (the app may hide before the new configuration reaches the keyboard). Another text field closes it too (`emojiOpenInEditor`, package + field id; right after a rotation the same app is enough: Google search reports field id 0, then -1 again while it restarts): rotations and apps that restart the input bring it back however long it has been open (`restoreEmojiPanel()` from `onStartInputView`, `onWindowShown`, `onConfigurationChanged`). Categories plus Recent (last 30, `EmojiPickerStorage`); **Recent opens first once it holds 10 or more emojis** (`RECENT_FIRST_MIN`), otherwise Smileys. Columns follow the panel width (at least 5, ~64 dp per emoji), so landscape shows more per row. Layout from the Set layout → Emoji tab. Colors follow the keyboard (`emojiPickerColors()`: surface + regular key colors).
 
 ### Text input behavior
 - **Enter** uses `sendKeyChar('\n')`: runs the editor's action (Search, Send, Go, Done…) unless the field has no action or sets `IME_FLAG_NO_ENTER_ACTION`, then inserts a newline.
@@ -205,19 +216,21 @@ All keyboard popups are `PopupWindow`s anchored to `overlayLayer`. They use `isC
 ### Side buttons (edge slots)
 Actions available per slot (`EdgeActionType`): Shift, Backspace, Enter, Space, Char (any special character), Emoji picker, None. When Shift or Backspace is placed on a side button, that key is hidden from the main layout (replaced by an `__EDGE_GHOST__` placeholder in `EdgeKeyManager`). Enter stays in both places. The side (left/right) of each slot is fixed per row count (`EdgeSlotsStorage.fixedSideForIndex`). Slots are stored per row count.
 
+**Side button positions** (main app, `ui/SideOffsetsDialog`): four sliders – left, left landscape, right, right landscape – shift all side buttons of that side horizontally by −12…+12 dp (1 dp steps, default 0 shown as ◊, positive = to the right), e.g. away from a rounded screen edge. Stored as `side_offset_<left|right>[_landscape]_dp` in `keyboard_prefs` (`KeyboardPrefs.getSideOffsetDp`), independent of row count. Saved layouts store them (`SavedLayout.sideOffset*Dp`, nullable for older entries), show them in Preview and restore them with the layout (also *Layout only*); Reset layout / Reset all set them back to ◊. `EdgeOverlayManager` adds the offset after its position clamp, so it always moves the buttons. Autosaved, one "<Section> saved" toast on close.
+
 ### Landscape
-Letter rows split into left and right halves with the Horizontal "island" in the middle (`buildLandscapeLayout`). The split points per row are hard-coded per row count (`leftLandscapeKeysForRow` / `rightLandscapeKeysForRow`).
+Letter rows split into left and right halves with the Horizontal "island" in the middle (`service/LandscapeLayoutBuilder.kt`, which reaches the service through its `Host` interface). The split points per row are hard-coded per row count (`LandscapeSplit.leftKeys` / `rightKeys`, pure and unit-tested). With 5 rows the 7-key rows 2 and 4 are split 4 + 4, so their middle letters (g, n) appear on both halves. **This duplication is intentional** (either thumb reaches them, easier typing) – do not remove it.
 
 ### Settings export / import
 - **Export** writes one JSON file through the system "save as" picker (`ActivityResultContracts.CreateDocument`, no storage permission). **Import** reads it through `OpenDocument`, asks for confirmation, saves the current state as a "Backup" in Saved layouts, applies the file, re-applies theme and language, and recreates the screen.
 - Format (`data/SettingsBackup.kt`): `{"format": "antara-keyboard-settings", "version": 1, "exportedAt": …, "data": {"<prefs file>": {"<key>": {"type": "int|long|float|boolean|string|string_set", "value": …}}}}`. It contains **no package or class names**, so backups move between any builds – this is the migration path when the applicationId changes from `com.example…` before release (a new applicationId is a new app with empty settings).
 - Included prefs files: `SettingsBackup.FILES` (keyboard_prefs, theme_prefs, custom_theme_prefs, edge_slots, global_lp_prefs, emoji_picker_prefs, saved_layouts_prefs). **Recent emojis are excluded** (privacy) and are never overwritten by an import.
-- Import replaces each included file completely; files missing from the backup are left alone. Wrong `format`, broken JSON or files over 2 MB are rejected; a higher `version` asks the user to update; unknown files/types are skipped.
+- Import replaces each included file completely; files missing from the backup are left alone. The main screen's pref-backed widgets (sliders, dropdowns, switches) have `android:saveEnabled="false"`, so after the import's `recreate()` they show the imported values, not the old widget state. Wrong `format`, broken JSON or files over 2 MB are rejected; a higher `version` asks the user to update; unknown files/types are skipped.
 - **When adding a new SharedPreferences file, add it to `SettingsBackup.FILES`.** If a stored key or value changes meaning, bump `SettingsBackup.VERSION` and migrate older files in `decode()`.
 
 ### Word suggestions
-- Only a **preview strip** of up to 3 words above the keys (`suggestionStrip` in `MyKeyboardService`, a child of `overlayLayer` above `keyboardContainer` – keyboardContainer's children must stay key rows only, the side-button overlay indexes them). Tapping a word replaces the word being typed and adds a space. **No auto-correct and no learning**: nothing typed is stored.
-- Engine (`service/suggest/`): `WordSuggester` = completions by prefix from the frequency list + spelling corrections via **SymSpellKt** (`com.darkrockstudios:symspellkt`, MIT; edit distance 2, prefix length 5 ≈ 18 MB per 50k words; distance 1 for words ≤ 4 letters, no corrections below 3 letters). Suggestions keep the typed capitalization. `SuggestionController` loads one dictionary at a time in the background; `SuggestionDictionaries.forKeyboard()` picks it: Serbian Cyrillic script → `sr_cyrl`, Russian → `ru`, Greek → `el`, Bulgarian/Ukrainian/Macedonian/Belarusian → none; the Latin keyboard follows the app/device language (hr, sr → `sr_latn`, bs, de, otherwise `en`).
+- Only a **preview strip** of up to 3 words above the keys (`service/SuggestionStrip.kt`; its view is a child of `overlayLayer` above `keyboardContainer` – keyboardContainer's children must stay key rows only, the side-button overlay indexes them). Tapping a word replaces the word being typed and adds a space. **No autocorrect and no learning**: nothing typed is stored.
+- Engine (`service/suggest/`): `WordSuggester` = completions by prefix from the frequency list + spelling corrections via **SymSpellKt** (`com.darkrockstudios:symspellkt`, MIT; edit distance 2, prefix length 5 ≈ 18 MB per 50k words; distance 1 for words ≤ 4 letters, no corrections below 3 letters). Suggestions keep the typed capitalization. `SuggestionStrip` decides when it shows and which dictionary it uses; `SuggestionController` loads one dictionary at a time in the background; `SuggestionDictionaries.forKeyboard()` picks it: Serbian Cyrillic script → `sr_cyrl`, Russian → `ru`, Greek → `el`, Bulgarian/Ukrainian/Macedonian/Belarusian → none; the Latin keyboard follows the app/device language (hr, sr → `sr_latn`, bs, de, otherwise `en`).
 - SymSpellKt declares minSdk 26 but is pure Kotlin, so the manifest overrides it (`tools:overrideLibrary`) to keep minSdk 24.
 - Refreshed from `onUpdateSelection`. The app's request is respected: in passwords, numbers, e-mail/URL fields and fields with `TYPE_TEXT_FLAG_NO_SUGGESTIONS` (e.g. Chrome's address bar, the Google search widget) the strip is **not shown at all** (`InputTypes.allowsSuggestions`), so the keyboard is shorter there.
 - Dictionaries: `app/src/main/assets/dictionaries/*.txt` ("word count", most frequent first), generated by `tools/build_dictionaries.py` from FrequencyWords (OpenSubtitles 2018, **CC BY-SA 4.0** – attribution in `assets/dictionaries/NOTICE.txt`; shown in About → Open-source licenses). To add a language: add it to the script, regenerate, map it in `SuggestionDictionaries`.
@@ -226,6 +239,11 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 - `MainActivity.showAboutDialog()` lists `data/OpenSourceLicenses.ENTRIES`; each entry opens its license text from `app/src/main/assets/licenses/` (Apache 2.0 full text, the MIT texts with their copyright notices, the CC BY-SA 4.0 notice for the dictionaries).
 - **When adding a runtime dependency, add an entry (and its license text if new)** – check with `./gradlew :app:dependencies --configuration releaseRuntimeClasspath`. `OpenSourceLicensesTest` fails if a referenced license file is missing.
 
+### App icon
+- Logo: a fractal "A" – every A holds two joined A's under its crossbar (the twins' inner leg edges continue the parent's inner leg edges, they meet in the middle and touch the crossbar), white on a deep purple radial gradient. Figma master: "Antara logo – master 1024" and the launcher / Play Store frames next to it.
+- Adaptive icon (`mipmap-anydpi-v26/ic_launcher*.xml`): `drawable/ic_launcher_background.xml` (gradient) and `drawable/ic_launcher_foreground.xml` (one vector path, 4 levels; also the monochrome layer). The 50dp mark sits so apex and feet stay inside the 66dp safe zone.
+- Legacy PNGs `mipmap-<density>/ic_launcher(_round).png` for Android 7; Play Store icon (512×512) in `app/src/main/ic_launcher-playstore.png` (uploaded in Play Console, not packaged).
+
 ### Privacy
 - No `INTERNET` permission; only `VIBRATE`.
 - No cloud backup (`allowBackup="false"`, `res/xml/backup_rules.xml` and `data_extraction_rules.xml` exclude everything from cloud backup). Direct device-to-device transfer keeps settings.
@@ -233,9 +251,9 @@ Letter rows split into left and right halves with the Horizontal "island" in the
 
 ### Known gaps (code vs spec)
 Places where the current code does not yet match the spec above. Fix toward the spec, then remove the line here.
-- **RGB Smooth / RGB Wild settings popups** still use `AlertDialog` with Save/Cancel.
+- Set layout → Numeric / Horizontal: the code removes a symbol with its small **×** badge and opens the picker on a tap of the **empty** slot; a tap on a symbol selects it for a tap-to-swap. The spec above says a tap removes the symbol and opens the picker at once.
 
-**Target SDK**: 36 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
+**Target SDK**: 37 | **Min SDK**: 24 | **Language**: Kotlin | **Java Version**: 11
 
 ## Architecture
 
@@ -245,16 +263,19 @@ The app follows a configuration-driven architecture where `MyKeyboardService` or
 
 ```
 MyKeyboardService (InputMethodService)
-├── Keyboard Rendering (redrawKeyboard, createKey, buildLandscapeLayout)
-├── Input Processing (delegates to KeyInputController)
+├── Keyboard Rendering (redrawKeyboard, createKey; sizes in KeySizing, landscape in LandscapeLayoutBuilder)
+├── Input Processing (KeyTouchListener per key → KeyInputController)
 ├── Configuration State (KeyboardConfig, KeyShape, isShifted)
 ├── DeleteRestoreManager (swipe delete/restore, backspace hold)
 ├── LongPressPopupManager (character selection popup)
 ├── EdgeOverlayManager (side buttons/edge overlay)
 ├── EdgeKeyManager (edge key configuration)
-├── EmojiPickerManager (emoji picker popup)
+├── EmojiPickerManager (emoji picker panel)
 ├── HapticManager (vibration feedback)
-└── KeyPreviewManager (key press preview popup)
+├── KeyPreviewManager (key press preview popup)
+├── LanguagePickerPopup (dual-space language list)
+├── SuggestionStrip (word suggestions above the keys)
+└── RgbBackgroundAnimator (RGB Smooth / Wild)
         ↑
         │ loads/saves
         ↓
@@ -268,27 +289,41 @@ Persistence Layer (SharedPreferences + Gson JSON)
 └── LongPressPresets     (static per-script binding sets)
 ```
 
-The main app also writes `custom_theme_prefs` ("Last custom colors") directly.
+`custom_theme_prefs` ("Last custom colors") is written by `data/LastCustomColors.kt`.
+
+The extracted classes reach their owner (service or activity) through a small `Host` interface implemented by a private inner class there (e.g. `LandscapeHost`, `KeyTouchHost`, `SavedLayoutsHost`); new extractions follow the same pattern.
 
 ### Key Components
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| `MyKeyboardService` | `service/MyKeyboardService.kt` | Core IME service (~3300 lines) - lifecycle, rendering, text submission, popup colors, RGB animation, script picker |
-| `KeyInputController` | `service/input/KeyInputController.kt` | Tap / swipe / backspace-hold handling; long press and swipe-up on `123` are handled in `createKey()` |
+| `MyKeyboardService` | `service/MyKeyboardService.kt` | Core IME service (~1800 lines) - lifecycle, rendering, text submission, popup colors, dual-space hold |
+| `KeyInputController` | `service/input/KeyInputController.kt` | Tap / swipe / backspace-hold handling; long press and swipe-up on `.` `?` `123` are handled in `KeyTouchListener` |
 | `DeleteRestoreManager` | `service/DeleteRestoreManager.kt` | Swipe delete/restore gestures, backspace hold |
 | `LongPressPopupManager` | `service/LongPressPopupManager.kt` | Long press character selection popup |
 | `EdgeOverlayManager` | `service/EdgeOverlayManager.kt` | Side buttons/edge overlay rendering |
 | `EdgeKeyManager` | `service/EdgeKeyManager.kt` | Edge key configuration for layout |
-| `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker with categories and lazy loading |
+| `EmojiPickerManager` | `service/EmojiPickerManager.kt` | Emoji picker panel (replaces the keyboard while open) with categories and lazy loading |
 | `HapticManager` | `service/HapticManager.kt` | Vibration feedback for key presses |
 | `KeyPreviewManager` | `service/KeyPreviewManager.kt` | Key press preview popup above finger |
+| `KeyTouchListener` | `service/KeyTouchListener.kt` | Touch listener of every key: long press popup, swipe up, dual-space hold, Shift / emoji |
+| `KeySizing` | `service/KeySizing.kt` | Pure key height and row sizing formulas (tuned per shape / row count / orientation), unit-tested |
+| `LandscapeLayoutBuilder` | `service/LandscapeLayoutBuilder.kt` | Landscape halves + island (`LandscapeSplit` pure, unit-tested) |
+| `LanguagePickerPopup` | `service/LanguagePickerPopup.kt` | Dual-space language list |
+| `SuggestionStrip` | `service/SuggestionStrip.kt` | Word suggestion strip (view, dictionary, on/allowed state) |
+| `RgbBackgroundAnimator` | `service/RgbBackgroundAnimator.kt` | RGB Smooth / Wild animation (`RgbSettings`, pure `RainbowMath`), used by the keyboard and the settings preview |
 | `InputTypes` | `service/InputTypes.kt` | Password / numeric field detection from `EditorInfo.inputType` |
 | `ScriptMapper` | `data/ScriptMapper.kt` | Latin → Cyrillic / Greek key mapping per script preset |
 | `KeyboardConfig` | `model/KeyboardConfig.kt` | Data model: rows → keys → labels + long-press bindings |
 | `KeyView` | `ui/KeyView.kt` | Custom view for rendering keys in various shapes |
 | `DefaultLayout` | `ui/DefaultLayout.kt` | Predefined keyboard layouts (3/4/5-row, numeric, landscape) |
-| `MainActivity` | `MainActivity.kt` | Settings UI with embedded customization dialogs (~3000 lines; most dialogs are built in code) |
+| `MainActivity` | `MainActivity.kt` | Main screen (~1100 lines): dropdowns, sliders, reset, export/import, About; opens the dialogs below and keeps the autosave toast state |
+| `LayoutEditorDialog` / `SideButtonsPage` | `ui/` | Set layout popup and its Side buttons page |
+| `LongPressEditorDialog` | `ui/LongPressEditorDialog.kt` | Bind long press popup |
+| `ColorsDialog` / `ColorPickerDialog` | `ui/` | Colors popup; `Context.showAdvancedColorPicker` (wheel, brightness, hex/HSL/RGB) |
+| `SavedLayoutsDialog` | `ui/SavedLayoutsDialog.kt` | Saved layouts list, actions menu and preview |
+| `RgbSettingsDialog` | `ui/RgbSettingsDialog.kt` | RGB theme settings with live preview |
+| `SideOffsetsDialog` | `ui/SideOffsetsDialog.kt` | Side button positions (offset sliders); sliders from `ui/DialogSliders.kt` |
 | `EditorKeyboardRenderer` | `ui/EditorKeyboardRenderer.kt` | Shared keyboard preview for the Set layout and Bind long press editors |
 | `SavedLayoutStorage` | `data/SavedLayoutStorage.kt` | Backups / saved layouts (Theme → Custom) |
 
@@ -296,11 +331,11 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages` and `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files). Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`), the layout presets (`LayoutPresetsTest`) and the side button row rules (`EdgeBindingsTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 
-```kotlin
+```text
 KeyboardConfig
 ├── rows: List<RowConfig>
 │   └── keys: List<KeyConfig> (label + longPressBindings)
@@ -314,11 +349,11 @@ EdgeSlot: (index, side, type, value) for configurable side buttons
 
 ### Gesture Detection
 
-Split between `createKey()`'s touch listener in `MyKeyboardService` and `KeyInputController.handleTouch()`:
+Split between `KeyTouchListener` (set on every key by `createKey()`) and `KeyInputController.handleTouch()`:
 - Horizontal swipe: `absDx > dp(20) && absDx > absDy * 1.05f` → delete/restore text (`KeyInputController`)
 - Vertical swipe on release: `dy < -dp(24) && absDy > absDx` → `,` / `!` on `.` / `?`, capital on letters (`KeyInputController`)
-- Swipe-up during move (`dp(26)`) on `.`, `?`, `123` (`createKey`)
-- Long press: coroutine started on DOWN with `ViewConfiguration.getLongPressTimeout()`; shows the popup and takes over MOVE/UP (`createKey`)
+- Swipe-up during move (`dp(26)`) on `.`, `?`, `123` (`KeyTouchListener`)
+- Long press: coroutine started on DOWN with `ViewConfiguration.getLongPressTimeout()`; shows the popup and takes over MOVE/UP (`KeyTouchListener`)
 
 ### Persistence
 
@@ -331,7 +366,7 @@ All configuration stored in SharedPreferences with Gson serialization:
 ### UI Binders
 
 Customization dialogs in `ui/`:
-- `LayoutEditorBinder` - Drag-drop key arrangement
+- `LayoutEditorBinder` - Drag-and-drop key arrangement
 - `LongPressEditorBinder` - Configure character bindings per key
 - `ColorWheelView` - HSV color picker
 - `ShapePreviewView` - Key shape visualization
@@ -344,7 +379,7 @@ Customization dialogs in `ui/`:
 ## Key Data Flow
 
 ```
-Touch → createKey() touch listener (long press, swipe-up on . ? 123) → KeyInputController.handleTouch()
+Touch → KeyTouchListener (long press, swipe-up on . ? 123) → KeyInputController.handleTouch()
     ↓
 ├── Tap → MyKeyboardService.commitText(char)
 ├── Long press → showLongPressPopup() → selection → commitText()

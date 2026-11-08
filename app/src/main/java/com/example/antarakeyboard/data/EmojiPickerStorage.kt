@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.data
 
+import androidx.core.content.edit
 import com.example.antarakeyboard.R
 import androidx.annotation.StringRes
 import android.content.Context
@@ -52,7 +53,7 @@ object EmojiPickerStorage {
         return try {
             val type = object : TypeToken<List<String>>() {}.type
             gson.fromJson(json, type)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
@@ -71,12 +72,7 @@ object EmojiPickerStorage {
 
         // Save
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_RECENT_EMOJIS, gson.toJson(limited)).apply()
-    }
-
-    fun clearRecentEmojis(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_RECENT_EMOJIS).apply()
+        prefs.edit { putString(KEY_RECENT_EMOJIS, gson.toJson(limited)) }
     }
 
     /* ───────── BUTTON ORDER ───────── */
@@ -87,11 +83,7 @@ object EmojiPickerStorage {
      */
     fun getButtonOrder(context: Context): List<EmojiButtonAction> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val json = prefs.getString(KEY_BUTTON_ORDER, null)
-
-        if (json == null) {
-            return defaultButtonOrder()
-        }
+        val json = prefs.getString(KEY_BUTTON_ORDER, null) ?: return defaultButtonOrder()
 
         return try {
             val type = object : TypeToken<List<String>>() {}.type
@@ -99,11 +91,11 @@ object EmojiPickerStorage {
             names.mapNotNull { name ->
                 try {
                     EmojiButtonAction.valueOf(name)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }.takeIf { it.size == 3 } ?: defaultButtonOrder()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             defaultButtonOrder()
         }
     }
@@ -113,7 +105,7 @@ object EmojiPickerStorage {
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val names = order.map { it.name }
-        prefs.edit().putString(KEY_BUTTON_ORDER, gson.toJson(names)).apply()
+        prefs.edit { putString(KEY_BUTTON_ORDER, gson.toJson(names)) }
     }
 
     fun defaultButtonOrder(): List<EmojiButtonAction> {
@@ -155,14 +147,14 @@ object EmojiPickerStorage {
 
         return try {
             TabsPosition.valueOf(name)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             TabsPosition.LEFT
         }
     }
 
     fun setTabsPosition(context: Context, position: TabsPosition) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_TABS_POSITION, position.name).apply()
+        prefs.edit { putString(KEY_TABS_POSITION, position.name) }
     }
 
     /* ───────── BUTTONS SIDE ───────── */
@@ -173,13 +165,13 @@ object EmojiPickerStorage {
 
         return try {
             ButtonsSide.valueOf(name)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ButtonsSide.RIGHT
         }
     }
 
     fun setButtonsSide(context: Context, side: ButtonsSide) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_BUTTONS_SIDE, side.name).apply()
+        prefs.edit { putString(KEY_BUTTONS_SIDE, side.name) }
     }
 }

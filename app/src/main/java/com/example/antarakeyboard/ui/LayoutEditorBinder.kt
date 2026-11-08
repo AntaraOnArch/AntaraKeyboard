@@ -4,7 +4,6 @@ import com.example.antarakeyboard.R
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Typeface
-import android.os.Build
 import android.view.DragEvent
 import android.view.Gravity
 import android.view.View
@@ -27,13 +26,14 @@ class LayoutEditorBinder(
     private val onSaved: (KeyboardConfig) -> Unit,
     private val lockedLabels: Set<String> = setOf("⇧", "⌫"),
     private val onEmptyKeyClick: ((KeyConfig) -> Unit)? = null,
-    private val allowClearKeys: Boolean = false
+    private val allowClearKeys: Boolean = false,
+    /** The "Set layout" heading above the keys; off where the page already has its own titles. */
+    private val showHeader: Boolean = true
 ) {
     private fun isLocked(key: KeyConfig): Boolean = key.label in lockedLabels
     private fun isEmptyKey(key: KeyConfig): Boolean = key.label == ""
 
-    private val TAG_SHAKE = 987654321
-    private val USER_EMPTY_MARKER = KeyMarkers.USER_EMPTY
+    private val shakeTagKey = 987654321
 
     private var keyboardContainer: LinearLayout? = null
 
@@ -45,7 +45,6 @@ class LayoutEditorBinder(
     )
 
     private var selectedA: KeyPos? = null
-    private var selectedB: KeyPos? = null
 
     private val keyToView = linkedMapOf<KeyPos, KeyView>()
     private val shakingViews = mutableListOf<View>()
@@ -64,12 +63,14 @@ class LayoutEditorBinder(
             )
         }
 
-        root.addView(TextView(context).apply {
-            text = context.getString(R.string.main_set_layout)
-            textSize = 18f
-            setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, 0, 0, 10.dp(context))
-        })
+        if (showHeader) {
+            root.addView(TextView(context).apply {
+                text = context.getString(R.string.main_set_layout)
+                textSize = 18f
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, 0, 0, 10.dp(context))
+            })
+        }
 
         val scroll = ScrollView(context).apply {
             isFillViewport = true
@@ -113,7 +114,6 @@ class LayoutEditorBinder(
         bounceViews.clear()
 
         selectedA = null
-        selectedB = null
 
         EditorKeyboardRenderer(context).render(container, cfg) { key, row, col ->
             createKeyView(key = key, pos = KeyPos(row, col), userShape = userShape)
@@ -136,7 +136,7 @@ class LayoutEditorBinder(
         }
 
         val keyView = KeyView(context).apply {
-            text = if (key.label.isBlank()) "" else key.label
+            text = key.label.ifBlank { "" }
             gravity = Gravity.CENTER
             textSize = 16f
             includeFontPadding = false
@@ -194,7 +194,7 @@ class LayoutEditorBinder(
                 setOnClickListener {
                     key.label = ""
                     key.longPressBindings.clear()
-                    key.longPressBindings.add(USER_EMPTY_MARKER)
+                    key.longPressBindings.add(KeyMarkers.USER_EMPTY)
                     afterLayoutChanged()
                 }
             }
@@ -226,28 +226,34 @@ class LayoutEditorBinder(
         val key = keyAt(pos) ?: return
         if (isEmptyKey(key)) return
 
-        if (selectedA == null || selectedA == pos) {
-            selectedA = pos
-        } else if (selectedB == null || selectedB == pos) {
-            selectedB = pos
-        } else {
-            clearSelection()
-            selectedA = pos
+        // First tap selects a key, a tap on another key swaps the two (tap the same key to deselect)
+        val first = selectedA
+        when (first) {
+            null -> {
+                selectedA = pos
+                applySelectionUI()
+            }
+            pos -> clearSelection()
+            else -> {
+                swapPositions(first, pos)
+                afterLayoutChanged()
+            }
         }
-
-        applySelectionUI()
     }
+
+    /** Called after every change of the layout (swap, preset, cleared key). */
+    var onLayoutChanged: (() -> Unit)? = null
 
     private fun afterLayoutChanged() {
         buildKeyboardUI()
         clearSelection()
         // Autosave
         onSaved(cfg)
+        onLayoutChanged?.invoke()
     }
 
     private fun clearSelection() {
         selectedA = null
-        selectedB = null
         applySelectionUI()
     }
 
@@ -264,7 +270,7 @@ class LayoutEditorBinder(
     }
 
     private fun applySelectionUI() {
-        val hasSelection = selectedA != null || selectedB != null
+        val hasSelection = selectedA != null
         if (hasSelection) {
             stopIdleShake()
         } else {
@@ -275,7 +281,7 @@ class LayoutEditorBinder(
             val pos = entry.key
             val view = entry.value
 
-            val isSel = pos == selectedA || pos == selectedB
+            val isSel = pos == selectedA
 
             if (isSel) {
                 view.customBgColor = 0xFFFFFFFF.toInt()
@@ -297,12 +303,7 @@ class LayoutEditorBinder(
 
         view.tag = pos
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            view.startDragAndDrop(data, shadow, view, 0)
-        } else {
-            @Suppress("DEPRECATION")
-            view.startDrag(data, shadow, view, 0)
-        }
+        view.startDragAndDrop(data, shadow, view, 0)
     }
 
     private fun handleDrop(
@@ -352,17 +353,17 @@ class LayoutEditorBinder(
     }
 
     private fun startIdleShake() {
-        if (selectedA != null || selectedB != null) return
+        if (selectedA != null) return
 
         val deg = 8f
 
         shakingViews.forEach { v ->
-            if (v.getTag(TAG_SHAKE) == true) return@forEach
-            v.setTag(TAG_SHAKE, true)
+            if (v.getTag(shakeTagKey) == true) return@forEach
+            v.setTag(shakeTagKey, true)
 
             fun loop() {
-                if (selectedA != null || selectedB != null) {
-                    v.setTag(TAG_SHAKE, false)
+                if (selectedA != null) {
+                    v.setTag(shakeTagKey, false)
                     v.rotation = 0f
                     return
                 }
@@ -393,7 +394,7 @@ class LayoutEditorBinder(
 
     private fun stopIdleShake() {
         shakingViews.forEach { v ->
-            v.setTag(TAG_SHAKE, false)
+            v.setTag(shakeTagKey, false)
             v.animate().cancel()
             v.rotation = 0f
         }
@@ -441,24 +442,20 @@ class LayoutEditorBinder(
         bounceViews.clear()
     }
 
-    fun swapSelectedExternally(): Boolean {
-        val a = selectedA
-        val b = selectedB
-
-        if (a == null || b == null) return false
-
-        swapPositions(a, b)
-        afterLayoutChanged()
-
-        return true
-    }
-
     fun saveExternally() {
         onSaved(cfg)
     }
 
-    fun hasTwoSelected(): Boolean {
-        return selectedA != null && selectedB != null
+    /** The layout as currently edited. */
+    fun currentLayout(): KeyboardConfig = cfg
+
+    /** Replaces the whole layout (a chosen preset), redraws it and autosaves. */
+    fun replaceLayout(layout: KeyboardConfig) {
+        stopAllAnims()
+        cfg.rows.clear()
+        cfg.rows.addAll(deepCopy(layout).ensureSpaceMarkers().rows)
+        afterLayoutChanged()
+        startIdleShake()
     }
 
     private fun deepCopy(src: KeyboardConfig): KeyboardConfig {

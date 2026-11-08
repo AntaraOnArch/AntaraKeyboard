@@ -3,44 +3,28 @@ package com.example.antarakeyboard.service
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.ColorFilter
-import android.graphics.Paint
-import android.graphics.PixelFormat
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
-import android.graphics.RadialGradient
-import android.graphics.Rect
-import android.graphics.Shader
-import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
+import android.os.ResultReceiver
+import android.os.SystemClock
 import android.view.ContextThemeWrapper
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.ScrollView
-import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isEmpty
-import androidx.core.view.isNotEmpty
-import androidx.core.view.isVisible
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.data.AppLanguageSettings
-import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.data.KeyboardPrefs
-import com.example.antarakeyboard.data.LongPressPresets
 import com.example.antarakeyboard.data.PrefsManager
 import com.example.antarakeyboard.data.ScriptMapper
 import com.example.antarakeyboard.extensions.dp
@@ -50,14 +34,10 @@ import com.example.antarakeyboard.model.KeyShape
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.shiftedBinding
 import com.example.antarakeyboard.service.input.KeyInputController
-import com.example.antarakeyboard.service.suggest.SuggestionController
-import com.example.antarakeyboard.service.suggest.SuggestionDictionaries
-import com.example.antarakeyboard.service.suggest.WordSuggester
 import com.example.antarakeyboard.ui.KeyView
 import com.example.antarakeyboard.ui.defaultKeyboardLayout
 import java.util.Locale
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
@@ -66,7 +46,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class MyKeyboardService : InputMethodService(), EdgeActionCallback {
@@ -80,12 +59,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var isPasswordInput = false
 
     // Word suggestions: strip above the keys; the dictionary survives input view recreation
-    private val suggestionController by lazy {
-        SuggestionController(this, serviceScope) { refreshSuggestions() }
-    }
-    private lateinit var suggestionStrip: LinearLayout
-    private var suggestionsOn = false
-    private var suggestionsAllowedInField = false
+    private val suggestionStrip by lazy { SuggestionStrip(this, serviceScope, SuggestionStripHost()) }
     private var lastBottomInsetPx: Int = 0
 
     private var currentKeyboardConfig: KeyboardConfig = defaultKeyboardLayout
@@ -122,14 +96,14 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var targetKeyboardHeightPx: Int = 0
 
     lateinit var inputController: KeyInputController
-    private var landscapeSpaceIndex = 0
+    private val landscapeBuilder by lazy { LandscapeLayoutBuilder(this, LandscapeHost()) }
 
     private var alphabetLayoutLower: KeyboardConfig? = null
     private var alphabetLayoutUpper: KeyboardConfig? = null
 
     private lateinit var emojiPickerManager: EmojiPickerManager
 
-    private var languagePresetPopup: PopupWindow? = null
+    private val languagePicker by lazy { LanguagePickerPopup(this, LanguagePickerHost()) }
 
     private var leftSpaceHeld = false
     private var rightSpaceHeld = false
@@ -137,15 +111,30 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     private var dualSpacePickerWasShown = false
 
     private companion object {
-        const val OVERLAP_RATIO = 0.18f
         const val DUAL_SPACE_HOLD_MS = 4000L
-        const val SUGGESTION_COUNT = 3
-        const val SUGGESTION_LOOKBEHIND = 48
+        /** A hide this soon after an input started is the app restarting (rotation), not the user. */
+        const val INPUT_RESTART_HIDE_MS = 500L
+        /**
+         * A hide or input restart this close to a rotation (before or after it) belongs to the
+         * rotation: the app may hide while its old window goes away, before the new config arrives.
+         */
+        const val ROTATION_WINDOW_MS = 1500L
     }
 
+    /**
+     * Text field the user left the emoji panel open in (null = closed). It stays open there through
+     * rotations and input restarts until its X button or another text field closes it.
+     */
+    private var emojiOpenInEditor: String? = null
+    /** When the current input connection started (see hideSoftInput). */
+    private var inputStartedAt = 0L
+    /** When the last configuration change (rotation) arrived. */
+    private var configChangedAt = -ROTATION_WINDOW_MS
+    /** A hide that may still turn out to be part of a rotation; it closes the panel if none follows. */
+    private var pendingEmojiCloseJob: Job? = null
+
     // RGB animation
-    private var rgbAnimationJob: Job? = null
-    private val rgbRandom = java.util.Random()
+    private val rgbAnimator by lazy { RgbBackgroundAnimator(this, serviceScope, ::applyRgbFrame) }
     /* ───────── LIFECYCLE ───────── */
     //claude sync
 
@@ -219,17 +208,16 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         // Suggestion strip sits above the rows, outside keyboardContainer (whose children
         // must all be key rows – the side-button overlay relies on that)
-        suggestionStrip = createSuggestionStrip()
         overlayLayer.addView(
-            suggestionStrip,
+            suggestionStrip.createView(),
             0,
             FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                suggestionStripHeightPx(),
+                suggestionStrip.heightPx,
                 Gravity.TOP
             )
         )
-        updateSuggestionStrip()
+        suggestionStrip.update()
 
         inputController = KeyInputController(this)
 
@@ -249,18 +237,12 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             context = this,
             overlayLayerProvider = { overlayLayer },
             themedCtxProvider = { themedCtx },
-            inputConnectionProvider = { currentInputConnection },
-            keyHeightProvider = { keyHeight() },
             isPortraitProvider = { isPortrait() },
             currentShapeProvider = { currentShape },
+            keyHeightStretchProvider = { keyHeightFactor() },
+            rowSpacingPxProvider = { rowSpacingPx() },
             colorsProvider = { anchor -> longPressPopupColors(anchor) },
-            rgbBackgroundProvider = {
-                if (rgbAnimationJob != null) {
-                    createRadialRainbowDrawable(lastRgbStep, lastRgbSaturation, lastRgbBrightness)
-                } else {
-                    null
-                }
-            }
+            rgbBackgroundProvider = { if (rgbAnimator.isRunning) rgbAnimator.newDrawable() else null }
         )
 
         edgeOverlayManager = EdgeOverlayManager(
@@ -268,7 +250,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             overlayLayerProvider = { overlayLayer },
             keyboardContainerProvider = { keyboardContainer },
             themedCtxProvider = { themedCtx },
-            landscapeKeySizePxProvider = { landscapeKeySizePx() },
+            landscapeKeySizePxProvider = { landscapeBuilder.sideButtonSizePx() },
             availableKeyboardWidthPxProvider = { availableKeyboardWidthPx() },
             computeRowSizingProvider = { count, availW ->
                 val sizing = computeRowSizing(count, availW)
@@ -304,7 +286,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 }
 
                 override fun onClose() {
-                    hideEmojiPopup()
+                    closeEmojiPicker()
                 }
             },
             colorsProvider = { emojiPickerColors() }
@@ -382,11 +364,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         KeyboardPrefs.ensureDefaultLongPress(this)
 
         // Word suggestions (main app switch); nothing in passwords, numbers, e-mails or URLs
-        suggestionsOn = KeyboardPrefs.isSuggestionsEnabled(this)
-        suggestionsAllowedInField = InputTypes.allowsSuggestions(info)
-        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
-        else suggestionController.release()
-        updateSuggestionStrip()
+        suggestionStrip.startInput(info)
 
         // Refresh vibration preference
         hapticManager.setEnabled(KeyboardPrefs.isVibrationEnabled(this))
@@ -440,11 +418,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         targetKeyboardHeightPx = computeTargetKeyboardHeight()
         overlayLayer.post { redrawKeyboard() }
+        // Another text field closes the emoji panel; in the same one it comes back. Right after a
+        // rotation the app's recreated field may report another id, so the same app is enough
+        val key = editorKey(info)
+        if (emojiOpenInEditor != key) {
+            val sameAppAfterRotation = recentlyRotated() &&
+                emojiOpenInEditor?.substringBefore('/') == info?.packageName
+            emojiOpenInEditor = if (sameAppAfterRotation) key else null
+        }
+        restoreEmojiPanel()
     }
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         resetTransientState()
-        if (::suggestionStrip.isInitialized) showSuggestions(emptyList())
+        suggestionStrip.clear()
     }
 
     override fun onUpdateSelection(
@@ -457,101 +444,16 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     ) {
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
         // Every typed key, delete, suggestion and cursor move ends up here
-        refreshSuggestions()
+        suggestionStrip.refresh()
     }
 
-    /* ───────── WORD SUGGESTIONS ───────── */
-
-    private fun suggestionStripHeightPx(): Int = 38.dp(this)
-
-    /** Dictionary for the current keyboard script and app/device language. */
-    private fun currentSuggestionDictionary(): String? =
-        SuggestionDictionaries.forKeyboard(
-            KeyboardPrefs.getSelectedLongPressPreset(this),
-            KeyboardPrefs.languageTag(this)
-        )
-
-    private fun createSuggestionStrip(): LinearLayout = LinearLayout(themedCtx).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        tag = "suggestion_strip"
-
-        repeat(SUGGESTION_COUNT) { index ->
-            if (index > 0) {
-                addView(View(themedCtx), LinearLayout.LayoutParams(1.dp(this@MyKeyboardService), 18.dp(this@MyKeyboardService)))
-            }
-            addView(
-                TextView(themedCtx).apply {
-                    gravity = Gravity.CENTER
-                    textSize = 16f
-                    maxLines = 1
-                    ellipsize = android.text.TextUtils.TruncateAt.END
-                    setPadding(4.dp(this@MyKeyboardService), 0, 4.dp(this@MyKeyboardService), 0)
-                    setOnClickListener { view ->
-                        val suggestion = (view as TextView).text?.toString().orEmpty()
-                        if (suggestion.isNotEmpty()) {
-                            hapticManager.performHapticFeedback(view)
-                            applySuggestion(suggestion)
-                        }
-                    }
-                },
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-            )
-        }
-    }
-
-    /**
-     * Shows the strip only when suggestions are on and the field allows them; fields that ask
-     * for none (passwords, numbers, e-mail, URL, TYPE_TEXT_FLAG_NO_SUGGESTIONS) get no strip.
-     * Recolors it to match the keys.
-     */
-    private fun updateSuggestionStrip() {
-        if (!::suggestionStrip.isInitialized) return
-        suggestionStrip.visibility =
-            if (suggestionsOn && suggestionsAllowedInField) View.VISIBLE else View.GONE
-        val text = emojiPickerColors().text
-        for (i in 0 until suggestionStrip.childCount) {
-            when (val child = suggestionStrip.getChildAt(i)) {
-                is TextView -> child.setTextColor(text)
-                else -> child.setBackgroundColor(androidx.core.graphics.ColorUtils.setAlphaComponent(text, 0x40))
-            }
-        }
-        refreshSuggestions()
-    }
-
-    private fun refreshSuggestions() {
-        if (!::suggestionStrip.isInitialized || !suggestionsOn) return
-        val word = if (suggestionsAllowedInField) currentTypedWord() else ""
-        showSuggestions(if (word.isEmpty()) emptyList() else suggestionController.suggest(word))
-    }
-
-    private fun showSuggestions(words: List<String>) {
-        var slot = 0
-        for (i in 0 until suggestionStrip.childCount) {
-            val view = suggestionStrip.getChildAt(i) as? TextView ?: continue
-            view.text = words.getOrNull(slot).orEmpty()
-            slot++
-        }
-    }
-
-    /** The word right before the cursor (empty with a selection or inside a word). */
-    private fun currentTypedWord(): String {
-        val ic = currentInputConnection ?: return ""
-        if (!ic.getSelectedText(0).isNullOrEmpty()) return ""
-        val before = ic.getTextBeforeCursor(SUGGESTION_LOOKBEHIND, 0) ?: return ""
-        val after = ic.getTextAfterCursor(1, 0) ?: ""
-        return WordSuggester.currentWord(before, after)
-    }
-
-    /** Replaces the word being typed with [suggestion] and adds a space. */
-    private fun applySuggestion(suggestion: String) {
-        val ic = currentInputConnection ?: return
-        val typed = currentTypedWord()
-        ic.beginBatchEdit()
-        if (typed.isNotEmpty()) ic.deleteSurroundingText(typed.length, 0)
-        ic.commitText("$suggestion ", 1)
-        ic.endBatchEdit()
-        deleteRestoreManager.clearRestoreBuffer()
+    /** The suggestion strip's view of this service. */
+    private inner class SuggestionStripHost : SuggestionStrip.Host {
+        override val themedContext: Context get() = themedCtx
+        override val inputConnection: InputConnection? get() = currentInputConnection
+        override fun textColor() = emojiPickerColors().text
+        override fun performHapticFeedback(view: View) = hapticManager.performHapticFeedback(view)
+        override fun onSuggestionApplied() = deleteRestoreManager.clearRestoreBuffer()
     }
 
     override fun onWindowHidden() {
@@ -576,6 +478,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
      * Context whose resources use the app language. Android 13+ applies per-app locales to the
      * whole process (and calls onConfigurationChanged), so only older versions need the override.
      */
+    // Language splits are disabled in build.gradle.kts (bundle.language.enableSplit), so every
+    // translation is installed and no Play Core download is needed
+    @SuppressLint("AppBundleLocaleChanges")
     private fun localizedContext(): Context {
         val tag = PrefsManager.getAppLanguage(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || tag.isEmpty()) return this
@@ -587,7 +492,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /** Dismisses popups and stops jobs owned by the current input view, if one exists. */
     private fun releaseInputViewResources() {
         stopRgbAnimation()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         if (::emojiPickerManager.isInitialized) emojiPickerManager.hide()
         if (::longPressPopupManager.isInitialized) longPressPopupManager.hideLongPressPopup()
         if (::keyPreviewManager.isInitialized) keyPreviewManager.hide()
@@ -599,9 +504,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        configChangedAt = SystemClock.uptimeMillis()
+        // A hide that came just before the rotation was the app's old window going away
+        pendingEmojiCloseJob?.cancel()
 
         // Recreate (onCreateInputView releases popups and jobs of the old view) keyboard view to adapt to new configuration
         recreateInputView()
+        restoreEmojiPanel()
     }
 
     private fun resetTransientState() {
@@ -611,7 +520,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         if (::emojiPickerManager.isInitialized) hideEmojiPopup()
         if (::longPressPopupManager.isInitialized) hideLongPressPopup()
         if (::keyPreviewManager.isInitialized) keyPreviewManager.hide()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         resetDualSpaceHoldState()
     }
 
@@ -643,7 +552,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             leftSpaceHeld &&
             rightSpaceHeld &&
             dualSpaceHoldJob == null &&
-            languagePresetPopup == null
+            !languagePicker.isShowing
         ) {
             dualSpacePickerWasShown = false
 
@@ -653,7 +562,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
                 if (leftSpaceHeld && rightSpaceHeld) {
                     dualSpacePickerWasShown = true
-                    showLanguagePresetPopup()
+                    languagePicker.show()
                 }
             }
         }
@@ -663,7 +572,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         if (!isDualSpaceKey(key)) return false
 
         val shouldConsumeSpace =
-            dualSpacePickerWasShown || languagePresetPopup != null
+            dualSpacePickerWasShown || languagePicker.isShowing
 
         if (isLeftSpace(key)) {
             leftSpaceHeld = false
@@ -677,7 +586,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             cancelDualSpaceHoldTimer()
         }
 
-        if (!leftSpaceHeld && !rightSpaceHeld && languagePresetPopup == null) {
+        if (!leftSpaceHeld && !rightSpaceHeld && !languagePicker.isShowing) {
             dualSpacePickerWasShown = false
         }
 
@@ -790,116 +699,23 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         emojiPickerManager.hide()
     }
 
-    private fun hideLanguagePresetPopup() {
-        languagePresetPopup?.dismiss()
-        languagePresetPopup = null
-    }
-
-    /**
-     * Dual-space picker: the same language choice as the main app (System default + every
-     * translation, each in its own language). Choosing one sets the app language and the
-     * keyboard script that goes with it (Cyrillic languages type Cyrillic).
-     */
-    private fun showLanguagePresetPopup() {
-        hideLongPressPopup()
-        hideEmojiPopup()
-        hideLanguagePresetPopup()
-        cancelDualSpaceHoldTimer()
-
-        dualSpacePickerWasShown = true
-
-        val popupWidth = (resources.displayMetrics.widthPixels * 0.86f).toInt()
-            .coerceAtLeast(280.dp(this))
-
-        // Same palette as the emoji picker: keyboard surface + key text
-        val pickerColors = emojiPickerColors()
-        val popupBg = pickerColors.panel
-        val popupText = pickerColors.text
-
-        val root = LinearLayout(themedCtx).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(20.dp(this), 18.dp(this), 20.dp(this), 14.dp(this))
-            setBackgroundColor(popupBg)
+    /** The language picker's view of this service. */
+    private inner class LanguagePickerHost : LanguagePickerPopup.Host {
+        override val themedContext: Context get() = themedCtx
+        override val rootView: View get() = this@MyKeyboardService.rootView
+        override fun colors() = emojiPickerColors()
+        override fun onShow() {
+            hideLongPressPopup()
+            hideEmojiPopup()
+            cancelDualSpaceHoldTimer()
+            dualSpacePickerWasShown = true
         }
-
-        root.addView(TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.main_language)
-            textSize = 18f
-            setTextColor(popupText)
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setPadding(0, 0, 0, 14.dp(this))
-        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
-        val tags = listOf("") + AppLanguages.TAGS
-        val current = AppLanguageSettings.selectedTag(this).let { AppLanguages.match(it) ?: "" }
-
-        val radioGroup = RadioGroup(themedCtx).apply { orientation = RadioGroup.VERTICAL }
-        val idToTag = HashMap<Int, String>()
-        tags.forEach { tag ->
-            val id = View.generateViewId()
-            idToTag[id] = tag
-            radioGroup.addView(RadioButton(themedCtx).apply {
-                this.id = id
-                text = if (tag.isEmpty()) themedCtx.getString(R.string.language_system_default)
-                else AppLanguages.nativeName(tag)
-                textSize = 16f
-                setTextColor(popupText)
-                setPadding(0, 6.dp(this), 0, 6.dp(this))
-                isFocusable = false
-            }, RadioGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        }
-        idToTag.entries.firstOrNull { it.value == current }?.let { radioGroup.check(it.key) }
-
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val tag = idToTag[checkedId] ?: return@setOnCheckedChangeListener
-            applyLanguageFromPicker(tag)
-        }
-
-        val scroll = ScrollView(themedCtx).apply {
-            isFillViewport = false
-            addView(radioGroup, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        }
-        root.addView(scroll, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            (resources.displayMetrics.heightPixels * 0.46f).toInt()
-        ))
-
-        root.addView(TextView(themedCtx).apply {
-            text = themedCtx.getString(R.string.action_close)
-            textSize = 14f
-            setTextColor(popupText)
-            gravity = Gravity.CENTER
-            setPadding(8.dp(this), 16.dp(this), 8.dp(this), 0)
-            isClickable = true
-            isFocusable = false
-            setOnClickListener { hideLanguagePresetPopup() }
-        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
-        val popup = PopupWindow(root, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
-            isOutsideTouchable = true
-            isFocusable = true
-            isClippingEnabled = false
-            elevation = 12.dp(this@MyKeyboardService).toFloat()
-            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
-            setOnDismissListener {
-                languagePresetPopup = null
-                if (!leftSpaceHeld && !rightSpaceHeld) {
-                    dualSpacePickerWasShown = false
-                }
+        override fun onDismissed() {
+            if (!leftSpaceHeld && !rightSpaceHeld) {
+                dualSpacePickerWasShown = false
             }
         }
-        languagePresetPopup = popup
-
-        // showAtLocation in an IME is relative to the rootView window: convert screen Y to local Y
-        val screenW = resources.displayMetrics.widthPixels
-        val screenH = resources.displayMetrics.heightPixels
-        val rootLoc = IntArray(2)
-        rootView.getLocationOnScreen(rootLoc)
-        val localX = ((screenW - popupWidth) / 2).coerceAtLeast(8.dp(this))
-        val localY = (screenH * 0.105f).toInt().coerceAtLeast(54.dp(this)) - rootLoc[1]
-
-        popup.showAtLocation(rootView, Gravity.NO_GRAVITY, localX, localY)
+        override fun onLanguagePicked(tag: String) = applyLanguageFromPicker(tag)
     }
 
     /** Language chosen on the keyboard: same effect as the main app's Language dropdown. */
@@ -926,12 +742,58 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         )
 
         resetDualSpaceHoldState()
-        hideLanguagePresetPopup()
+        languagePicker.hide()
         // Another script types another language: switch the suggestion dictionary too
-        if (suggestionsOn) suggestionController.use(currentSuggestionDictionary())
+        suggestionStrip.onScriptChanged()
         redrawKeyboard()
     }
 
+
+
+    // Back hides the keyboard as usual and forgets an open emoji panel, so the keyboard comes back
+    // without it (rotations and input restarts never send Back, so they keep the panel)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && emojiOpenInEditor != null) closeEmojiPicker()
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        super.onStartInput(attribute, restarting)
+        inputStartedAt = SystemClock.uptimeMillis()
+    }
+
+    override fun onWindowShown() {
+        super.onWindowShown()
+        restoreEmojiPanel()
+    }
+
+    /**
+     * The keyboard hidden on purpose (the navigation bar's hide button, or the app) forgets an open
+     * emoji panel like Back does, so it comes back with the letters. Some apps (Google search) also
+     * hide it while they restart after a rotation – right after the new input started
+     * ([onStartInput]), or even before the new configuration reaches the keyboard
+     * ([onConfigurationChanged]); such a hide keeps the panel. A hide with no rotation around it
+     * closes the panel once [ROTATION_WINDOW_MS] has passed without one. This is not a limit on how
+     * long the panel stays open: a rotation keeps it however long it has been open.
+     */
+    override fun onCreateInputMethodInterface(): AbstractInputMethodImpl = object : InputMethodImpl() {
+        override fun hideSoftInput(flags: Int, resultReceiver: ResultReceiver?) {
+            if (emojiOpenInEditor != null && !partOfRotation()) {
+                pendingEmojiCloseJob?.cancel()
+                pendingEmojiCloseJob = serviceScope.launch {
+                    delay(ROTATION_WINDOW_MS.milliseconds)
+                    closeEmojiPicker()
+                }
+            }
+            super.hideSoftInput(flags, resultReceiver)
+        }
+    }
+
+    private fun recentlyRotated() = SystemClock.uptimeMillis() - configChangedAt < ROTATION_WINDOW_MS
+
+    /** An app restarting after a rotation hides right after its new input started, or around the rotation. */
+    private fun partOfRotation() =
+        SystemClock.uptimeMillis() - inputStartedAt < INPUT_RESTART_HIDE_MS || recentlyRotated()
 
     private fun showEmojiPicker() {
         // A delete/restore swipe must never keep running behind the picker
@@ -939,16 +801,33 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         hideLongPressPopup()
         hideEmojiPopup()
 
-        val keyboardHeight = computeTargetKeyboardHeight()
-        emojiPickerManager.show(keyboardHeight)
+        pendingEmojiCloseJob?.cancel()
+        emojiPickerManager.show()
+        emojiOpenInEditor = editorKey(currentInputEditorInfo)
     }
 
-    private fun landscapeKeyGapPx(): Int = when (landscapeShape()) {
-        KeyShape.TRIANGLE -> 0.dp(this)
-        KeyShape.CIRCLE -> 2.dp(this)
-        KeyShape.CUBE -> 2.dp(this)
-        else -> 2.dp(this)
+    private fun closeEmojiPicker() {
+        pendingEmojiCloseJob?.cancel()
+        emojiOpenInEditor = null
+        hideEmojiPopup()
     }
+
+    private fun editorKey(info: EditorInfo?): String = "${info?.packageName}/${info?.fieldId}"
+
+    /**
+     * Shows the emoji panel again on the current input view if the user left it open. Rotating
+     * recreates the view, and some apps (e.g. Google search) also restart the input a moment later,
+     * so this runs after each of those steps; a panel already showing is left alone.
+     */
+    private fun restoreEmojiPanel() {
+        if (emojiOpenInEditor == null) return
+        overlayLayer.post {
+            if (emojiOpenInEditor != null && ::emojiPickerManager.isInitialized && !emojiPickerManager.isShowing) {
+                showEmojiPicker()
+            }
+        }
+    }
+
 
 
 
@@ -965,7 +844,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         val savedRowCount = KeyboardPrefs.getRowCount(this)
 
         return if (isPortrait()) {
-            (screenH * 0.36f).roundToInt().coerceAtLeast(230.dp(this))
+            portraitKeyboardHeight(screenH)
         } else {
             val ratio = when (savedRowCount) {
                 3 -> 0.28f
@@ -985,6 +864,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
     }
 
+    private fun portraitKeyboardHeight(screenH: Int): Int =
+        (screenH * 0.36f).roundToInt().coerceAtLeast(230.dp(this))
+
     private fun totalVisibleRows(): Int {
         var rows = currentKeyboardConfig.rows.size
         if (currentKeyboardConfig.specialLeft.isNotEmpty()) rows += 1
@@ -993,89 +875,21 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     private fun keyHeight(): Int {
-        val rows = totalVisibleRows()
-
         val containerH = (targetKeyboardHeightPx + lastBottomInsetPx).takeIf { it > 0 }
             ?: computeTargetKeyboardHeight()
 
         val usableH = (containerH - overlayLayer.paddingTop - overlayLayer.paddingBottom)
             .coerceAtLeast(120.dp(this))
 
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val activeShape = currentShape
-        val usableFactor = if (isLandscape()) 0.88f else 0.92f
-        val usableForKeys = (usableH * usableFactor).toInt()
-
-        if (!isLandscape()) {
-            when (savedRowCount) {
-                3 -> {
-                    return when(activeShape) {
-                        KeyShape.HEX,
-                        KeyShape.HEX_TALL,
-                        KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 3.15f).toInt().coerceAtLeast(52.dp(this))
-
-                        KeyShape.TRIANGLE -> (usableForKeys / 3.35f).toInt().coerceAtLeast(48.dp(this))
-                        KeyShape.CIRCLE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
-                        KeyShape.CUBE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(this))
-                    }
-                }
-
-                4 -> {
-                    return when (activeShape) {
-                        KeyShape.HEX,
-                        KeyShape.HEX_TALL,
-                        KeyShape.HEX_HALF_LEFT,
-                        KeyShape.HEX_HALF_RIGHT -> (usableForKeys / 4.05f).toInt().coerceAtLeast(44.dp(this))
-
-                        KeyShape.TRIANGLE -> (usableForKeys / 4.25f).toInt().coerceAtLeast(42.dp(this))
-                        KeyShape.CIRCLE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
-                        KeyShape.CUBE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(this))
-                    }
-                }
-            }
-        }
-
-        val denominator = when (activeShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> (rows - (rows - 1) * OVERLAP_RATIO).coerceAtLeast(1f)
-
-            KeyShape.TRIANGLE -> rows.toFloat()
-            KeyShape.CIRCLE -> rows.toFloat()
-            KeyShape.CUBE -> rows.toFloat()
-        }
-
-        val baseH = (usableForKeys / denominator).toInt().coerceAtLeast(
-            if (isLandscape()) 28.dp(this) else 36.dp(this)
-        )
-
-        return when (activeShape){
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> (baseH * 1.08f).toInt()
-
-            KeyShape.TRIANGLE -> if (isLandscape()) {
-                (baseH * 0.84f).toInt()
-            } else {
-                (baseH * 0.92f).toInt()
-            }
-
-            KeyShape.CIRCLE -> if (isLandscape()) {
-                (baseH * 0.88f).toInt()
-            } else {
-                (baseH * 0.96f).toInt()
-            }
-
-            KeyShape.CUBE -> if (isLandscape()) {
-                (baseH * 0.88f).toInt()
-            } else {
-                (baseH * 0.96f).toInt()
-            }
-        }
+        return KeySizing.keyHeight(sizingSpec(), totalVisibleRows(), usableH)
     }
+
+    private fun sizingSpec() = KeySizing.Spec(
+        rowCount = KeyboardPrefs.getRowCount(this),
+        shape = currentShape,
+        landscape = isLandscape(),
+        density = resources.displayMetrics.density
+    )
 
     private fun availableKeyboardWidthPx(): Int {
         val w = overlayLayer.width
@@ -1116,8 +930,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
          * paddingBottom already contains the navigation/system inset. No artificial
          * minTarget or extraBottomSafety is added: they left empty space at the top.
          */
-        val stripH = if (::suggestionStrip.isInitialized && suggestionStrip.isVisible) {
-            suggestionStripHeightPx()
+        val stripH = if (suggestionStrip.isVisible) {
+            suggestionStrip.heightPx
         } else {
             0
         }
@@ -1421,29 +1235,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         longPressPopupManager.hideLongPressPopup()
     }
 
-
-    private val longPressCellBounds: List<Rect>
-        get() = longPressPopupManager.getLpRects()
-
     /* ───────── LAYOUT ───────── */
 
-    private data class RowSizing(
-        val keyW: Int,
-        val keyH: Int,
-        val gapPx: Int,
-        val outerPadPx: Int,
-        val overlapPx: Int,
-        val triOverlapX: Int,
-        val triOverlapY: Int
-    )
-
     /**
-     * Row sizing with the key height slider applied (see [baseRowSizing] for the tuned defaults).
+     * Row sizing with the key height slider applied (see [KeySizing.baseRowSizing] for the tuned defaults).
      * The keys themselves grow ([KeyView.heightStretch]); sizes and row spacing stay as tuned.
      * Only the honeycomb overlap grows with the hexagon tips so the rows stay interlocked.
      */
-    private fun computeRowSizing(count: Int, availW: Int): RowSizing {
-        val base = baseRowSizing(count, availW)
+    private fun computeRowSizing(count: Int, availW: Int): KeySizing.RowSizing {
+        val base = KeySizing.baseRowSizing(sizingSpec(), count, availW, ::keyHeight)
         val f = keyHeightStretch()
         if (f == 1f || base.overlapPx == 0) return base
 
@@ -1459,22 +1259,74 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     /** Key height factor from the main app slider (1 = tuned default). */
     private fun keyHeightFactor(): Float = KeyScale.clamp(KeyboardPrefs.getKeyScale(this))
 
+    /** Height stretch the keys are drawn with (portrait or landscape). */
+    private fun keyHeightStretch(): Float =
+        if (isLandscape()) landscapeKeyHeightStretch() else portraitKeyHeightStretch()
+
     /**
-     * Height stretch the keys are drawn with: the slider factor times the layout's own default.
+     * Portrait: the slider factor times the layout's own default.
      * 3-row portrait triangles are taller by default (what used to be 150 % on the slider).
      */
-    private fun keyHeightStretch(): Float {
-        val layoutDefault = if (
-            !isLandscape() &&
-            currentShape == KeyShape.TRIANGLE &&
-            KeyboardPrefs.getRowCount(this) == 3
-        ) {
-            KeyScale.THREE_ROW_TRIANGLE_DEFAULT
-        } else {
-            1f
+    private fun portraitKeyHeightStretch(): Float {
+        val threeRows = KeyboardPrefs.getRowCount(this) == 3
+        val layoutDefault = when {
+            threeRows && currentShape == KeyShape.TRIANGLE -> KeyScale.THREE_ROW_TRIANGLE_DEFAULT
+            threeRows && currentShape == KeyShape.CUBE -> KeyScale.THREE_ROW_CUBE_DEFAULT
+            else -> 1f
         }
         return keyHeightFactor() * layoutDefault
     }
+
+    /**
+     * Landscape keys are drawn exactly as tall as the portrait keys (key height slider included):
+     * the stretch turns the shape height of the square landscape key into the portrait one.
+     */
+    private fun landscapeKeyHeightStretch(): Float {
+        var w = landscapeBuilder.keySizePx().toFloat()
+        var h = landscapeBuilder.keyBoxHeightPx().toFloat()
+        if (keysForcedSquare(landscape = true) && landscapeShape() != KeyShape.HEX_TALL) {
+            w = minOf(w, h)
+            h = w
+        }
+        val base = KeyView.shapeHeight(landscapeShape(), w, h)
+        if (base <= 0f) return keyHeightFactor()
+        return portraitKeyShapeHeightPx() / base
+    }
+
+    /**
+     * Row sizing of the widest portrait row, computed the way portrait builds its rows
+     * (screen sides swapped), so it is the same whichever orientation asks.
+     */
+    private fun portraitRowSizing(): KeySizing.RowSizing {
+        val dm = resources.displayMetrics
+        // Same width as availableKeyboardWidthPx() in portrait (the side paddings do not rotate)
+        val portraitW = (minOf(dm.widthPixels, dm.heightPixels) -
+            overlayLayer.paddingLeft - overlayLayer.paddingRight).coerceAtLeast(200.dp(this))
+        val portraitH = maxOf(dm.widthPixels, dm.heightPixels)
+        val spec = sizingSpec().copy(landscape = false)
+        val keyH = KeySizing.keyHeight(spec, totalVisibleRows(), portraitKeyboardHeight(portraitH))
+        val widestRow = currentKeyboardConfig.rows.maxOfOrNull { row ->
+            row.keys.count { !it.longPressBindings.contains(KeyMarkers.EDGE_GHOST) }
+        }?.coerceAtLeast(1) ?: 1
+        return KeySizing.baseRowSizing(spec, widestRow, portraitW) { keyH }
+    }
+
+    /** Drawn shape height of the portrait keys at 100 % on the key height slider (px). */
+    private fun portraitBaseShapeHeightPx(): Float {
+        val sizing = portraitRowSizing()
+        val shape = effectiveShape()
+        var w = sizing.keyW.toFloat()
+        var h = sizing.keyH.toFloat()
+        if (keysForcedSquare(landscape = false) && shape != KeyShape.HEX_TALL) {
+            w = minOf(w, h)
+            h = w
+        }
+        return KeyView.shapeHeight(shape, w, h)
+    }
+
+    /** Drawn key height of the portrait layout (px), key height slider included. */
+    private fun portraitKeyShapeHeightPx(): Float =
+        portraitBaseShapeHeightPx() * portraitKeyHeightStretch()
 
     /** Extra vertical space between rows from the row spacing slider (px, may be negative). */
     private fun rowSpacingPx(): Int =
@@ -1484,326 +1336,17 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
      * Whether keys are drawn square (KeyView.forceSquare). Only portrait triangles
      * and the 3-row portrait cube use their own height; HEX_TALL is never squared.
      */
-    private fun keysForcedSquare(): Boolean {
+    private fun keysForcedSquare(landscape: Boolean = isLandscape()): Boolean {
         val shape = effectiveShape()
         if (shape == KeyShape.HEX_TALL) return false
-        val allowNonSquare = !isLandscape() && (
-            shape == KeyShape.TRIANGLE ||
-                (KeyboardPrefs.getRowCount(this) == 3 && shape == KeyShape.CUBE)
-            )
+        val rows = KeyboardPrefs.getRowCount(this)
+        val allowNonSquare = if (landscape) {
+            // Landscape triangles get a box just as tall as the triangle (LandscapeLayoutBuilder)
+            shape == KeyShape.TRIANGLE
+        } else {
+            shape == KeyShape.TRIANGLE || (rows == 3 && shape == KeyShape.CUBE)
+        }
         return !allowNonSquare
-    }
-
-    private fun baseRowSizing(count: Int, availW: Int): RowSizing {
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val layoutShape = currentShape
-
-        /*
-         * Portrait TRIANGLE: every key gets the size of the reference row with 6 keys.
-         * A row with 7 keys overlaps horizontally to fit the same width without
-         * shrinking the keys.
-         */
-        if (!isLandscape() && layoutShape == KeyShape.TRIANGLE) {
-            val usableW = when (savedRowCount) {
-                // Leave a little safe space at the left and right edge
-                3 -> (availW - 20.dp(this)).coerceAtLeast(240.dp(this))
-
-                // 4-row and 5-row (tuned)
-                else -> (availW * 0.98f).toInt()
-            }
-
-            val referenceColumns = when (savedRowCount) {
-                // 3-row has 11–12 keys per row, so it needs smaller triangles
-                3 -> 8.4f
-
-                // 4-row and 5-row sizing
-                else -> 6f
-            }
-
-            val minTriangleWidth = when (savedRowCount) {
-                3 -> 30.dp(this)
-                else -> 40.dp(this)
-            }
-
-            val keyW = (usableW / referenceColumns)
-                .toInt()
-                .coerceAtLeast(minTriangleWidth)
-
-            /*
-             * 7 keys: 7 * keyW is too wide, so the excess is spread over the six gaps
-             * between the keys.
-             */
-            // A small constant overlap applies to rows with 6 keys too.
-            val baseOverlapX = (keyW * 0.22f).toInt()
-
-            // Extra overlap needed for a row with 7 keys to fit.
-            val fitOverlapX = if (count > 1) {
-                ((count * keyW - usableW) / (count - 1))
-                    .coerceAtLeast(0)
-            } else {
-                0
-            }
-
-            val overlapX = when (savedRowCount) {
-                3 -> {
-                    /*
-                     * No more subtracting 2.dp(this): it widened the whole row and pushed
-                     * the outer keys off the screen.
-                     */
-                    maxOf(baseOverlapX, fitOverlapX)
-                }
-
-                else -> {
-                    maxOf(baseOverlapX, fitOverlapX) + 2.dp(this)
-                }
-            }
-
-            val usedW =
-                count * keyW -
-                        (count - 1).coerceAtLeast(0) * overlapX
-
-            val outerPad = ((availW - usedW) / 2)
-                .coerceAtLeast(0)
-
-            return RowSizing(
-                keyW = keyW,
-                keyH = (keyW * 0.92f).toInt(),
-                gapPx = 0,
-                outerPadPx = outerPad,
-                overlapPx = 0,
-                triOverlapX = overlapX,
-                triOverlapY = 0
-            )
-        }
-
-        val gap = when (layoutShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when {
-                    isLandscape() -> 0.dp(this)
-                    savedRowCount == 3 -> 0.dp(this)
-                    savedRowCount == 4 -> 0.dp(this)
-                    else -> 1.dp(this)
-                }
-            }
-
-            KeyShape.TRIANGLE -> 0.dp(this)
-            KeyShape.CIRCLE -> {
-                when {
-                    isLandscape() -> 2.dp(this)
-                    savedRowCount == 3 -> 2.dp(this)
-                    else -> 4.dp(this)
-                }
-            }
-            KeyShape.CUBE -> {
-                when {
-                    isLandscape() -> 2.dp(this)
-
-                    // 3-row portrait: less empty space, so the keys themselves
-                    // can be bigger
-                    savedRowCount == 3 -> 2.dp(this)
-
-                    else -> 4.dp(this)
-                }
-            }
-        }
-
-        val effectiveAvailW = when (layoutShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when {
-                    isLandscape() -> {
-                        if (savedRowCount == 3) {
-                            availW
-                        } else {
-                            (availW * 1.22f).toInt()
-                        }
-                    }
-
-                    savedRowCount == 3 -> (availW * 0.95f).toInt()
-                    savedRowCount == 4 -> (availW * 0.94f).toInt()
-                    else -> availW
-                }
-            }
-
-            KeyShape.TRIANGLE -> if (isLandscape()) (availW * 0.92f).toInt() else (availW * 0.78f).toInt()
-            KeyShape.CIRCLE -> {
-                when {
-                    isLandscape() -> availW
-                    savedRowCount == 3 -> (availW * 0.98f).toInt()
-                    else -> (availW * 0.92f).toInt()
-                }
-            }
-            KeyShape.CUBE -> {
-                when {
-                    isLandscape() -> availW
-
-                    // 3-row portrait: bigger keys
-                    savedRowCount == 3 -> (availW * 0.98f).toInt()
-
-                    else -> (availW * 0.92f).toInt()
-                }
-            }
-        }
-
-        val targetColumns = when {
-            layoutShape == KeyShape.HEX && isLandscape() && savedRowCount == 3 -> 11f
-            layoutShape == KeyShape.HEX && isLandscape() -> 7f
-            savedRowCount == 3 -> 8.8f
-            layoutShape == KeyShape.HEX && savedRowCount == 4 -> 8.9f
-            layoutShape == KeyShape.HEX -> 7f
-            else -> max(1, count).toFloat()
-        }
-
-        val minKeyWidth = when {
-            isLandscape() && savedRowCount == 3 -> 24.dp(this)
-            isLandscape() -> 40.dp(this)
-            savedRowCount == 3 -> 20.dp(this)
-            savedRowCount == 4 -> 24.dp(this)
-            else -> 36.dp(this)
-        }
-
-        val baseKeyW = ((effectiveAvailW - (targetColumns - 1) * gap) / targetColumns)
-            .toInt()
-            .coerceAtLeast(minKeyWidth)
-
-        val keyW = when {
-            // Portrait CIRCLE, CUBE and TRIANGLE: a row with 6 keys uses the same key
-            // size as a row with 7 keys
-            !isLandscape() &&
-                    count == 6 &&
-                    (
-                            layoutShape == KeyShape.CIRCLE ||
-                                    layoutShape == KeyShape.CUBE
-                            ) -> {
-                ((effectiveAvailW - 6 * gap) / 7f)
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    savedRowCount == 3 -> baseKeyW
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    count <= 6 -> {
-                (baseKeyW * 1.06f).toInt()
-            }
-
-            layoutShape == KeyShape.HEX &&
-                    isLandscape() &&
-                    count >= 7 -> {
-                baseKeyW
-            }
-
-            savedRowCount == 3 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(24.dp(this))
-            }
-
-            savedRowCount == 4 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(22.dp(this))
-            }
-
-            count == 7 -> {
-                ((effectiveAvailW - (count - 1) * gap) / count.toFloat())
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-
-            count == 6 -> baseKeyW
-
-            else -> {
-                ((effectiveAvailW - (count - 1) * gap) / max(1, count).toFloat())
-                    .toInt()
-                    .coerceAtLeast(36.dp(this))
-            }
-        }
-
-        val used = count * keyW + (count - 1) * gap
-
-        val outer = when {
-            isLandscape() && layoutShape == KeyShape.HEX -> {
-                ((availW - used) / 2).coerceAtLeast(4.dp(this))
-            }
-
-            isLandscape() -> {
-                ((availW - used) / 2).coerceAtLeast(6.dp(this))
-            }
-
-            savedRowCount == 3 -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-
-            savedRowCount == 4 -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-
-            else -> {
-                ((availW - used) / 2).coerceAtLeast(0)
-            }
-        }
-
-        val rawKeyH = keyHeight()
-
-        val keyH = when {
-            // 3-row portrait CUBE: the width stays, only the height grows
-            !isLandscape() &&
-                    savedRowCount == 3 &&
-                    layoutShape == KeyShape.CUBE -> {
-                // Height is 1.3 × the key width, not derived from the row's
-                // computed height.
-                (keyW * 1.3f).toInt()
-            }
-
-            // 3-row portrait HEX
-            !isLandscape() &&
-                    savedRowCount == 3 &&
-                    (
-                            layoutShape == KeyShape.HEX ||
-                                    layoutShape == KeyShape.HEX_HALF_LEFT ||
-                                    layoutShape == KeyShape.HEX_HALF_RIGHT
-                            ) -> {
-                (keyW * 1.90f).toInt().coerceAtLeast(42.dp(this))
-            }
-
-            else -> rawKeyH
-        }
-
-        val overlap = when (currentShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                val ratio = when {
-                    isLandscape() -> OVERLAP_RATIO * 0.6f
-                    savedRowCount == 3 -> OVERLAP_RATIO * 1.58f
-                    savedRowCount == 4 -> OVERLAP_RATIO * 1.00f
-                    else -> OVERLAP_RATIO
-                }
-                (keyH * ratio).toInt()
-            }
-
-            else -> 0
-        }
-
-        return RowSizing(
-            keyW = keyW,
-            keyH = keyH,
-            gapPx = gap,
-            outerPadPx = outer,
-            overlapPx = overlap,
-            triOverlapX = 0,
-            triOverlapY = 0
-        )
     }
 
     private fun redrawKeyboard() {
@@ -1819,7 +1362,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         serviceScope.launch {
             keyboardContainer.removeAllViews()
             if (isLandscape()) {
-                buildLandscapeLayout()
+                landscapeBuilder.build()
 
                 keyboardContainer.post {
                     syncOverlayHeightToContent()
@@ -2009,7 +1552,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                                 0
                             } else {
                                 when (savedRowCount) {
-                                    3 -> 1.dp(this@MyKeyboardService)    // 3-row stays as it is
+                                    3 -> -(6.dp(this@MyKeyboardService))    // 3-row: rows a little closer
                                     4 -> -(12.dp(this@MyKeyboardService))   // 4-row: rows closer together
                                     5 -> -(12.dp(this@MyKeyboardService))   // 5-row: a little closer still
                                     else -> 1.dp(this@MyKeyboardService)
@@ -2111,565 +1654,56 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
 
     /* ───────── KEY VIEW ───────── */
-    private fun buildLandscapeLayout() {
-        landscapeSpaceIndex = 0
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(
-                when (savedRowCount) {
-                    3 -> 2.dp(this)
-                    5 -> 10.dp(this)
-                    else -> 8.dp(this)
-                },
-                when (savedRowCount) {
-                    4 -> 0.dp(this)
-                    else -> 4.dp(this)
-                },
-                when (savedRowCount) {
-                    3 -> 4.dp(this)
-                    5 -> 6.dp(this)
-                    else -> 8.dp(this)
-                },
-                4.dp(this)
-            )
-            clipChildren = false
-            clipToPadding = false
-        }
-
-        val leftContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            clipChildren = false
-            clipToPadding = false
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                2.2f
-            ).apply {
-                if (savedRowCount == 5) {
-                    leftMargin = 14.dp(this@MyKeyboardService)
-                }
-            }
-        }
-
-        val centerContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                leftMargin = if (savedRowCount == 3) -(16.dp(this@MyKeyboardService)) else 8.dp(this@MyKeyboardService)
-                rightMargin = if (savedRowCount == 3) 30.dp(this@MyKeyboardService) else 8.dp(this@MyKeyboardService)
-            }
-        }
-
-        val rightContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            clipChildren = false
-            clipToPadding = false
-
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                if (savedRowCount == 3) 1.9f else 2.2f
-            ).apply {
-                when (savedRowCount) {
-                    3 -> {
-                        leftMargin = -(24.dp(this@MyKeyboardService))
-                        rightMargin = 0.dp(this@MyKeyboardService)
-                    }
-
-                    5 -> {
-                        leftMargin = 0.dp(this@MyKeyboardService)
-                        rightMargin = 14.dp(this@MyKeyboardService)
-                    }
-                }
-            }
-        }
-
-        root.addView(leftContainer)
-        root.addView(centerContainer)
-        root.addView(rightContainer)
-
-        keyboardContainer.addView(
-            root,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        buildLandscapeLeftLetters(leftContainer)
-        buildLandscapeCenter(centerContainer)
-        buildLandscapeRightLetters(rightContainer)
-    }
-    private fun createCenterTextKey(label: String): KeyView {
-        return KeyView(themedCtx).apply {
-            text = label
-            isAllCaps = false
-
-            shape = effectiveShape()
-            hideFill = true
-            hideStroke = true
-            customBgColor = Color.TRANSPARENT
-            forceSquare = false
-
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            setPadding(0, 0, 0, 0)
-
-            minWidth = 0
-            minimumWidth = 0
-            manualLabelSizeSp = 22f
-
-            setTextColor(keyColors(label).second)
-
-            // center keys have no split label and no swipe-up alternate
-            useSplitLabels = false
-            mainLabel = ""
-            swipeUpLabel = null
-
-            isClickable = true
-            isLongClickable = false
-            isFocusable = false
-            isFocusableInTouchMode = false
-            isSelected = false
-            highlightColor = Color.TRANSPARENT
-            setTextIsSelectable(false)
-
-            setOnTouchListener { v, e ->
-                when (e.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        v.isPressed = true
-                        hideLongPressPopup()
-                        hideEmojiPopup()
-                        true
-                    }
-
-                    MotionEvent.ACTION_UP -> {
-                        v.performClick()
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-
-                        currentInputConnection?.commitText(label, 1)
-                        true
-                    }
-
-                    MotionEvent.ACTION_CANCEL -> {
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-                        true
-                    }
-
-                    else -> true
-                }
-            }
-        }
-    }
-    /**
-     * Landscape row overlap (used as a negative top margin). Hexagon rows overlap more as their
-     * tips grow with the key height slider; the row spacing slider adds space between rows.
-     */
-    private fun landscapeRowOverlapScaled(keySize: Int): Int {
-        val base = landscapeRowOverlapPx(keySize)
-        val overlap = when (currentShape) {
-            KeyShape.HEX, KeyShape.HEX_TALL, KeyShape.HEX_HALF_LEFT, KeyShape.HEX_HALF_RIGHT ->
-                KeyScale.honeycombOverlap(base, keySize * 0.96f, keyHeightStretch())
-            else -> base
-        }
-        return overlap - rowSpacingPx()
-    }
-
-    private fun landscapeKeySizePx(): Int {
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        return when (currentShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when (savedRowCount) {
-                    3 -> 33.dp(this)
-                    4 -> 38.dp(this)
-                    5 -> 36.dp(this)
-                    else -> 42.dp(this)
-                }
-            }
-
-            KeyShape.TRIANGLE -> {
-                when (savedRowCount) {
-                    3 -> 32.dp(this)
-                    5 -> 34.dp(this)
-                    else -> 40.dp(this)
-                }
-            }
-
-            KeyShape.CIRCLE -> {
-                when (savedRowCount) {
-                    3 -> 32.dp(this)
-                    5 -> 34.dp(this)
-                    else -> 38.dp(this)
-                }
-            }
-
-            KeyShape.CUBE -> {
-                when (savedRowCount) {
-                    3 -> 31.dp(this)
-                    5 -> 33.dp(this)
-                    else -> 35.dp(this)
-                }
-            }
-        }
-    }
-    private fun landscapeRowOverlapPx(keySize: Int): Int {
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        return when (currentShape) {
-            KeyShape.HEX,
-            KeyShape.HEX_TALL,
-            KeyShape.HEX_HALF_LEFT,
-            KeyShape.HEX_HALF_RIGHT -> {
-                when (savedRowCount) {
-                    5 -> 9.dp(this)
-                    4 -> 4.dp(this) // less overlap = rows further apart
-                    else -> (keySize * 0.25f).toInt()
-                }
-            }
-
-            KeyShape.TRIANGLE -> {
-                if (savedRowCount == 5) 3.dp(this)
-                else (keySize * 0.18f).toInt()
-            }
-
-            KeyShape.CIRCLE -> if (savedRowCount == 5) 5.dp(this) else 4.dp(this)
-            KeyShape.CUBE -> {
-                when (savedRowCount) {
-                    3 -> -(2.dp(this))
-                    5 -> 5.dp(this)
-                    else -> 4.dp(this)
-                }
-            }
-        }
-    }
-    private fun buildLandscapeLeftLetters(container: LinearLayout) {
-        val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapScaled(keySize)
-        val keyGap = landscapeKeyGapPx()
-        val halfStep = (keySize / 2f).toInt()
-
-        currentKeyboardConfig.rows.forEachIndexed { rowIndex, row ->
-            val keys = leftLandscapeKeysForRow(row.keys, rowIndex)
-            if (keys.isEmpty()) return@forEachIndexed
-
-            val rowLayout = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-            val baseLeftInset = when (savedRowCount) {
-                3 -> 18.dp(this)    // all 3 rows right of the side button
-                4 -> 12.dp(this)
-                else -> 0
-            }
-
-            val middleRowExtraRight = when (savedRowCount) {
-                3 -> 9.dp(this)    // only row 2 a bit further right, for centering
-                else -> 0
-            }
-
-            val rowLp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                if (rowIndex > 0) topMargin = -rowOverlap
-
-                leftMargin = when {
-                    // 3-row: rows 1 and 3 keep the honeycomb, but all move a little right
-                    savedRowCount == 3 && rowIndex in setOf(0, 2) ->
-                        -(halfStep / 2) + baseLeftInset
-
-                    // 3-row: row 2 goes right + extra centering
-                    savedRowCount == 3 ->
-                        baseLeftInset + middleRowExtraRight
-
-                    savedRowCount == 4 && rowIndex in setOf(0, 2) ->
-                        -halfStep + baseLeftInset
-                    savedRowCount == 4 ->
-                        baseLeftInset
-
-                    isOddLandscapeRow(rowIndex) -> halfStep
-
-                    else -> 0
-                }
-            }
-
-            val startIndex = 0
-
-            keys.forEachIndexed { i, key ->
-                val kv = createKey(key)
-
-                landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
-
-                if (kv.shape == KeyShape.TRIANGLE) {
-                    kv.triangleFlipped = ((startIndex + i) % 2 == 1)
-                }
-
-                val lp = LinearLayout.LayoutParams(keySize, keySize).apply {
-                    if (i > 0) leftMargin = keyGap
-                }
-
-                rowLayout.addView(kv, lp)
-            }
-
-            container.addView(rowLayout, rowLp)
-        }
-    }
-    private fun buildLandscapeRightLetters(container: LinearLayout) {
-        val keySize = landscapeKeySizePx()
-        val rowOverlap = landscapeRowOverlapScaled(keySize)
-        val keyGap = landscapeKeyGapPx()
-        val halfStep = (keySize / 2f).toInt()
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val baseRightInset = when (savedRowCount) {
-            3 -> 14.dp(this)    // all 3 right rows left of the side button
-            else -> 0
-        }
-
-        currentKeyboardConfig.rows.forEachIndexed { rowIndex, row ->
-            val visibleRow = row.keys.filterNot {
-                it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
-            }
-
-            val keys = rightLandscapeKeysForRow(row.keys, rowIndex)
-            if (keys.isEmpty()) return@forEachIndexed
-
-            val rowShiftX = 0
-
-            val rowLayout = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                clipChildren = false
-                clipToPadding = false
-                translationX = rowShiftX.toFloat()
-            }
-
-            val takeCount = when (savedRowCount) {
-                3 -> {
-                    when (rowIndex) {
-                        0 -> 5
-                        1 -> 6
-                        2 -> 5
-                        else -> keys.size
-                    }
-                }
-
-                else -> {
-                    if (isOddLandscapeRow(rowIndex)) 3 else 4
-                }
-            }
-
-            val startIndex = (visibleRow.size - takeCount).coerceAtLeast(0)
-
-            keys.forEachIndexed { i, key ->
-                val kv = createKey(key)
-
-                landscapeSpaceIndex = applySpecialKeyColors(kv, key, landscapeSpaceIndex)
-
-                if (kv.shape == KeyShape.TRIANGLE) {
-                    kv.triangleFlipped = ((startIndex + i) % 2 == 1)
-                }
-
-                val lp = LinearLayout.LayoutParams(keySize, keySize).apply {
-                    if (i > 0) leftMargin = keyGap
-                }
-
-                rowLayout.addView(kv, lp)
-            }
-
-            val rowLp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                if (rowIndex > 0) {
-                    topMargin = -rowOverlap
-                }
-
-                rightMargin = when {
-                    // 3-row: all 3 rows to the left, on top of the honeycomb shift
-                    savedRowCount == 3 && isOddLandscapeRow(rowIndex) ->
-                        halfStep + baseRightInset
-
-                    savedRowCount == 3 ->
-                        baseRightInset
-
-                    savedRowCount == 5 && isOddLandscapeRow(rowIndex) ->
-                        halfStep
-
-                    savedRowCount == 5 ->
-                        0
-
-                    isOddLandscapeRow(rowIndex) ->
-                        halfStep
-
-                    else -> 0
-                }
-            }
-
-            container.addView(rowLayout, rowLp)
+    private val keyTouchHost by lazy { KeyTouchHost() }
+
+    /** The key touch handler's view of this service. */
+    private inner class KeyTouchHost : KeyTouchListener.Host {
+        override val serviceScope get() = this@MyKeyboardService.serviceScope
+        override val inputController get() = this@MyKeyboardService.inputController
+        override val hapticManager get() = this@MyKeyboardService.hapticManager
+        override val keyPreviewManager get() = this@MyKeyboardService.keyPreviewManager
+        override val longPressPopupManager get() = this@MyKeyboardService.longPressPopupManager
+        override val bothSpacesHeld get() = leftSpaceHeld && rightSpaceHeld
+        override fun isAlphabetLayoutActive() = this@MyKeyboardService.isAlphabetLayoutActive()
+        override fun hideLongPressPopup() = this@MyKeyboardService.hideLongPressPopup()
+        override fun hideEmojiPopup() = this@MyKeyboardService.hideEmojiPopup()
+        override fun showLongPressPopup(anchor: View, chars: List<String>) =
+            this@MyKeyboardService.showLongPressPopup(anchor, chars)
+        override fun moveLpSelection(dx: Int, dy: Int) = this@MyKeyboardService.moveLpSelection(dx, dy)
+        override fun showEmojiPicker() = this@MyKeyboardService.showEmojiPicker()
+        override fun handleDualSpaceDown(key: KeyConfig) = this@MyKeyboardService.handleDualSpaceDown(key)
+        override fun handleDualSpaceUpOrCancel(key: KeyConfig) =
+            this@MyKeyboardService.handleDualSpaceUpOrCancel(key)
+        override fun stopSwipeGestures() = this@MyKeyboardService.stopSwipeGestures()
+        override fun toggleShift() = this@MyKeyboardService.toggleShift()
+        override fun commitText(text: String) {
+            currentInputConnection?.commitText(text, 1)
         }
     }
 
-
-
-    private fun buildLandscapeCenter(container: LinearLayout) {
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        val cfg = KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(
-            this,
-            savedRowCount
-        )
-
-        // Show every row of the Horizontal (center island) editor
-        val centerRows = cfg.rows
-
-        val keySize = when (savedRowCount) {
-            3 -> 25.dp(this)
-            4 -> 27.dp(this)
-            5 -> 28.dp(this)
-            else -> 28.dp(this)
+    /** The landscape builder's view of this service. */
+    private inner class LandscapeHost : LandscapeLayoutBuilder.Host {
+        override val keyboardContainer get() = this@MyKeyboardService.keyboardContainer
+        override val themedContext: Context get() = themedCtx
+        override val currentShape get() = this@MyKeyboardService.currentShape
+        override val currentRows get() = currentKeyboardConfig.rows
+        override fun effectiveShape() = this@MyKeyboardService.effectiveShape()
+        override fun landscapeShape() = this@MyKeyboardService.landscapeShape()
+        override fun keyHeightStretch() = this@MyKeyboardService.keyHeightStretch()
+        override fun portraitRowSizing() = this@MyKeyboardService.portraitRowSizing()
+        override fun portraitBaseShapeHeightPx() = this@MyKeyboardService.portraitBaseShapeHeightPx()
+        override fun rowSpacingPx() = this@MyKeyboardService.rowSpacingPx()
+        override fun createKey(key: KeyConfig) = this@MyKeyboardService.createKey(key)
+        override fun keyColors(label: String?) = this@MyKeyboardService.keyColors(label)
+        override fun applySpecialKeyColors(kv: KeyView, key: KeyConfig, spaceIndex: Int) =
+            this@MyKeyboardService.applySpecialKeyColors(kv, key, spaceIndex)
+        override fun hidePopups() {
+            hideLongPressPopup()
+            hideEmojiPopup()
         }
-
-        val rowGap = when (savedRowCount) {
-            3 -> 4.dp(this)
-            4 -> 5.dp(this)
-            5 -> 6.dp(this)
-            else -> 6.dp(this)
+        override fun commitText(text: String) {
+            currentInputConnection?.commitText(text, 1)
         }
-
-        centerRows.forEach { rowConfig ->
-            val rowKeys = rowConfig.keys.filter { key ->
-                key.label.isNotBlank() &&
-                        !key.longPressBindings.contains("__USER_EMPTY__") &&
-                        !key.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
-            }
-
-            if (rowKeys.isEmpty()) return@forEach
-
-            val rowLayout = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER
-                clipChildren = false
-                clipToPadding = false
-            }
-
-            rowKeys.forEachIndexed { i, key ->
-                val kv = createCenterTextKey(key.label)
-
-                // Same colors as the regular keys of the main layout
-                if (key.label !in setOf("↵", " ", "⇧", "⌫", "😊")) {
-                    val (fill, text) = keyColors(key.label)
-                    kv.customBgColor = fill
-                    kv.setTextColor(text)
-                }
-
-                val lp = LinearLayout.LayoutParams(
-                    keySize,
-                    keySize
-                ).apply {
-                    if (i > 0) leftMargin = 4.dp(this@MyKeyboardService)
-                }
-
-                rowLayout.addView(kv, lp)
-            }
-
-            val rowLp = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                if (container.isNotEmpty()) topMargin = rowGap
-            }
-
-            container.addView(rowLayout, rowLp)
-        }
-    }
-
-    private fun isOddLandscapeRow(rowIndex: Int): Boolean {
-        return rowIndex % 2 == 0
-    }
-
-    private fun leftLandscapeKeysForRow(
-        rowKeys: List<KeyConfig>,
-        rowIndex: Int
-    ): List<KeyConfig> {
-        val visible = rowKeys.filterNot {
-            it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
-        }
-
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        if (savedRowCount == 3) {
-            return when (rowIndex) {
-                0 -> visible.take(6)
-                1 -> visible.take(5)
-                2 -> visible.take(6)
-                else -> visible.take(6)
-            }
-        }
-
-        val takeCount = if (
-            savedRowCount == 4 &&
-            rowIndex in setOf(0, 2) &&
-            visible.size >= 8
-        ) {
-            4
-        } else {
-            if (isOddLandscapeRow(rowIndex)) 3 else 4
-        }
-
-        return visible.take(takeCount)
-    }
-
-    private fun rightLandscapeKeysForRow(
-        rowKeys: List<KeyConfig>,
-        rowIndex: Int
-    ): List<KeyConfig> {
-        val visible = rowKeys.filterNot {
-            it.longPressBindings.contains(KeyMarkers.EDGE_GHOST)
-        }
-
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-
-        if (savedRowCount == 3) {
-            return when (rowIndex) {
-                0 -> visible.drop(6).take(5)
-                1 -> visible.drop(5).take(6)
-                2 -> visible.drop(6).take(5)
-                else -> visible.drop(6)
-            }
-        }
-
-        val takeCount = if (
-            savedRowCount == 4 &&
-            rowIndex in setOf(0, 2) &&
-            visible.size >= 8
-        ) {
-            4
-        } else {
-            if (isOddLandscapeRow(rowIndex)) 3 else 4
-        }
-
-        return visible.takeLast(takeCount)
     }
 
     private fun makeUppercaseConfig(cfg: KeyboardConfig): KeyboardConfig {
@@ -2821,229 +1855,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         // Final key colors (incl. Shift's active look) are set by applySpecialKeyColors()
         setTextColor(keyColors(label).second)
 
-        val nonBindable = setOf("⇧", "⌫", "↵", "123", "ABC", "abc", " ", "😊")
-        val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
-
-        var longPressTriggered = false
-        var startX = 0f
-        var startY = 0f
-        val step = 18.dp(this)
-        var handledBySwipeUp = false
-        val swipeUpThreshold = 26.dp(this)
-        var longPressJob: Job? = null
-
         isLongClickable = true
-
-        setOnTouchListener { v, e ->
-            when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = e.rawX
-                    startY = e.rawY
-                    longPressTriggered = false
-                    handledBySwipeUp = false
-                    hideLongPressPopup()
-                    hideEmojiPopup()
-
-                    // Haptic feedback on key press
-                    hapticManager.performHapticFeedback(v)
-
-                    // Show key preview
-                    keyPreviewManager.show(v, label)
-
-                    if (label == " ") {
-                        handleDualSpaceDown(keyConfig)
-                    }
-
-                    longPressJob?.cancel()
-                    if (label !in nonBindable) {
-                        longPressJob = serviceScope.launch {
-                            delay(longPressTimeout.milliseconds)
-                            // Latin keyboard: Latin letters only; Cyrillic keyboard: Cyrillic only
-                            val binds = LongPressPresets.visibleFor(
-                                KeyboardPrefs.getSelectedLongPressPreset(this@MyKeyboardService),
-                                keyConfig.longPressBindings
-                            )
-                            if (binds.isNotEmpty()) {
-                                longPressTriggered = true
-                                keyPreviewManager.hide()
-                                hapticManager.onLongPress()
-                                showLongPressPopup(this@apply, binds)
-                                longPressPopupManager.resetSelection()
-                            }
-                        }
-                    }
-
-                    inputController.handleTouch(v as TextView, e)
-                    true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = e.rawX - startX
-                    val dy = e.rawY - startY
-                    val absDx = abs(dx)
-                    val absDy = abs(dy)
-
-                    // A running delete/restore swipe owns the gesture: no swipe-up shortcuts
-                    val horizontalSwipe = inputController.isHorizontalSwipeActive(v as TextView)
-
-                    // 123 swipe-up => emoji, only on the 4/5-row alphabet layout
-                    if (!longPressTriggered &&
-                        !handledBySwipeUp &&
-                        !horizontalSwipe &&
-                        label == "123" &&
-                        rowCount >= 4 &&
-                        isAlphabetLayoutActive() &&
-                        dy < -swipeUpThreshold &&
-                        absDy > absDx
-                    ) {
-                        handledBySwipeUp = true
-                        longPressJob?.cancel()
-                        hideLongPressPopup()
-                        keyPreviewManager.hide()
-                        showEmojiPicker()
-                        v.isPressed = false
-                        return@setOnTouchListener true
-                    }
-
-                    // . swipe-up => ,
-                    // ? swipe-up => !
-                    if (!longPressTriggered &&
-                        !handledBySwipeUp &&
-                        !horizontalSwipe &&
-                        (label == "." || label == "?") &&
-                        (v as? KeyView)?.useSplitLabels == true &&
-                        dy < -swipeUpThreshold &&
-                        absDy > absDx
-                    ) {
-                        val swipeText = v.swipeUpLabel
-
-                        if (!swipeText.isNullOrBlank()) {
-                            handledBySwipeUp = true
-                            longPressJob?.cancel()
-                            hideLongPressPopup()
-                            currentInputConnection?.commitText(swipeText, 1)
-                            v.isPressed = false
-                            return@setOnTouchListener true
-                        }
-                    }
-
-                    if (!longPressTriggered && absDx > 20.dp(this) && absDx > absDy * 1.05f) {
-                        longPressJob?.cancel()
-                        hideLongPressPopup()
-                    }
-
-                    if (longPressTriggered) {
-                        if (absDx > absDy && absDx > step) {
-                            moveLpSelection(if (dx > 0) 1 else -1, 0)
-                            startX = e.rawX
-                            startY = e.rawY
-                        } else if (absDy > step) {
-                            moveLpSelection(0, if (dy > 0) 1 else -1)
-                            startX = e.rawX
-                            startY = e.rawY
-                        } else if (longPressCellBounds.isNotEmpty()) {
-                            val rx = e.rawX.toInt()
-                            val ry = e.rawY.toInt()
-                            val newIdx = longPressCellBounds.indexOfFirst { it.contains(rx, ry) }
-                            if (newIdx != -1 && newIdx != longPressPopupManager.getSelectedIndex()) {
-                                longPressPopupManager.setSelectedIndex(newIdx)
-                            }
-                        }
-                    }
-
-                    // Skip swipe gestures when long press popup is active, and while both space
-                    // keys are held (dual-space script/language picker) – that is no swipe
-                    if (!longPressTriggered && !(leftSpaceHeld && rightSpaceHeld)) {
-                        inputController.handleTouch(v, e)
-                    }
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    // Hide key preview
-                    keyPreviewManager.hide()
-
-                    if (label == " " && handleDualSpaceUpOrCancel(keyConfig)) {
-                        stopSwipeGestures()
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-                        longPressJob?.cancel()
-                        return@setOnTouchListener true
-                    }
-
-                    if (handledBySwipeUp) {
-                        stopSwipeGestures()
-                        v.isPressed = false
-                        v.isSelected = false
-                        v.clearFocus()
-                        longPressJob?.cancel()
-                        return@setOnTouchListener true
-                    }
-
-                    v.performClick()
-                    v.isSelected = false
-                    v.clearFocus()
-                    longPressJob?.cancel()
-
-                    if (longPressTriggered) {
-                        longPressPopupManager.getSelectedChar()?.let { ch ->
-                            currentInputConnection?.commitText(ch, 1)
-                        }
-                        hideLongPressPopup()
-                        v.isPressed = false
-                        true
-                    } else {
-                        when (label) {
-                            "⇧" -> {
-                                v.isPressed = false
-                                toggleShift()
-                                true
-                            }
-
-                            "😊" -> {
-                                v.isPressed = false
-                                showEmojiPicker()
-                                true
-                            }
-
-                            else -> {
-                                inputController.handleTouch(v as TextView, e)
-                                true
-                            }
-                        }
-                    }
-                }
-
-                MotionEvent.ACTION_CANCEL -> {
-                    // Hide key preview
-                    keyPreviewManager.hide()
-
-                    if (label == " ") {
-                        handleDualSpaceUpOrCancel(keyConfig)
-                    }
-
-                    handledBySwipeUp = false
-                    longPressJob?.cancel()
-
-                    if (longPressTriggered) {
-                        hideLongPressPopup()
-                    }
-
-                    v.isPressed = false
-                    v.isSelected = false
-                    v.clearFocus()
-
-                    // Skip swipe cleanup when long press popup was shown
-                    if (!longPressTriggered) {
-                        inputController.handleTouch(v as TextView, e)
-                    }
-                    true
-                }
-
-                else -> false
-            }
-        }
+        setOnTouchListener(KeyTouchListener(this@MyKeyboardService, this, keyConfig, rowCount, keyTouchHost))
     }
 
     /** Regular key colors as drawn (shared rule in [KeyboardPrefs.resolveKeyColors]). */
@@ -3090,218 +1903,20 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         return spaceIndex
     }
 
-    /* ───────── RGB ANIMATION ───────── */
+    /* ───────── RGB ANIMATION (RgbBackgroundAnimator) ───────── */
 
-    // RGB Rainbow color calculation - 6 segments × 256 steps = 1536 total steps
-    // Produces smooth transitions: Red→Yellow→Green→Cyan→Blue→Magenta→Red
-    private fun rainbowColor(x: Int): Int {
-        val step = ((x % 1536) + 1536) % 1536  // Handle negative values
-        val segment = step / 256
-        val c = step % 256
-
-        return when (segment) {
-            0 -> Color.rgb(255, c, 0)           // Red to Yellow
-            1 -> Color.rgb(255 - c, 255, 0)     // Yellow to Green
-            2 -> Color.rgb(0, 255, c)           // Green to Cyan
-            3 -> Color.rgb(0, 255 - c, 255)     // Cyan to Blue
-            4 -> Color.rgb(c, 0, 255)           // Blue to Magenta
-            5 -> Color.rgb(255, 0, 255 - c)     // Magenta to Red
-            else -> Color.rgb(255, 0, 0)        // Fallback to Red
-        }
-    }
-
-    // Apply saturation and brightness (HSV S and V scale) to a rainbow color
-    private fun adjustColor(color: Int, saturation: Float, brightness: Float): Int {
-        val hsv = FloatArray(3)
-        Color.colorToHSV(color, hsv)
-        hsv[1] *= saturation
-        hsv[2] *= brightness
-        return Color.HSVToColor(hsv)
-    }
-
-    // Create multi-center radial rainbow gradient
-    // 3 centers: first letter row 1, last letter row 2, 3rd letter row 3
-    private fun createRadialRainbowDrawable(
-        startStep: Int,
-        saturation: Float,
-        brightness: Float
-    ): Drawable {
-        val numColors = 7
-
-        return object : Drawable() {
-            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-            private fun buildColors(phaseOffset: Int): IntArray {
-                val colors = IntArray(numColors)
-                for (i in 0 until numColors) {
-                    val colorStep = startStep + phaseOffset + (i * 1536 / numColors)
-                    val color = rainbowColor(colorStep)
-                    colors[i] = adjustColor(color, saturation, brightness)
-                }
-                return colors
-            }
-
-            override fun draw(canvas: Canvas) {
-                val bounds = bounds
-                val w = bounds.width().toFloat()
-                val h = bounds.height().toFloat()
-                val maxDim = maxOf(w, h)
-
-                // 3 center positions (approximate key positions):
-                // Center 1: First letter, row 1 - top left area
-                val cx1 = bounds.left + w * 0.12f
-                val cy1 = bounds.top + h * 0.15f
-                // Center 2: Last letter, row 2 - right middle area
-                val cx2 = bounds.left + w * 0.88f
-                val cy2 = bounds.top + h * 0.42f
-                // Center 3: 3rd letter, row 3 - left-center lower area
-                val cx3 = bounds.left + w * 0.28f
-                val cy3 = bounds.top + h * 0.68f
-
-                val radius = maxDim * 0.9f
-                val positions = FloatArray(numColors) { i -> i.toFloat() / (numColors - 1) }
-
-                // Draw 3 overlapping radial gradients with different phase offsets
-                // Using SCREEN blend mode for additive-like blending
-                paint.xfermode = null
-
-                // First gradient (base layer)
-                val colors1 = buildColors(0)
-                paint.shader = RadialGradient(
-                    cx1, cy1, radius, colors1, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                // Second gradient (blend on top)
-                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
-                val colors2 = buildColors(512)  // Phase offset for variety
-                paint.shader = RadialGradient(
-                    cx2, cy2, radius, colors2, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                // Third gradient (blend on top)
-                val colors3 = buildColors(1024)  // Another phase offset
-                paint.shader = RadialGradient(
-                    cx3, cy3, radius, colors3, positions,
-                    Shader.TileMode.CLAMP
-                )
-                canvas.drawRect(bounds, paint)
-
-                paint.xfermode = null
-            }
-
-            override fun setAlpha(alpha: Int) { paint.alpha = alpha }
-            override fun setColorFilter(colorFilter: ColorFilter?) { paint.colorFilter = colorFilter }
-            @Suppress("OVERRIDE_DEPRECATION")
-            override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
-        }
-    }
-
-    private fun applyRadialRainbow(startStep: Int, saturation: Float, brightness: Float) {
-        val drawable1 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable2 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable3 = createRadialRainbowDrawable(startStep, saturation, brightness)
-        val drawable4 = createRadialRainbowDrawable(startStep, saturation, brightness)
-
-        rootView.background = drawable1
-        overlayLayer.background = drawable2
-        keyboardContainer.background = drawable3
-        window?.window?.setBackgroundDrawable(drawable4)
-
-        lastRgbStep = startStep
-        lastRgbSaturation = saturation
-        lastRgbBrightness = brightness
+    /** One RGB frame: every surface (and an open long-press popup) gets a fresh drawable. */
+    private fun applyRgbFrame() {
+        rootView.background = rgbAnimator.newDrawable()
+        overlayLayer.background = rgbAnimator.newDrawable()
+        keyboardContainer.background = rgbAnimator.newDrawable()
+        window?.window?.setBackgroundDrawable(rgbAnimator.newDrawable())
         if (longPressPopupManager.isPopupShowing) {
-            longPressPopupManager.updateRgbBackground(
-                createRadialRainbowDrawable(startStep, saturation, brightness)
-            )
+            longPressPopupManager.updateRgbBackground(rgbAnimator.newDrawable())
         }
     }
 
-    private var rgbStep = 0
-    private var lastRgbStep = 0
-    private var lastRgbSaturation = 1f
-    private var lastRgbBrightness = 1f
-
-    private fun startRgbSmooth() {
-        stopRgbAnimation()
-
-        val speedMs = KeyboardPrefs.getRgbSmoothSpeed(this)
-        val saturation = KeyboardPrefs.getRgbSmoothSaturation(this)
-        val brightness = KeyboardPrefs.getRgbSmoothBrightness(this)
-
-        // Calculate delay per step (1536 steps for full rainbow cycle)
-        val delayPerStep = (speedMs / 1536f).toLong().coerceAtLeast(8L)
-
-        rgbAnimationJob = serviceScope.launch {
-            while (isActive) {
-                rgbStep = (rgbStep + 4) % 1536  // Move through rainbow
-                applyRadialRainbow(rgbStep, saturation, brightness)
-                delay(delayPerStep.milliseconds)
-            }
-        }
-    }
-
-    private fun startRgbWild() {
-        stopRgbAnimation()
-
-        val speedMs = KeyboardPrefs.getRgbWildSpeed(this)
-        val saturation = KeyboardPrefs.getRgbWildSaturation(this)
-        val brightness = KeyboardPrefs.getRgbWildBrightness(this)
-        val frameInterval = 16L  // ~60fps for smooth animation
-        val transitionDuration = (speedMs * 0.85f).toLong()  // 85% of interval for transition
-
-        // Ease-in-out function for smooth acceleration/deceleration
-        fun easeInOutCubic(t: Float): Float {
-            return if (t < 0.5f) {
-                4f * t * t * t
-            } else {
-                1f - (-2f * t + 2f).let { it * it * it } / 2f
-            }
-        }
-
-        rgbAnimationJob = serviceScope.launch {
-            var startStep = 0
-            var targetStep = rgbRandom.nextInt(1536)
-            var transitionStartTime = System.currentTimeMillis()
-
-            while (isActive) {
-                val now = System.currentTimeMillis()
-                val elapsed = now - transitionStartTime
-
-                // Calculate eased progress
-                val rawProgress = (elapsed.toFloat() / transitionDuration).coerceIn(0f, 1f)
-                val easedProgress = easeInOutCubic(rawProgress)
-
-                // Calculate shortest path difference
-                var diff = targetStep - startStep
-                if (diff > 768) diff -= 1536
-                if (diff < -768) diff += 1536
-
-                // Interpolate with easing
-                val currentStep = (startStep + (diff * easedProgress).toInt() + 1536) % 1536
-
-                applyRadialRainbow(currentStep, saturation, brightness)
-
-                // Pick new target when transition completes
-                if (elapsed >= speedMs) {
-                    startStep = targetStep
-                    targetStep = rgbRandom.nextInt(1536)
-                    transitionStartTime = now
-                }
-
-                delay(frameInterval.milliseconds)
-            }
-        }
-    }
-
-    private fun stopRgbAnimation() {
-        rgbAnimationJob?.cancel()
-        rgbAnimationJob = null
-    }
+    private fun stopRgbAnimation() = rgbAnimator.stop()
 
     private fun restoreNormalBackground() {
         stopRgbAnimation()
@@ -3315,11 +1930,6 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     private fun startRgbAnimation() {
-        when {
-            KeyboardPrefs.isRgbSmoothEnabled(this) -> startRgbSmooth()
-            KeyboardPrefs.isRgbWildEnabled(this) -> startRgbWild()
-            else -> restoreNormalBackground()
-        }
+        if (!rgbAnimator.start()) restoreNormalBackground()
     }
-
 }

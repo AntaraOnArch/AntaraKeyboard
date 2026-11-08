@@ -8,8 +8,11 @@ import android.graphics.Path
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.withClip
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dpF
 import com.example.antarakeyboard.model.KeyMarkers
@@ -198,7 +201,7 @@ class KeyView @JvmOverloads constructor(
             "!" -> R.string.a11y_exclamation
             "@" -> R.string.a11y_at
             "#" -> R.string.a11y_hash
-            "\$" -> R.string.a11y_dollar
+            "$" -> R.string.a11y_dollar
             "%" -> R.string.a11y_percent
             "&" -> R.string.a11y_ampersand
             "*" -> R.string.a11y_asterisk
@@ -229,10 +232,10 @@ class KeyView @JvmOverloads constructor(
     }
 
     private fun themeColor(attr: Int, fallback: Int): Int {
-        val tv = android.util.TypedValue()
+        val tv = TypedValue()
         val ok = context.theme.resolveAttribute(attr, tv, true)
         return if (
-            ok && tv.type in android.util.TypedValue.TYPE_FIRST_COLOR_INT..android.util.TypedValue.TYPE_LAST_COLOR_INT
+            ok && tv.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT
         ) {
             tv.data
         } else {
@@ -276,18 +279,9 @@ class KeyView @JvmOverloads constructor(
         if (w != measuredWidth || h != measuredHeight) setMeasuredDimension(w, h)
     }
 
-    /** Height of the drawn shape inside a w×h box at 100 % (see the build* functions). */
-    private fun baseShapeHeight(w: Float, h: Float): Float = when (shape) {
-        KeyShape.HEX -> min(w, h) * 0.96f
-        KeyShape.HEX_TALL -> h * 0.96f
-        KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
-        KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
-        KeyShape.CIRCLE,
-        KeyShape.HEX_HALF_LEFT,
-        KeyShape.HEX_HALF_RIGHT -> h
-    }
+    private fun baseShapeHeight(w: Float, h: Float): Float = shapeHeight(shape, w, h)
 
-    /** Shapes whose proportions are fixed: built at 100 % and stretched vertically afterwards. */
+    /** Shapes whose proportions are fixed: built at 100 % and stretched vertically afterward. */
     private fun stretchesByTransform(): Boolean = when (shape) {
         KeyShape.HEX, KeyShape.HEX_TALL, KeyShape.TRIANGLE -> true
         // Circle, cube and half-hexes already fill whatever box they get
@@ -323,12 +317,10 @@ class KeyView @JvmOverloads constructor(
         stroke.color = keyStroke
 
         val inset = stroke.strokeWidth * 0.5f + dpF(0.75f)
-        val l = inset
-        val t = inset
         val r = w - inset
         val b = h - inset
 
-        if (r <= l || b <= t) {
+        if (r <= inset || b <= inset) {
             super.onDraw(canvas)
             return
         }
@@ -338,18 +330,18 @@ class KeyView @JvmOverloads constructor(
             // Build the 100 % shape in the original box, centered, then stretch it vertically
             val cy = h * 0.5f
             val halfBase = baseBoxHeight * 0.5f - inset
-            buildShapePath(path, l, cy - halfBase, r, cy + halfBase)
+            buildShapePath(path, inset, cy - halfBase, r, cy + halfBase)
             stretchMatrix.setScale(1f, heightStretch, w * 0.5f, cy)
             path.transform(stretchMatrix)
         } else {
-            buildShapePath(path, l, t, r, b)
+            buildShapePath(path, inset, inset, r, b)
         }
 
         if (!hideFill) {
             canvas.drawPath(path, fill)
         }
         if (useSplitLabels) {
-            drawTopHalfOverlay(canvas, path, l, t, r, b, bg, pressed)
+            drawTopHalfOverlay(canvas, path, inset, inset, r, b, bg, pressed)
         }
 
         if (!hideStroke) {
@@ -357,9 +349,9 @@ class KeyView @JvmOverloads constructor(
         }
 
         if (useSplitLabels) {
-            drawSplitLabels(canvas, l, t, r, b)
+            drawSplitLabels(canvas, inset, inset, r, b)
         } else {
-            drawDefaultLabel(canvas, l, t, r, b)
+            drawDefaultLabel(canvas, inset, inset, r, b)
         }
     }
 
@@ -387,10 +379,7 @@ class KeyView @JvmOverloads constructor(
         overlayPath.reset()
         overlayPath.addRect(l, t, r, t + h * 0.48f, Path.Direction.CW)
 
-        val save = canvas.save()
-        canvas.clipPath(shapePath)
-        canvas.drawPath(overlayPath, overlayPaint)
-        canvas.restoreToCount(save)
+        canvas.withClip(shapePath) { drawPath(overlayPath, overlayPaint) }
     }
     private fun lightenColor(color: Int, amount: Float): Int {
         val a = android.graphics.Color.alpha(color)
@@ -412,17 +401,16 @@ class KeyView @JvmOverloads constructor(
         b: Float
     ) {
         val textColor = resolvedTextColor()
-        val w = r - l
         val h = b - t
         val cx = (l + r) * 0.5f
 
         splitMainPaint.color = textColor
-        splitSmallPaint.color = withAlpha(textColor, 220)
+        splitSmallPaint.color = ColorUtils.setAlphaComponent(textColor, 220)
 
         splitMainPaint.textAlign = Paint.Align.CENTER
         splitSmallPaint.textAlign = Paint.Align.CENTER
 
-        splitMainPaint.textSize = (manualLabelSizeSp ?: 14f) * resources.displayMetrics.scaledDensity
+        splitMainPaint.textSize = spToPx(manualLabelSizeSp ?: 14f)
         splitSmallPaint.textSize = splitMainPaint.textSize * 0.52f
 
         swipeUpLabel?.takeIf { it.isNotBlank() }?.let { txt ->
@@ -462,13 +450,13 @@ class KeyView @JvmOverloads constructor(
             else -> 12f
         }
 
-        textPaint.textSize = sizeSp * resources.displayMetrics.scaledDensity
+        textPaint.textSize = spToPx(sizeSp)
 
         // Long labels (custom long-press text): shrink to fit, then ellipsize
         val maxW = (r - l) * 0.84f
         val fullW = textPaint.measureText(label)
         if (fullW > maxW && fullW > 0f) {
-            val minPx = MIN_LABEL_SP * resources.displayMetrics.scaledDensity
+            val minPx = spToPx(MIN_LABEL_SP)
             textPaint.textSize = maxOf(minPx, textPaint.textSize * maxW / fullW)
         }
         val drawnLabel = if (textPaint.measureText(label) > maxW) {
@@ -635,15 +623,24 @@ class KeyView @JvmOverloads constructor(
         )
     }
 
-    private fun withAlpha(color: Int, alpha: Int): Int {
-        val a = alpha.coerceIn(0, 255)
-        return (color and 0x00FFFFFF) or (a shl 24)
-    }
+    private fun spToPx(sp: Float): Float =
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics)
 
     private fun dpF(v: Float): Float = v.dpF(resources)
 
-    private companion object {
+    companion object {
         // Smallest size a long label shrinks to before it is ellipsized
-        const val MIN_LABEL_SP = 8f
+        private const val MIN_LABEL_SP = 8f
+
+        /** Height of the drawn [shape] inside a w×h box at 100 % (see the build* functions). */
+        fun shapeHeight(shape: KeyShape, w: Float, h: Float): Float = when (shape) {
+            KeyShape.HEX -> min(w, h) * 0.96f
+            KeyShape.HEX_TALL -> h * 0.96f
+            KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
+            KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
+            KeyShape.CIRCLE,
+            KeyShape.HEX_HALF_LEFT,
+            KeyShape.HEX_HALF_RIGHT -> h
+        }
     }
 }

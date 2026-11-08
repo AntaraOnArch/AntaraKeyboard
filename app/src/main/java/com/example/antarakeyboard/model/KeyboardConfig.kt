@@ -23,6 +23,9 @@ data class KeyboardConfig(
    HELPERS
    ========================= */
 
+/** Most long-press bindings one key can hold (keeps the popup on screen). */
+const val MAX_LONG_PRESS_BINDINGS = 46
+
 fun KeyboardConfig.findKey(label: String): KeyConfig? {
     rows.forEach { row ->
         row.keys.firstOrNull { it.label == label }?.let { return it }

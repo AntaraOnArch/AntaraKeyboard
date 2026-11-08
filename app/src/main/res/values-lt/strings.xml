@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Tarpas tarp eilučių: %1$s</string>
     <string name="main_bind_long_press">Ilgas paspaudimas</string>
     <string name="main_colors">Spalvos</string>
+    <string name="main_side_offsets">Šoninių klavišų padėtis</string>
+    <string name="side_offset_left">Kairieji šoniniai klavišai: %1$s</string>
+    <string name="side_offset_left_landscape">Kairieji šoniniai klavišai (gulsčiai): %1$s</string>
+    <string name="side_offset_right">Dešinieji šoniniai klavišai: %1$s</string>
+    <string name="side_offset_right_landscape">Dešinieji šoniniai klavišai (gulsčiai): %1$s</string>
+    <string name="side_offset_hint">Šiek tiek pastumkite šoninius klavišus, jei jie užeina ant suapvalinto ekrano krašto. ◊ = numatytoji padėtis.</string>
+    <string name="side_offset_direction">← kairėn · dešinėn →</string>
     <string name="main_vibration">Vibravimas</string>
     <string name="main_suggestions">Žodžių pasiūlymai</string>
     <string name="main_export">Eksportuoti nustatymus</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trikampis</string>
     <string name="shape_circle">Apskritimas</string>
     <string name="shape_cube">Kubas</string>
-    <string name="option_on">Įjungta</string>
-    <string name="option_off">Išjungta</string>
     <string name="theme_light">Šviesi</string>
     <string name="theme_dark">Tamsi</string>
     <string name="theme_transparent">Permatoma</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">RGB nustatymai</string>
     <string name="theme_btn_saved_layouts">Išsaugoti išdėstymai</string>
     <string name="reset_hint">Atkurti…</string>
-    <string name="reset_colors">Atkurti spalvas</string>
-    <string name="reset_layout">Atkurti išdėstymą</string>
-    <string name="reset_all">Atkurti viską</string>
+    <string name="reset_none">Nieko</string>
+    <string name="reset_colors">Tik spalvos</string>
+    <string name="reset_layout">Klavišų išdėstymas</string>
+    <string name="reset_all">Spalvos ir išdėstymas</string>
     <string name="backup_name">Atsarginė kopija %1$s</string>
     <string name="reset_done_all">Išdėstymas ir spalvos atkurti. Ankstesnė būsena išsaugota kaip kopija.</string>
     <string name="reset_done_colors">Spalvos atkurtos. Ankstesnė būsena išsaugota kaip kopija.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Piktogramos spalva</string>
     <string name="color_text">Teksto spalva</string>
     <string name="color_use_theme">Naudoti temos spalvas</string>
+    <string name="color_no_background">Be fono</string>
     <string name="color_all_keys_same">Visi klavišai tos pačios spalvos</string>
     <string name="color_key_use_default">Numatytoji šio klavišo spalva</string>
     <string name="bg_mode_theme">Pagal temą</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Beprotiškai ← → Ramiai</string>
     <string name="rgb_saturation">Sodrumas: %1$d %%</string>
     <string name="rgb_brightness">Ryškumas: %1$d %%</string>
-    <string name="rgb_settings_saved">%1$s nustatymai išsaugoti</string>
     <string name="lp_section_alphabet">Ilgas paspaudimas – raidės</string>
     <string name="lp_section_numeric">Ilgas paspaudimas – skaitmenys</string>
     <string name="lp_section_my_binds">Mano priskyrimai</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Įveskite bet kokį tekstą</string>
     <string name="lp_custom_add">Pridėti</string>
     <string name="lp_custom_already">Jau priskirta šiam klavišui</string>
+    <string name="lp_max_bindings">Klavišui galima priskirti ne daugiau kaip %1$d</string>
     <string name="lp_custom_bound">Priskirta šiam klavišui:</string>
     <string name="lp_editor_title">Ilgas paspaudimas: %1$s</string>
     <string name="lp_nothing_bound">Nieko nepriskirta – palieskite simbolius žemiau</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Raidžių išdėstymas</string>
     <string name="layout_section_numeric">Skaitmenų išdėstymas</string>
+    <string name="layout_section_keys">Raidės ir skaičiai</string>
+    <string name="layout_preset_label">Šablonas:</string>
+    <string name="layout_preset_custom">Savas išdėstymas</string>
     <string name="layout_section_side">Šoniniai klavišai</string>
     <string name="layout_section_horizontal">Horizontalus centras</string>
     <string name="layout_section_emoji">Jaustukų nustatymai</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Uždaryti</string>
     <string name="emoji_btn_backspace">Trynimas</string>
     <string name="emoji_btn_space">Tarpas</string>
-    <string name="saved_layouts_header">-- Išsaugoti išdėstymai (%1$d) --</string>
-    <string name="saved_layouts_label">Išsaugoti išdėstymai:</string>
-    <string name="swap_selected">Sukeisti pasirinktus</string>
-    <string name="select_two_keys">Pasirinkite 2 klavišus</string>
     <string name="color_picker_brightness">Ryškumas</string>
     <string name="copied">Nukopijuota!</string>
     <string name="restore_layout_title">Atkurti išdėstymą</string>
     <string name="restore_layout_message">Tai pakeis dabartinį išdėstymą ir spalvas.</string>
+    <string name="restore_layout_and_colors">Išdėstymas ir spalvos</string>
+    <string name="restore_layout_only">Tik išdėstymas</string>
+    <string name="restore_layout_only_message">Dabartinis išdėstymas bus pakeistas. Spalvos lieka.</string>
+    <string name="restore_colors_only_message">Dabartinės spalvos bus pakeistos. Išdėstymas lieka.</string>
+    <string name="saved_without_colors">Išsaugota be spalvų (buvo naudojamos temos spalvos)</string>
     <string name="delete_confirm">Ištrinti?</string>
     <string name="layout_restored">Išdėstymas atkurtas!</string>
     <string name="saved_layouts_title">Išsaugoti išdėstymai</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Tik spalvos</string>
     <string name="custom_colors_applied">Savos spalvos pritaikytos</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Išsaugotų išdėstymų dar nėra</string>
     <string name="transparent_background">Permatomas fonas</string>
     <string name="preview_info">Forma: %1$s | Eilutės: %2$d\nIšsaugota: %3$s</string>
+    <string name="preview_side_offsets">Šoniniai klavišai: kairė %1$s, dešinė %2$s\nGulsčiai: kairė %3$s, dešinė %4$s</string>
     <string name="preview_colors_label">Spalvos (palieskite, kad redaguotumėte):</string>
     <string name="swatch_keys">Klavišai</string>
     <string name="swatch_text">Tekstas</string>

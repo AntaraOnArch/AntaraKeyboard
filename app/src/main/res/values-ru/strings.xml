@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Расстояние между рядами: %1$s</string>
     <string name="main_bind_long_press">Долгое нажатие</string>
     <string name="main_colors">Цвета</string>
+    <string name="main_side_offsets">Положение боковых клавиш</string>
+    <string name="side_offset_left">Левые боковые клавиши: %1$s</string>
+    <string name="side_offset_left_landscape">Левые боковые клавиши (альбомная): %1$s</string>
+    <string name="side_offset_right">Правые боковые клавиши: %1$s</string>
+    <string name="side_offset_right_landscape">Правые боковые клавиши (альбомная): %1$s</string>
+    <string name="side_offset_hint">Немного сдвиньте боковые клавиши, если они заходят на закруглённый край экрана. ◊ = положение по умолчанию.</string>
+    <string name="side_offset_direction">← влево · вправо →</string>
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Подсказки слов</string>
     <string name="main_export">Экспорт настроек</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Треугольник</string>
     <string name="shape_circle">Круг</string>
     <string name="shape_cube">Куб</string>
-    <string name="option_on">Вкл.</string>
-    <string name="option_off">Выкл.</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_transparent">Прозрачная</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Настройки RGB</string>
     <string name="theme_btn_saved_layouts">Сохранённые раскладки</string>
     <string name="reset_hint">Сбросить…</string>
-    <string name="reset_colors">Сбросить цвета</string>
-    <string name="reset_layout">Сбросить раскладку</string>
-    <string name="reset_all">Сбросить всё</string>
+    <string name="reset_none">Ничего</string>
+    <string name="reset_colors">Только цвета</string>
+    <string name="reset_layout">Раскладка клавиш</string>
+    <string name="reset_all">Цвета и раскладка</string>
     <string name="backup_name">Резервная копия %1$s</string>
     <string name="reset_done_all">Раскладка и цвета сброшены. Предыдущее состояние сохранено как копия.</string>
     <string name="reset_done_colors">Цвета сброшены. Предыдущее состояние сохранено как копия.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Цвет значка</string>
     <string name="color_text">Цвет текста</string>
     <string name="color_use_theme">Цвета темы</string>
+    <string name="color_no_background">Без фона</string>
     <string name="color_all_keys_same">Все клавиши одного цвета</string>
     <string name="color_key_use_default">Цвет по умолчанию для этой клавиши</string>
     <string name="bg_mode_theme">По теме</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Безумно ← → Спокойно</string>
     <string name="rgb_saturation">Насыщенность: %1$d %%</string>
     <string name="rgb_brightness">Яркость: %1$d %%</string>
-    <string name="rgb_settings_saved">Настройки %1$s сохранены</string>
     <string name="lp_section_alphabet">Долгое нажатие – буквы</string>
     <string name="lp_section_numeric">Долгое нажатие – цифры</string>
     <string name="lp_section_my_binds">Мои привязки</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Введите любой текст</string>
     <string name="lp_custom_add">Добавить</string>
     <string name="lp_custom_already">Уже привязано к этой клавише</string>
+    <string name="lp_max_bindings">К клавише можно привязать не больше %1$d</string>
     <string name="lp_custom_bound">Привязано к этой клавише:</string>
     <string name="lp_editor_title">Долгое нажатие: %1$s</string>
     <string name="lp_nothing_bound">Ничего не привязано – нажмите на символы ниже</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Раскладка букв</string>
     <string name="layout_section_numeric">Цифровая раскладка</string>
+    <string name="layout_section_keys">Буквы и цифры</string>
+    <string name="layout_preset_label">Шаблон:</string>
+    <string name="layout_preset_custom">Своя раскладка</string>
     <string name="layout_section_side">Боковые клавиши</string>
     <string name="layout_section_horizontal">Горизонтальный центр</string>
     <string name="layout_section_emoji">Настройки эмодзи</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Закрыть</string>
     <string name="emoji_btn_backspace">Удаление</string>
     <string name="emoji_btn_space">Пробел</string>
-    <string name="saved_layouts_header">-- Сохранённые раскладки (%1$d) --</string>
-    <string name="saved_layouts_label">Сохранённые раскладки:</string>
-    <string name="swap_selected">Поменять выбранные</string>
-    <string name="select_two_keys">Выберите 2 клавиши</string>
     <string name="color_picker_brightness">Яркость</string>
     <string name="copied">Скопировано!</string>
     <string name="restore_layout_title">Восстановить раскладку</string>
     <string name="restore_layout_message">Текущая раскладка и цвета будут заменены.</string>
+    <string name="restore_layout_and_colors">Раскладка и цвета</string>
+    <string name="restore_layout_only">Только раскладка</string>
+    <string name="restore_layout_only_message">Текущая раскладка будет заменена. Цвета останутся.</string>
+    <string name="restore_colors_only_message">Текущие цвета будут заменены. Раскладка останется.</string>
+    <string name="saved_without_colors">Сохранено без цветов (использовались цвета темы)</string>
     <string name="delete_confirm">Удалить?</string>
     <string name="layout_restored">Раскладка восстановлена!</string>
     <string name="saved_layouts_title">Сохранённые раскладки</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Только цвета</string>
     <string name="custom_colors_applied">Свои цвета применены</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Сохранённых раскладок пока нет</string>
     <string name="transparent_background">Прозрачный фон</string>
     <string name="preview_info">Форма: %1$s | Ряды: %2$d\nСохранено: %3$s</string>
+    <string name="preview_side_offsets">Боковые клавиши: слева %1$s, справа %2$s\nАльбомная: слева %3$s, справа %4$s</string>
     <string name="preview_colors_label">Цвета (нажмите, чтобы изменить):</string>
     <string name="swatch_keys">Клавиши</string>
     <string name="swatch_text">Текст</string>

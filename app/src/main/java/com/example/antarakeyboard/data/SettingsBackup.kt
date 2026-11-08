@@ -2,6 +2,7 @@ package com.example.antarakeyboard.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -16,7 +17,7 @@ import java.util.TimeZone
  *
  * The file holds whole SharedPreferences files (typed key/value pairs) under a format id and
  * version. It contains no package or class names, so a backup made by any build of the app
- * (including before the applicationId changes from com.example…) can be imported by any other.
+ * (also one made before the applicationId change away from com.example.) can be imported by any other.
  */
 object SettingsBackup {
 
@@ -144,20 +145,20 @@ object SettingsBackup {
         FILES.forEach { (name, excluded) ->
             val values = data[name] ?: return@forEach
             val prefs = prefs(context, name)
-            val editor = prefs.edit()
-            prefs.all.keys.filter { it !in excluded }.forEach { editor.remove(it) }
-            values.forEach { (key, value) ->
-                @Suppress("UNCHECKED_CAST")
-                when (value) {
-                    is Boolean -> editor.putBoolean(key, value)
-                    is Int -> editor.putInt(key, value)
-                    is Long -> editor.putLong(key, value)
-                    is Float -> editor.putFloat(key, value)
-                    is String -> editor.putString(key, value)
-                    is Set<*> -> editor.putStringSet(key, value as Set<String>)
+            prefs.edit(commit = true) {
+                prefs.all.keys.filter { it !in excluded }.forEach { remove(it) }
+                values.forEach { (key, value) ->
+                    @Suppress("UNCHECKED_CAST")
+                    when (value) {
+                        is Boolean -> putBoolean(key, value)
+                        is Int -> putInt(key, value)
+                        is Long -> putLong(key, value)
+                        is Float -> putFloat(key, value)
+                        is String -> putString(key, value)
+                        is Set<*> -> putStringSet(key, value as Set<String>)
+                    }
                 }
             }
-            editor.commit()
         }
     }
 

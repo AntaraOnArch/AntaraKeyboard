@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.Gravity
@@ -16,6 +15,8 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.graphics.drawable.toDrawable
 import com.example.antarakeyboard.SpecialChars
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.data.LongPressPresets
@@ -23,7 +24,9 @@ import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
 import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.KeyShape
+import com.example.antarakeyboard.model.MAX_LONG_PRESS_BINDINGS
 import com.example.antarakeyboard.service.EmojiCategory
+import java.text.NumberFormat
 
 class LongPressEditorBinder(
     private val context: Context,
@@ -126,8 +129,6 @@ class LongPressEditorBinder(
         buildKeyboardUI()
     }
 
-    fun getUpdatedConfig(): KeyboardConfig = cfg
-
     /** Editable keys that currently have at least one long-press binding (layout order). */
     fun boundKeys(): List<KeyConfig> =
         cfg.rows.flatMap { it.keys }
@@ -162,9 +163,19 @@ class LongPressEditorBinder(
         }
     }
 
-    /** Binds [text] to [key]'s long press (autosaved). False if blank or already bound. */
+    /** True when [key] already holds [MAX_LONG_PRESS_BINDINGS] bindings. */
+    fun isFull(key: KeyConfig): Boolean = visibleBindings(key).size >= MAX_LONG_PRESS_BINDINGS
+
+    /** Toast shown when a binding is refused because the key is full. */
+    fun showFullToast() {
+        Toast.makeText(
+            context, context.getString(R.string.lp_max_bindings, MAX_LONG_PRESS_BINDINGS), Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    /** Binds [text] to [key]'s long press (autosaved). False if blank, already bound or the key is full. */
     fun addBinding(key: KeyConfig, text: String): Boolean {
-        if (text.isBlank() || text in key.longPressBindings) return false
+        if (text.isBlank() || text in key.longPressBindings || isFull(key)) return false
         key.longPressBindings.add(text)
         onChanged(cfg)
         buildKeyboardUI()
@@ -202,7 +213,7 @@ class LongPressEditorBinder(
 
         // Same look as the Set layout editor keys
         val keyView = KeyView(context).apply {
-            text = if (key.label.isBlank()) "" else key.label
+            text = key.label.ifBlank { "" }
             gravity = Gravity.CENTER
             textSize = 16f
             includeFontPadding = false
@@ -237,7 +248,7 @@ class LongPressEditorBinder(
         if (!locked && boundCount > 0) {
             wrapper.addView(
                 TextView(context).apply {
-                    text = boundCount.toString()
+                    text = NumberFormat.getIntegerInstance().format(boundCount)
                     textSize = 10f
                     gravity = Gravity.CENTER
                     setTextColor(0xFFFFFFFF.toInt())
@@ -362,6 +373,10 @@ class LongPressEditorBinder(
             if (item in key.longPressBindings) {
                 key.longPressBindings.remove(item)
             } else {
+                if (isFull(key)) {
+                    showFullToast()
+                    return
+                }
                 key.longPressBindings.add(item)
             }
             cellViews[item]?.forEach { styleCell(it, item) }
@@ -450,7 +465,7 @@ class LongPressEditorBinder(
             onClosed()
         }
         dialog.show()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         dialog.window?.setLayout(dialogW, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 

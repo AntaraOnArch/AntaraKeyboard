@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/main_app_bg">
+    android:background="@color/main_app_bg"
+    tools:ignore="Overdraw">
+    <!-- The dialog window has its own background; the popup paints the app background over it -->
 
     <!-- Section dropdown -->
     <Spinner
@@ -13,13 +16,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- CONTENT -->
+    <!-- CONTENT: wrap_content on purpose, popups fit their content (weight only shares leftover space) -->
     <FrameLayout
         android:id="@+id/longPressContentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="16dp"
+        tools:ignore="InefficientWeight">
 
         <LinearLayout
             android:id="@+id/pageAlphabetLp"

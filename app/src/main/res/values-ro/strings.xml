@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spațiu între rânduri: %1$s</string>
     <string name="main_bind_long_press">Apăsare lungă</string>
     <string name="main_colors">Culori</string>
+    <string name="main_side_offsets">Poziția tastelor laterale</string>
+    <string name="side_offset_left">Tastele laterale stânga: %1$s</string>
+    <string name="side_offset_left_landscape">Tastele laterale stânga (peisaj): %1$s</string>
+    <string name="side_offset_right">Tastele laterale dreapta: %1$s</string>
+    <string name="side_offset_right_landscape">Tastele laterale dreapta (peisaj): %1$s</string>
+    <string name="side_offset_hint">Mută puțin tastele laterale dacă ajung pe marginea rotunjită a ecranului. ◊ = poziția implicită.</string>
+    <string name="side_offset_direction">← stânga · dreapta →</string>
     <string name="main_vibration">Vibrație</string>
     <string name="main_suggestions">Sugestii de cuvinte</string>
     <string name="main_export">Exportă setările</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triunghi</string>
     <string name="shape_circle">Cerc</string>
     <string name="shape_cube">Cub</string>
-    <string name="option_on">Activat</string>
-    <string name="option_off">Dezactivat</string>
     <string name="theme_light">Luminoasă</string>
     <string name="theme_dark">Întunecată</string>
     <string name="theme_transparent">Transparentă</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Setări RGB</string>
     <string name="theme_btn_saved_layouts">Aranjamente salvate</string>
     <string name="reset_hint">Resetează…</string>
-    <string name="reset_colors">Resetează culorile</string>
-    <string name="reset_layout">Resetează aranjamentul</string>
-    <string name="reset_all">Resetează tot</string>
+    <string name="reset_none">Nimic</string>
+    <string name="reset_colors">Doar culorile</string>
+    <string name="reset_layout">Aranjamentul tastelor</string>
+    <string name="reset_all">Culori și aranjament</string>
     <string name="backup_name">Copie de rezervă %1$s</string>
     <string name="reset_done_all">Aranjamentul și culorile au fost resetate. Starea anterioară a fost salvată ca copie.</string>
     <string name="reset_done_colors">Culorile au fost resetate. Starea anterioară a fost salvată ca copie.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Culoarea pictogramei</string>
     <string name="color_text">Culoarea textului</string>
     <string name="color_use_theme">Folosește culorile temei</string>
+    <string name="color_no_background">Fără fundal</string>
     <string name="color_all_keys_same">Toate tastele de aceeași culoare</string>
     <string name="color_key_use_default">Culoare implicită pentru această tastă</string>
     <string name="bg_mode_theme">După temă</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Nebunesc ← → Relaxat</string>
     <string name="rgb_saturation">Saturație: %1$d%%</string>
     <string name="rgb_brightness">Luminozitate: %1$d%%</string>
-    <string name="rgb_settings_saved">Setările %1$s au fost salvate</string>
     <string name="lp_section_alphabet">Apăsare lungă – litere</string>
     <string name="lp_section_numeric">Apăsare lungă – cifre</string>
     <string name="lp_section_my_binds">Asocierile mele</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Scrie orice text</string>
     <string name="lp_custom_add">Adaugă</string>
     <string name="lp_custom_already">Deja asociat acestei taste</string>
+    <string name="lp_max_bindings">O tastă poate avea cel mult %1$d asocieri</string>
     <string name="lp_custom_bound">Asociat acestei taste:</string>
     <string name="lp_editor_title">Apăsare lungă: %1$s</string>
     <string name="lp_nothing_bound">Nimic asociat – atinge caracterele de mai jos</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Aranjamentul literelor</string>
     <string name="layout_section_numeric">Aranjament numeric</string>
+    <string name="layout_section_keys">Litere și cifre</string>
+    <string name="layout_preset_label">Șablon:</string>
+    <string name="layout_preset_custom">Aranjament propriu</string>
     <string name="layout_section_side">Taste laterale</string>
     <string name="layout_section_horizontal">Centru orizontal</string>
     <string name="layout_section_emoji">Setări emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Închide</string>
     <string name="emoji_btn_backspace">Ștergere</string>
     <string name="emoji_btn_space">Spațiu</string>
-    <string name="saved_layouts_header">-- Aranjamente salvate (%1$d) --</string>
-    <string name="saved_layouts_label">Aranjamente salvate:</string>
-    <string name="swap_selected">Schimbă selecția</string>
-    <string name="select_two_keys">Selectează 2 taste</string>
     <string name="color_picker_brightness">Luminozitate</string>
     <string name="copied">Copiat!</string>
     <string name="restore_layout_title">Restabilește aranjamentul</string>
     <string name="restore_layout_message">Aceasta va înlocui aranjamentul și culorile actuale.</string>
+    <string name="restore_layout_and_colors">Aranjament și culori</string>
+    <string name="restore_layout_only">Doar aranjamentul</string>
+    <string name="restore_layout_only_message">Aranjamentul curent va fi înlocuit. Culorile rămân.</string>
+    <string name="restore_colors_only_message">Culorile curente vor fi înlocuite. Aranjamentul rămâne.</string>
+    <string name="saved_without_colors">Salvat fără culori (erau folosite culorile temei)</string>
     <string name="delete_confirm">Ștergi?</string>
     <string name="layout_restored">Aranjament restabilit!</string>
     <string name="saved_layouts_title">Aranjamente salvate</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Doar culori</string>
     <string name="custom_colors_applied">Culorile personalizate au fost aplicate</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Încă nu există aranjamente salvate</string>
     <string name="transparent_background">Fundal transparent</string>
     <string name="preview_info">Formă: %1$s | Rânduri: %2$d\nSalvat: %3$s</string>
+    <string name="preview_side_offsets">Taste laterale: stânga %1$s, dreapta %2$s\nPeisaj: stânga %3$s, dreapta %4$s</string>
     <string name="preview_colors_label">Culori (atinge pentru a edita):</string>
     <string name="swatch_keys">Taste</string>
     <string name="swatch_text">Text</string>

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- paddingMode="stack": the arrow layer is not inset by the background padding -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingMode="stack">
     <!-- Background with border -->
     <item>
         <shape android:shape="rectangle">
@@ -15,22 +17,11 @@
                 android:bottom="8dp" />
         </shape>
     </item>
-    <!-- Dropdown arrow -->
+    <!-- Dropdown arrow at the right edge -->
     <item
         android:width="24dp"
         android:height="24dp"
-        android:gravity="center_vertical|end"
-        android:right="8dp">
-        <rotate
-            android:fromDegrees="45"
-            android:pivotX="50%"
-            android:pivotY="40%">
-            <shape android:shape="rectangle">
-                <size
-                    android:width="8dp"
-                    android:height="8dp" />
-                <solid android:color="@color/main_spinner_border" />
-            </shape>
-        </rotate>
-    </item>
+        android:drawable="@drawable/ic_spinner_arrow"
+        android:end="10dp"
+        android:gravity="center_vertical|end" />
 </layer-list>

@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Відстань між рядами: %1$s</string>
     <string name="main_bind_long_press">Довге натискання</string>
     <string name="main_colors">Кольори</string>
+    <string name="main_side_offsets">Положення бічних клавіш</string>
+    <string name="side_offset_left">Ліві бічні клавіші: %1$s</string>
+    <string name="side_offset_left_landscape">Ліві бічні клавіші (альбомна): %1$s</string>
+    <string name="side_offset_right">Праві бічні клавіші: %1$s</string>
+    <string name="side_offset_right_landscape">Праві бічні клавіші (альбомна): %1$s</string>
+    <string name="side_offset_hint">Трохи зсуньте бічні клавіші, якщо вони заходять на заокруглений край екрана. ◊ = типове положення.</string>
+    <string name="side_offset_direction">← ліворуч · праворуч →</string>
     <string name="main_vibration">Вібрація</string>
     <string name="main_suggestions">Підказки слів</string>
     <string name="main_export">Експорт налаштувань</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Трикутник</string>
     <string name="shape_circle">Коло</string>
     <string name="shape_cube">Куб</string>
-    <string name="option_on">Увімк.</string>
-    <string name="option_off">Вимк.</string>
     <string name="theme_light">Світла</string>
     <string name="theme_dark">Темна</string>
     <string name="theme_transparent">Прозора</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Налаштування RGB</string>
     <string name="theme_btn_saved_layouts">Збережені розкладки</string>
     <string name="reset_hint">Скинути…</string>
-    <string name="reset_colors">Скинути кольори</string>
-    <string name="reset_layout">Скинути розкладку</string>
-    <string name="reset_all">Скинути все</string>
+    <string name="reset_none">Нічого</string>
+    <string name="reset_colors">Лише кольори</string>
+    <string name="reset_layout">Розкладка клавіш</string>
+    <string name="reset_all">Кольори й розкладка</string>
     <string name="backup_name">Резервна копія %1$s</string>
     <string name="reset_done_all">Розкладку й кольори скинуто. Попередній стан збережено як копію.</string>
     <string name="reset_done_colors">Кольори скинуто. Попередній стан збережено як копію.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Колір значка</string>
     <string name="color_text">Колір тексту</string>
     <string name="color_use_theme">Кольори теми</string>
+    <string name="color_no_background">Без фону</string>
     <string name="color_all_keys_same">Усі клавіші одного кольору</string>
     <string name="color_key_use_default">Типовий колір для цієї клавіші</string>
     <string name="bg_mode_theme">За темою</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Шалено ← → Спокійно</string>
     <string name="rgb_saturation">Насиченість: %1$d%%</string>
     <string name="rgb_brightness">Яскравість: %1$d%%</string>
-    <string name="rgb_settings_saved">Налаштування %1$s збережено</string>
     <string name="lp_section_alphabet">Довге натискання – літери</string>
     <string name="lp_section_numeric">Довге натискання – цифри</string>
     <string name="lp_section_my_binds">Мої прив\'язки</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Введіть будь-який текст</string>
     <string name="lp_custom_add">Додати</string>
     <string name="lp_custom_already">Уже прив\'язано до цієї клавіші</string>
+    <string name="lp_max_bindings">До клавіші можна прив\'язати не більше %1$d</string>
     <string name="lp_custom_bound">Прив\'язано до цієї клавіші:</string>
     <string name="lp_editor_title">Довге натискання: %1$s</string>
     <string name="lp_nothing_bound">Нічого не прив\'язано – торкніться символів нижче</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Розкладка літер</string>
     <string name="layout_section_numeric">Цифрова розкладка</string>
+    <string name="layout_section_keys">Літери та цифри</string>
+    <string name="layout_preset_label">Шаблон:</string>
+    <string name="layout_preset_custom">Власна розкладка</string>
     <string name="layout_section_side">Бічні клавіші</string>
     <string name="layout_section_horizontal">Горизонтальний центр</string>
     <string name="layout_section_emoji">Налаштування емодзі</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Закрити</string>
     <string name="emoji_btn_backspace">Видалення</string>
     <string name="emoji_btn_space">Пробіл</string>
-    <string name="saved_layouts_header">-- Збережені розкладки (%1$d) --</string>
-    <string name="saved_layouts_label">Збережені розкладки:</string>
-    <string name="swap_selected">Поміняти вибрані</string>
-    <string name="select_two_keys">Виберіть 2 клавіші</string>
     <string name="color_picker_brightness">Яскравість</string>
     <string name="copied">Скопійовано!</string>
     <string name="restore_layout_title">Відновити розкладку</string>
     <string name="restore_layout_message">Поточну розкладку й кольори буде замінено.</string>
+    <string name="restore_layout_and_colors">Розкладка й кольори</string>
+    <string name="restore_layout_only">Лише розкладка</string>
+    <string name="restore_layout_only_message">Поточну розкладку буде замінено. Кольори залишаться.</string>
+    <string name="restore_colors_only_message">Поточні кольори буде замінено. Розкладка залишиться.</string>
+    <string name="saved_without_colors">Збережено без кольорів (використовувалися кольори теми)</string>
     <string name="delete_confirm">Видалити?</string>
     <string name="layout_restored">Розкладку відновлено!</string>
     <string name="saved_layouts_title">Збережені розкладки</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Лише кольори</string>
     <string name="custom_colors_applied">Власні кольори застосовано</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Збережених розкладок поки немає</string>
     <string name="transparent_background">Прозорий фон</string>
     <string name="preview_info">Форма: %1$s | Ряди: %2$d\nЗбережено: %3$s</string>
+    <string name="preview_side_offsets">Бічні клавіші: ліворуч %1$s, праворуч %2$s\nАльбомна: ліворуч %3$s, праворуч %4$s</string>
     <string name="preview_colors_label">Кольори (торкніться, щоб змінити):</string>
     <string name="swatch_keys">Клавіші</string>
     <string name="swatch_text">Текст</string>

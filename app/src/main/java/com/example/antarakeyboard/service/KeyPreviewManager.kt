@@ -122,12 +122,6 @@ class KeyPreviewManager(
         previewTextView = null
     }
 
-    /**
-     * Check if preview is currently showing
-     */
-    val isShowing: Boolean
-        get() = previewPopup != null
-
     companion object {
         // Labels that shouldn't show preview
         private val EXCLUDED_LABELS = setOf(

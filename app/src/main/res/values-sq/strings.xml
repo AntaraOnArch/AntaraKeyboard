@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Hapësira mes rreshtave: %1$s</string>
     <string name="main_bind_long_press">Shtypje e gjatë</string>
     <string name="main_colors">Ngjyrat</string>
+    <string name="main_side_offsets">Pozicioni i tasteve anësore</string>
+    <string name="side_offset_left">Tastet anësore majtas: %1$s</string>
+    <string name="side_offset_left_landscape">Tastet anësore majtas (horizontale): %1$s</string>
+    <string name="side_offset_right">Tastet anësore djathtas: %1$s</string>
+    <string name="side_offset_right_landscape">Tastet anësore djathtas (horizontale): %1$s</string>
+    <string name="side_offset_hint">Zhvendosni pak tastet anësore nëse dalin në skajin e rrumbullakët të ekranit. ◊ = pozicioni i parazgjedhur.</string>
+    <string name="side_offset_direction">← majtas · djathtas →</string>
     <string name="main_vibration">Dridhja</string>
     <string name="main_suggestions">Sugjerime fjalësh</string>
     <string name="main_export">Eksporto cilësimet</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trekëndësh</string>
     <string name="shape_circle">Rreth</string>
     <string name="shape_cube">Kub</string>
-    <string name="option_on">Aktiv</string>
-    <string name="option_off">Joaktiv</string>
     <string name="theme_light">E çelur</string>
     <string name="theme_dark">E errët</string>
     <string name="theme_transparent">E tejdukshme</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Cilësimet RGB</string>
     <string name="theme_btn_saved_layouts">Paraqitjet e ruajtura</string>
     <string name="reset_hint">Rivendos…</string>
-    <string name="reset_colors">Rivendos ngjyrat</string>
-    <string name="reset_layout">Rivendos paraqitjen</string>
-    <string name="reset_all">Rivendos të gjitha</string>
+    <string name="reset_none">Asgjë</string>
+    <string name="reset_colors">Vetëm ngjyrat</string>
+    <string name="reset_layout">Paraqitja e tasteve</string>
+    <string name="reset_all">Ngjyrat dhe paraqitja</string>
     <string name="backup_name">Kopje rezervë %1$s</string>
     <string name="reset_done_all">Paraqitja dhe ngjyrat u rivendosën. Gjendja e mëparshme u ruajt si kopje.</string>
     <string name="reset_done_colors">Ngjyrat u rivendosën. Gjendja e mëparshme u ruajt si kopje.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Ngjyra e ikonës</string>
     <string name="color_text">Ngjyra e tekstit</string>
     <string name="color_use_theme">Përdor ngjyrat e temës</string>
+    <string name="color_no_background">Pa sfond</string>
     <string name="color_all_keys_same">Të gjitha tastet me të njëjtën ngjyrë</string>
     <string name="color_key_use_default">Ngjyra e parazgjedhur për këtë tast</string>
     <string name="bg_mode_theme">Sipas temës</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Çmendurisht ← → Qetë</string>
     <string name="rgb_saturation">Ngopja: %1$d%%</string>
     <string name="rgb_brightness">Ndriçimi: %1$d%%</string>
-    <string name="rgb_settings_saved">Cilësimet e %1$s u ruajtën</string>
     <string name="lp_section_alphabet">Shtypje e gjatë – shkronja</string>
     <string name="lp_section_numeric">Shtypje e gjatë – numra</string>
     <string name="lp_section_my_binds">Lidhjet e mia</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Shkruaj çfarëdo teksti</string>
     <string name="lp_custom_add">Shto</string>
     <string name="lp_custom_already">Tashmë i lidhur me këtë tast</string>
+    <string name="lp_max_bindings">Një tast mund të ketë më së shumti %1$d lidhje</string>
     <string name="lp_custom_bound">Të lidhura me këtë tast:</string>
     <string name="lp_editor_title">Shtypje e gjatë: %1$s</string>
     <string name="lp_nothing_bound">Asgjë e lidhur – prek karakteret më poshtë</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Paraqitja e shkronjave</string>
     <string name="layout_section_numeric">Paraqitja numerike</string>
+    <string name="layout_section_keys">Shkronja dhe numra</string>
+    <string name="layout_preset_label">Shabllon:</string>
+    <string name="layout_preset_custom">Paraqitje e vetja</string>
     <string name="layout_section_side">Tastet anësore</string>
     <string name="layout_section_horizontal">Qendra horizontale</string>
     <string name="layout_section_emoji">Cilësimet e emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Mbyll</string>
     <string name="emoji_btn_backspace">Fshirje</string>
     <string name="emoji_btn_space">Hapësirë</string>
-    <string name="saved_layouts_header">-- Paraqitjet e ruajtura (%1$d) --</string>
-    <string name="saved_layouts_label">Paraqitjet e ruajtura:</string>
-    <string name="swap_selected">Ndërro të zgjedhurat</string>
-    <string name="select_two_keys">Zgjidh 2 taste</string>
     <string name="color_picker_brightness">Ndriçimi</string>
     <string name="copied">U kopjua!</string>
     <string name="restore_layout_title">Rikthe paraqitjen</string>
     <string name="restore_layout_message">Kjo do të zëvendësojë paraqitjen dhe ngjyrat aktuale.</string>
+    <string name="restore_layout_and_colors">Paraqitja dhe ngjyrat</string>
+    <string name="restore_layout_only">Vetëm paraqitja</string>
+    <string name="restore_layout_only_message">Paraqitja aktuale do të zëvendësohet. Ngjyrat mbeten.</string>
+    <string name="restore_colors_only_message">Ngjyrat aktuale do të zëvendësohen. Paraqitja mbetet.</string>
+    <string name="saved_without_colors">Ruajtur pa ngjyra (përdoreshin ngjyrat e temës)</string>
     <string name="delete_confirm">Të fshihet?</string>
     <string name="layout_restored">Paraqitja u rikthye!</string>
     <string name="saved_layouts_title">Paraqitjet e ruajtura</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Vetëm ngjyrat</string>
     <string name="custom_colors_applied">Ngjyrat e personalizuara u zbatuan</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ende nuk ka paraqitje të ruajtura</string>
     <string name="transparent_background">Sfond i tejdukshëm</string>
     <string name="preview_info">Forma: %1$s | Rreshta: %2$d\nRuajtur: %3$s</string>
+    <string name="preview_side_offsets">Tastet anësore: majtas %1$s, djathtas %2$s\nHorizontale: majtas %3$s, djathtas %4$s</string>
     <string name="preview_colors_label">Ngjyrat (prek për ta modifikuar):</string>
     <string name="swatch_keys">Tastet</string>
     <string name="swatch_text">Teksti</string>

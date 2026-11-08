@@ -54,14 +54,13 @@ class EditorKeyboardRenderer(private val context: Context) {
             rowIndex: Int,
             keys: MutableList<KeyConfig>
         ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
+            if (keys.isEmpty()) return
 
             val keyWidth = 34.dp(context)
             val keyHeight = 44.dp(context)
 
             val keyGap = 1.dp(context)
-            val intraPairOverlap = -8.dp(context)
+            val intraPairOverlap = -(8.dp(context))
             val interPairGap = 2.dp(context)
 
             val rowW = (keyWidth + keyGap * 2) * 6
@@ -87,7 +86,7 @@ class EditorKeyboardRenderer(private val context: Context) {
                 clipToPadding = false
             }
 
-            visibleKeys.take(6).forEachIndexed { keyIndex, key ->
+            keys.take(6).forEachIndexed { keyIndex, key ->
                 addKeyToRow(
                     row = topRow,
                     key = key,
@@ -98,7 +97,7 @@ class EditorKeyboardRenderer(private val context: Context) {
                 )
             }
 
-            visibleKeys.drop(6).forEachIndexed { i, key ->
+            keys.drop(6).forEachIndexed { i, key ->
                 addKeyToRow(
                     row = bottomRow,
                     key = key,
@@ -143,11 +142,10 @@ class EditorKeyboardRenderer(private val context: Context) {
             rowIndex: Int,
             keys: MutableList<KeyConfig>
         ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
+            if (keys.isEmpty()) return
 
             val maxKeysInAnyRow = cfg.rows.maxOfOrNull { it.keys.size }
-                ?: visibleKeys.size
+                ?: keys.size
 
             val dialogW = (context.resources.displayMetrics.widthPixels * 0.92f).toInt()
             val availableW = dialogW - 28.dp(context) - 8.dp(context)
@@ -167,7 +165,7 @@ class EditorKeyboardRenderer(private val context: Context) {
                 clipToPadding = false
             }
 
-            visibleKeys.forEachIndexed { keyIndex, key ->
+            keys.forEachIndexed { keyIndex, key ->
                 addKeyToRow(
                     row = row,
                     key = key,
@@ -191,8 +189,7 @@ class EditorKeyboardRenderer(private val context: Context) {
             rowIndex: Int,
             keys: MutableList<KeyConfig>
         ) {
-            val visibleKeys = keys
-            if (visibleKeys.isEmpty()) return
+            if (keys.isEmpty()) return
 
             val row = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -200,7 +197,7 @@ class EditorKeyboardRenderer(private val context: Context) {
                 setPadding(0, 4.dp(context), 0, 4.dp(context))
             }
 
-            visibleKeys.forEachIndexed { keyIndex, key ->
+            keys.forEachIndexed { keyIndex, key ->
                 val keyItem = createKey(key, rowIndex, keyIndex)
 
                 row.addView(

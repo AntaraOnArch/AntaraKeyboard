@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Tastiera Antara</string>
     <string name="main_enable">Attiva</string>
     <string name="main_choose">Scegli</string>
@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spazio tra le righe: %1$s</string>
     <string name="main_bind_long_press">Pressione prolungata</string>
     <string name="main_colors">Colori</string>
+    <string name="main_side_offsets">Posizione dei tasti laterali</string>
+    <string name="side_offset_left">Tasti laterali sinistri: %1$s</string>
+    <string name="side_offset_left_landscape">Tasti laterali sinistri (orizzontale): %1$s</string>
+    <string name="side_offset_right">Tasti laterali destri: %1$s</string>
+    <string name="side_offset_right_landscape">Tasti laterali destri (orizzontale): %1$s</string>
+    <string name="side_offset_hint">Sposta leggermente i tasti laterali se finiscono sul bordo arrotondato dello schermo. ◊ = posizione predefinita.</string>
+    <string name="side_offset_direction">← sinistra · destra →</string>
     <string name="main_vibration">Vibrazione</string>
     <string name="main_suggestions">Suggerimenti di parole</string>
     <string name="main_export">Esporta impostazioni</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triangolo</string>
     <string name="shape_circle">Cerchio</string>
     <string name="shape_cube">Cubo</string>
-    <string name="option_on">Attiva</string>
-    <string name="option_off">Disattiva</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="theme_transparent">Trasparente</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Impostazioni RGB</string>
     <string name="theme_btn_saved_layouts">Layout salvati</string>
     <string name="reset_hint">Ripristina…</string>
-    <string name="reset_colors">Ripristina colori</string>
-    <string name="reset_layout">Ripristina layout</string>
-    <string name="reset_all">Ripristina tutto</string>
+    <string name="reset_none">Niente</string>
+    <string name="reset_colors">Solo colori</string>
+    <string name="reset_layout">Layout dei tasti</string>
+    <string name="reset_all">Colori e layout</string>
     <string name="backup_name">Backup %1$s</string>
     <string name="reset_done_all">Layout e colori ripristinati. Lo stato precedente è salvato come backup.</string>
     <string name="reset_done_colors">Colori ripristinati. Lo stato precedente è salvato come backup.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Colore icona</string>
     <string name="color_text">Colore testo</string>
     <string name="color_use_theme">Usa i colori del tema</string>
+    <string name="color_no_background">Nessuno sfondo</string>
     <string name="color_all_keys_same">Tutti i tasti dello stesso colore</string>
     <string name="color_key_use_default">Colore predefinito per questo tasto</string>
     <string name="bg_mode_theme">In base al tema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Folle ← → Rilassato</string>
     <string name="rgb_saturation">Saturazione: %1$d%%</string>
     <string name="rgb_brightness">Luminosità: %1$d%%</string>
-    <string name="rgb_settings_saved">Impostazioni %1$s salvate</string>
     <string name="lp_section_alphabet">Pressione prolungata – lettere</string>
     <string name="lp_section_numeric">Pressione prolungata – numeri</string>
     <string name="lp_section_my_binds">Le mie associazioni</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Scrivi un testo qualsiasi</string>
     <string name="lp_custom_add">Aggiungi</string>
     <string name="lp_custom_already">Già associato a questo tasto</string>
+    <string name="lp_max_bindings">Un tasto può avere al massimo %1$d associazioni</string>
     <string name="lp_custom_bound">Associato a questo tasto:</string>
     <string name="lp_editor_title">Pressione prolungata: %1$s</string>
     <string name="lp_nothing_bound">Niente associato – tocca i caratteri qui sotto</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Layout lettere</string>
     <string name="layout_section_numeric">Layout numerico</string>
+    <string name="layout_section_keys">Lettere e numeri</string>
+    <string name="layout_preset_label">Modello:</string>
+    <string name="layout_preset_custom">Layout personalizzato</string>
     <string name="layout_section_side">Tasti laterali</string>
     <string name="layout_section_horizontal">Centro orizzontale</string>
     <string name="layout_section_emoji">Impostazioni emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Chiudi</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spazio</string>
-    <string name="saved_layouts_header">-- Layout salvati (%1$d) --</string>
-    <string name="saved_layouts_label">Layout salvati:</string>
-    <string name="swap_selected">Scambia selezionati</string>
-    <string name="select_two_keys">Seleziona 2 tasti</string>
     <string name="color_picker_brightness">Luminosità</string>
     <string name="copied">Copiato!</string>
     <string name="restore_layout_title">Ripristina layout</string>
     <string name="restore_layout_message">Questo sostituirà il layout e i colori attuali.</string>
+    <string name="restore_layout_and_colors">Layout e colori</string>
+    <string name="restore_layout_only">Solo layout</string>
+    <string name="restore_layout_only_message">Il layout attuale verrà sostituito. I colori restano.</string>
+    <string name="restore_colors_only_message">I colori attuali verranno sostituiti. Il layout resta.</string>
+    <string name="saved_without_colors">Salvato senza colori (erano in uso i colori del tema)</string>
     <string name="delete_confirm">Eliminare?</string>
     <string name="layout_restored">Layout ripristinato!</string>
     <string name="saved_layouts_title">Layout salvati</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Solo colori</string>
     <string name="custom_colors_applied">Colori personalizzati applicati</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ancora nessun layout salvato</string>
     <string name="transparent_background">Sfondo trasparente</string>
     <string name="preview_info">Forma: %1$s | Righe: %2$d\nSalvato: %3$s</string>
+    <string name="preview_side_offsets">Tasti laterali: sinistra %1$s, destra %2$s\nOrizzontale: sinistra %3$s, destra %4$s</string>
     <string name="preview_colors_label">Colori (tocca per modificare):</string>
     <string name="swatch_keys">Tasti</string>
     <string name="swatch_text">Testo</string>
@@ -227,7 +238,8 @@
     <string name="emoji_no_recent">Nessuna emoji recente</string>
     <string name="emoji_empty_category">Nessuna emoji in questa categoria</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d riga</item>
         <item quantity="many">%d righe</item>
         <item quantity="other">%d righe</item>

@@ -7,7 +7,7 @@ package com.example.antarakeyboard.data
  */
 internal object LegacyLongPressPresets {
 
-    /** Every character any old preset bound to [key] (lowercase key). */
+    /** Every character any old preset bound to each key (lowercase key). */
     fun allDefaults(): Map<String, Set<String>> {
         val out = mutableMapOf<String, MutableSet<String>>()
         listOf(

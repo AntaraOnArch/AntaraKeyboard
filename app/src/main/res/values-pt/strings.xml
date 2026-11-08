@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Teclado Antara</string>
     <string name="main_enable">Ativar</string>
     <string name="main_choose">Escolher</string>
@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Espaço entre linhas: %1$s</string>
     <string name="main_bind_long_press">Toque longo</string>
     <string name="main_colors">Cores</string>
+    <string name="main_side_offsets">Posição das teclas laterais</string>
+    <string name="side_offset_left">Teclas laterais esquerdas: %1$s</string>
+    <string name="side_offset_left_landscape">Teclas laterais esquerdas (paisagem): %1$s</string>
+    <string name="side_offset_right">Teclas laterais direitas: %1$s</string>
+    <string name="side_offset_right_landscape">Teclas laterais direitas (paisagem): %1$s</string>
+    <string name="side_offset_hint">Mova um pouco as teclas laterais se chegarem à borda arredondada do ecrã. ◊ = posição predefinida.</string>
+    <string name="side_offset_direction">← esquerda · direita →</string>
     <string name="main_vibration">Vibração</string>
     <string name="main_suggestions">Sugestões de palavras</string>
     <string name="main_export">Exportar definições</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Triângulo</string>
     <string name="shape_circle">Círculo</string>
     <string name="shape_cube">Cubo</string>
-    <string name="option_on">Ligado</string>
-    <string name="option_off">Desligado</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
     <string name="theme_transparent">Transparente</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Definições RGB</string>
     <string name="theme_btn_saved_layouts">Disposições guardadas</string>
     <string name="reset_hint">Repor…</string>
-    <string name="reset_colors">Repor cores</string>
-    <string name="reset_layout">Repor disposição</string>
-    <string name="reset_all">Repor tudo</string>
+    <string name="reset_none">Nada</string>
+    <string name="reset_colors">Apenas cores</string>
+    <string name="reset_layout">Disposição das teclas</string>
+    <string name="reset_all">Cores e disposição</string>
     <string name="backup_name">Cópia %1$s</string>
     <string name="reset_done_all">Disposição e cores repostas. O estado anterior foi guardado como cópia.</string>
     <string name="reset_done_colors">Cores repostas. O estado anterior foi guardado como cópia.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Cor do ícone</string>
     <string name="color_text">Cor do texto</string>
     <string name="color_use_theme">Usar cores do tema</string>
+    <string name="color_no_background">Sem fundo</string>
     <string name="color_all_keys_same">Todas as teclas com a mesma cor</string>
     <string name="color_key_use_default">Cor predefinida para esta tecla</string>
     <string name="bg_mode_theme">De acordo com o tema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Louco ← → Calmo</string>
     <string name="rgb_saturation">Saturação: %1$d%%</string>
     <string name="rgb_brightness">Brilho: %1$d%%</string>
-    <string name="rgb_settings_saved">Definições de %1$s guardadas</string>
     <string name="lp_section_alphabet">Toque longo – letras</string>
     <string name="lp_section_numeric">Toque longo – números</string>
     <string name="lp_section_my_binds">As minhas associações</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Escreva qualquer texto</string>
     <string name="lp_custom_add">Adicionar</string>
     <string name="lp_custom_already">Já associado a esta tecla</string>
+    <string name="lp_max_bindings">Uma tecla pode ter no máximo %1$d associações</string>
     <string name="lp_custom_bound">Associado a esta tecla:</string>
     <string name="lp_editor_title">Toque longo: %1$s</string>
     <string name="lp_nothing_bound">Nada associado – toque nos caracteres abaixo</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Disposição das letras</string>
     <string name="layout_section_numeric">Disposição numérica</string>
+    <string name="layout_section_keys">Letras e números</string>
+    <string name="layout_preset_label">Modelo:</string>
+    <string name="layout_preset_custom">Disposição própria</string>
     <string name="layout_section_side">Teclas laterais</string>
     <string name="layout_section_horizontal">Centro horizontal</string>
     <string name="layout_section_emoji">Definições de emojis</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Fechar</string>
     <string name="emoji_btn_backspace">Retrocesso</string>
     <string name="emoji_btn_space">Espaço</string>
-    <string name="saved_layouts_header">-- Disposições guardadas (%1$d) --</string>
-    <string name="saved_layouts_label">Disposições guardadas:</string>
-    <string name="swap_selected">Trocar selecionadas</string>
-    <string name="select_two_keys">Selecione 2 teclas</string>
     <string name="color_picker_brightness">Brilho</string>
     <string name="copied">Copiado!</string>
     <string name="restore_layout_title">Restaurar disposição</string>
     <string name="restore_layout_message">Isto vai substituir a disposição e as cores atuais.</string>
+    <string name="restore_layout_and_colors">Disposição e cores</string>
+    <string name="restore_layout_only">Só disposição</string>
+    <string name="restore_layout_only_message">A disposição atual será substituída. As cores mantêm-se.</string>
+    <string name="restore_colors_only_message">As cores atuais serão substituídas. A disposição mantém-se.</string>
+    <string name="saved_without_colors">Guardado sem cores (estavam em uso as cores do tema)</string>
     <string name="delete_confirm">Eliminar?</string>
     <string name="layout_restored">Disposição restaurada!</string>
     <string name="saved_layouts_title">Disposições guardadas</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Só cores</string>
     <string name="custom_colors_applied">Cores personalizadas aplicadas</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Ainda sem disposições guardadas</string>
     <string name="transparent_background">Fundo transparente</string>
     <string name="preview_info">Forma: %1$s | Linhas: %2$d\nGuardado: %3$s</string>
+    <string name="preview_side_offsets">Teclas laterais: esquerda %1$s, direita %2$s\nPaisagem: esquerda %3$s, direita %4$s</string>
     <string name="preview_colors_label">Cores (toque para editar):</string>
     <string name="swatch_keys">Teclas</string>
     <string name="swatch_text">Texto</string>
@@ -227,7 +238,8 @@
     <string name="emoji_no_recent">Sem emojis recentes</string>
     <string name="emoji_empty_category">Sem emojis nesta categoria</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d linha</item>
         <item quantity="many">%d linhas</item>
         <item quantity="other">%d linhas</item>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Tastiera Antara</string>
     <string name="main_enable">Attiva</string>
     <string name="main_choose">Agħżel</string>
@@ -10,6 +10,13 @@
     <string name="main_row_spacing">Spazju bejn ir-ringieli: %1$s</string>
     <string name="main_bind_long_press">Għafsa twila</string>
     <string name="main_colors">Kuluri</string>
+    <string name="main_side_offsets">Pożizzjoni tal-buttuni tal-ġenb</string>
+    <string name="side_offset_left">Buttuni tal-ġenb tax-xellug: %1$s</string>
+    <string name="side_offset_left_landscape">Buttuni tal-ġenb tax-xellug (orizzontali): %1$s</string>
+    <string name="side_offset_right">Buttuni tal-ġenb tal-lemin: %1$s</string>
+    <string name="side_offset_right_landscape">Buttuni tal-ġenb tal-lemin (orizzontali): %1$s</string>
+    <string name="side_offset_hint">Ċaqlaq ftit il-buttuni tal-ġenb jekk jidħlu fit-tarf imdawwar tal-iskrin. ◊ = pożizzjoni awtomatika.</string>
+    <string name="side_offset_direction">← xellug · lemin →</string>
     <string name="main_vibration">Vibrazzjoni</string>
     <string name="main_suggestions">Suġġerimenti tal-kliem</string>
     <string name="main_export">Esporta s-settings</string>
@@ -35,8 +42,6 @@
     <string name="shape_triangle">Trijangolu</string>
     <string name="shape_circle">Ċirku</string>
     <string name="shape_cube">Kubu</string>
-    <string name="option_on">Mixgħul</string>
-    <string name="option_off">Mitfi</string>
     <string name="theme_light">Ċar</string>
     <string name="theme_dark">Skur</string>
     <string name="theme_transparent">Trasparenti</string>
@@ -46,9 +51,10 @@
     <string name="theme_btn_rgb_settings">Settings RGB</string>
     <string name="theme_btn_saved_layouts">Tqassimiet salvati</string>
     <string name="reset_hint">Irrisettja…</string>
-    <string name="reset_colors">Irrisettja l-kuluri</string>
-    <string name="reset_layout">Irrisettja t-tqassim</string>
-    <string name="reset_all">Irrisettja kollox</string>
+    <string name="reset_none">Xejn</string>
+    <string name="reset_colors">Il-kuluri biss</string>
+    <string name="reset_layout">Tqassim tat-tasti</string>
+    <string name="reset_all">Kuluri u tqassim</string>
     <string name="backup_name">Backup %1$s</string>
     <string name="reset_done_all">It-tqassim u l-kuluri ġew irrisettjati. L-istat preċedenti ġie salvat bħala backup.</string>
     <string name="reset_done_colors">Il-kuluri ġew irrisettjati. L-istat preċedenti ġie salvat bħala backup.</string>
@@ -80,6 +86,7 @@
     <string name="color_icon">Kulur tal-ikona</string>
     <string name="color_text">Kulur tat-test</string>
     <string name="color_use_theme">Uża l-kuluri tat-tema</string>
+    <string name="color_no_background">Mingħajr sfond</string>
     <string name="color_all_keys_same">Iċ-ċwievet kollha bl-istess kulur</string>
     <string name="color_key_use_default">Kulur default għal din iċ-ċavetta</string>
     <string name="bg_mode_theme">Skont it-tema</string>
@@ -99,7 +106,6 @@
     <string name="rgb_insane_chill">Miġnun ← → Rilassat</string>
     <string name="rgb_saturation">Saturazzjoni: %1$d%%</string>
     <string name="rgb_brightness">Luminożità: %1$d%%</string>
-    <string name="rgb_settings_saved">Is-settings ta\' %1$s ġew salvati</string>
     <string name="lp_section_alphabet">Għafsa twila – ittri</string>
     <string name="lp_section_numeric">Għafsa twila – numri</string>
     <string name="lp_section_my_binds">L-assoċjazzjonijiet tiegħi</string>
@@ -114,6 +120,7 @@
     <string name="lp_custom_hint">Ikteb kwalunkwe test</string>
     <string name="lp_custom_add">Żid</string>
     <string name="lp_custom_already">Diġà assoċjat ma\' din iċ-ċavetta</string>
+    <string name="lp_max_bindings">Ċavetta tista\' jkollha l-aktar %1$d assoċjazzjonijiet</string>
     <string name="lp_custom_bound">Assoċjat ma\' din iċ-ċavetta:</string>
     <string name="lp_editor_title">Għafsa twila: %1$s</string>
     <string name="lp_nothing_bound">Xejn assoċjat – ittappja l-karattri hawn taħt</string>
@@ -143,6 +150,9 @@
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Tqassim tal-ittri</string>
     <string name="layout_section_numeric">Tqassim numeriku</string>
+    <string name="layout_section_keys">Ittri u numri</string>
+    <string name="layout_preset_label">Mudell:</string>
+    <string name="layout_preset_custom">Tqassim tiegħek</string>
     <string name="layout_section_side">Ċwievet tal-ġenb</string>
     <string name="layout_section_horizontal">Ċentru orizzontali</string>
     <string name="layout_section_emoji">Settings tal-emoji</string>
@@ -156,14 +166,15 @@
     <string name="emoji_btn_close">Agħlaq</string>
     <string name="emoji_btn_backspace">Backspace</string>
     <string name="emoji_btn_space">Spazju</string>
-    <string name="saved_layouts_header">-- Tqassimiet salvati (%1$d) --</string>
-    <string name="saved_layouts_label">Tqassimiet salvati:</string>
-    <string name="swap_selected">Aqleb dawk magħżula</string>
-    <string name="select_two_keys">Agħżel 2 ċwievet</string>
     <string name="color_picker_brightness">Luminożità</string>
     <string name="copied">Ikkupjat!</string>
     <string name="restore_layout_title">Irrestawra t-tqassim</string>
     <string name="restore_layout_message">Dan se jissostitwixxi t-tqassim u l-kuluri attwali.</string>
+    <string name="restore_layout_and_colors">Tqassim u kuluri</string>
+    <string name="restore_layout_only">Tqassim biss</string>
+    <string name="restore_layout_only_message">It-tqassim attwali se jinbidel. Il-kuluri jibqgħu.</string>
+    <string name="restore_colors_only_message">Il-kuluri attwali se jinbidlu. It-tqassim jibqa’.</string>
+    <string name="saved_without_colors">Issejvjat mingħajr kuluri (kienu qed jintużaw il-kuluri tat-tema)</string>
     <string name="delete_confirm">Tħassar?</string>
     <string name="layout_restored">It-tqassim ġie rrestawrat!</string>
     <string name="saved_layouts_title">Tqassimiet salvati</string>
@@ -171,10 +182,10 @@
     <string name="colors_only">Kuluri biss</string>
     <string name="custom_colors_applied">Il-kuluri personalizzati ġew applikati</string>
     <string name="saved_layout_subtitle">%1$s • %2$s • %3$s</string>
-    <string name="saved_layout_entry">%1$s (%2$s)</string>
     <string name="no_saved_layouts">Għad m\'hemm l-ebda tqassim salvat</string>
     <string name="transparent_background">Sfond trasparenti</string>
     <string name="preview_info">Forma: %1$s | Ringieli: %2$d\nSalvat: %3$s</string>
+    <string name="preview_side_offsets">Buttuni tal-ġenb: xellug %1$s, lemin %2$s\nOrizzontali: xellug %3$s, lemin %4$s</string>
     <string name="preview_colors_label">Kuluri (ittappja biex teditja):</string>
     <string name="swatch_keys">Ċwievet</string>
     <string name="swatch_text">Test</string>
@@ -227,7 +238,8 @@
     <string name="emoji_no_recent">L-ebda emoji reċenti</string>
     <string name="emoji_empty_category">L-ebda emoji f\'din il-kategorija</string>
 
-    <plurals name="rows_count">
+    <!-- CLDR quantities of this language; lint's older plural table does not know them -->
+    <plurals name="rows_count" tools:ignore="UnusedQuantity">
         <item quantity="one">%d ringiela</item>
         <item quantity="two">%d ringieli</item>
         <item quantity="few">%d ringieli</item>
