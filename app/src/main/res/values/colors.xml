@@ -31,4 +31,6 @@
     <color name="key_fill_dark">#FF3E3E3E</color>
     <color name="key_stroke_dark">#FF1A1A1A</color>
     <color name="key_text_dark">#FFFFFFFF</color>
+    <!-- Help popup: scrim around it (lighter than the popup in dark mode) -->
+    <color name="help_scrim">#59000000</color>
 </resources>

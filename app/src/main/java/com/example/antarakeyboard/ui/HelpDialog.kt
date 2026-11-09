@@ -3,17 +3,26 @@ package com.example.antarakeyboard.ui
 import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.Dialog
+import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager
 import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.extensions.dp
 
@@ -32,6 +41,12 @@ object HelpDialog {
     class Footer(val title: String, val action: () -> Unit)
 
     private const val CHEVRON_MS = 200L
+    private const val WIDTH_FRACTION = 0.9f
+    /** Space above the popup (below the status bar) and below it (above the navigation bar). */
+    private const val TOP_GAP_DP = 16
+    private const val BOTTOM_GAP_DP = 72
+    /** Blur of the screen behind the popup (Android 12+, where the device supports it). */
+    private const val BLUR_DP = 12
 
     fun show(activity: Activity, groups: List<Group>, footer: Footer? = null) {
         val dialog = Dialog(activity)
@@ -45,10 +60,23 @@ object HelpDialog {
             // Opening an answer slides the entries below it down
             layoutTransition = LayoutTransition().apply { enableTransitionType(LayoutTransition.CHANGING) }
         }
-        root.addView(TextView(activity).apply {
-            setText(R.string.help_title)
-            textSize = 18f
-            setTypeface(typeface, Typeface.BOLD)
+        // Title with a small X in the corner (a tap outside or Back closes it too)
+        root.addView(LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(TextView(activity).apply {
+                setText(R.string.help_title)
+                textSize = 18f
+                setTypeface(typeface, Typeface.BOLD)
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(ImageButton(activity).apply {
+                setImageResource(R.drawable.ic_close)
+                background = ContextCompat.getDrawable(activity, R.drawable.main_icon_button)
+                contentDescription = activity.getString(R.string.action_close)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setPadding(10.dp(activity), 10.dp(activity), 10.dp(activity), 10.dp(activity))
+                setOnClickListener { dialog.dismiss() }
+            }, LinearLayout.LayoutParams(40.dp(activity), 40.dp(activity)))
         })
         root.addView(TextView(activity).apply {
             setText(R.string.help_hint)
@@ -81,13 +109,46 @@ object HelpDialog {
             ).apply { topMargin = pad })
         }
 
-        // Scrolls only when the screen is too short (wrap content like every popup)
-        dialog.setContentView(ScrollView(activity).apply { addView(root) })
+        // Full-screen window: a lighter (blurred where supported) scrim marks where a tap closes
+        // the popup; the card sits near the top and wraps its content, ending well above the
+        // navigation bar (then it scrolls)
+        val card = ScrollView(activity).apply {
+            addView(root)
+            // Taps on the card itself never reach the scrim
+            isClickable = true
+        }
+        val scrim = FrameLayout(activity).apply {
+            setBackgroundColor(ContextCompat.getColor(activity, R.color.help_scrim))
+            setOnClickListener { dialog.cancel() }
+            addView(card, FrameLayout.LayoutParams(
+                (activity.resources.displayMetrics.widthPixels * WIDTH_FRACTION).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            ))
+            // The window covers the system bars too: keep the card clear of them
+            ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                (card.layoutParams as FrameLayout.LayoutParams).apply {
+                    topMargin = bars.top + TOP_GAP_DP.dp(activity)
+                    bottomMargin = bars.bottom + BOTTOM_GAP_DP.dp(activity)
+                }
+                card.requestLayout()
+                WindowInsetsCompat.CONSUMED
+            }
+        }
+        dialog.setContentView(scrim)
+        dialog.window?.apply {
+            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+            WindowCompat.setDecorFitsSystemWindows(this, false)
+            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                attributes = attributes.apply { blurBehindRadius = BLUR_DP.dp(activity) }
+            }
+        }
         dialog.show()
-        dialog.window?.setLayout(
-            (activity.resources.displayMetrics.widthPixels * 0.92f).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
     /** One accordion entry: question row with a chevron; the answer (and its link) under it, hidden at first. */

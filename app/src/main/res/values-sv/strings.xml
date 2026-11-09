@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← vänster · höger →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordförslag</string>
+    <string name="main_double_space_period">Dubbelt blanksteg för punkt</string>
     <string name="main_export">Exportera inställningar</string>
     <string name="main_import">Importera inställningar</string>
     <string name="export_done">Inställningar exporterade</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Hastighet, mättnad och ljusstyrka för RGB-animationen.</string>
     <string name="help_vibration">En kort vibration vid varje tangenttryck.</string>
     <string name="help_suggestions">Upp till tre ord ovanför tangenterna; tryck på ett för att använda det. Ingen autokorrigering, och inget du skriver sparas.</string>
+    <string name="help_double_space_period">Två blanksteg efter ett ord skriver punkt och blanksteg. Inte i lösenord, e-postadresser eller länkar.</string>
     <string name="help_reset">Färger, layout eller båda till standard. Det aktuella läget sparas först i Sparade layouter; tecken vid långt tryck och tangentformen behålls.</string>
     <string name="help_export">Sparar alla inställningar i en fil, t.ex. för att flytta dem till en ny telefon. Senaste emoji ingår inte.</string>
     <string name="help_import">Läser in inställningar från en exporterad fil. Dina nuvarande inställningar sparas som säkerhetskopia i Sparade layouter.</string>

@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← stânga · dreapta →</string>
     <string name="main_vibration">Vibrație</string>
     <string name="main_suggestions">Sugestii de cuvinte</string>
+    <string name="main_double_space_period">Spațiu dublu pentru punct</string>
     <string name="main_export">Exportă setările</string>
     <string name="main_import">Importă setările</string>
     <string name="export_done">Setări exportate</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Viteza, saturația și luminozitatea animației RGB.</string>
     <string name="help_vibration">O vibrație scurtă la fiecare apăsare de tastă.</string>
     <string name="help_suggestions">Până la trei cuvinte deasupra tastelor; atinge unul pentru a-l folosi. Fără corectare automată și nimic din ce scrii nu se salvează.</string>
+    <string name="help_double_space_period">Două spații după un cuvânt scriu un punct și un spațiu. Nu în parole, adrese de e-mail sau linkuri.</string>
     <string name="help_reset">Culori, aranjament sau ambele la valorile implicite. Starea curentă se salvează întâi în Aranjamente salvate; caracterele la apăsare lungă și forma tastelor rămân.</string>
     <string name="help_export">Salvează toate setările într-un fișier, de ex. pentru a le muta pe un telefon nou. Emoji-urile recente nu sunt incluse.</string>
     <string name="help_import">Încarcă setările dintr-un fișier exportat. Setările curente rămân ca rezervă în Aranjamente salvate.</string>

@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← esquerra · dreta →</string>
     <string name="main_vibration">Vibració</string>
     <string name="main_suggestions">Suggeriments de paraules</string>
+    <string name="main_double_space_period">Doble espai per a punt</string>
     <string name="main_export">Exporta la configuració</string>
     <string name="main_import">Importa la configuració</string>
     <string name="export_done">S\'ha exportat la configuració</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Velocitat, saturació i brillantor de l\'animació RGB.</string>
     <string name="help_vibration">Una vibració curta a cada pulsació.</string>
     <string name="help_suggestions">Fins a tres paraules sobre les tecles; toca\'n una per fer-la servir. Sense correcció automàtica, i no es desa res del que escrius.</string>
+    <string name="help_double_space_period">Dos espais després d\'una paraula escriuen un punt i un espai. No en contrasenyes, adreces electròniques ni enllaços.</string>
     <string name="help_reset">Colors, disposició o tots dos als valors predeterminats. L\'estat actual es desa abans a Disposicions desades; els caràcters de pulsació llarga i la forma de les tecles es mantenen.</string>
     <string name="help_export">Desa tots els ajustos en un fitxer, p. ex. per passar-los a un mòbil nou. Els emojis recents no s\'hi inclouen.</string>
     <string name="help_import">Carrega els ajustos d\'un fitxer exportat. Els ajustos actuals queden com a còpia de seguretat a Disposicions desades.</string>

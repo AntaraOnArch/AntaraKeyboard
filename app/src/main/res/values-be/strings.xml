@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← улева · управа →</string>
     <string name="main_vibration">Вібрацыя</string>
     <string name="main_suggestions">Падказкі слоў</string>
+    <string name="main_double_space_period">Двайны прабел – кропка</string>
     <string name="main_export">Экспарт налад</string>
     <string name="main_import">Імпарт налад</string>
     <string name="export_done">Налады экспартаваны</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Хуткасць, насычанасць і яркасць RGB-анімацыі.</string>
     <string name="help_vibration">Кароткая вібрацыя пры кожным націсканні клавішы.</string>
     <string name="help_suggestions">Да трох слоў над клавішамі; націсніце на слова, каб уставіць яго. Без аўтазамены, нічога з набранага не захоўваецца.</string>
+    <string name="help_double_space_period">Два прабелы пасля слова ставяць кропку і прабел. Не ў паролях, адрасах эл. пошты і спасылках.</string>
     <string name="help_reset">Колеры, раскладка або ўсё разам да прадвызначаных. Бягучы стан спачатку захоўваецца ў Захаваных раскладках; сімвалы доўгага націскання і форма клавіш застаюцца.</string>
     <string name="help_export">Захоўвае ўсе налады ў файл, напрыклад для пераносу на новы тэлефон. Нядаўнія эмодзі не ўключаюцца.</string>
     <string name="help_import">Загружае налады з экспартаванага файла. Бягучыя налады застаюцца рэзервовай копіяй у Захаваных раскладках.</string>

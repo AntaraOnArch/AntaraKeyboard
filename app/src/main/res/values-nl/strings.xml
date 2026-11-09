@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← links · rechts →</string>
     <string name="main_vibration">Trillen</string>
     <string name="main_suggestions">Woordsuggesties</string>
+    <string name="main_double_space_period">Dubbele spatie voor punt</string>
     <string name="main_export">Instellingen exporteren</string>
     <string name="main_import">Instellingen importeren</string>
     <string name="export_done">Instellingen geëxporteerd</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Snelheid, verzadiging en helderheid van de RGB-animatie.</string>
     <string name="help_vibration">Een korte trilling bij elke toetsaanslag.</string>
     <string name="help_suggestions">Tot drie woorden boven de toetsen; tik op een woord om het te gebruiken. Geen autocorrectie en niets wat je typt wordt opgeslagen.</string>
+    <string name="help_double_space_period">Twee spaties na een woord typen een punt en een spatie. Niet in wachtwoorden, e-mailadressen of links.</string>
     <string name="help_reset">Kleuren, indeling of beide terug naar standaard. De huidige staat wordt eerst bewaard in Opgeslagen indelingen; tekens voor lang indrukken en de toetsvorm blijven.</string>
     <string name="help_export">Slaat alle instellingen op in een bestand, bijv. voor een nieuwe telefoon. Recente emoji worden niet meegenomen.</string>
     <string name="help_import">Laadt instellingen uit een geëxporteerd bestand. Je huidige instellingen blijven als back-up in Opgeslagen indelingen.</string>

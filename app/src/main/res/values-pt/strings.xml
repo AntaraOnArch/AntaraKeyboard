@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← esquerda · direita →</string>
     <string name="main_vibration">Vibração</string>
     <string name="main_suggestions">Sugestões de palavras</string>
+    <string name="main_double_space_period">Espaço duplo para ponto</string>
     <string name="main_export">Exportar definições</string>
     <string name="main_import">Importar definições</string>
     <string name="export_done">Definições exportadas</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Velocidade, saturação e brilho da animação RGB.</string>
     <string name="help_vibration">Uma vibração curta em cada toque numa tecla.</string>
     <string name="help_suggestions">Até três palavras acima das teclas; toque numa para a usar. Sem correção automática, e nada do que escreve é guardado.</string>
+    <string name="help_double_space_period">Dois espaços depois de uma palavra escrevem um ponto e um espaço. Não em palavras-passe, e-mails ou links.</string>
     <string name="help_reset">Cores, disposição ou ambas para o padrão. O estado atual é guardado primeiro em Disposições guardadas; os caracteres de toque longo e a forma das teclas mantêm-se.</string>
     <string name="help_export">Guarda todas as definições num ficheiro, p. ex. para as passar para um telemóvel novo. Os emojis recentes não são incluídos.</string>
     <string name="help_import">Carrega as definições de um ficheiro exportado. As definições atuais ficam como cópia de segurança em Disposições guardadas.</string>

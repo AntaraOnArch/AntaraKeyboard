@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity() {
         setupKeySizeSlider()
         setupRowSpacingSlider()
 
-        // Vibration and word suggestions: on / off switches
+        // Vibration, word suggestions and double space → period: on / off switches
         findViewById<SwitchCompat>(R.id.switchVibration).apply {
             isChecked = KeyboardPrefs.isVibrationEnabled(this@MainActivity)
             setOnCheckedChangeListener { _, on -> KeyboardPrefs.setVibrationEnabled(this@MainActivity, on) }
@@ -265,6 +265,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<SwitchCompat>(R.id.switchSuggestions).apply {
             isChecked = KeyboardPrefs.isSuggestionsEnabled(this@MainActivity)
             setOnCheckedChangeListener { _, on -> KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, on) }
+        }
+        findViewById<SwitchCompat>(R.id.switchDoubleSpacePeriod).apply {
+            isChecked = KeyboardPrefs.isDoubleSpacePeriodEnabled(this@MainActivity)
+            setOnCheckedChangeListener { _, on -> KeyboardPrefs.setDoubleSpacePeriodEnabled(this@MainActivity, on) }
         }
 
         setupLanguageSpinner()
@@ -1000,6 +1004,7 @@ class MainActivity : AppCompatActivity() {
                 } else null,
                 entry(R.string.main_vibration, R.string.help_vibration, switch(R.id.switchVibration)),
                 entry(R.string.main_suggestions, R.string.help_suggestions, switch(R.id.switchSuggestions)),
+                entry(R.string.main_double_space_period, R.string.help_double_space_period, switch(R.id.switchDoubleSpacePeriod)),
                 entry(R.string.reset_hint, R.string.help_reset, spinner(R.id.spinnerReset)),
                 entry(R.string.main_export, R.string.help_export, button(R.id.btnExportSettings)),
                 entry(R.string.main_import, R.string.help_import, button(R.id.btnImportSettings)),

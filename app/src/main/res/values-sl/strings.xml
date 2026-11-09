@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← levo · desno →</string>
     <string name="main_vibration">Vibriranje</string>
     <string name="main_suggestions">Predlogi besed</string>
+    <string name="main_double_space_period">Dvojni presledek za piko</string>
     <string name="main_export">Izvozi nastavitve</string>
     <string name="main_import">Uvozi nastavitve</string>
     <string name="export_done">Nastavitve izvožene</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Hitrost, nasičenost in svetlost animacije RGB.</string>
     <string name="help_vibration">Kratek tresljaj ob vsakem pritisku tipke.</string>
     <string name="help_suggestions">Do tri besede nad tipkami; tapnite eno, da jo uporabite. Brez samodejnega popravljanja, nič natipkanega se ne shrani.</string>
+    <string name="help_double_space_period">Dva presledka za besedo vpišeta piko in presledek. Ne v geslih, e-poštnih naslovih ali povezavah.</string>
     <string name="help_reset">Barve, postavitev ali oboje na privzeto. Trenutno stanje se najprej shrani v Shranjene postavitve; znaki dolgega pritiska in oblika tipk ostanejo.</string>
     <string name="help_export">Shrani vse nastavitve v datoteko, npr. za prenos na nov telefon. Nedavni emojiji niso vključeni.</string>
     <string name="help_import">Naloži nastavitve iz izvožene datoteke. Trenutne nastavitve ostanejo kot varnostna kopija v Shranjenih postavitvah.</string>

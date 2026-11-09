@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← наляво · надясно →</string>
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Предложения за думи</string>
+    <string name="main_double_space_period">Двоен интервал за точка</string>
     <string name="main_export">Експорт на настройките</string>
     <string name="main_import">Импорт на настройките</string>
     <string name="export_done">Настройките са експортирани</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Скорост, наситеност и яркост на RGB анимацията.</string>
     <string name="help_vibration">Кратка вибрация при всяко натискане на клавиш.</string>
     <string name="help_suggestions">До три думи над клавишите; докоснете дума, за да я използвате. Без автокорекция и нищо написано не се запазва.</string>
+    <string name="help_double_space_period">Два интервала след дума въвеждат точка и интервал. Не в пароли, имейл адреси или връзки.</string>
     <string name="help_reset">Цветове, подредба или и двете по подразбиране. Текущото състояние първо се запазва в Запазени подредби; знаците при задържане и формата на клавишите остават.</string>
     <string name="help_export">Записва всички настройки във файл, напр. за пренос на нов телефон. Последните емоджи не са включени.</string>
     <string name="help_import">Зарежда настройки от експортиран файл. Текущите настройки остават като резервно копие в Запазени подредби.</string>

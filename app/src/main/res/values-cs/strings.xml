@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← doleva · doprava →</string>
     <string name="main_vibration">Vibrace</string>
     <string name="main_suggestions">Návrhy slov</string>
+    <string name="main_double_space_period">Dvojitá mezera pro tečku</string>
     <string name="main_export">Exportovat nastavení</string>
     <string name="main_import">Importovat nastavení</string>
     <string name="export_done">Nastavení exportováno</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Rychlost, sytost a jas animace RGB.</string>
     <string name="help_vibration">Krátká vibrace při každém stisku klávesy.</string>
     <string name="help_suggestions">Až tři slova nad klávesami; klepnutím slovo použijete. Žádné automatické opravy a nic z napsaného se neukládá.</string>
+    <string name="help_double_space_period">Dvě mezery za slovem napíšou tečku a mezeru. Ne v heslech, e-mailových adresách ani odkazech.</string>
     <string name="help_reset">Barvy, rozložení nebo obojí na výchozí. Aktuální stav se nejdřív uloží do Uložených rozložení; znaky dlouhého stisku a tvar kláves zůstanou.</string>
     <string name="help_export">Uloží všechna nastavení do souboru, např. pro přenos do nového telefonu. Nedávné emoji nejsou zahrnuty.</string>
     <string name="help_import">Načte nastavení z exportovaného souboru. Aktuální nastavení zůstane jako záloha v Uložených rozloženích.</string>

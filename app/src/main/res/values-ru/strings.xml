@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← влево · вправо →</string>
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Подсказки слов</string>
+    <string name="main_double_space_period">Двойной пробел – точка</string>
     <string name="main_export">Экспорт настроек</string>
     <string name="main_import">Импорт настроек</string>
     <string name="export_done">Настройки экспортированы</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Скорость, насыщенность и яркость RGB-анимации.</string>
     <string name="help_vibration">Короткая вибрация при каждом нажатии клавиши.</string>
     <string name="help_suggestions">До трёх слов над клавишами; нажмите на слово, чтобы вставить его. Без автозамены, ничего из набранного не сохраняется.</string>
+    <string name="help_double_space_period">Два пробела после слова ставят точку и пробел. Не в паролях, адресах эл. почты и ссылках.</string>
     <string name="help_reset">Цвета, раскладка или всё сразу по умолчанию. Текущее состояние сначала сохраняется в Сохранённых раскладках; символы долгого нажатия и форма клавиш остаются.</string>
     <string name="help_export">Сохраняет все настройки в файл, например для переноса на новый телефон. Недавние эмодзи не включаются.</string>
     <string name="help_import">Загружает настройки из экспортированного файла. Текущие настройки остаются резервной копией в Сохранённых раскладках.</string>

@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← xellug · lemin →</string>
     <string name="main_vibration">Vibrazzjoni</string>
     <string name="main_suggestions">Suġġerimenti tal-kliem</string>
+    <string name="main_double_space_period">Spazju doppju għal punt</string>
     <string name="main_export">Esporta s-settings</string>
     <string name="main_import">Importa s-settings</string>
     <string name="export_done">Is-settings ġew esportati</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Il-veloċità, is-saturazzjoni u d-dawl tal-animazzjoni RGB.</string>
     <string name="help_vibration">Vibrazzjoni qasira ma\' kull għafsa ta\' tast.</string>
     <string name="help_suggestions">Sa tliet kelmiet fuq it-tasti; ittappja waħda biex tużaha. L-ebda korrezzjoni awtomatika, u xejn minn dak li tikteb ma jiġi salvat.</string>
+    <string name="help_double_space_period">Żewġ spazji wara kelma jiktbu punt u spazju. Mhux fil-passwords, fl-indirizzi tal-email jew fil-links.</string>
     <string name="help_reset">Kuluri, tqassim jew it-tnejn lura għall-default. L-istat attwali l-ewwel jiġi salvat fit-Tqassimiet salvati; il-karattri ta\' għafsa twila u l-forma tat-tasti jibqgħu.</string>
     <string name="help_export">Issalva s-settings kollha f\'fajl, eż. biex tgħaddihom lil telefon ġdid. L-emoji riċenti mhumiex inklużi.</string>
     <string name="help_import">Ittella\' s-settings minn fajl esportat. Is-settings attwali tiegħek jinżammu bħala backup fit-Tqassimiet salvati.</string>

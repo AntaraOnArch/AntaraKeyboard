@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← balra · jobbra →</string>
     <string name="main_vibration">Rezgés</string>
     <string name="main_suggestions">Szójavaslatok</string>
+    <string name="main_double_space_period">Dupla szóköz pontot ír</string>
     <string name="main_export">Beállítások exportálása</string>
     <string name="main_import">Beállítások importálása</string>
     <string name="export_done">Beállítások exportálva</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Az RGB-animáció sebessége, telítettsége és fényereje.</string>
     <string name="help_vibration">Rövid rezgés minden billentyűnyomáskor.</string>
     <string name="help_suggestions">Legfeljebb három szó a billentyűk felett; koppintson egyre a használatához. Nincs automatikus javítás, és semmi, amit gépel, nem kerül mentésre.</string>
+    <string name="help_double_space_period">Egy szó után két szóköz pontot és szóközt ír. Jelszavakban, e-mail-címekben és linkekben nem.</string>
     <string name="help_reset">Színek, kiosztás vagy mindkettő alapértelmezésre. Az aktuális állapot előbb a Mentett kiosztások közé kerül; a hosszú nyomásos karakterek és a billentyűforma megmaradnak.</string>
     <string name="help_export">Minden beállítást fájlba ment, pl. új telefonra való átvitelhez. A legutóbbi emojik nincsenek benne.</string>
     <string name="help_import">Beállításokat tölt be egy exportált fájlból. A jelenlegi beállítások biztonsági mentésként a Mentett kiosztások közé kerülnek.</string>

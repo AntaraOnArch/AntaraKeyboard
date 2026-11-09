@@ -25,4 +25,6 @@
     <color name="special_fill">#FF2E55E7</color>
     <color name="special_fill_pressed">#FF2A55FF</color>
     <color name="special_text">#FFFFFFFF</color>
+    <!-- Help popup: scrim around it (lighter than the popup in dark mode) -->
+    <color name="help_scrim">#33FFFFFF</color>
 </resources>

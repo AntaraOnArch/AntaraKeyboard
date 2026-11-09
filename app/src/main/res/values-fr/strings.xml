@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← gauche · droite →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Suggestions de mots</string>
+    <string name="main_double_space_period">Double espace pour un point</string>
     <string name="main_export">Exporter les réglages</string>
     <string name="main_import">Importer les réglages</string>
     <string name="export_done">Réglages exportés</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Vitesse, saturation et luminosité de l\'animation RGB.</string>
     <string name="help_vibration">Une courte vibration à chaque appui sur une touche.</string>
     <string name="help_suggestions">Jusqu\'à trois mots au-dessus des touches ; touchez-en un pour l\'utiliser. Pas de correction automatique, et rien de ce que vous tapez n\'est enregistré.</string>
+    <string name="help_double_space_period">Deux espaces après un mot tapent un point et une espace. Pas dans les mots de passe, adresses e-mail ou liens.</string>
     <string name="help_reset">Couleurs, disposition ou les deux par défaut. L\'état actuel est d\'abord enregistré dans Dispositions enregistrées ; les caractères à appui long et la forme des touches restent.</string>
     <string name="help_export">Enregistre tous les réglages dans un fichier, p. ex. pour les transférer sur un nouveau téléphone. Les emoji récents ne sont pas inclus.</string>
     <string name="help_import">Charge les réglages depuis un fichier exporté. Vos réglages actuels sont gardés comme sauvegarde dans Dispositions enregistrées.</string>

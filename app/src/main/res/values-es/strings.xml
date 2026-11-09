@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← izquierda · derecha →</string>
     <string name="main_vibration">Vibración</string>
     <string name="main_suggestions">Sugerencias de palabras</string>
+    <string name="main_double_space_period">Doble espacio para punto</string>
     <string name="main_export">Exportar ajustes</string>
     <string name="main_import">Importar ajustes</string>
     <string name="export_done">Ajustes exportados</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Velocidad, saturación y brillo de la animación RGB.</string>
     <string name="help_vibration">Una vibración corta en cada pulsación.</string>
     <string name="help_suggestions">Hasta tres palabras sobre las teclas; toca una para usarla. Sin autocorrección, y no se guarda nada de lo que escribes.</string>
+    <string name="help_double_space_period">Dos espacios después de una palabra escriben un punto y un espacio. No en contraseñas, correos ni enlaces.</string>
     <string name="help_reset">Colores, distribución o ambos a los valores predeterminados. El estado actual se guarda antes en Distribuciones guardadas; los caracteres de pulsación larga y la forma de las teclas se mantienen.</string>
     <string name="help_export">Guarda todos los ajustes en un archivo, p. ej. para pasarlos a un móvil nuevo. Los emoji recientes no se incluyen.</string>
     <string name="help_import">Carga los ajustes de un archivo exportado. Tus ajustes actuales quedan como copia de seguridad en Distribuciones guardadas.</string>

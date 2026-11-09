@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← vasemmalle · oikealle →</string>
     <string name="main_vibration">Värinä</string>
     <string name="main_suggestions">Sanaehdotukset</string>
+    <string name="main_double_space_period">Kaksoisvälilyönti pisteeksi</string>
     <string name="main_export">Vie asetukset</string>
     <string name="main_import">Tuo asetukset</string>
     <string name="export_done">Asetukset viety</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">RGB-animaation nopeus, kylläisyys ja kirkkaus.</string>
     <string name="help_vibration">Lyhyt värinä jokaisella näppäinpainalluksella.</string>
     <string name="help_suggestions">Enintään kolme sanaa näppäinten yläpuolella; napauta sanaa käyttääksesi sitä. Ei automaattista korjausta, eikä mitään kirjoittamaasi tallenneta.</string>
+    <string name="help_double_space_period">Kaksi välilyöntiä sanan jälkeen kirjoittaa pisteen ja välilyönnin. Ei salasanoissa, sähköpostiosoitteissa tai linkeissä.</string>
     <string name="help_reset">Värit, asettelu tai molemmat oletuksiin. Nykyinen tila tallennetaan ensin Tallennettuihin asetteluihin; pitkän painalluksen merkit ja näppäinten muoto säilyvät.</string>
     <string name="help_export">Tallentaa kaikki asetukset tiedostoon, esim. siirtoa varten uuteen puhelimeen. Viimeisimmät emojit eivät ole mukana.</string>
     <string name="help_import">Lataa asetukset viedystä tiedostosta. Nykyiset asetuksesi säilyvät varmuuskopiona Tallennetuissa asetteluissa.</string>

@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← w lewo · w prawo →</string>
     <string name="main_vibration">Wibracje</string>
     <string name="main_suggestions">Podpowiedzi słów</string>
+    <string name="main_double_space_period">Podwójna spacja wstawia kropkę</string>
     <string name="main_export">Eksportuj ustawienia</string>
     <string name="main_import">Importuj ustawienia</string>
     <string name="export_done">Ustawienia wyeksportowane</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Szybkość, nasycenie i jasność animacji RGB.</string>
     <string name="help_vibration">Krótka wibracja przy każdym naciśnięciu klawisza.</string>
     <string name="help_suggestions">Do trzech słów nad klawiszami; dotknij słowa, aby go użyć. Bez autokorekty i nic, co piszesz, nie jest zapisywane.</string>
+    <string name="help_double_space_period">Dwie spacje po słowie wpisują kropkę i spację. Nie w hasłach, adresach e-mail ani linkach.</string>
     <string name="help_reset">Kolory, układ lub oba do domyślnych. Obecny stan najpierw trafia do Zapisanych układów; znaki długiego naciśnięcia i kształt klawiszy zostają.</string>
     <string name="help_export">Zapisuje wszystkie ustawienia w pliku, np. aby przenieść je na nowy telefon. Ostatnie emoji nie są dołączane.</string>
     <string name="help_import">Wczytuje ustawienia z wyeksportowanego pliku. Obecne ustawienia zostają jako kopia zapasowa w Zapisanych układach.</string>

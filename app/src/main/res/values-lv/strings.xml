@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← pa kreisi · pa labi →</string>
     <string name="main_vibration">Vibrācija</string>
     <string name="main_suggestions">Vārdu ieteikumi</string>
+    <string name="main_double_space_period">Dubultatstarpe – punkts</string>
     <string name="main_export">Eksportēt iestatījumus</string>
     <string name="main_import">Importēt iestatījumus</string>
     <string name="export_done">Iestatījumi eksportēti</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">RGB animācijas ātrums, piesātinājums un spilgtums.</string>
     <string name="help_vibration">Īsa vibrācija katrā taustiņa nospiešanā.</string>
     <string name="help_suggestions">Līdz trim vārdiem virs taustiņiem; pieskarieties vārdam, lai to izmantotu. Bez automātiskās labošanas, un nekas rakstītais netiek saglabāts.</string>
+    <string name="help_double_space_period">Divas atstarpes pēc vārda ieraksta punktu un atstarpi. Ne parolēs, e-pasta adresēs vai saitēs.</string>
     <string name="help_reset">Krāsas, izkārtojums vai abi uz noklusējumu. Pašreizējais stāvoklis vispirms tiek saglabāts Saglabātajos izkārtojumos; ilgās nospiešanas rakstzīmes un taustiņu forma paliek.</string>
     <string name="help_export">Saglabā visus iestatījumus failā, piem., lai pārnestu uz jaunu tālruni. Nesenās emocijzīmes netiek iekļautas.</string>
     <string name="help_import">Ielādē iestatījumus no eksportēta faila. Pašreizējie iestatījumi paliek kā rezerves kopija Saglabātajos izkārtojumos.</string>

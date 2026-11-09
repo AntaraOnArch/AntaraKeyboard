@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← majtas · djathtas →</string>
     <string name="main_vibration">Dridhja</string>
     <string name="main_suggestions">Sugjerime fjalësh</string>
+    <string name="main_double_space_period">Hapësirë e dyfishtë për pikë</string>
     <string name="main_export">Eksporto cilësimet</string>
     <string name="main_import">Importo cilësimet</string>
     <string name="export_done">Cilësimet u eksportuan</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Shpejtësia, ngopja dhe ndriçimi i animacionit RGB.</string>
     <string name="help_vibration">Një dridhje e shkurtër në çdo shtypje tasti.</string>
     <string name="help_suggestions">Deri në tri fjalë mbi tastet; prek njërën për ta përdorur. Pa korrigjim automatik, dhe asgjë që shkruan nuk ruhet.</string>
+    <string name="help_double_space_period">Dy hapësira pas një fjale shkruajnë pikë dhe hapësirë. Jo në fjalëkalime, adresa email ose lidhje.</string>
     <string name="help_reset">Ngjyrat, paraqitja ose të dyja te parazgjedhjet. Gjendja aktuale ruhet fillimisht te Paraqitjet e ruajtura; karakteret me shtypje të gjatë dhe forma e tasteve mbeten.</string>
     <string name="help_export">Ruan të gjitha cilësimet në një skedar, p.sh. për t\'i kaluar në një telefon të ri. Emoji-t e fundit nuk përfshihen.</string>
     <string name="help_import">Ngarkon cilësimet nga një skedar i eksportuar. Cilësimet aktuale mbahen si kopje rezervë te Paraqitjet e ruajtura.</string>

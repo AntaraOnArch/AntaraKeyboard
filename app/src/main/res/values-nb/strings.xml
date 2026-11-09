@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← venstre · høyre →</string>
     <string name="main_vibration">Vibrering</string>
     <string name="main_suggestions">Ordforslag</string>
+    <string name="main_double_space_period">Dobbelt mellomrom for punktum</string>
     <string name="main_export">Eksporter innstillinger</string>
     <string name="main_import">Importer innstillinger</string>
     <string name="export_done">Innstillinger eksportert</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Hastighet, metning og lysstyrke for RGB-animasjonen.</string>
     <string name="help_vibration">En kort vibrasjon ved hvert tastetrykk.</string>
     <string name="help_suggestions">Opptil tre ord over tastene; trykk på et for å bruke det. Ingen autokorrektur, og ingenting du skriver lagres.</string>
+    <string name="help_double_space_period">To mellomrom etter et ord skriver punktum og mellomrom. Ikke i passord, e-postadresser eller lenker.</string>
     <string name="help_reset">Farger, oppsett eller begge tilbake til standard. Nåværende tilstand lagres først i Lagrede oppsett; tegn ved langt trykk og tasteformen beholdes.</string>
     <string name="help_export">Lagrer alle innstillinger i en fil, f.eks. for å flytte dem til en ny telefon. Nylige emoji er ikke med.</string>
     <string name="help_import">Laster inn innstillinger fra en eksportert fil. De nåværende innstillingene beholdes som sikkerhetskopi i Lagrede oppsett.</string>

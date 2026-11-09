@@ -21,6 +21,7 @@
     <string name="side_offset_direction">← left · right →</string>
     <string name="main_vibration">Vibration feedback</string>
     <string name="main_suggestions">Word suggestions</string>
+    <string name="main_double_space_period">Double space for period</string>
     <string name="main_export">Export settings</string>
     <string name="main_import">Import settings</string>
     <string name="export_done">Settings exported</string>
@@ -100,6 +101,7 @@
     <string name="help_rgb">Speed, saturation and brightness of the RGB animation.</string>
     <string name="help_vibration">A short vibration on every key press.</string>
     <string name="help_suggestions">Up to three words above the keys; tap one to use it. No autocorrect, and nothing you type is stored.</string>
+    <string name="help_double_space_period">Two spaces after a word type a period and a space. Not in passwords, e-mail addresses or links.</string>
     <string name="help_reset">Colors, layout or both back to default. The current state is saved in Saved layouts first; long-press characters and the key shape stay.</string>
     <string name="help_export">Saves all settings to a file, e.g. to move them to a new phone. Recent emojis are not included.</string>
     <string name="help_import">Loads settings from an exported file. Your current settings are kept as a backup in Saved layouts.</string>

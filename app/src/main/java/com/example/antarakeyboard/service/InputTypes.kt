@@ -42,6 +42,23 @@ object InputTypes {
         }
     }
 
+    fun allowsDoubleSpacePeriod(info: EditorInfo?): Boolean = allowsDoubleSpacePeriod(info?.inputType ?: 0)
+
+    /**
+     * Double space → period only in written text: not in passwords, numbers, e-mail addresses or
+     * URLs (unlike suggestions, also where the app asks for no suggestions).
+     */
+    fun allowsDoubleSpacePeriod(inputType: Int): Boolean {
+        if (inputType and InputType.TYPE_MASK_CLASS != InputType.TYPE_CLASS_TEXT) return false
+        if (isPassword(inputType)) return false
+        return when (inputType and InputType.TYPE_MASK_VARIATION) {
+            InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,
+            InputType.TYPE_TEXT_VARIATION_URI -> false
+            else -> true
+        }
+    }
+
     fun prefersNumeric(inputType: Int): Boolean {
         return when (inputType and InputType.TYPE_MASK_CLASS) {
             InputType.TYPE_CLASS_NUMBER,

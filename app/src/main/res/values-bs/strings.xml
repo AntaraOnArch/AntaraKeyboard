@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← lijevo · desno →</string>
     <string name="main_vibration">Vibracija</string>
     <string name="main_suggestions">Prijedlozi riječi</string>
+    <string name="main_double_space_period">Dvostruki razmak za tačku</string>
     <string name="main_export">Izvezi postavke</string>
     <string name="main_import">Uvezi postavke</string>
     <string name="export_done">Postavke su izvezene</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Brzina, zasićenost i svjetlina RGB animacije.</string>
     <string name="help_vibration">Kratka vibracija pri svakom pritisku tipke.</string>
     <string name="help_suggestions">Do tri riječi iznad tipki; dodirnite jednu da je upotrijebite. Nema autokorekcije i ništa što kucate se ne sprema.</string>
+    <string name="help_double_space_period">Dva razmaka nakon riječi upisuju tačku i razmak. Ne u lozinkama, e-mail adresama ni linkovima.</string>
     <string name="help_reset">Boje, raspored ili oboje na zadano. Trenutno stanje se prvo sprema u Sačuvane rasporede; znakovi dugog pritiska i oblik tipki ostaju.</string>
     <string name="help_export">Sprema sve postavke u datoteku, npr. za prenos na novi telefon. Nedavni emojiji nisu uključeni.</string>
     <string name="help_import">Učitava postavke iz izvezene datoteke. Trenutne postavke ostaju kao rezervna kopija u Sačuvanim rasporedima.</string>

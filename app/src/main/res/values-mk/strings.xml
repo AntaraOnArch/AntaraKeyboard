@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← лево · десно →</string>
     <string name="main_vibration">Вибрација</string>
     <string name="main_suggestions">Предлози за зборови</string>
+    <string name="main_double_space_period">Двојно празно место за точка</string>
     <string name="main_export">Извези поставки</string>
     <string name="main_import">Увези поставки</string>
     <string name="export_done">Поставките се извезени</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Брзина, заситеност и осветленост на RGB анимацијата.</string>
     <string name="help_vibration">Кратка вибрација при секој притисок на копче.</string>
     <string name="help_suggestions">До три зборови над копчињата; допрете еден за да го употребите. Нема автокорекција и ништо што пишувате не се зачувува.</string>
+    <string name="help_double_space_period">Две празни места по збор пишуваат точка и празно место. Не во лозинки, е-пошта адреси или врски.</string>
     <string name="help_reset">Бои, распоред или двете на стандардно. Тековната состојба прво се зачувува во Зачувани распореди; знаците на долг притисок и обликот на копчињата остануваат.</string>
     <string name="help_export">Ги зачувува сите поставки во датотека, на пр. за пренос на нов телефон. Неодамнешните емоџи не се вклучени.</string>
     <string name="help_import">Вчитува поставки од извезена датотека. Тековните поставки остануваат како резервна копија во Зачувани распореди.</string>

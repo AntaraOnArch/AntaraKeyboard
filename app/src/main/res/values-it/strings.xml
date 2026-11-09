@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← sinistra · destra →</string>
     <string name="main_vibration">Vibrazione</string>
     <string name="main_suggestions">Suggerimenti di parole</string>
+    <string name="main_double_space_period">Doppio spazio per il punto</string>
     <string name="main_export">Esporta impostazioni</string>
     <string name="main_import">Importa impostazioni</string>
     <string name="export_done">Impostazioni esportate</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Velocità, saturazione e luminosità dell\'animazione RGB.</string>
     <string name="help_vibration">Una breve vibrazione a ogni pressione di tasto.</string>
     <string name="help_suggestions">Fino a tre parole sopra i tasti; toccane una per usarla. Nessuna correzione automatica e niente di ciò che scrivi viene salvato.</string>
+    <string name="help_double_space_period">Due spazi dopo una parola inseriscono un punto e uno spazio. Non nelle password, negli indirizzi email o nei link.</string>
     <string name="help_reset">Colori, layout o entrambi ai valori predefiniti. Lo stato attuale viene prima salvato in Layout salvati; i caratteri a pressione prolungata e la forma dei tasti restano.</string>
     <string name="help_export">Salva tutte le impostazioni in un file, ad es. per spostarle su un nuovo telefono. Le emoji recenti non sono incluse.</string>
     <string name="help_import">Carica le impostazioni da un file esportato. Le impostazioni attuali restano come backup in Layout salvati.</string>

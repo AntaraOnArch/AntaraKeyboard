@@ -57,6 +57,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     // A redraw requested while one is in progress runs right after it instead of being dropped
     private var pendingRedraw = false
     private var isPasswordInput = false
+    /** Double space → period is possible in this field (written text); the setting is read per space. */
+    private var doubleSpaceField = false
 
     // Word suggestions: strip above the keys; the dictionary survives input view recreation
     private val suggestionStrip by lazy { SuggestionStrip(this, serviceScope, SuggestionStripHost()) }
@@ -358,6 +360,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         // Password fields: no key preview, so typed characters never appear on screen
         isPasswordInput = InputTypes.isPassword(info)
+        doubleSpaceField = InputTypes.allowsDoubleSpacePeriod(info)
         keyPreviewManager.setEnabled(!isPasswordInput)
 
         // First: a language changed elsewhere switches the script, which the dictionary follows
@@ -1159,7 +1162,23 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         val out = mapForSelectedScript(baseOut)
 
-        currentInputConnection?.commitText(out, 1)
+        if (out == " ") commitSpace() else currentInputConnection?.commitText(out, 1)
+    }
+
+    /** A space; right after "word " it turns that space into ". " (double space → period). */
+    private fun commitSpace() {
+        val ic = currentInputConnection ?: return
+        // Read now: the switch may change while the keyboard stays open in this field
+        if (doubleSpaceField && KeyboardPrefs.isDoubleSpacePeriodEnabled(this) &&
+            DoubleSpacePeriod.shouldReplace(ic.getTextBeforeCursor(2, 0))
+        ) {
+            ic.beginBatchEdit()
+            ic.deleteSurroundingText(1, 0)
+            ic.commitText(". ", 1)
+            ic.endBatchEdit()
+        } else {
+            ic.commitText(" ", 1)
+        }
     }
 
 
@@ -1627,7 +1646,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     }
 
     override fun onCommitSpace() {
-        currentInputConnection?.commitText(" ", 1)
+        deleteRestoreManager.clearRestoreBuffer()
+        commitSpace()
     }
 
     override fun onCommitChar(char: String) {

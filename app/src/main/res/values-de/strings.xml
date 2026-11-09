@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← links · rechts →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Wortvorschläge</string>
+    <string name="main_double_space_period">Doppeltes Leerzeichen für Punkt</string>
     <string name="main_export">Einstellungen exportieren</string>
     <string name="main_import">Einstellungen importieren</string>
     <string name="export_done">Einstellungen exportiert</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Geschwindigkeit, Sättigung und Helligkeit der RGB-Animation.</string>
     <string name="help_vibration">Eine kurze Vibration bei jedem Tastendruck.</string>
     <string name="help_suggestions">Bis zu drei Wörter über den Tasten; tippe auf eines, um es zu übernehmen. Keine Autokorrektur, und nichts, was du tippst, wird gespeichert.</string>
+    <string name="help_double_space_period">Zwei Leerzeichen nach einem Wort ergeben Punkt und Leerzeichen. Nicht in Passwörtern, E-Mail-Adressen oder Links.</string>
     <string name="help_reset">Farben, Layout oder beides auf Standard. Der aktuelle Stand wird vorher in Gespeicherte Layouts gesichert; Langdruck-Zeichen und Tastenform bleiben.</string>
     <string name="help_export">Speichert alle Einstellungen in einer Datei, z. B. für ein neues Handy. Zuletzt verwendete Emojis sind nicht enthalten.</string>
     <string name="help_import">Lädt Einstellungen aus einer exportierten Datei. Deine aktuellen Einstellungen bleiben als Sicherung in Gespeicherte Layouts.</string>

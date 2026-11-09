@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← ліворуч · праворуч →</string>
     <string name="main_vibration">Вібрація</string>
     <string name="main_suggestions">Підказки слів</string>
+    <string name="main_double_space_period">Подвійний пробіл – крапка</string>
     <string name="main_export">Експорт налаштувань</string>
     <string name="main_import">Імпорт налаштувань</string>
     <string name="export_done">Налаштування експортовано</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Швидкість, насиченість і яскравість RGB-анімації.</string>
     <string name="help_vibration">Коротка вібрація під час кожного натискання клавіші.</string>
     <string name="help_suggestions">До трьох слів над клавішами; торкніться слова, щоб вставити його. Без автовиправлення, нічого з набраного не зберігається.</string>
+    <string name="help_double_space_period">Два пробіли після слова ставлять крапку і пробіл. Не в паролях, адресах ел. пошти й посиланнях.</string>
     <string name="help_reset">Кольори, розкладка або все разом до типових. Поточний стан спершу зберігається в Збережених розкладках; символи довгого натискання та форма клавіш залишаються.</string>
     <string name="help_export">Зберігає всі налаштування у файл, наприклад для перенесення на новий телефон. Нещодавні емодзі не включаються.</string>
     <string name="help_import">Завантажує налаштування з експортованого файлу. Поточні налаштування залишаються резервною копією в Збережених розкладках.</string>

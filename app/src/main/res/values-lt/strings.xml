@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← kairėn · dešinėn →</string>
     <string name="main_vibration">Vibravimas</string>
     <string name="main_suggestions">Žodžių pasiūlymai</string>
+    <string name="main_double_space_period">Dvigubas tarpas – taškas</string>
     <string name="main_export">Eksportuoti nustatymus</string>
     <string name="main_import">Importuoti nustatymus</string>
     <string name="export_done">Nustatymai eksportuoti</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">RGB animacijos greitis, sodrumas ir ryškumas.</string>
     <string name="help_vibration">Trumpa vibracija paspaudus kiekvieną klavišą.</string>
     <string name="help_suggestions">Iki trijų žodžių virš klavišų; palieskite žodį, kad jį panaudotumėte. Jokio automatinio taisymo ir niekas, ką rašote, neišsaugoma.</string>
+    <string name="help_double_space_period">Du tarpai po žodžio įrašo tašką ir tarpą. Ne slaptažodžiuose, el. pašto adresuose ar nuorodose.</string>
     <string name="help_reset">Spalvos, išdėstymas ar abu į numatytuosius. Dabartinė būsena pirmiausia išsaugoma Išsaugotuose išdėstymuose; ilgo paspaudimo simboliai ir klavišų forma lieka.</string>
     <string name="help_export">Įrašo visus nustatymus į failą, pvz., perkelti į naują telefoną. Naujausi jaustukai neįtraukiami.</string>
     <string name="help_import">Įkelia nustatymus iš eksportuoto failo. Dabartiniai nustatymai lieka kaip atsarginė kopija Išsaugotuose išdėstymuose.</string>

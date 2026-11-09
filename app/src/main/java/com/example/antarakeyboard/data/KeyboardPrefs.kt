@@ -677,6 +677,18 @@ object KeyboardPrefs {
         prefs(context).edit { putBoolean(KEY_SUGGESTIONS_ENABLED, enabled) }
     }
 
+    /* ───────── DOUBLE SPACE PERIOD ───────── */
+
+    private const val KEY_DOUBLE_SPACE_PERIOD = "double_space_period"
+
+    /** Two spaces after a word type ". " (off by default). */
+    fun isDoubleSpacePeriodEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_DOUBLE_SPACE_PERIOD, false)
+
+    fun setDoubleSpacePeriodEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(KEY_DOUBLE_SPACE_PERIOD, enabled) }
+    }
+
     /* ───────── VIBRATION ───────── */
 
     private const val KEY_VIBRATION_ENABLED = "vibration_enabled"

@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← αριστερά · δεξιά →</string>
     <string name="main_vibration">Δόνηση</string>
     <string name="main_suggestions">Προτάσεις λέξεων</string>
+    <string name="main_double_space_period">Διπλό κενό για τελεία</string>
     <string name="main_export">Εξαγωγή ρυθμίσεων</string>
     <string name="main_import">Εισαγωγή ρυθμίσεων</string>
     <string name="export_done">Οι ρυθμίσεις εξήχθησαν</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Ταχύτητα, κορεσμός και φωτεινότητα του κινούμενου RGB.</string>
     <string name="help_vibration">Μια σύντομη δόνηση σε κάθε πάτημα πλήκτρου.</string>
     <string name="help_suggestions">Έως τρεις λέξεις πάνω από τα πλήκτρα· πατήστε μία για να τη χρησιμοποιήσετε. Χωρίς αυτόματη διόρθωση, και τίποτα από όσα γράφετε δεν αποθηκεύεται.</string>
+    <string name="help_double_space_period">Δύο κενά μετά από λέξη γράφουν τελεία και κενό. Όχι σε κωδικούς, διευθύνσεις email ή συνδέσμους.</string>
     <string name="help_reset">Χρώματα, διάταξη ή και τα δύο στις προεπιλογές. Η τρέχουσα κατάσταση αποθηκεύεται πρώτα στις Αποθηκευμένες διατάξεις· οι χαρακτήρες παρατεταμένου πατήματος και το σχήμα των πλήκτρων μένουν.</string>
     <string name="help_export">Αποθηκεύει όλες τις ρυθμίσεις σε αρχείο, π.χ. για μεταφορά σε νέο τηλέφωνο. Τα πρόσφατα emoji δεν περιλαμβάνονται.</string>
     <string name="help_import">Φορτώνει ρυθμίσεις από εξαγόμενο αρχείο. Οι τρέχουσες ρυθμίσεις κρατούνται ως αντίγραφο ασφαλείας στις Αποθηκευμένες διατάξεις.</string>

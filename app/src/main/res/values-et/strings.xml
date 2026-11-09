@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← vasakule · paremale →</string>
     <string name="main_vibration">Vibreerimine</string>
     <string name="main_suggestions">Sõnasoovitused</string>
+    <string name="main_double_space_period">Topelttühik punktiks</string>
     <string name="main_export">Ekspordi seaded</string>
     <string name="main_import">Impordi seaded</string>
     <string name="export_done">Seaded eksporditud</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">RGB-animatsiooni kiirus, küllastus ja heledus.</string>
     <string name="help_vibration">Lühike vibratsioon iga klahvivajutuse korral.</string>
     <string name="help_suggestions">Kuni kolm sõna klahvide kohal; puuduta sõna selle kasutamiseks. Automaatset parandust pole ja midagi kirjutatut ei salvestata.</string>
+    <string name="help_double_space_period">Kaks tühikut sõna järel lisavad punkti ja tühiku. Mitte paroolides, e-posti aadressides ega linkides.</string>
     <string name="help_reset">Värvid, paigutus või mõlemad vaikeväärtustele. Praegune olek salvestatakse enne Salvestatud paigutustesse; pika vajutuse märgid ja klahvide kuju jäävad.</string>
     <string name="help_export">Salvestab kõik seaded faili, nt uude telefoni viimiseks. Hiljutised emojid ei ole kaasas.</string>
     <string name="help_import">Laadib seaded eksporditud failist. Praegused seaded jäävad varukoopiana Salvestatud paigutustesse.</string>

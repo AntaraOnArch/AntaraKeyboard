@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← vinstri · hægri →</string>
     <string name="main_vibration">Titringur</string>
     <string name="main_suggestions">Orðatillögur</string>
+    <string name="main_double_space_period">Tvöfalt bil fyrir punkt</string>
     <string name="main_export">Flytja út stillingar</string>
     <string name="main_import">Flytja inn stillingar</string>
     <string name="export_done">Stillingar fluttar út</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Hraði, mettun og birta RGB-hreyfimyndarinnar.</string>
     <string name="help_vibration">Stuttur titringur við hvert lyklaýt.</string>
     <string name="help_suggestions">Allt að þrjú orð fyrir ofan lyklana; ýttu á eitt til að nota það. Engin sjálfvirk leiðrétting og ekkert sem þú skrifar er vistað.</string>
+    <string name="help_double_space_period">Tvö bil á eftir orði skrifa punkt og bil. Ekki í lykilorðum, netföngum eða tenglum.</string>
     <string name="help_reset">Litir, uppsetning eða hvort tveggja í sjálfgefið. Núverandi staða er fyrst vistuð í Vistaðar uppsetningar; stafir við langt ýt og lögun lykla haldast.</string>
     <string name="help_export">Vistar allar stillingar í skrá, t.d. til að flytja þær í nýjan síma. Nýleg emoji fylgja ekki.</string>
     <string name="help_import">Hleður stillingum úr útfluttri skrá. Núverandi stillingar eru geymdar sem afrit í Vistaðar uppsetningar.</string>

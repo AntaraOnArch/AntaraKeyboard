@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← venstre · højre →</string>
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordforslag</string>
+    <string name="main_double_space_period">Dobbelt mellemrum giver punktum</string>
     <string name="main_export">Eksportér indstillinger</string>
     <string name="main_import">Importér indstillinger</string>
     <string name="export_done">Indstillinger eksporteret</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Hastighed, mætning og lysstyrke for RGB-animationen.</string>
     <string name="help_vibration">En kort vibration ved hvert tastetryk.</string>
     <string name="help_suggestions">Op til tre ord over tasterne; tryk på et for at bruge det. Ingen autokorrektur, og intet du skriver gemmes.</string>
+    <string name="help_double_space_period">To mellemrum efter et ord skriver punktum og mellemrum. Ikke i adgangskoder, e-mailadresser eller links.</string>
     <string name="help_reset">Farver, layout eller begge til standard. Den nuværende tilstand gemmes først i Gemte layouts; tegn ved langt tryk og tasteformen bevares.</string>
     <string name="help_export">Gemmer alle indstillinger i en fil, f.eks. til en ny telefon. Seneste emoji er ikke med.</string>
     <string name="help_import">Indlæser indstillinger fra en eksporteret fil. Dine nuværende indstillinger gemmes som sikkerhedskopi i Gemte layouts.</string>

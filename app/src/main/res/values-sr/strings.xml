@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← лево · десно →</string>
     <string name="main_vibration">Вибрација</string>
     <string name="main_suggestions">Предлози речи</string>
+    <string name="main_double_space_period">Двоструки размак за тачку</string>
     <string name="main_export">Извези подешавања</string>
     <string name="main_import">Увези подешавања</string>
     <string name="export_done">Подешавања су извезена</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Брзина, засићеност и осветљеност RGB анимације.</string>
     <string name="help_vibration">Кратка вибрација при сваком притиску тастера.</string>
     <string name="help_suggestions">До три речи изнад тастера; додирните једну да је употребите. Нема аутокорекције и ништа што куцате се не чува.</string>
+    <string name="help_double_space_period">Два размака после речи уписују тачку и размак. Не у лозинкама, имејл адресама ни линковима.</string>
     <string name="help_reset">Боје, распоред или обоје на подразумевано. Тренутно стање се прво чува у Сачуваним распоредима; знакови дугог притиска и облик тастера остају.</string>
     <string name="help_export">Чува сва подешавања у датотеку, нпр. за пренос на нови телефон. Недавни емоџији нису укључени.</string>
     <string name="help_import">Учитава подешавања из извезене датотеке. Тренутна подешавања остају као резервна копија у Сачуваним распоредима.</string>

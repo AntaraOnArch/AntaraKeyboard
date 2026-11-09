@@ -19,6 +19,7 @@
     <string name="side_offset_direction">← ar chlé · ar dheis →</string>
     <string name="main_vibration">Creathadh</string>
     <string name="main_suggestions">Moltaí focal</string>
+    <string name="main_double_space_period">Spás dúbailte le haghaidh lánstad</string>
     <string name="main_export">Easpórtáil socruithe</string>
     <string name="main_import">Iompórtáil socruithe</string>
     <string name="export_done">Socruithe easpórtáilte</string>
@@ -97,6 +98,7 @@
     <string name="help_rgb">Luas, sáithiúchán agus gile bheochan RGB.</string>
     <string name="help_vibration">Crith gearr le gach brú eochrach.</string>
     <string name="help_suggestions">Suas le trí fhocal os cionn na n-eochracha; tapáil ceann chun é a úsáid. Gan uathcheartú, agus ní shábháiltear aon rud a chlóscríobhann tú.</string>
+    <string name="help_double_space_period">Clóscríobhann dhá spás i ndiaidh focail lánstad agus spás. Ní i bpasfhocail, i seoltaí ríomhphoist ná i naisc.</string>
     <string name="help_reset">Dathanna, leagan amach nó an dá cheann ar ais go réamhshocrú. Sábháiltear an staid reatha ar dtús i Leaganacha amach sábháilte; fanann carachtair brú fada agus cruth na n-eochracha.</string>
     <string name="help_export">Sábháiltear gach socrú i gcomhad, m.sh. chun iad a aistriú chuig fón nua. Níl emoji le déanaí san áireamh.</string>
     <string name="help_import">Lódáiltear socruithe ó chomhad easpórtáilte. Coinnítear do shocruithe reatha mar chúltaca i Leaganacha amach sábháilte.</string>

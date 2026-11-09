@@ -43,6 +43,7 @@ This section is the authoritative description of intended behavior. When changin
 | Language (and with it the keyboard script) | System default or any of the 35 languages | Main app – **Language** dropdown, or on the keyboard – **hold BOTH space keys for 4 seconds** → the same language list; Android 13+ also system Settings → Apps → Antara → Language |
 | Vibration feedback | On / Off | Main app – **Vibration** switch |
 | Word suggestions | On / Off (default Off) | Main app – **Word suggestions** switch |
+| Double space for period | On / Off (default Off) | Main app – **Double space for period** switch |
 
 Everything that depends on layout (Set layout editors, long-press bindings, side buttons, numeric layout) automatically adapts to the currently selected row count and key shape.
 
@@ -70,7 +71,7 @@ Everything that depends on layout (Set layout editors, long-press bindings, side
 
 In screen order (`res/layout/activity_main.xml`):
 
-0. **Help (?)** – round question-mark button at the end of the title row (`ui/HelpDialog`, built by `MainActivity.showHelp()`): an FAQ-style popup listing every function with a short answer (`help_*` strings), grouped Keyboard / Set layout / Bind long press / Colors / App, plus **Gestures on the keyboard** (answer only). **A tap** opens / closes the answer (accordion, chevron turns); under the answer an **Open** button is the speed link: it closes the popup and goes there – popups open directly, popups with a section dropdown open on that section (`show(initialSection)`, `SECTION_*` constants in `LayoutEditorDialog`, `LongPressEditorDialog`, `ColorsDialog`); controls on the main screen (dropdowns, sliders, switches) are smooth-scrolled into view and flash an accent outline twice (`ui/Highlight.kt` `flashHighlight()`), dropdowns also open. Saved layouts and RGB settings are listed only while their buttons are shown. **A new main-screen function gets an entry (title, answer, link) here too.** At the very bottom a **Show the tutorial** button starts the tutorial again (see [Tutorial](#tutorial)).
+0. **Help (?)** – round question-mark button at the end of the title row (`ui/HelpDialog`, built by `MainActivity.showHelp()`): an FAQ-style popup (90 % of the screen width, centered, near the top: 16 dp below the status bar, ending at least 72 dp above the navigation bar; around it a scrim lighter than the popup in dark mode, `help_scrim`, plus a blur on Android 12+, marks where a tap closes it; closed by its **X**, a tap outside or Back) listing every function with a short answer (`help_*` strings), grouped Keyboard / Set layout / Bind long press / Colors / App, plus **Gestures on the keyboard** (answer only). **A tap** opens / closes the answer (accordion, chevron turns); under the answer an **Open** button is the speed link: it closes the popup and goes there – popups open directly, popups with a section dropdown open on that section (`show(initialSection)`, `SECTION_*` constants in `LayoutEditorDialog`, `LongPressEditorDialog`, `ColorsDialog`); controls on the main screen (dropdowns, sliders, switches) are smooth-scrolled into view and flash an accent outline twice (`ui/Highlight.kt` `flashHighlight()`), dropdowns also open. Saved layouts and RGB settings are listed only while their buttons are shown. **A new main-screen function gets an entry (title, answer, link) here too.** At the very bottom a **Show the tutorial** button starts the tutorial again (see [Tutorial](#tutorial)).
 1. **Enable** – opens Android system settings so the user can enable the keyboard (IME).
 2. **Choose** – opens the system input-method picker popup to select the active keyboard.
 3. **Set Layout** – opens the layout-editing popup (tabs below). Contents and bindings automatically follow the selected row count and shape.
@@ -82,7 +83,7 @@ In screen order (`res/layout/activity_main.xml`):
 8. **Side button positions** and **Colors** (same row) – popup with four sliders that shift the side buttons, see [Side buttons](#side-buttons-edge-slots); popup for coloring every part of the keyboard (sections below).
 9. **Language** and **Theme** dropdowns side by side. Language: System default + every translation, each named in its own language (`data/AppLanguages.kt`).
     Theme: Light / Dark, Transparent, Custom (saved layouts), RGB Smooth / RGB Wild (see [Themes](#themes)). Below it **RGB settings** (only while an RGB theme is active; `updateThemeSettingsButton` also shows/hides Saved layouts).
-10. **Vibration** and **Word suggestions** switches (on / off).
+10. **Vibration**, **Word suggestions** and **Double space for period** switches (on / off).
 11. **About** – popup with app name, version, privacy statement and **open-source licenses** (tap an entry for the full license text).
 
 **Dropdowns** use `@style/MainSpinner` (chevron arrow at the right edge, `drawable/spinner_background.xml` with `paddingMode="stack"`) and `layout/main_spinner_item.xml` (one line, auto-shrinks to fit half width); the open list is a rounded surface exactly as wide as the dropdown (`drawable/spinner_popup_background.xml`, whose start/end padding must equal MainSpinner's paddingStart/End) with `layout/main_spinner_dropdown_item.xml` entries. In a side-by-side row of buttons, give one `wrap_content` height and the other `match_parent` (both `match_parent` collapses the row).
@@ -208,6 +209,7 @@ All keyboard popups (except the emoji panel, see below) are `PopupWindow`s ancho
 ### Text input behavior
 - **Enter** uses `sendKeyChar('\n')`: runs the editor's action (Search, Send, Go, Done…) unless the field has no action or sets `IME_FLAG_NO_ENTER_ACTION`, then inserts a newline.
 - **Backspace / swipe delete** remove the selection if there is one, otherwise one grapheme cluster (`android.icu.text.BreakIterator`), so emoji, flags and combining marks are never split. Swipe restore re-inserts whole graphemes. Editors that expose no text get a `KEYCODE_DEL` key event.
+- **Double space for period** (`double_space_period` in `keyboard_prefs`): a space typed right after "word " (letter, digit or a closing mark like `)` `"` before the space, `DoubleSpacePeriod`, pure, unit-tested) replaces that space with ". " – on space keys and a side-button Space, not in the emoji panel. Only in written text (`InputTypes.allowsDoubleSpacePeriod`: no passwords, numbers, e-mail addresses, URLs).
 - **Field type** (`service/InputTypes.kt`): number / phone / date fields open on the numeric layout; password fields disable the key preview.
 
 ### Strings and translations
@@ -342,7 +344,7 @@ The keyboard re-reads all prefs in `onStartInputView`, so the main app never nee
 
 **Release build:** R8 minify and resource shrinking are on. Settings are Gson JSON and enum names, so `app/proguard-rules.pro` keeps `model/**`, `SavedLayout`, `EdgePos` and all enum constants. Any new class that is serialized, or enum stored by name, must be added there.
 
-**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`), the layout presets (`LayoutPresetsTest`) and the side button row rules (`EdgeBindingsTest`) and the tutorial step checks (`TutorialChecksTest`). Keep pure logic out of Android classes so it stays testable.
+**Tests:** JVM unit tests in `app/src/test` cover `ScriptMapper`, `InputTypes`, `KeyboardConfig` helpers, `EdgeSlotsStorage` defaults, the protected keys of the default layouts, `AppLanguages`, `SettingsBackup` (round trip, privacy exclusion, rejection of foreign/newer files), `LongPressPresets`, `GlobalLongPressStorage`, `RainbowMath`, `LandscapeSplit`, `KeySizing`, the long-press popup rows (`LongPressRowsTest`), the side icon contrast rule (`SideIconColorTest`), the layout presets (`LayoutPresetsTest`) and the side button row rules (`EdgeBindingsTest`) the tutorial step checks (`TutorialChecksTest`) and double space → period (`DoubleSpacePeriodTest`). Keep pure logic out of Android classes so it stays testable.
 
 ### Data Models
 
