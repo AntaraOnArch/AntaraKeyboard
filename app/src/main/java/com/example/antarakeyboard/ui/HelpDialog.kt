@@ -22,16 +22,18 @@ import com.example.antarakeyboard.extensions.dp
  * A tap opens / closes the answer (accordion); under it an Open button closes the popup and runs
  * the entry's action – a speed link that opens a popup, a popup section, or jumps to a control on
  * the main screen. Entries without an action (keyboard gestures) only have the answer. The caller
- * builds the groups, so the list always matches what the screen currently offers.
+ * builds the groups, so the list always matches what the screen currently offers. An optional
+ * [Footer] button at the bottom (the tutorial) closes the popup and runs its action.
  */
 object HelpDialog {
 
     class Entry(val title: String, val answer: String, val action: (() -> Unit)? = null)
     class Group(val title: String, val entries: List<Entry>)
+    class Footer(val title: String, val action: () -> Unit)
 
     private const val CHEVRON_MS = 200L
 
-    fun show(activity: Activity, groups: List<Group>) {
+    fun show(activity: Activity, groups: List<Group>, footer: Footer? = null) {
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         val pad = 16.dp(activity)
@@ -63,6 +65,20 @@ object HelpDialog {
                 setPadding(0, pad, 0, 6.dp(activity))
             })
             group.entries.forEach { root.addView(entryView(activity, dialog, it)) }
+        }
+        footer?.let { footer ->
+            root.addView(Button(activity).apply {
+                text = footer.title
+                isAllCaps = false
+                setTextColor(ContextCompat.getColor(activity, R.color.main_button_text))
+                background = ContextCompat.getDrawable(activity, R.drawable.main_button_rounded)
+                setOnClickListener {
+                    dialog.dismiss()
+                    footer.action()
+                }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = pad })
         }
 
         // Scrolls only when the screen is too short (wrap content like every popup)

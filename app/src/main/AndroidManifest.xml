@@ -58,6 +58,12 @@
 
         </activity>
 
+        <!-- Tutorial practice (opened by the main screen's setup guide or Help) -->
+        <activity
+            android:name="com.example.antarakeyboard.ui.tutorial.TutorialActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateVisible" />
+
     </application>
 
 </manifest>

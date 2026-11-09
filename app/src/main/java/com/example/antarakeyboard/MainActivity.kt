@@ -52,6 +52,7 @@ import com.example.antarakeyboard.extensions.themeColor
 import com.example.antarakeyboard.ui.LayoutEditorDialog
 import com.example.antarakeyboard.ui.LongPressEditorDialog
 import com.example.antarakeyboard.ui.HelpDialog
+import com.example.antarakeyboard.ui.tutorial.SetupGuide
 import com.example.antarakeyboard.ui.flashHighlight
 import com.example.antarakeyboard.ui.ReselectSpinner
 import com.example.antarakeyboard.ui.RgbSettingsDialog
@@ -66,6 +67,7 @@ import com.example.antarakeyboard.ui.SavedLayoutsDialog
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mainScroll: ScrollView
+    private lateinit var setupGuide: SetupGuide
     private lateinit var preview: ShapePreviewView
     private lateinit var spinnerKeyShape: Spinner
     private lateinit var spinnerRowCount: Spinner
@@ -117,6 +119,8 @@ class MainActivity : AppCompatActivity() {
 
         // Help speed link to a main-screen control: time for the smooth scroll before it flashes
         private const val JUMP_SCROLL_MS = 300L
+
+        // The setup guide was showing when the screen was recreated (rotation, language)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -163,6 +167,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.btnHelp).setOnClickListener { showHelp() }
+
+        // Always watches whether the keyboard is enabled / active (spotlights Enable / Choose);
+        // on the first launch it also leads into the tutorial
+        setupGuide = SetupGuide(this, SetupGuideHost())
+        setupGuide.restore(savedInstanceState)
 
         val btnEnableKeyboard: Button = findViewById(R.id.btnEnableKeyboard)
         val btnChooseKeyboard: Button = findViewById(R.id.btnChooseKeyboard)
@@ -869,10 +878,27 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, getString(R.string.section_saved, section), Toast.LENGTH_SHORT).show()
     }
 
+    override fun onStart() {
+        super.onStart()
+        setupGuide.onStart()
+    }
+
     override fun onStop() {
         super.onStop()
+        setupGuide.onStop()
         // Leaving the app while an autosaving popup is open → confirm the autosave
         showSavedToastIfDirty()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Back from the input method picker (a system dialog over this screen)
+        if (hasFocus) setupGuide.refresh()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        setupGuide.save(outState)
     }
 
     private fun openLayoutEditorDialog(section: Int = LayoutEditorDialog.SECTION_KEYS) {
@@ -885,7 +911,7 @@ class MainActivity : AppCompatActivity() {
      * screen, plus the keyboard gestures. Tap = answer with an Open speed link: popups open
      * directly, popups with sections on that section; controls on the main screen are scrolled
      * into view and flash, dropdowns open as well. Saved layouts and RGB settings are listed only
-     * while their buttons are shown.
+     * while their buttons are shown. At the bottom: the tutorial again.
      */
     private fun showHelp() {
         fun entry(titleRes: Int, answerRes: Int, action: (() -> Unit)? = null) =
@@ -987,7 +1013,7 @@ class MainActivity : AppCompatActivity() {
                 entry(R.string.help_q_punctuation, R.string.help_punctuation),
                 entry(R.string.help_q_emoji, R.string.help_emoji)
             ))
-        ))
+        ), footer = HelpDialog.Footer(getString(R.string.help_tutorial)) { setupGuide.start() })
     }
 
     /**
@@ -1199,6 +1225,12 @@ class MainActivity : AppCompatActivity() {
             selectCustomTheme()
             setupThemeSpinner()
         }
+    }
+
+    private inner class SetupGuideHost : SetupGuide.Host {
+        override val enableButton: View get() = findViewById(R.id.btnEnableKeyboard)
+        override val chooseButton: View get() = findViewById(R.id.btnChooseKeyboard)
+        override fun scrollToTop() = mainScroll.smoothScrollTo(0, 0)
     }
 
     private inner class LayoutEditorHost : LayoutEditorDialog.Host {
