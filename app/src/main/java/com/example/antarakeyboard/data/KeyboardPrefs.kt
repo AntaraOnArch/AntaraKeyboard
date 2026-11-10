@@ -14,6 +14,7 @@ import com.example.antarakeyboard.ui.defaultNumericLayout
 import com.example.antarakeyboard.ui.defaultThreeRowKeyboardLayoutQwertz
 import com.example.antarakeyboard.ui.defaultThreeRowNumericLayout
 import com.google.gson.Gson
+import kotlin.math.pow
 
 object KeyboardPrefs {
 
@@ -531,7 +532,7 @@ object KeyboardPrefs {
     private fun luminance(color: Int): Double {
         fun channel(c: Int): Double {
             val v = c / 255.0
-            return if (v <= 0.03928) v / 12.92 else Math.pow((v + 0.055) / 1.055, 2.4)
+            return if (v <= 0.03928) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
         }
         return 0.2126 * channel((color shr 16) and 0xFF) +
             0.7152 * channel((color shr 8) and 0xFF) +

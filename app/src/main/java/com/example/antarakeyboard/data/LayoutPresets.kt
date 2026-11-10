@@ -39,8 +39,6 @@ object LayoutPresets {
 
     val ALL = listOf(QWERTZ, QWERTY, AZERTY, DVORAK, COLEMAK, NEO2, WORKMAN)
 
-    fun byId(id: String): Preset? = ALL.firstOrNull { it.id == id }
-
     private fun isLetter(ch: Char) = ch in 'a'..'z'
 
     /** QWERTZ letter → letter of [preset] on the same physical key (see the class comment). */

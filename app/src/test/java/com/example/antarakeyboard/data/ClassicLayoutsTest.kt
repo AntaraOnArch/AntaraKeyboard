@@ -97,7 +97,7 @@ class ClassicLayoutsTest {
             val period = ClassicLayouts.defaultAlphabet(id).rows.flatMap { it.keys }.first { it.label == "." }
             assertEquals(ClassicLayouts.PERIOD_LONG_PRESS, period.longPressBindings)
         }
-        assertEquals(ClassicLayouts.PERIOD_LONG_PRESS, ClassicLayouts.withPunctuationOnPeriod(null, 46))
+        assertEquals(listOf("?", "!", "\"", ",", ":", ";"), ClassicLayouts.withPunctuationOnPeriod(null, 46))
         assertEquals(listOf("?", "!", ",", "x"), ClassicLayouts.withPunctuationOnPeriod(listOf(",", "x"), 46))
         assertEquals(listOf("!", "?", "x"), ClassicLayouts.withPunctuationOnPeriod(listOf("!", "?", "x"), 46))
         // No room: the user's binds stay as they are

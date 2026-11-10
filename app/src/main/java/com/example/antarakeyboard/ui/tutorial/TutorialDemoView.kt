@@ -237,7 +237,7 @@ class TutorialDemoView @JvmOverloads constructor(
             drawKey(canvas, keyX(i, 4), keyY, label,
                 fillColor = if (i == tapKey && tapping) keyFillPressed else keyFill)
         }
-        val typed = t >= .14f && (t < .36f || t >= .70f)
+        val typed = t >= .14f && t !in .36f..<.70f
         drawField(canvas, if (typed) labels[tapKey] else "")
 
         val left = keyX(0, 4) - keyR

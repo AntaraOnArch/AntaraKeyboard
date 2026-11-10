@@ -223,17 +223,17 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         )
     }
 
-    /**
-     * [onApplied] runs after a restore or applied colors (true = colors were applied, which
-     * makes Custom the active theme). An entry without colors is drawn in the current colors
-     * and only offers restoring its layout.
-     */
     /** Rows the saved layout shows: classic shapes have their own fixed row count. */
     private fun shownRowCount(saved: SavedLayoutStorage.SavedLayout): Int {
         val shape = runCatching { KeyShape.valueOf(saved.keyShape) }.getOrNull()
         return if (shape?.isClassic == true) ClassicLayouts.rowCountOf(shape) else saved.rowCount
     }
 
+    /**
+     * [onApplied] runs after a restore or applied colors (true = colors were applied, which
+     * makes Custom the active theme). An entry without colors is drawn in the current colors
+     * and only offers restoring its layout.
+     */
     private fun showSavedLayoutPreview(
         savedLayout: SavedLayoutStorage.SavedLayout,
         onApplied: (colorsApplied: Boolean) -> Unit

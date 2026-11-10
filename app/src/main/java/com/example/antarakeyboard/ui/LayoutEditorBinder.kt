@@ -229,8 +229,7 @@ class LayoutEditorBinder(
         if (isEmptyKey(key)) return
 
         // First tap selects a key, a tap on another key swaps the two (tap the same key to deselect)
-        val first = selectedA
-        when (first) {
+        when (val first = selectedA) {
             null -> {
                 selectedA = pos
                 applySelectionUI()

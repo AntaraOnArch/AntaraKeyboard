@@ -12,7 +12,6 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.FrameLayout
@@ -96,13 +95,13 @@ class SpotlightOverlay(
             setTextColor(accent)
             setOnClickListener { onSkip() }
         }, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
         ).apply { gravity = Gravity.END })
     }
 
     init {
         setWillNotDraw(false)
-        addView(card, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+        addView(card, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
             val margin = 16.dp(this@SpotlightOverlay)
             setMargins(margin, 0, margin, 0)
         })

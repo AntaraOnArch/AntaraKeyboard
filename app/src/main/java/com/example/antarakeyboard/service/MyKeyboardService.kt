@@ -144,7 +144,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
     // RGB animation
     private val rgbAnimator by lazy { RgbBackgroundAnimator(this, serviceScope, ::applyRgbFrame) }
     /* ───────── LIFECYCLE ───────── */
-    //claude sync
+    //Claude sync
 
     // The IME root view has no parent to inflate into; BackgroundSwipeListener calls performClick
     @SuppressLint("InflateParams", "ClickableViewAccessibility")
@@ -622,13 +622,13 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         cancelDualSpaceHoldTimer()
     }
     private fun ensureStableSpaceMarkers(cfg: KeyboardConfig): KeyboardConfig {
-        var spaceCount = 0
+        // Numbers the space keys in reading order: the first is the left space
+        val spaceIndices = generateSequence(0) { it + 1 }.iterator()
 
         fun fixKey(key: KeyConfig): KeyConfig {
             if (key.label != " ") return key
 
-            val thisSpaceIndex = spaceCount
-            spaceCount++
+            val thisSpaceIndex = spaceIndices.next()
 
             if (hasSpaceMarker(key)) return key
 
