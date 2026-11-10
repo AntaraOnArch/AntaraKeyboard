@@ -10,23 +10,29 @@ import org.json.JSONObject
 object EdgeSlotsStorage {
     const val SP_NAME = "edge_slots"
 
+    // rowCount below is the layout id (KeyboardPrefs.getLayoutId): 3 / 4 / 5 or a classic shape
     private fun keyForRowCount(rowCount: Int): String {
         return when (normalizeRowCount(rowCount)) {
             3 -> "edge_slots_config_3"
             4 -> "edge_slots_config_4"
+            ClassicLayouts.LAYOUT_CLASSIC -> "edge_slots_config_classic"
+            ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> "edge_slots_config_classic_numbers"
             else -> "edge_slots_config_5"
         }
     }
 
     private fun normalizeRowCount(rowCount: Int): Int {
         return when (rowCount) {
-            3, 4, 5 -> rowCount
+            3, 4, 5, ClassicLayouts.LAYOUT_CLASSIC, ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> rowCount
             else -> 5
         }
     }
 
-    private fun slotCountForRowCount(rowCount: Int): Int {
-        return when (normalizeRowCount(rowCount)) {
+    /** Number of side button slots of a layout id. */
+    fun slotCountForRowCount(rowCount: Int): Int {
+        val id = normalizeRowCount(rowCount)
+        if (ClassicLayouts.isClassic(id)) return ClassicLayouts.sideSlotCount(id)
+        return when (id) {
             3 -> 3
             4 -> 4
             else -> 6
@@ -54,6 +60,19 @@ object EdgeSlotsStorage {
 
     fun defaultSlots(rowCount: Int): List<EdgeSlot> {
         return when (normalizeRowCount(rowCount)) {
+            // Shift and ⌫ beside the third row, like a phone keyboard
+            ClassicLayouts.LAYOUT_CLASSIC -> (0 until 6).map { index ->
+                val side = if (index % 2 == 0) EdgePos.Side.LEFT else EdgePos.Side.RIGHT
+                val type = when (index) {
+                    4 -> EdgeActionType.SHIFT
+                    5 -> EdgeActionType.BACKSPACE
+                    else -> EdgeActionType.NONE
+                }
+                EdgeSlot(index, side, type)
+            }
+
+            ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> emptyList()
+
             3 -> listOf(
                 // preview-safe defaults while 3-row is not finished yet
                 EdgeSlot(0, EdgePos.Side.LEFT, EdgeActionType.BACKSPACE),
@@ -80,7 +99,7 @@ object EdgeSlotsStorage {
     }
 
     fun load(ctx: Context): List<EdgeSlot> {
-        val rowCount = normalizeRowCount(KeyboardPrefs.getRowCount(ctx))
+        val rowCount = normalizeRowCount(KeyboardPrefs.getLayoutId(ctx))
         val key = keyForRowCount(rowCount)
         val expectedCount = slotCountForRowCount(rowCount)
 
@@ -124,7 +143,7 @@ object EdgeSlotsStorage {
     }
 
     fun save(ctx: Context, slots: List<EdgeSlot>) {
-        val rowCount = normalizeRowCount(KeyboardPrefs.getRowCount(ctx))
+        val rowCount = normalizeRowCount(KeyboardPrefs.getLayoutId(ctx))
         val key = keyForRowCount(rowCount)
         val expectedCount = slotCountForRowCount(rowCount)
 
@@ -159,7 +178,7 @@ object EdgeSlotsStorage {
     }
 
     fun reset(ctx: Context) {
-        val rowCount = normalizeRowCount(KeyboardPrefs.getRowCount(ctx))
+        val rowCount = normalizeRowCount(KeyboardPrefs.getLayoutId(ctx))
         save(ctx, defaultSlots(rowCount))
     }
 

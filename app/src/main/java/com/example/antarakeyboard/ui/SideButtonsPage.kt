@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.SpecialChars
+import com.example.antarakeyboard.data.ClassicLayouts
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
@@ -27,7 +28,8 @@ class SideButtonsPage(private val activity: Activity) {
     fun setup(container: LinearLayout, onChanged: () -> Unit) {
         container.removeAllViews()
 
-        val selectedRowCount = KeyboardPrefs.getRowCount(activity)
+        // Layout id: 3 / 4 / 5 rows, or a classic shape (6 slots like 5 rows: left + right per letter row)
+        val selectedRowCount = KeyboardPrefs.getLayoutId(activity)
 
         val title = TextView(activity).apply {
             text = activity.getString(R.string.side_title)
@@ -39,6 +41,7 @@ class SideButtonsPage(private val activity: Activity) {
             text = when (selectedRowCount) {
                 4 -> activity.getString(R.string.side_hint_4)
                 3 -> activity.getString(R.string.side_hint_3)
+                ClassicLayouts.LAYOUT_CLASSIC -> activity.getString(R.string.side_hint_classic)
                 else -> activity.getString(R.string.side_hint_5)
             }
             textSize = 13f

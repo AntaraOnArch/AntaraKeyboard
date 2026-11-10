@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibrácie</string>
     <string name="main_suggestions">Návrhy slov</string>
     <string name="main_double_space_period">Dvojitá medzera pre bodku</string>
+    <string name="main_number_row">Rad čísel</string>
     <string name="main_export">Exportovať nastavenia</string>
     <string name="main_import">Importovať nastavenia</string>
     <string name="export_done">Nastavenia exportované</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gestá na klávesnici</string>
     <string name="help_enable">Zapne klávesnicu Antara v zozname klávesníc Androidu. Stačí raz po inštalácii.</string>
     <string name="help_choose">Nastaví Antaru ako klávesnicu, ktorou píšete. Klávesnicu môžete prepnúť aj ikonou klávesnice na navigačnom paneli.</string>
-    <string name="help_key_shape">Klávesy v tvare šesťuholníka, trojuholníka, kruhu alebo kocky. Ukážka nižšie zobrazuje zvolený tvar.</string>
+    <string name="help_key_shape">Klávesy v tvare šesťuholníka, trojuholníka, kruhu alebo kocky. Ukážka nižšie zobrazuje zvolený tvar. Klasická a Klasická + čísla sú klávesnica ako v telefóne s pevnými 4 alebo 5 radmi.</string>
     <string name="help_rows">3, 4 alebo 5 radov kláves. Rozloženia, bočné tlačidlá a znaky dlhého stlačenia sa riadia počtom radov.</string>
     <string name="help_key_height">Zvýši alebo zníži klávesy. Mení sa len výška, nikdy šírka ani medzery medzi klávesmi.</string>
     <string name="help_row_spacing">Pridá alebo uberie miesto medzi radmi kláves. Nič iné sa nemení.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Jedna farba pre všetky klávesy, alebo ťuknite na kláves a dajte mu vlastnú farbu.</string>
     <string name="help_colors_background">Pozadie klávesnice: podľa motívu, tmavé, svetlé alebo vlastná farba.</string>
     <string name="help_colors_theme_defaults">Farby svetlého a tmavého motívu, ktoré sa použijú všade, kde sú zapnuté farby motívu.</string>
-    <string name="help_language">Jazyk aplikácie a písmen klávesnice (latinka, cyrilika alebo gréčtina). Na klávesnici ho zmeníte podržaním oboch medzerníkov na 4 sekundy.</string>
+    <string name="help_language">Jazyk aplikácie a písmen klávesnice (latinka, cyrilika alebo gréčtina). Na klávesnici ho zmeníte podržaním oboch medzerníkov na 4 sekundy. Pri klasickom tvare podržte medzerník.</string>
     <string name="help_theme">Svetlý alebo tmavý, priehľadné pozadie, Vlastný (vaše uložené rozloženia) alebo animované RGB Smooth a RGB Wild.</string>
     <string name="help_rgb">Rýchlosť, sýtosť a jas animácie RGB.</string>
     <string name="help_vibration">Krátka vibrácia pri každom stlačení klávesu.</string>
     <string name="help_suggestions">Až tri slová nad klávesmi; ťuknutím slovo použijete. Žiadne automatické opravy a nič napísané sa neukladá.</string>
     <string name="help_double_space_period">Dve medzery za slovom napíšu bodku a medzeru. Nie v heslách, e-mailových adresách ani odkazoch.</string>
+    <string name="help_number_row">Len Klasická + čísla: zobrazí alebo skryje rad čísel nad písmenami.</string>
     <string name="help_reset">Farby, rozloženie alebo oboje na predvolené. Aktuálny stav sa najprv uloží do Uložených rozložení; znaky dlhého stlačenia a tvar kláves zostanú.</string>
     <string name="help_export">Uloží všetky nastavenia do súboru, napr. na prenos do nového telefónu. Nedávne emoji nie sú zahrnuté.</string>
     <string name="help_import">Načíta nastavenia z exportovaného súboru. Aktuálne nastavenia zostanú ako záloha v Uložených rozloženiach.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trojuholník</string>
     <string name="shape_circle">Kruh</string>
     <string name="shape_cube">Kocka</string>
+    <string name="shape_classic">Klasická</string>
+    <string name="shape_classic_numbers">Klasická + čísla</string>
     <string name="theme_light">Svetlý</string>
     <string name="theme_dark">Tmavý</string>
     <string name="theme_transparent">Priehľadný</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rady: vľavo, vpravo, vľavo</string>
     <string name="side_hint_4">4 rady: rad 1 vpravo, 2 vľavo, 3 vpravo, 4 vľavo</string>
     <string name="side_hint_5">5 radov: 3 ľavé + 3 pravé bočné klávesy</string>
+    <string name="side_hint_classic">Rady písmen: v každom jedno ľavé a jedno pravé bočné tlačidlo, vnútri radu</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Rozloženie písmen</string>
     <string name="layout_section_numeric">Rozloženie čísel</string>

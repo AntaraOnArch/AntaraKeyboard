@@ -39,6 +39,7 @@ import java.util.Date
 import java.util.Locale
 import com.example.antarakeyboard.data.AppLanguages
 import com.example.antarakeyboard.data.AppLanguageSettings
+import com.example.antarakeyboard.data.ClassicLayouts
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.extensions.dp
@@ -96,7 +97,9 @@ class MainActivity : AppCompatActivity() {
         KeyShape.HEX to R.string.shape_hexagon,
         KeyShape.TRIANGLE to R.string.shape_triangle,
         KeyShape.CIRCLE to R.string.shape_circle,
-        KeyShape.CUBE to R.string.shape_cube
+        KeyShape.CUBE to R.string.shape_cube,
+        KeyShape.CLASSIC to R.string.shape_classic,
+        KeyShape.CLASSIC_NUMBERS to R.string.shape_classic_numbers
     )
 
     // Row count options for dropdown
@@ -240,14 +243,14 @@ class MainActivity : AppCompatActivity() {
         }
         spinnerRowCount.adapter = rowCountAdapter
 
-        val savedRowCount = KeyboardPrefs.getRowCount(this)
-        val savedRowIndex = rowCountOptions.indexOf(savedRowCount).coerceAtLeast(0)
-        spinnerRowCount.setSelection(savedRowIndex)
+        syncRowCountSpinner()
 
         spinnerRowCount.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val rowCount = rowCountOptions[position]
-                // Ignore the initial callback and programmatic sync (e.g. after restore)
+                // Ignore the initial callback and programmatic sync (e.g. after restore);
+                // a classic shape shows its own fixed row count
+                if (KeyboardPrefs.getShape(this@MainActivity).isClassic) return
                 if (rowCount == KeyboardPrefs.getRowCount(this@MainActivity)) return
                 saveDefaultsForRowCount(rowCount)
             }
@@ -265,6 +268,15 @@ class MainActivity : AppCompatActivity() {
         findViewById<SwitchCompat>(R.id.switchSuggestions).apply {
             isChecked = KeyboardPrefs.isSuggestionsEnabled(this@MainActivity)
             setOnCheckedChangeListener { _, on -> KeyboardPrefs.setSuggestionsEnabled(this@MainActivity, on) }
+        }
+        // Classic + numbers: number row on / off (shown only for that shape)
+        findViewById<SwitchCompat>(R.id.switchNumberRow).apply {
+            isChecked = KeyboardPrefs.isClassicNumberRowEnabled(this@MainActivity)
+            setOnCheckedChangeListener { _, on ->
+                KeyboardPrefs.setClassicNumberRowEnabled(this@MainActivity, on)
+                preview.numberRow = on
+                syncRowCountSpinner()
+            }
         }
         findViewById<SwitchCompat>(R.id.switchDoubleSpacePeriod).apply {
             isChecked = KeyboardPrefs.isDoubleSpacePeriodEnabled(this@MainActivity)
@@ -634,7 +646,8 @@ class MainActivity : AppCompatActivity() {
      * not kept (the backup is then layout only, and Reset colors makes no backup at all).
      */
     private fun performReset(colors: Boolean, layout: Boolean) {
-        val currentRowCount = KeyboardPrefs.getRowCount(this)
+        // Layout id: a classic shape resets its own layouts
+        val currentRowCount = KeyboardPrefs.getLayoutId(this)
         val hasCustomColors = !KeyboardPrefs.colorsAreThemeDefaults(this)
 
         if (layout || hasCustomColors) {
@@ -750,8 +763,7 @@ class MainActivity : AppCompatActivity() {
         KeyboardPrefs.setBackgroundColor(this, keyboardBg, true)
 
         // 6. Clear the per-key colors
-        val rowCount = KeyboardPrefs.getRowCount(this)
-        val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, rowCount)
+        val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(this, KeyboardPrefs.getLayoutId(this))
 
         val skipLabels = setOf(
             " ",
@@ -818,6 +830,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetSideButtonsForRowCount(rowCount: Int) {
+        if (ClassicLayouts.isClassic(rowCount)) {
+            EdgeSlotsStorage.reset(this)
+            return
+        }
         val slots = when (rowCount) {
             4 -> listOf(
                 EdgeSlot(0, EdgePos.Side.RIGHT, EdgeActionType.BACKSPACE),
@@ -936,11 +952,15 @@ class MainActivity : AppCompatActivity() {
         fun switch(id: Int): () -> Unit = { jumpTo(findViewById(id)) }
 
         HelpDialog.show(this, listOf(
-            HelpDialog.Group(getString(R.string.help_group_keyboard), listOf(
+            HelpDialog.Group(getString(R.string.help_group_keyboard), listOfNotNull(
                 entry(R.string.main_enable, R.string.help_enable, button(R.id.btnEnableKeyboard)),
                 entry(R.string.main_choose, R.string.help_choose, button(R.id.btnChooseKeyboard)),
                 entry(R.string.main_key_shape, R.string.help_key_shape, spinner(R.id.spinnerKeyShape)),
                 entry(R.string.main_keyboard_rows, R.string.help_rows, spinner(R.id.spinnerRowCount)),
+                // Only while Classic + numbers is the shape (the switch is shown)
+                if (findViewById<View>(R.id.switchNumberRow).isVisible) {
+                    entry(R.string.main_number_row, R.string.help_number_row, switch(R.id.switchNumberRow))
+                } else null,
                 slider(R.id.tvKeySize, R.id.seekKeySize, R.string.help_key_height),
                 slider(R.id.tvRowSpacing, R.id.seekRowSpacing, R.string.help_row_spacing),
                 entry(R.string.main_side_offsets, R.string.help_side_offsets) { showSideOffsetsDialog() }
@@ -1042,6 +1062,26 @@ class MainActivity : AppCompatActivity() {
         preview.invalidate()
 
         KeyboardPrefs.setShape(this, shape)
+        // No ? key on the classic layouts: ? and ! go on the period's long press
+        if (shape.isClassic) KeyboardPrefs.ensureClassicPunctuation(this)
+        syncRowCountSpinner()
+    }
+
+    /**
+     * Rows dropdown: the stored row count, or the fixed row count of a classic shape, which
+     * cannot be changed (the dropdown is disabled).
+     */
+    private fun syncRowCountSpinner() {
+        if (!::spinnerRowCount.isInitialized) return
+        val classic = KeyboardPrefs.getShape(this).isClassic
+        spinnerRowCount.setSelection(
+            rowCountOptions.indexOf(KeyboardPrefs.getVisibleRowCount(this)).coerceAtLeast(0), false
+        )
+        spinnerRowCount.isEnabled = !classic
+        spinnerRowCount.alpha = if (classic) 0.5f else 1f
+        findViewById<View>(R.id.switchNumberRow).isVisible =
+            KeyboardPrefs.getShape(this) == KeyShape.CLASSIC_NUMBERS
+        preview.numberRow = KeyboardPrefs.isClassicNumberRowEnabled(this)
     }
 
     private fun setupThemeSpinner() {
@@ -1215,7 +1255,7 @@ class MainActivity : AppCompatActivity() {
         setupRowSpacingSlider()
         preview.shape = KeyboardPrefs.getShape(this)
         spinnerKeyShape.setSelection(shapeOptions.indexOfFirst { it.first == KeyboardPrefs.getShape(this) }.coerceAtLeast(0))
-        spinnerRowCount.setSelection(rowCountOptions.indexOf(KeyboardPrefs.getRowCount(this)).coerceAtLeast(0))
+        syncRowCountSpinner()
         Toast.makeText(this, R.string.layout_restored, Toast.LENGTH_SHORT).show()
     }
 

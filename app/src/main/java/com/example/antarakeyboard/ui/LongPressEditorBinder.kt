@@ -1,5 +1,6 @@
 package com.example.antarakeyboard.ui
 
+import androidx.core.content.ContextCompat
 import com.example.antarakeyboard.R
 import android.app.Dialog
 import android.content.Context
@@ -157,7 +158,7 @@ class LongPressEditorBinder(
      * [selected] is highlighted; tapping a key calls [onKeyClick] instead of opening the picker.
      */
     fun renderKeyChooser(container: LinearLayout, selected: KeyConfig?, onKeyClick: (KeyConfig) -> Unit) {
-        val userShape = KeyboardPrefs.getShape(context)
+        val userShape = KeyboardPrefs.getShape(context).drawShape
         EditorKeyboardRenderer(context).render(container, cfg) { key, _, _ ->
             createKeyView(key, userShape, selected = key === selected, onClick = onKeyClick)
         }
@@ -190,7 +191,7 @@ class LongPressEditorBinder(
     }
 
     private fun buildKeyboardUI() {
-        val userShape = KeyboardPrefs.getShape(context)
+        val userShape = KeyboardPrefs.getShape(context).drawShape
         val container = keyboardContainer ?: return
 
         // Same layout as the Set layout editor
@@ -219,6 +220,8 @@ class LongPressEditorBinder(
             includeFontPadding = false
             isAllCaps = false
             shape = userShape
+            // Classic shapes: wide keys (space, Shift …) fill their box
+            forceSquare = !KeyboardPrefs.getShape(context).isClassic
             isSpecial = (key.label == "↵")
             setTextColor(0xFFFFFFFF.toInt())
             customBgColor = if (selected) 0xFF4A5A8A.toInt() else 0xFF111111.toInt()
@@ -284,8 +287,13 @@ class LongPressEditorBinder(
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(PopupColors.POPUP_BG)
-            setPadding(8.dp(context), 8.dp(context), 8.dp(context), 8.dp(context))
+            // Framed like every popup (the window itself is transparent around the rounded frame)
+            background = GradientDrawable().apply {
+                cornerRadius = 16.dp(context).toFloat()
+                setColor(PopupColors.POPUP_BG)
+                setStroke(2.dp(context), ContextCompat.getColor(context, R.color.special_fill))
+            }
+            setPadding(10.dp(context), 10.dp(context), 10.dp(context), 10.dp(context))
         }
 
         // Header: title + close

@@ -142,7 +142,7 @@ class TutorialActivity : AppCompatActivity() {
     /** Keys, script and long-press letters of the user's keyboard, so demos and hints match it. */
     private fun setupKeyboardData() {
         preset = KeyboardPrefs.getSelectedLongPressPreset(this)
-        val layout = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, KeyboardPrefs.getRowCount(this))
+        val layout = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, KeyboardPrefs.getLayoutId(this))
         val keys = layout.rows.flatMap { it.keys }
         longPressLetters = TutorialChecks.longPressLetters(
             bindings = keys.flatMap { LongPressPresets.visibleFor(preset, it.longPressBindings) },
@@ -162,7 +162,7 @@ class TutorialActivity : AppCompatActivity() {
     private fun configure(view: TutorialDemoView) {
         val preset = preset
         view.letter = { ScriptMapper.map(preset, it) }
-        view.shape = KeyboardPrefs.getShape(this)
+        view.shape = KeyboardPrefs.getShape(this).drawShape
         // The long-press demo shows the first of them
         examples.firstOrNull()?.let { (key, letters) ->
             view.longPressKey = key

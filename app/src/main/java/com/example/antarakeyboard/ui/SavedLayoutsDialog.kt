@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isEmpty
 import com.example.antarakeyboard.R
+import com.example.antarakeyboard.data.ClassicLayouts
 import com.example.antarakeyboard.data.EdgePos
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.data.LastCustomColors
@@ -189,7 +190,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             savedLayouts.forEach { saved ->
                 addEntry(
                     saved.name,
-                    activity.getString(R.string.saved_layout_subtitle, host.rowsLabel(saved.rowCount), host.shapeLabel(saved.keyShape), SavedLayoutStorage.formatTimestamp(saved.timestamp))
+                    activity.getString(R.string.saved_layout_subtitle, host.rowsLabel(shownRowCount(saved)), host.shapeLabel(saved.keyShape), SavedLayoutStorage.formatTimestamp(saved.timestamp))
                 ) {
                     showSavedLayoutActions(
                         savedLayout = saved,
@@ -227,6 +228,12 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
      * makes Custom the active theme). An entry without colors is drawn in the current colors
      * and only offers restoring its layout.
      */
+    /** Rows the saved layout shows: classic shapes have their own fixed row count. */
+    private fun shownRowCount(saved: SavedLayoutStorage.SavedLayout): Int {
+        val shape = runCatching { KeyShape.valueOf(saved.keyShape) }.getOrNull()
+        return if (shape?.isClassic == true) ClassicLayouts.rowCountOf(shape) else saved.rowCount
+    }
+
     private fun showSavedLayoutPreview(
         savedLayout: SavedLayoutStorage.SavedLayout,
         onApplied: (colorsApplied: Boolean) -> Unit
@@ -280,7 +287,7 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
 
         // Info section
         val infoText = TextView(activity).apply {
-            text = activity.getString(R.string.preview_info, host.shapeLabel(savedLayout.keyShape), savedLayout.rowCount, SavedLayoutStorage.formatTimestamp(savedLayout.timestamp))
+            text = activity.getString(R.string.preview_info, host.shapeLabel(savedLayout.keyShape), shownRowCount(savedLayout), SavedLayoutStorage.formatTimestamp(savedLayout.timestamp))
             textSize = 12f
             setPadding(0, 0, 0, 12.dp(this))
         }
@@ -330,6 +337,76 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
         val sideBg = if (hasColors) savedLayout.sideBg else KeyboardPrefs.getSideButtonsBg(activity)
         val sideText = if (hasColors) savedLayout.sideText else KeyboardPrefs.getSideButtonsTextColor(activity)
 
+        // Classic shapes: full rows with keys of different widths, side buttons inside the rows
+        fun buildClassicPreview(container: LinearLayout, shape: KeyShape, slots: List<EdgeSlot>) {
+            val active = slots.filter { it.type != EdgeActionType.NONE }
+            // Like EdgeKeyManager: Shift / ⌫ on a side button leave the rows
+            val hidden = active.mapNotNull {
+                when (it.type) {
+                    EdgeActionType.SHIFT -> "⇧"
+                    EdgeActionType.BACKSPACE -> "⌫"
+                    else -> null
+                }
+            }.toSet()
+            val sideRows = alphabetLayout.rows.mapIndexed { rowIndex, row ->
+                val keys = row.keys.filter { it.label.isNotEmpty() && it.label !in hidden }
+                val left = active.firstOrNull { ClassicLayouts.sideSlotRow(it.index) == rowIndex && it.side == EdgePos.Side.LEFT }
+                val right = active.firstOrNull { ClassicLayouts.sideSlotRow(it.index) == rowIndex && it.side == EdgePos.Side.RIGHT }
+                Triple(keys, left, right)
+            }
+            val (units, rowWidths) = ClassicLayouts.layoutWidths(shape, sideRows.map { (keys, left, right) ->
+                ClassicLayouts.RowSpec(keys.map { it.label }, listOfNotNull(left, right).size * ClassicLayouts.SIDE_BUTTON_UNITS)
+            })
+            val rows = sideRows.mapIndexed { i, (keys, left, right) -> Triple(keys, rowWidths[i], left to right) }
+            val availW = (activity.resources.displayMetrics.widthPixels * 0.95f).toInt() - 48.dp(activity)
+            val unit = availW / units
+            val keyH = (unit * 1.3f * KeyScale.clamp(savedLayout.keyScale ?: KeyScale.DEFAULT)).toInt()
+            val rowSpacing = KeyScale.clampRowSpacing(savedLayout.rowSpacingDp ?: 0).dp(activity)
+
+            fun key(label: String, fill: Int, textColor: Int) = KeyView(activity).apply {
+                text = if (label == " ") "" else label
+                isAllCaps = false
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                textSize = 11f
+                this.shape = KeyShape.CUBE
+                customBgColor = fill
+                setTextColor(textColor)
+            }
+
+            // Side buttons look like on the other shapes: the icon, a fill only with custom colors
+            fun sideKey(slot: EdgeSlot) = TextView(activity).apply {
+                text = EdgeOverlayManager.sideButtonLabel(slot)
+                textSize = if (slot.type == EdgeActionType.SHIFT) 18f else 12f
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                setTextColor(if (sideUseTheme) currentKeyText else sideText)
+                if (!sideUseTheme) setBackgroundColor(sideBg)
+            }
+
+            rows.forEachIndexed { rowIndex, (keys, widths, sides) ->
+                val rowLayout = LinearLayout(activity).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_HORIZONTAL
+                }
+                fun add(view: View, widthUnits: Float) =
+                    rowLayout.addView(view, LinearLayout.LayoutParams((unit * widthUnits).toInt(), keyH))
+                sides.first?.let { add(sideKey(it), ClassicLayouts.SIDE_BUTTON_UNITS) }
+                keys.forEachIndexed { i, k ->
+                    val (fill, textColor) = when (k.label) {
+                        " " -> currentSpaceBg to currentKeyText
+                        "↵" -> currentEnterBg to currentEnterIcon
+                        else -> currentKeyFill to currentKeyText
+                    }
+                    add(key(k.label, fill, textColor), widths[i])
+                }
+                sides.second?.let { add(sideKey(it), ClassicLayouts.SIDE_BUTTON_UNITS) }
+                container.addView(rowLayout, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { if (rowIndex > 0) topMargin = rowSpacing })
+            }
+        }
+
         // Preview: real keys with the saved shape, row count, key height, row spacing, colors,
         // side buttons and their position sliders (portrait values)
         fun rebuildPreview() {
@@ -337,6 +414,10 @@ class SavedLayoutsDialog(private val activity: Activity, private val host: Host)
             previewContainer.setBackgroundColor(currentBgColor)
 
             val savedShape = runCatching { KeyShape.valueOf(savedLayout.keyShape) }.getOrDefault(KeyShape.HEX)
+            if (savedShape.isClassic) {
+                buildClassicPreview(previewContainer, savedShape, edgeSlots)
+                return
+            }
             // Same per-layout rules as the keyboard (3-row hexagons are tall, 3-row triangles taller)
             val shape = if (savedLayout.rowCount == 3 && savedShape == KeyShape.HEX) KeyShape.HEX_TALL else savedShape
             val stretch = KeyScale.clamp(savedLayout.keyScale ?: KeyScale.DEFAULT) *

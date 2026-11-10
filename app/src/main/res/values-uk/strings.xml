@@ -20,6 +20,7 @@
     <string name="main_vibration">Вібрація</string>
     <string name="main_suggestions">Підказки слів</string>
     <string name="main_double_space_period">Подвійний пробіл – крапка</string>
+    <string name="main_number_row">Ряд цифр</string>
     <string name="main_export">Експорт налаштувань</string>
     <string name="main_import">Імпорт налаштувань</string>
     <string name="export_done">Налаштування експортовано</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Жести на клавіатурі</string>
     <string name="help_enable">Вмикає клавіатуру Антара у списку клавіатур Android. Потрібно один раз після встановлення.</string>
     <string name="help_choose">Робить Антару клавіатурою для введення. Змінити клавіатуру можна й значком клавіатури на панелі навігації.</string>
-    <string name="help_key_shape">Клавіші-шестикутники, трикутники, кола або куби. Нижче показано вибраний вигляд.</string>
+    <string name="help_key_shape">Клавіші-шестикутники, трикутники, кола або куби. Нижче показано вибраний вигляд. Класична і Класична + цифри — клавіатура як на телефоні з незмінними 4 або 5 рядами.</string>
     <string name="help_rows">3, 4 або 5 рядів клавіш. Розкладки, бічні кнопки та символи довгого натискання слідують кількості рядів.</string>
     <string name="help_key_height">Робить клавіші вищими або нижчими. Змінюється лише висота, ніколи не ширина чи проміжки між клавішами.</string>
     <string name="help_row_spacing">Додає або зменшує проміжок між рядами клавіш. Більше нічого не змінюється.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Один колір для всіх клавіш, або торкніться клавіші, щоб задати їй власний колір.</string>
     <string name="help_colors_background">Фон клавіатури: за темою, темний, світлий або власний колір.</string>
     <string name="help_colors_theme_defaults">Кольори світлої та темної теми, що використовуються всюди, де ввімкнено кольори теми.</string>
-    <string name="help_language">Мова застосунку та літер клавіатури (латиниця, кирилиця або грецька). На клавіатурі її можна змінити, утримуючи обидва пробіли 4 секунди.</string>
+    <string name="help_language">Мова застосунку та літер клавіатури (латиниця, кирилиця або грецька). На клавіатурі її можна змінити, утримуючи обидва пробіли 4 секунди. У класичній формі утримуйте пробіл.</string>
     <string name="help_theme">Світла або темна, прозорий фон, Власна (ваші збережені розкладки) або анімовані RGB Smooth і RGB Wild.</string>
     <string name="help_rgb">Швидкість, насиченість і яскравість RGB-анімації.</string>
     <string name="help_vibration">Коротка вібрація під час кожного натискання клавіші.</string>
     <string name="help_suggestions">До трьох слів над клавішами; торкніться слова, щоб вставити його. Без автовиправлення, нічого з набраного не зберігається.</string>
     <string name="help_double_space_period">Два пробіли після слова ставлять крапку і пробіл. Не в паролях, адресах ел. пошти й посиланнях.</string>
+    <string name="help_number_row">Лише Класична + цифри: показує або приховує ряд цифр над літерами.</string>
     <string name="help_reset">Кольори, розкладка або все разом до типових. Поточний стан спершу зберігається в Збережених розкладках; символи довгого натискання та форма клавіш залишаються.</string>
     <string name="help_export">Зберігає всі налаштування у файл, наприклад для перенесення на новий телефон. Нещодавні емодзі не включаються.</string>
     <string name="help_import">Завантажує налаштування з експортованого файлу. Поточні налаштування залишаються резервною копією в Збережених розкладках.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Трикутник</string>
     <string name="shape_circle">Коло</string>
     <string name="shape_cube">Куб</string>
+    <string name="shape_classic">Класична</string>
+    <string name="shape_classic_numbers">Класична + цифри</string>
     <string name="theme_light">Світла</string>
     <string name="theme_dark">Темна</string>
     <string name="theme_transparent">Прозора</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 ряди: ліворуч, праворуч, ліворуч</string>
     <string name="side_hint_4">4 ряди: ряд 1 праворуч, 2 ліворуч, 3 праворуч, 4 ліворуч</string>
     <string name="side_hint_5">5 рядів: 3 ліві + 3 праві бічні клавіші</string>
+    <string name="side_hint_classic">Ряди літер: по одній лівій і правій бічній клавіші, всередині ряду</string>
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Розкладка літер</string>
     <string name="layout_section_numeric">Цифрова розкладка</string>

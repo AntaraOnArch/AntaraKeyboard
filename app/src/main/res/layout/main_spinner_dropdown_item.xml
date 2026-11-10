@@ -7,7 +7,7 @@
     android:background="?android:attr/selectableItemBackground"
     android:ellipsize="end"
     android:gravity="center_vertical"
-    android:maxLines="1"
+    android:maxLines="2"
     android:minHeight="48dp"
     android:paddingStart="2dp"
     android:paddingEnd="2dp"

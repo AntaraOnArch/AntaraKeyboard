@@ -20,6 +20,7 @@
     <string name="main_vibration">Rezgés</string>
     <string name="main_suggestions">Szójavaslatok</string>
     <string name="main_double_space_period">Dupla szóköz pontot ír</string>
+    <string name="main_number_row">Számsor</string>
     <string name="main_export">Beállítások exportálása</string>
     <string name="main_import">Beállítások importálása</string>
     <string name="export_done">Beállítások exportálva</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Kézmozdulatok a billentyűzeten</string>
     <string name="help_enable">Bekapcsolja az Antara billentyűzetet az Android billentyűzetlistájában. Telepítés után egyszer kell.</string>
     <string name="help_choose">Az Antarát teszi azzá a billentyűzetté, amellyel gépel. A navigációs sáv billentyűzetikonjával is válthat.</string>
-    <string name="help_key_shape">Hatszög, háromszög, kör vagy kocka alakú billentyűk. Az alábbi előnézet a kiválasztott formát mutatja.</string>
+    <string name="help_key_shape">Hatszög, háromszög, kör vagy kocka alakú billentyűk. Az alábbi előnézet a kiválasztott formát mutatja. A Klasszikus és a Klasszikus + számok telefonos billentyűzet, mindig 4 vagy 5 sorral.</string>
     <string name="help_rows">3, 4 vagy 5 billentyűsor. A kiosztások, oldalsó gombok és hosszú nyomásos karakterek a sorok számát követik.</string>
     <string name="help_key_height">Magasabbá vagy alacsonyabbá teszi a billentyűket. Csak a magasság változik, a szélesség és a billentyűk közti hézag soha.</string>
     <string name="help_row_spacing">Növeli vagy csökkenti a billentyűsorok közti helyet. Más nem változik.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Egy szín minden billentyűnek, vagy koppintson egy billentyűre, hogy saját színt kapjon.</string>
     <string name="help_colors_background">A billentyűzet háttere: téma szerint, sötét, világos vagy saját szín.</string>
     <string name="help_colors_theme_defaults">A világos és sötét téma színei, amelyeket mindenhol használ, ahol a téma színei be vannak kapcsolva.</string>
-    <string name="help_language">Az alkalmazás és a billentyűzet betűinek nyelve (latin, cirill vagy görög). A billentyűzeten mindkét szóköz 4 másodperces nyomva tartásával váltható.</string>
+    <string name="help_language">Az alkalmazás és a billentyűzet betűinek nyelve (latin, cirill vagy görög). A billentyűzeten mindkét szóköz 4 másodperces nyomva tartásával váltható. Klasszikus formánál tartsa lenyomva a szóközt.</string>
     <string name="help_theme">Világos vagy sötét, átlátszó háttér, Egyéni (mentett kiosztások) vagy az animált RGB Smooth és RGB Wild.</string>
     <string name="help_rgb">Az RGB-animáció sebessége, telítettsége és fényereje.</string>
     <string name="help_vibration">Rövid rezgés minden billentyűnyomáskor.</string>
     <string name="help_suggestions">Legfeljebb három szó a billentyűk felett; koppintson egyre a használatához. Nincs automatikus javítás, és semmi, amit gépel, nem kerül mentésre.</string>
     <string name="help_double_space_period">Egy szó után két szóköz pontot és szóközt ír. Jelszavakban, e-mail-címekben és linkekben nem.</string>
+    <string name="help_number_row">Csak Klasszikus + számok: megjeleníti vagy elrejti a betűk feletti számsort.</string>
     <string name="help_reset">Színek, kiosztás vagy mindkettő alapértelmezésre. Az aktuális állapot előbb a Mentett kiosztások közé kerül; a hosszú nyomásos karakterek és a billentyűforma megmaradnak.</string>
     <string name="help_export">Minden beállítást fájlba ment, pl. új telefonra való átvitelhez. A legutóbbi emojik nincsenek benne.</string>
     <string name="help_import">Beállításokat tölt be egy exportált fájlból. A jelenlegi beállítások biztonsági mentésként a Mentett kiosztások közé kerülnek.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Háromszög</string>
     <string name="shape_circle">Kör</string>
     <string name="shape_cube">Kocka</string>
+    <string name="shape_classic">Klasszikus</string>
+    <string name="shape_classic_numbers">Klasszikus + számok</string>
     <string name="theme_light">Világos</string>
     <string name="theme_dark">Sötét</string>
     <string name="theme_transparent">Átlátszó</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 sor: bal, jobb, bal</string>
     <string name="side_hint_4">4 sor: 1. jobb, 2. bal, 3. jobb, 4. bal</string>
     <string name="side_hint_5">5 sor: 3 bal + 3 jobb oldalsó billentyű</string>
+    <string name="side_hint_classic">Betűsorok: soronként egy bal és egy jobb oldalgomb, a soron belül</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Betűkiosztás</string>
     <string name="layout_section_numeric">Számkiosztás</string>

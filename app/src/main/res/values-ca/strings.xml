@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibració</string>
     <string name="main_suggestions">Suggeriments de paraules</string>
     <string name="main_double_space_period">Doble espai per a punt</string>
+    <string name="main_number_row">Fila de números</string>
     <string name="main_export">Exporta la configuració</string>
     <string name="main_import">Importa la configuració</string>
     <string name="export_done">S\'ha exportat la configuració</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gestos al teclat</string>
     <string name="help_enable">Activa el Teclat Antara a la llista de teclats d\'Android. Cal fer-ho un cop després d\'instal·lar-lo.</string>
     <string name="help_choose">Fa d\'Antara el teclat amb què escrius. També pots canviar de teclat amb la icona de teclat de la barra de navegació.</string>
-    <string name="help_key_shape">Tecles hexagonals, triangulars, rodones o de cub. La previsualització de sota mostra la forma triada.</string>
+    <string name="help_key_shape">Tecles hexagonals, triangulars, rodones o de cub. La previsualització de sota mostra la forma triada. Clàssic i Clàssic + números són un teclat de mòbil amb 4 o 5 files fixes.</string>
     <string name="help_rows">3, 4 o 5 files de tecles. Les disposicions, els botons laterals i els caràcters de pulsació llarga segueixen el nombre de files.</string>
     <string name="help_key_height">Fa les tecles més altes o més baixes. Només canvia l\'alçada, mai l\'amplada ni l\'espai entre tecles.</string>
     <string name="help_row_spacing">Afegeix o treu espai entre les files de tecles. No canvia res més.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Un color per a totes les tecles, o toca una tecla per donar-li un color propi.</string>
     <string name="help_colors_background">Fons del teclat: segons el tema, fosc, clar o un color teu.</string>
     <string name="help_colors_theme_defaults">Els colors que els temes Clar i Fosc fan servir on hi hagi activats els colors del tema.</string>
-    <string name="help_language">Idioma de l\'aplicació i de les lletres del teclat (llatí, ciríl·lic o grec). Al teclat el canvies mantenint premudes les dues tecles d\'espai 4 segons.</string>
+    <string name="help_language">Idioma de l\'aplicació i de les lletres del teclat (llatí, ciríl·lic o grec). Al teclat el canvies mantenint premudes les dues tecles d\'espai 4 segons. Amb una forma clàssica, mantén premuda la barra d\'espai.</string>
     <string name="help_theme">Clar o Fosc, fons transparent, Personalitzat (les teves disposicions desades) o els animats RGB Smooth i RGB Wild.</string>
     <string name="help_rgb">Velocitat, saturació i brillantor de l\'animació RGB.</string>
     <string name="help_vibration">Una vibració curta a cada pulsació.</string>
     <string name="help_suggestions">Fins a tres paraules sobre les tecles; toca\'n una per fer-la servir. Sense correcció automàtica, i no es desa res del que escrius.</string>
     <string name="help_double_space_period">Dos espais després d\'una paraula escriuen un punt i un espai. No en contrasenyes, adreces electròniques ni enllaços.</string>
+    <string name="help_number_row">Només Clàssic + números: mostra o amaga la fila de números sobre les lletres.</string>
     <string name="help_reset">Colors, disposició o tots dos als valors predeterminats. L\'estat actual es desa abans a Disposicions desades; els caràcters de pulsació llarga i la forma de les tecles es mantenen.</string>
     <string name="help_export">Desa tots els ajustos en un fitxer, p. ex. per passar-los a un mòbil nou. Els emojis recents no s\'hi inclouen.</string>
     <string name="help_import">Carrega els ajustos d\'un fitxer exportat. Els ajustos actuals queden com a còpia de seguretat a Disposicions desades.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triangle</string>
     <string name="shape_circle">Cercle</string>
     <string name="shape_cube">Cub</string>
+    <string name="shape_classic">Clàssic</string>
+    <string name="shape_classic_numbers">Clàssic + números</string>
     <string name="theme_light">Clar</string>
     <string name="theme_dark">Fosc</string>
     <string name="theme_transparent">Transparent</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 files: esquerra, dreta, esquerra</string>
     <string name="side_hint_4">4 files: fila 1 dreta, 2 esquerra, 3 dreta, 4 esquerra</string>
     <string name="side_hint_5">5 files: 3 tecles a l\'esquerra + 3 a la dreta</string>
+    <string name="side_hint_classic">Files de lletres: un botó lateral esquerre i un de dret cadascuna, dins la fila</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Disposició de lletres</string>
     <string name="layout_section_numeric">Disposició numèrica</string>

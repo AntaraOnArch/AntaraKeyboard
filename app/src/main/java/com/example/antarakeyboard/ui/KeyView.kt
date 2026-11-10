@@ -46,6 +46,20 @@ class KeyView @JvmOverloads constructor(
             invalidate()
         }
 
+    /** Outline color and width (px) instead of the theme's key stroke (null = theme). */
+    var customStrokeColor: Int? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+    var customStrokeWidthPx: Float? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+
     var hideFill: Boolean = false
         set(value) {
             if (field == value) return
@@ -316,7 +330,8 @@ class KeyView @JvmOverloads constructor(
         }
 
         fill.color = bg
-        stroke.color = keyStroke
+        stroke.color = customStrokeColor ?: keyStroke
+        stroke.strokeWidth = customStrokeWidthPx ?: dpF(1.25f)
 
         val inset = stroke.strokeWidth * 0.5f + dpF(0.75f)
         val r = w - inset
@@ -449,7 +464,7 @@ class KeyView @JvmOverloads constructor(
                     KeyShape.HEX_HALF_RIGHT -> 15f
                     KeyShape.TRIANGLE -> 14f
                     KeyShape.CIRCLE -> 15f
-                    KeyShape.CUBE -> 15f
+                    KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> 15f
                 }
             }
 
@@ -495,7 +510,7 @@ class KeyView @JvmOverloads constructor(
             KeyShape.HEX_HALF_RIGHT -> buildHalfHexRight(p, l, t, r, b)
             KeyShape.TRIANGLE -> buildTriangle(p, l, t, r, b, triangleFlipped)
             KeyShape.CIRCLE -> buildCircle(p, l, t, r, b)
-            KeyShape.CUBE -> buildCubeFront(p, l, t, r, b)
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> buildCubeFront(p, l, t, r, b)
         }
     }
 
@@ -657,7 +672,7 @@ class KeyView @JvmOverloads constructor(
             KeyShape.HEX -> min(w, h) * 0.96f
             KeyShape.HEX_TALL -> h * 0.96f
             KeyShape.TRIANGLE -> min(h, w * 0.4f) * 1.4f
-            KeyShape.CUBE -> h - 2f * min(w, h) * 0.06f
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> h - 2f * min(w, h) * 0.06f
             KeyShape.CIRCLE,
             KeyShape.HEX_HALF_LEFT,
             KeyShape.HEX_HALF_RIGHT -> h

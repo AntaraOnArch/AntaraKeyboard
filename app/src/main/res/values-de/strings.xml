@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Wortvorschläge</string>
     <string name="main_double_space_period">Doppeltes Leerzeichen für Punkt</string>
+    <string name="main_number_row">Zahlenreihe</string>
     <string name="main_export">Einstellungen exportieren</string>
     <string name="main_import">Einstellungen importieren</string>
     <string name="export_done">Einstellungen exportiert</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gesten auf der Tastatur</string>
     <string name="help_enable">Schaltet die Antara-Tastatur in der Tastaturliste von Android ein. Einmal nach der Installation nötig.</string>
     <string name="help_choose">Macht Antara zur Tastatur, mit der du tippst. Du kannst die Tastatur auch über das Tastatursymbol in der Navigationsleiste wechseln.</string>
-    <string name="help_key_shape">Sechseck-, Dreieck-, Kreis- oder Würfeltasten. Die Vorschau darunter zeigt die gewählte Form.</string>
+    <string name="help_key_shape">Sechseck-, Dreieck-, Kreis- oder Würfeltasten. Die Vorschau darunter zeigt die gewählte Form. Klassisch und Klassisch + Zahlen sind eine Handy-Tastatur mit festen 4 oder 5 Reihen.</string>
     <string name="help_rows">3, 4 oder 5 Tastenreihen. Layouts, Seitentasten und Langdruck-Zeichen richten sich nach der Reihenzahl.</string>
     <string name="help_key_height">Macht die Tasten höher oder niedriger. Nur die Höhe ändert sich, nie die Breite oder die Abstände zwischen den Tasten.</string>
     <string name="help_row_spacing">Vergrößert oder verkleinert den Abstand zwischen den Tastenreihen. Sonst ändert sich nichts.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Eine Farbe für alle Tasten, oder tippe auf eine Taste, um ihr eine eigene Farbe zu geben.</string>
     <string name="help_colors_background">Tastaturhintergrund: nach Thema, dunkel, hell oder eine eigene Farbe.</string>
     <string name="help_colors_theme_defaults">Die Farben, die das helle und das dunkle Thema überall dort verwenden, wo Themenfarben eingeschaltet sind.</string>
-    <string name="help_language">Sprache der App und der Tastaturbuchstaben (Lateinisch, Kyrillisch oder Griechisch). Auf der Tastatur änderst du sie, indem du beide Leertasten 4 Sekunden hältst.</string>
+    <string name="help_language">Sprache der App und der Tastaturbuchstaben (Lateinisch, Kyrillisch oder Griechisch). Auf der Tastatur änderst du sie, indem du beide Leertasten 4 Sekunden hältst. Bei einer klassischen Form hältst du die Leertaste.</string>
     <string name="help_theme">Hell oder Dunkel, transparenter Hintergrund, Eigenes (deine gespeicherten Layouts) oder das animierte RGB Smooth und RGB Wild.</string>
     <string name="help_rgb">Geschwindigkeit, Sättigung und Helligkeit der RGB-Animation.</string>
     <string name="help_vibration">Eine kurze Vibration bei jedem Tastendruck.</string>
     <string name="help_suggestions">Bis zu drei Wörter über den Tasten; tippe auf eines, um es zu übernehmen. Keine Autokorrektur, und nichts, was du tippst, wird gespeichert.</string>
     <string name="help_double_space_period">Zwei Leerzeichen nach einem Wort ergeben Punkt und Leerzeichen. Nicht in Passwörtern, E-Mail-Adressen oder Links.</string>
+    <string name="help_number_row">Nur Klassisch + Zahlen: zeigt oder verbirgt die Zahlenreihe über den Buchstaben.</string>
     <string name="help_reset">Farben, Layout oder beides auf Standard. Der aktuelle Stand wird vorher in Gespeicherte Layouts gesichert; Langdruck-Zeichen und Tastenform bleiben.</string>
     <string name="help_export">Speichert alle Einstellungen in einer Datei, z. B. für ein neues Handy. Zuletzt verwendete Emojis sind nicht enthalten.</string>
     <string name="help_import">Lädt Einstellungen aus einer exportierten Datei. Deine aktuellen Einstellungen bleiben als Sicherung in Gespeicherte Layouts.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Dreieck</string>
     <string name="shape_circle">Kreis</string>
     <string name="shape_cube">Würfel</string>
+    <string name="shape_classic">Klassisch</string>
+    <string name="shape_classic_numbers">Klassisch + Zahlen</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
     <string name="theme_transparent">Transparent</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 Reihen: links, rechts, links</string>
     <string name="side_hint_4">4 Reihen: Reihe 1 rechts, 2 links, 3 rechts, 4 links</string>
     <string name="side_hint_5">5 Reihen: 3 linke + 3 rechte Seitentasten</string>
+    <string name="side_hint_classic">Buchstabenreihen: je eine linke und rechte Seitentaste, in der Reihe</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Buchstabenlayout</string>
     <string name="layout_section_numeric">Zahlenlayout</string>

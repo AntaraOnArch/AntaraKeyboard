@@ -20,6 +20,7 @@
     <string name="main_vibration">Δόνηση</string>
     <string name="main_suggestions">Προτάσεις λέξεων</string>
     <string name="main_double_space_period">Διπλό κενό για τελεία</string>
+    <string name="main_number_row">Σειρά αριθμών</string>
     <string name="main_export">Εξαγωγή ρυθμίσεων</string>
     <string name="main_import">Εισαγωγή ρυθμίσεων</string>
     <string name="export_done">Οι ρυθμίσεις εξήχθησαν</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Κινήσεις στο πληκτρολόγιο</string>
     <string name="help_enable">Ενεργοποιεί το Πληκτρολόγιο Αντάρα στη λίστα πληκτρολογίων του Android. Χρειάζεται μία φορά μετά την εγκατάσταση.</string>
     <string name="help_choose">Κάνει το Αντάρα το πληκτρολόγιο με το οποίο γράφετε. Μπορείτε να αλλάξετε πληκτρολόγιο και από το εικονίδιο πληκτρολογίου στη γραμμή πλοήγησης.</string>
-    <string name="help_key_shape">Πλήκτρα εξάγωνα, τρίγωνα, κύκλοι ή κύβοι. Η προεπισκόπηση από κάτω δείχνει το επιλεγμένο σχήμα.</string>
+    <string name="help_key_shape">Πλήκτρα εξάγωνα, τρίγωνα, κύκλοι ή κύβοι. Η προεπισκόπηση από κάτω δείχνει το επιλεγμένο σχήμα. Το Κλασικό και το Κλασικό + αριθμοί είναι πληκτρολόγιο τύπου κινητού με σταθερές 4 ή 5 σειρές.</string>
     <string name="help_rows">3, 4 ή 5 σειρές πλήκτρων. Οι διατάξεις, τα πλαϊνά κουμπιά και οι χαρακτήρες παρατεταμένου πατήματος ακολουθούν τον αριθμό σειρών.</string>
     <string name="help_key_height">Κάνει τα πλήκτρα ψηλότερα ή χαμηλότερα. Αλλάζει μόνο το ύψος, ποτέ το πλάτος ή τα κενά ανάμεσα στα πλήκτρα.</string>
     <string name="help_row_spacing">Προσθέτει ή αφαιρεί χώρο ανάμεσα στις σειρές πλήκτρων. Τίποτε άλλο δεν αλλάζει.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Ένα χρώμα για όλα τα πλήκτρα, ή πατήστε ένα πλήκτρο για να του δώσετε δικό του χρώμα.</string>
     <string name="help_colors_background">Φόντο πληκτρολογίου: κατά θέμα, σκούρο, ανοιχτό ή δικό σας χρώμα.</string>
     <string name="help_colors_theme_defaults">Τα χρώματα που χρησιμοποιούν το Ανοιχτό και το Σκούρο θέμα όπου είναι ενεργά τα χρώματα του θέματος.</string>
-    <string name="help_language">Γλώσσα της εφαρμογής και των γραμμάτων του πληκτρολογίου (λατινικά, κυριλλικά ή ελληνικά). Στο πληκτρολόγιο την αλλάζετε κρατώντας πατημένα και τα δύο διαστήματα για 4 δευτερόλεπτα.</string>
+    <string name="help_language">Γλώσσα της εφαρμογής και των γραμμάτων του πληκτρολογίου (λατινικά, κυριλλικά ή ελληνικά). Στο πληκτρολόγιο την αλλάζετε κρατώντας πατημένα και τα δύο διαστήματα για 4 δευτερόλεπτα. Με κλασικό σχήμα κρατήστε πατημένο το διάστημα.</string>
     <string name="help_theme">Ανοιχτό ή Σκούρο, διάφανο φόντο, Προσαρμοσμένο (οι αποθηκευμένες διατάξεις σας) ή τα κινούμενα RGB Smooth και RGB Wild.</string>
     <string name="help_rgb">Ταχύτητα, κορεσμός και φωτεινότητα του κινούμενου RGB.</string>
     <string name="help_vibration">Μια σύντομη δόνηση σε κάθε πάτημα πλήκτρου.</string>
     <string name="help_suggestions">Έως τρεις λέξεις πάνω από τα πλήκτρα· πατήστε μία για να τη χρησιμοποιήσετε. Χωρίς αυτόματη διόρθωση, και τίποτα από όσα γράφετε δεν αποθηκεύεται.</string>
     <string name="help_double_space_period">Δύο κενά μετά από λέξη γράφουν τελεία και κενό. Όχι σε κωδικούς, διευθύνσεις email ή συνδέσμους.</string>
+    <string name="help_number_row">Μόνο Κλασικό + αριθμοί: εμφανίζει ή κρύβει τη σειρά αριθμών πάνω από τα γράμματα.</string>
     <string name="help_reset">Χρώματα, διάταξη ή και τα δύο στις προεπιλογές. Η τρέχουσα κατάσταση αποθηκεύεται πρώτα στις Αποθηκευμένες διατάξεις· οι χαρακτήρες παρατεταμένου πατήματος και το σχήμα των πλήκτρων μένουν.</string>
     <string name="help_export">Αποθηκεύει όλες τις ρυθμίσεις σε αρχείο, π.χ. για μεταφορά σε νέο τηλέφωνο. Τα πρόσφατα emoji δεν περιλαμβάνονται.</string>
     <string name="help_import">Φορτώνει ρυθμίσεις από εξαγόμενο αρχείο. Οι τρέχουσες ρυθμίσεις κρατούνται ως αντίγραφο ασφαλείας στις Αποθηκευμένες διατάξεις.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Τρίγωνο</string>
     <string name="shape_circle">Κύκλος</string>
     <string name="shape_cube">Κύβος</string>
+    <string name="shape_classic">Κλασικό</string>
+    <string name="shape_classic_numbers">Κλασικό + αριθμοί</string>
     <string name="theme_light">Ανοιχτό</string>
     <string name="theme_dark">Σκούρο</string>
     <string name="theme_transparent">Διαφανές</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 σειρές: αριστερά, δεξιά, αριστερά</string>
     <string name="side_hint_4">4 σειρές: σειρά 1 δεξιά, 2 αριστερά, 3 δεξιά, 4 αριστερά</string>
     <string name="side_hint_5">5 σειρές: 3 αριστερά + 3 δεξιά πλευρικά πλήκτρα</string>
+    <string name="side_hint_classic">Σειρές γραμμάτων: ένα αριστερό και ένα δεξί πλαϊνό κουμπί η καθεμία, μέσα στη σειρά</string>
     <string name="side_row_label">Σ%1$d</string>
     <string name="layout_section_alphabet">Διάταξη γραμμάτων</string>
     <string name="layout_section_numeric">Αριθμητική διάταξη</string>

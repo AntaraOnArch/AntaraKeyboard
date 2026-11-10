@@ -137,9 +137,39 @@ object KeyboardPrefs {
         prefs(context).edit { putInt(KEY_ROW_COUNT, rowCount) }
     }
 
+    /**
+     * Id the current layouts, side buttons and numeric page are stored under: the row count
+     * (3 / 4 / 5), or a classic shape's own id ([ClassicLayouts.layoutId]). The layout functions
+     * below take this id as their `rowCount`.
+     */
+    fun getLayoutId(context: Context): Int =
+        ClassicLayouts.layoutId(getShape(context), getRowCount(context))
+
+    /** Rows actually shown: the classic shapes have a fixed row count (minus a hidden number row). */
+    fun getVisibleRowCount(context: Context): Int {
+        val shape = getShape(context)
+        if (!shape.isClassic) return getRowCount(context)
+        return ClassicLayouts.rowCountOf(shape) - if (hidesNumberRow(context)) 1 else 0
+    }
+
+    private const val KEY_CLASSIC_NUMBER_ROW = "classic_number_row"
+
+    /** Classic + numbers: the number row is shown (main app switch, on by default). */
+    fun isClassicNumberRowEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_CLASSIC_NUMBER_ROW, true)
+
+    fun setClassicNumberRowEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(KEY_CLASSIC_NUMBER_ROW, enabled) }
+    }
+
+    /** The keyboard leaves out the first alphabet row (Classic + numbers with the number row off). */
+    fun hidesNumberRow(context: Context): Boolean =
+        getShape(context) == KeyShape.CLASSIC_NUMBERS && !isClassicNumberRowEnabled(context)
+
     /* ───────── DEFAULT LAYOUTS ───────── */
 
     fun defaultAlphabetLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        if (ClassicLayouts.isClassic(rowCount)) return ClassicLayouts.defaultAlphabet(rowCount)
         return when (rowCount) {
             3 -> defaultThreeRowKeyboardLayoutQwertz
             4 -> defaultFourRowKeyboardLayout
@@ -149,6 +179,7 @@ object KeyboardPrefs {
     }
 
     private fun defaultNumericLayoutForRowCount(rowCount: Int): KeyboardConfig {
+        if (ClassicLayouts.isClassic(rowCount)) return ClassicLayouts.defaultNumeric(rowCount)
         return when (rowCount) {
             3 -> defaultThreeRowNumericLayout
             4 -> defaultFourRowNumericLayout
@@ -192,6 +223,8 @@ object KeyboardPrefs {
             3 -> KEY_ALPHABET_LAYOUT_3
             4 -> KEY_ALPHABET_LAYOUT_4
             5 -> KEY_ALPHABET_LAYOUT_5
+            ClassicLayouts.LAYOUT_CLASSIC -> "alphabet_layout_classic"
+            ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> "alphabet_layout_classic_numbers"
             else -> KEY_ALPHABET_LAYOUT_3
         }
     }
@@ -227,6 +260,8 @@ object KeyboardPrefs {
             3 -> KEY_NUMERIC_LAYOUT_3
             4 -> KEY_NUMERIC_LAYOUT_4
             5 -> KEY_NUMERIC_LAYOUT_5
+            ClassicLayouts.LAYOUT_CLASSIC -> "numeric_layout_classic"
+            ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> "numeric_layout_classic_numbers"
             else -> KEY_NUMERIC_LAYOUT_3
         }
     }
@@ -261,6 +296,8 @@ object KeyboardPrefs {
             3 -> KEY_HORIZONTAL_CENTER_LAYOUT_3
             4 -> KEY_HORIZONTAL_CENTER_LAYOUT_4
             5 -> KEY_HORIZONTAL_CENTER_LAYOUT_5
+            ClassicLayouts.LAYOUT_CLASSIC -> "horizontal_center_layout_classic"
+            ClassicLayouts.LAYOUT_CLASSIC_NUMBERS -> "horizontal_center_layout_classic_numbers"
             else -> KEY_HORIZONTAL_CENTER_LAYOUT_3
         }
     }
@@ -590,6 +627,19 @@ object KeyboardPrefs {
     fun saveNumericLayoutWithGlobalBinds(context: Context, rowCount: Int, layout: KeyboardConfig) {
         saveNumericLayoutForRowCount(context, rowCount, layout)
         GlobalLongPressStorage.extractAndSaveNumericBinds(context, layout)
+    }
+
+    /**
+     * A classic shape was chosen: `?` and `!` go on the period's long press (the classic layouts
+     * have no `?` key), in the global binds so every editor shows them. See
+     * [ClassicLayouts.withPunctuationOnPeriod].
+     */
+    fun ensureClassicPunctuation(context: Context) {
+        val binds = GlobalLongPressStorage.loadAlphabetBinds(context)
+        val updated = ClassicLayouts.withPunctuationOnPeriod(binds["."], MAX_LONG_PRESS_BINDINGS)
+        if (updated != binds["."]) {
+            GlobalLongPressStorage.saveAlphabetBinds(context, binds + ("." to updated))
+        }
     }
 
     fun getSelectedLongPressPreset(context: Context): String {

@@ -22,6 +22,7 @@
     <string name="main_vibration">Vibration feedback</string>
     <string name="main_suggestions">Word suggestions</string>
     <string name="main_double_space_period">Double space for period</string>
+    <string name="main_number_row">Number row</string>
     <string name="main_export">Export settings</string>
     <string name="main_import">Import settings</string>
     <string name="export_done">Settings exported</string>
@@ -76,7 +77,7 @@
     <string name="help_group_gestures">Gestures on the keyboard</string>
     <string name="help_enable">Turns Antara Keyboard on in Android\'s list of keyboards. Needed once after installing.</string>
     <string name="help_choose">Makes Antara the keyboard you type with. You can also switch keyboards from the keyboard icon in the navigation bar.</string>
-    <string name="help_key_shape">Hexagon, triangle, circle or cube keys. The preview below shows the selected shape.</string>
+    <string name="help_key_shape">Hexagon, triangle, circle or cube keys. The preview below shows the selected shape. Classic and Classic + numbers are a phone-style keyboard with a fixed 4 or 5 rows.</string>
     <string name="help_rows">3, 4 or 5 rows of keys. Layouts, side buttons and long-press characters follow the row count.</string>
     <string name="help_key_height">Makes the keys taller or shorter. Only the height changes, never the width or the gaps between keys.</string>
     <string name="help_row_spacing">Adds or removes space between the rows of keys. Nothing else changes.</string>
@@ -96,12 +97,13 @@
     <string name="help_colors_keys">One color for all keys, or tap a key to give it its own color.</string>
     <string name="help_colors_background">Keyboard background: by theme, dark, light or a color of your own.</string>
     <string name="help_colors_theme_defaults">The colors the Light and Dark themes use wherever theme colors are on.</string>
-    <string name="help_language">Language of the app and of the keyboard\'s letters (Latin, Cyrillic or Greek). On the keyboard, hold both space keys for 4 seconds to change it.</string>
+    <string name="help_language">Language of the app and of the keyboard\'s letters (Latin, Cyrillic or Greek). On the keyboard, hold both space keys for 4 seconds to change it. With a classic shape, hold the space key.</string>
     <string name="help_theme">Light or Dark, a transparent background, Custom (your saved layouts) or the animated RGB Smooth and RGB Wild.</string>
     <string name="help_rgb">Speed, saturation and brightness of the RGB animation.</string>
     <string name="help_vibration">A short vibration on every key press.</string>
     <string name="help_suggestions">Up to three words above the keys; tap one to use it. No autocorrect, and nothing you type is stored.</string>
     <string name="help_double_space_period">Two spaces after a word type a period and a space. Not in passwords, e-mail addresses or links.</string>
+    <string name="help_number_row">Classic + numbers only: shows or hides the row of numbers above the letters.</string>
     <string name="help_reset">Colors, layout or both back to default. The current state is saved in Saved layouts first; long-press characters and the key shape stay.</string>
     <string name="help_export">Saves all settings to a file, e.g. to move them to a new phone. Recent emojis are not included.</string>
     <string name="help_import">Loads settings from an exported file. Your current settings are kept as a backup in Saved layouts.</string>
@@ -127,6 +129,8 @@
     <string name="shape_triangle">Triangle</string>
     <string name="shape_circle">Circle</string>
     <string name="shape_cube">Cube</string>
+    <string name="shape_classic">Classic</string>
+    <string name="shape_classic_numbers">Classic + numbers</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_transparent">Transparent</string>
@@ -232,6 +236,7 @@
     <string name="side_hint_3">3 rows: left, right, left</string>
     <string name="side_hint_4">4 rows: row 1 right, row 2 left, row 3 right, row 4 left</string>
     <string name="side_hint_5">5 rows: 3 left + 3 right side buttons</string>
+    <string name="side_hint_classic">Letter rows: a left and a right side button each, inside the row</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Alphabet layout</string>
     <string name="layout_section_numeric">Numeric layout</string>

@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibreerimine</string>
     <string name="main_suggestions">Sõnasoovitused</string>
     <string name="main_double_space_period">Topelttühik punktiks</string>
+    <string name="main_number_row">Numbririda</string>
     <string name="main_export">Ekspordi seaded</string>
     <string name="main_import">Impordi seaded</string>
     <string name="export_done">Seaded eksporditud</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Žestid klaviatuuril</string>
     <string name="help_enable">Lülitab Antara klaviatuuri Androidi klaviatuuride loendis sisse. Vajalik üks kord pärast installimist.</string>
     <string name="help_choose">Teeb Antarast klaviatuuri, millega kirjutad. Klaviatuuri saab vahetada ka navigeerimisriba klaviatuuriikoonist.</string>
-    <string name="help_key_shape">Kuusnurksed, kolmnurksed, ümmargused või kuubikujulised klahvid. Allolev eelvaade näitab valitud kuju.</string>
+    <string name="help_key_shape">Kuusnurksed, kolmnurksed, ümmargused või kuubikujulised klahvid. Allolev eelvaade näitab valitud kuju. Klassikaline ja Klassikaline + numbrid on telefoni klaviatuur kindla 4 või 5 reaga.</string>
     <string name="help_rows">3, 4 või 5 klahvirida. Paigutused, külgnupud ja pika vajutuse märgid järgivad ridade arvu.</string>
     <string name="help_key_height">Muudab klahvid kõrgemaks või madalamaks. Muutub ainult kõrgus, mitte kunagi laius ega klahvidevahelised vahed.</string>
     <string name="help_row_spacing">Lisab või vähendab vahet klahviridade vahel. Muud ei muutu.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Üks värv kõigile klahvidele või puuduta klahvi, et anda sellele oma värv.</string>
     <string name="help_colors_background">Klaviatuuri taust: teema järgi, tume, hele või oma värv.</string>
     <string name="help_colors_theme_defaults">Värvid, mida hele ja tume teema kasutavad kõikjal, kus teema värvid on sisse lülitatud.</string>
-    <string name="help_language">Rakenduse ja klaviatuuri tähtede keel (ladina, kirillitsa või kreeka). Klaviatuuril vahetad seda, hoides mõlemat tühikuklahvi 4 sekundit.</string>
+    <string name="help_language">Rakenduse ja klaviatuuri tähtede keel (ladina, kirillitsa või kreeka). Klaviatuuril vahetad seda, hoides mõlemat tühikuklahvi 4 sekundit. Klassikalise kuju puhul hoia tühikut all.</string>
     <string name="help_theme">Hele või Tume, läbipaistev taust, Kohandatud (salvestatud paigutused) või animeeritud RGB Smooth ja RGB Wild.</string>
     <string name="help_rgb">RGB-animatsiooni kiirus, küllastus ja heledus.</string>
     <string name="help_vibration">Lühike vibratsioon iga klahvivajutuse korral.</string>
     <string name="help_suggestions">Kuni kolm sõna klahvide kohal; puuduta sõna selle kasutamiseks. Automaatset parandust pole ja midagi kirjutatut ei salvestata.</string>
     <string name="help_double_space_period">Kaks tühikut sõna järel lisavad punkti ja tühiku. Mitte paroolides, e-posti aadressides ega linkides.</string>
+    <string name="help_number_row">Ainult Klassikaline + numbrid: näitab või peidab tähtede kohal olevat numbririda.</string>
     <string name="help_reset">Värvid, paigutus või mõlemad vaikeväärtustele. Praegune olek salvestatakse enne Salvestatud paigutustesse; pika vajutuse märgid ja klahvide kuju jäävad.</string>
     <string name="help_export">Salvestab kõik seaded faili, nt uude telefoni viimiseks. Hiljutised emojid ei ole kaasas.</string>
     <string name="help_import">Laadib seaded eksporditud failist. Praegused seaded jäävad varukoopiana Salvestatud paigutustesse.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Kolmnurk</string>
     <string name="shape_circle">Ring</string>
     <string name="shape_cube">Kuup</string>
+    <string name="shape_classic">Klassikaline</string>
+    <string name="shape_classic_numbers">Klassikaline + numbrid</string>
     <string name="theme_light">Hele</string>
     <string name="theme_dark">Tume</string>
     <string name="theme_transparent">Läbipaistev</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rida: vasak, parem, vasak</string>
     <string name="side_hint_4">4 rida: rida 1 parem, 2 vasak, 3 parem, 4 vasak</string>
     <string name="side_hint_5">5 rida: 3 vasakut + 3 paremat külgklahvi</string>
+    <string name="side_hint_classic">Täheread: igaühes üks vasak ja üks parem külgnupp, rea sees</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Tähtede paigutus</string>
     <string name="layout_section_numeric">Numbrite paigutus</string>

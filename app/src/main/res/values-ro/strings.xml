@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibrație</string>
     <string name="main_suggestions">Sugestii de cuvinte</string>
     <string name="main_double_space_period">Spațiu dublu pentru punct</string>
+    <string name="main_number_row">Rândul de cifre</string>
     <string name="main_export">Exportă setările</string>
     <string name="main_import">Importă setările</string>
     <string name="export_done">Setări exportate</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gesturi pe tastatură</string>
     <string name="help_enable">Activează Tastatura Antara în lista de tastaturi Android. E nevoie o dată după instalare.</string>
     <string name="help_choose">Face din Antara tastatura cu care scrii. Poți schimba tastatura și din pictograma de tastatură din bara de navigare.</string>
-    <string name="help_key_shape">Taste hexagonale, triunghiulare, rotunde sau cub. Previzualizarea de dedesubt arată forma aleasă.</string>
+    <string name="help_key_shape">Taste hexagonale, triunghiulare, rotunde sau cub. Previzualizarea de dedesubt arată forma aleasă. Clasic și Clasic + cifre sunt o tastatură de telefon cu 4 sau 5 rânduri fixe.</string>
     <string name="help_rows">3, 4 sau 5 rânduri de taste. Aranjamentele, butoanele laterale și caracterele la apăsare lungă urmează numărul de rânduri.</string>
     <string name="help_key_height">Face tastele mai înalte sau mai joase. Se schimbă doar înălțimea, niciodată lățimea sau spațiile dintre taste.</string>
     <string name="help_row_spacing">Adaugă sau reduce spațiul dintre rândurile de taste. Nimic altceva nu se schimbă.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">O culoare pentru toate tastele sau atinge o tastă pentru a-i da propria culoare.</string>
     <string name="help_colors_background">Fundalul tastaturii: după temă, întunecat, luminos sau o culoare proprie.</string>
     <string name="help_colors_theme_defaults">Culorile pe care tema luminoasă și cea întunecată le folosesc oriunde sunt activate culorile temei.</string>
-    <string name="help_language">Limba aplicației și a literelor tastaturii (latină, chirilică sau greacă). Pe tastatură o schimbi ținând apăsate ambele taste de spațiu 4 secunde.</string>
+    <string name="help_language">Limba aplicației și a literelor tastaturii (latină, chirilică sau greacă). Pe tastatură o schimbi ținând apăsate ambele taste de spațiu 4 secunde. Cu o formă clasică, ține apăsată tasta spațiu.</string>
     <string name="help_theme">Luminoasă sau întunecată, fundal transparent, Personalizată (aranjamentele salvate) sau animatele RGB Smooth și RGB Wild.</string>
     <string name="help_rgb">Viteza, saturația și luminozitatea animației RGB.</string>
     <string name="help_vibration">O vibrație scurtă la fiecare apăsare de tastă.</string>
     <string name="help_suggestions">Până la trei cuvinte deasupra tastelor; atinge unul pentru a-l folosi. Fără corectare automată și nimic din ce scrii nu se salvează.</string>
     <string name="help_double_space_period">Două spații după un cuvânt scriu un punct și un spațiu. Nu în parole, adrese de e-mail sau linkuri.</string>
+    <string name="help_number_row">Doar Clasic + cifre: afișează sau ascunde rândul de cifre de deasupra literelor.</string>
     <string name="help_reset">Culori, aranjament sau ambele la valorile implicite. Starea curentă se salvează întâi în Aranjamente salvate; caracterele la apăsare lungă și forma tastelor rămân.</string>
     <string name="help_export">Salvează toate setările într-un fișier, de ex. pentru a le muta pe un telefon nou. Emoji-urile recente nu sunt incluse.</string>
     <string name="help_import">Încarcă setările dintr-un fișier exportat. Setările curente rămân ca rezervă în Aranjamente salvate.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triunghi</string>
     <string name="shape_circle">Cerc</string>
     <string name="shape_cube">Cub</string>
+    <string name="shape_classic">Clasic</string>
+    <string name="shape_classic_numbers">Clasic + cifre</string>
     <string name="theme_light">Luminoasă</string>
     <string name="theme_dark">Întunecată</string>
     <string name="theme_transparent">Transparentă</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rânduri: stânga, dreapta, stânga</string>
     <string name="side_hint_4">4 rânduri: rândul 1 dreapta, 2 stânga, 3 dreapta, 4 stânga</string>
     <string name="side_hint_5">5 rânduri: 3 taste în stânga + 3 în dreapta</string>
+    <string name="side_hint_classic">Rânduri de litere: câte un buton lateral stâng și unul drept, în rând</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Aranjamentul literelor</string>
     <string name="layout_section_numeric">Aranjament numeric</string>

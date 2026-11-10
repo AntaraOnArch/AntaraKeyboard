@@ -35,6 +35,9 @@ import com.example.antarakeyboard.model.KeyboardConfig
 import com.example.antarakeyboard.model.shiftedBinding
 import com.example.antarakeyboard.service.input.KeyInputController
 import com.example.antarakeyboard.ui.KeyView
+import com.example.antarakeyboard.data.EdgeSlotsStorage
+import com.example.antarakeyboard.model.EdgeActionType
+import com.example.antarakeyboard.model.EdgeSlot
 import com.example.antarakeyboard.ui.defaultKeyboardLayout
 import java.util.Locale
 import kotlin.math.abs
@@ -87,18 +90,21 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private val myDefaultNumericConfig: KeyboardConfig
         get() {
-            val rowCount = KeyboardPrefs.getRowCount(this)
             return ensureStableSpaceMarkers(
-                KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, rowCount)
+                KeyboardPrefs.loadNumericLayoutWithGlobalBinds(this, KeyboardPrefs.getLayoutId(this))
             )
         }
 
     private var lastIsDark: Boolean? = null
     private var lastAppLanguage: String? = null
     private var targetKeyboardHeightPx: Int = 0
+    /** Side paddings of the keyboard from its layout (classic shapes use none, see [applySidePadding]). */
+    private var overlayBasePadL = 0
+    private var overlayBasePadR = 0
 
     lateinit var inputController: KeyInputController
     private val landscapeBuilder by lazy { LandscapeLayoutBuilder(this, LandscapeHost()) }
+    private val classicBuilder by lazy { ClassicLayoutBuilder(this, ClassicHost()) }
 
     private var alphabetLayoutLower: KeyboardConfig? = null
     private var alphabetLayoutUpper: KeyboardConfig? = null
@@ -302,9 +308,9 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             colorsProvider = { anchor -> pressedKeyColors(anchor) }
         ).apply { setEnabled(!isPasswordInput) }
 
-        val basePadL = overlayLayer.paddingLeft
+        overlayBasePadL = overlayLayer.paddingLeft
+        overlayBasePadR = overlayLayer.paddingRight
         val basePadT = overlayLayer.paddingTop
-        val basePadR = overlayLayer.paddingRight
         val basePadB = overlayLayer.paddingBottom
 
         ViewCompat.setOnApplyWindowInsetsListener(overlayLayer) { v, insets ->
@@ -324,7 +330,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             val insetChanged = lastBottomInsetPx != bottomInset
 
             lastBottomInsetPx = bottomInset
-            v.setPadding(basePadL, basePadT, basePadR, basePadB + bottomInset)
+            v.setPadding(sidePaddingLeft(), basePadT, sidePaddingRight(), basePadB + bottomInset)
 
             v.post {
                 if (insetChanged) {
@@ -552,8 +558,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
 
         if (
-            leftSpaceHeld &&
-            rightSpaceHeld &&
+            languageHoldSpacesHeld() &&
             dualSpaceHoldJob == null &&
             !languagePicker.isShowing
         ) {
@@ -563,7 +568,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
                 delay(DUAL_SPACE_HOLD_MS.milliseconds)
                 dualSpaceHoldJob = null
 
-                if (leftSpaceHeld && rightSpaceHeld) {
+                if (languageHoldSpacesHeld()) {
                     dualSpacePickerWasShown = true
                     languagePicker.show()
                 }
@@ -585,7 +590,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             rightSpaceHeld = false
         }
 
-        if (!(leftSpaceHeld && rightSpaceHeld)) {
+        if (!languageHoldSpacesHeld()) {
             cancelDualSpaceHoldTimer()
         }
 
@@ -594,6 +599,15 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
 
         return shouldConsumeSpace
+    }
+
+    /**
+     * The language picker opens after holding both space keys, or the only one
+     * (classic layouts have a single space key).
+     */
+    private fun languageHoldSpacesHeld(): Boolean {
+        val spaces = currentKeyboardConfig.rows.sumOf { row -> row.keys.count { it.label == " " } }
+        return if (spaces < 2) leftSpaceHeld || rightSpaceHeld else leftSpaceHeld && rightSpaceHeld
     }
 
     private fun cancelDualSpaceHoldTimer() {
@@ -665,7 +679,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         ) {
             KeyShape.HEX_TALL
         } else {
-            currentShape
+            currentShape.drawShape
         }
     }
 
@@ -677,15 +691,17 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         ) {
             KeyShape.HEX_TALL
         } else {
-            currentShape
+            currentShape.drawShape
         }
     }
 
 
     private fun activeAlphabetBaseLayout(): KeyboardConfig {
-        val rows = KeyboardPrefs.getRowCount(this)
+        val layout = KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, KeyboardPrefs.getLayoutId(this))
+        // Classic + numbers with its number row switched off: the first row is left out
+        if (KeyboardPrefs.hidesNumberRow(this) && layout.rows.size > 1) layout.rows.removeAt(0)
         return ensureStableSpaceMarkers(
-            KeyboardPrefs.loadAlphabetLayoutWithGlobalBinds(this, rows)
+            layout
         )
     }
 
@@ -891,10 +907,22 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
     private fun sizingSpec() = KeySizing.Spec(
         rowCount = KeyboardPrefs.getRowCount(this),
-        shape = currentShape,
+        shape = currentShape.drawShape,
         landscape = isLandscape(),
         density = resources.displayMetrics.density
     )
+
+    /** Classic shapes reach from edge to edge (their side buttons sit at the screen edge). */
+    private fun sidePaddingLeft() = if (currentShape.isClassic) 0 else overlayBasePadL
+    private fun sidePaddingRight() = if (currentShape.isClassic) 0 else overlayBasePadR
+
+    private fun applySidePadding() {
+        val l = sidePaddingLeft()
+        val r = sidePaddingRight()
+        if (overlayLayer.paddingLeft != l || overlayLayer.paddingRight != r) {
+            overlayLayer.setPadding(l, overlayLayer.paddingTop, r, overlayLayer.paddingBottom)
+        }
+    }
 
     private fun availableKeyboardWidthPx(): Int {
         val w = overlayLayer.width
@@ -1382,6 +1410,17 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
         serviceScope.launch {
             keyboardContainer.removeAllViews()
+            applySidePadding()
+            if (currentShape.isClassic) {
+                // Side buttons are keys inside the rows (ClassicLayoutBuilder)
+                edgeOverlayManager.clearEdgeSlots()
+                classicBuilder.build()
+                keyboardContainer.post {
+                    syncOverlayHeightToContent()
+                    finishRedraw()
+                }
+                return@launch
+            }
             if (isLandscape()) {
                 landscapeBuilder.build()
 
@@ -1728,6 +1767,31 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         }
     }
 
+    /** The classic layout builder's view of this service. */
+    private inner class ClassicHost : ClassicLayoutBuilder.Host {
+        override val keyboardContainer get() = this@MyKeyboardService.keyboardContainer
+        override val currentShape get() = this@MyKeyboardService.currentShape
+        override val currentRows get() = currentKeyboardConfig.rows
+        override val landscape get() = isLandscape()
+        override fun availableWidthPx() = availableKeyboardWidthPx()
+        override fun keyHeightFactor() = this@MyKeyboardService.keyHeightFactor()
+        override fun rowSpacingPx() = this@MyKeyboardService.rowSpacingPx()
+        override fun sideSlots() = EdgeSlotsStorage.load(this@MyKeyboardService)
+            .filter { it.type != EdgeActionType.NONE }
+        override fun createKey(key: KeyConfig) = this@MyKeyboardService.createKey(key)
+        override fun applySpecialKeyColors(kv: KeyView, key: KeyConfig, spaceIndex: Int) =
+            this@MyKeyboardService.applySpecialKeyColors(kv, key, spaceIndex)
+        override fun styleAsSideButton(kv: KeyView) {
+            val (fill, icon) = edgeOverlayManager.sideButtonColors()
+            kv.customBgColor = fill
+            kv.setTextColor(icon)
+            kv.customStrokeColor = icon
+            kv.customStrokeWidthPx = 1f
+        }
+        override fun createSideButton(slot: EdgeSlot) =
+            edgeOverlayManager.createRowSideButton(slot, isLandscape())
+    }
+
     private fun makeUppercaseConfig(cfg: KeyboardConfig): KeyboardConfig {
         fun up(k: KeyConfig): KeyConfig {
             val lbl = k.label
@@ -1823,7 +1887,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
         mainLabel = ""
         swipeUpLabel = null
 
-        val rowCount = KeyboardPrefs.getRowCount(this@MyKeyboardService)
+        val rowCount = KeyboardPrefs.getVisibleRowCount(this@MyKeyboardService)
 
         when (label) {
             "." -> {
@@ -1839,7 +1903,8 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
             }
 
             "123" -> {
-                if (isAlphabetLayoutActive() && rowCount >= 4) {
+                // Classic layouts have their own 😊 key
+                if (isAlphabetLayoutActive() && rowCount >= 4 && !currentShape.isClassic) {
                     useSplitLabels = true
                     mainLabel = "123"
                     swipeUpLabel = "😊"
@@ -1867,7 +1932,7 @@ class MyKeyboardService : InputMethodService(), EdgeActionCallback {
 
             KeyShape.TRIANGLE -> if (isLandscape()) 13f else 16f
             KeyShape.CIRCLE -> if (isLandscape()) 14f else 18f
-            KeyShape.CUBE -> if (isLandscape()) 14f else 18f
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> if (isLandscape()) 14f else 18f
         }
 
         if (label in setOf("⇧", "⌫", "↵", "123", "ABC", "abc", "😊")) {

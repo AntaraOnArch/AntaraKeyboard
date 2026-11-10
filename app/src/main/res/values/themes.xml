@@ -16,6 +16,10 @@
         <item name="enterText">@color/special_text</item>
 
         <item name="android:windowBackground">@color/keyboard_bg</item>
+
+        <!-- Every popup: framed like the tutorial card, dimmed (and blurred) behind -->
+        <item name="android:dialogTheme">@style/AntaraPopup</item>
+        <item name="alertDialogTheme">@style/AntaraAlertPopup</item>
     </style>
 
     <!-- Light -->

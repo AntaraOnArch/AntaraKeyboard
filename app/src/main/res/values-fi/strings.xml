@@ -20,6 +20,7 @@
     <string name="main_vibration">Värinä</string>
     <string name="main_suggestions">Sanaehdotukset</string>
     <string name="main_double_space_period">Kaksoisvälilyönti pisteeksi</string>
+    <string name="main_number_row">Numerorivi</string>
     <string name="main_export">Vie asetukset</string>
     <string name="main_import">Tuo asetukset</string>
     <string name="export_done">Asetukset viety</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Eleet näppäimistöllä</string>
     <string name="help_enable">Ottaa Antara-näppäimistön käyttöön Androidin näppäimistöluettelossa. Tarvitaan kerran asennuksen jälkeen.</string>
     <string name="help_choose">Tekee Antarasta näppäimistön, jolla kirjoitat. Voit vaihtaa näppäimistöä myös navigointipalkin näppäimistökuvakkeesta.</string>
-    <string name="help_key_shape">Kuusikulmio-, kolmio-, ympyrä- tai kuutionäppäimet. Alla oleva esikatselu näyttää valitun muodon.</string>
+    <string name="help_key_shape">Kuusikulmio-, kolmio-, ympyrä- tai kuutionäppäimet. Alla oleva esikatselu näyttää valitun muodon. Klassinen ja Klassinen + numerot ovat puhelimen näppäimistö, jossa on aina 4 tai 5 riviä.</string>
     <string name="help_rows">3, 4 tai 5 näppäinriviä. Asettelut, sivupainikkeet ja pitkän painalluksen merkit seuraavat rivimäärää.</string>
     <string name="help_key_height">Tekee näppäimistä korkeampia tai matalampia. Vain korkeus muuttuu, ei koskaan leveys tai näppäinten välit.</string>
     <string name="help_row_spacing">Lisää tai vähentää tilaa näppäinrivien välillä. Mikään muu ei muutu.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Yksi väri kaikille näppäimille, tai napauta näppäintä antaaksesi sille oman värin.</string>
     <string name="help_colors_background">Näppäimistön tausta: teeman mukaan, tumma, vaalea tai oma väri.</string>
     <string name="help_colors_theme_defaults">Värit, joita vaalea ja tumma teema käyttävät kaikkialla, missä teeman värit ovat käytössä.</string>
-    <string name="help_language">Sovelluksen ja näppäimistön kirjainten kieli (latinalainen, kyrillinen tai kreikkalainen). Näppäimistöllä vaihdat sen pitämällä molempia välilyöntejä 4 sekuntia.</string>
+    <string name="help_language">Sovelluksen ja näppäimistön kirjainten kieli (latinalainen, kyrillinen tai kreikkalainen). Näppäimistöllä vaihdat sen pitämällä molempia välilyöntejä 4 sekuntia. Klassisessa muodossa pidä välilyöntiä painettuna.</string>
     <string name="help_theme">Vaalea tai tumma, läpinäkyvä tausta, Oma (tallennetut asettelusi) tai animoidut RGB Smooth ja RGB Wild.</string>
     <string name="help_rgb">RGB-animaation nopeus, kylläisyys ja kirkkaus.</string>
     <string name="help_vibration">Lyhyt värinä jokaisella näppäinpainalluksella.</string>
     <string name="help_suggestions">Enintään kolme sanaa näppäinten yläpuolella; napauta sanaa käyttääksesi sitä. Ei automaattista korjausta, eikä mitään kirjoittamaasi tallenneta.</string>
     <string name="help_double_space_period">Kaksi välilyöntiä sanan jälkeen kirjoittaa pisteen ja välilyönnin. Ei salasanoissa, sähköpostiosoitteissa tai linkeissä.</string>
+    <string name="help_number_row">Vain Klassinen + numerot: näyttää tai piilottaa kirjainten yläpuolella olevan numerorivin.</string>
     <string name="help_reset">Värit, asettelu tai molemmat oletuksiin. Nykyinen tila tallennetaan ensin Tallennettuihin asetteluihin; pitkän painalluksen merkit ja näppäinten muoto säilyvät.</string>
     <string name="help_export">Tallentaa kaikki asetukset tiedostoon, esim. siirtoa varten uuteen puhelimeen. Viimeisimmät emojit eivät ole mukana.</string>
     <string name="help_import">Lataa asetukset viedystä tiedostosta. Nykyiset asetuksesi säilyvät varmuuskopiona Tallennetuissa asetteluissa.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Kolmio</string>
     <string name="shape_circle">Ympyrä</string>
     <string name="shape_cube">Kuutio</string>
+    <string name="shape_classic">Klassinen</string>
+    <string name="shape_classic_numbers">Klassinen + numerot</string>
     <string name="theme_light">Vaalea</string>
     <string name="theme_dark">Tumma</string>
     <string name="theme_transparent">Läpinäkyvä</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 riviä: vasen, oikea, vasen</string>
     <string name="side_hint_4">4 riviä: rivi 1 oikea, 2 vasen, 3 oikea, 4 vasen</string>
     <string name="side_hint_5">5 riviä: 3 vasenta + 3 oikeaa sivunäppäintä</string>
+    <string name="side_hint_classic">Kirjainrivit: kussakin yksi vasen ja yksi oikea sivupainike rivin sisällä</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Kirjainasettelu</string>
     <string name="layout_section_numeric">Numeroasettelu</string>

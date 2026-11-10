@@ -20,6 +20,7 @@
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Подсказки слов</string>
     <string name="main_double_space_period">Двойной пробел – точка</string>
+    <string name="main_number_row">Ряд цифр</string>
     <string name="main_export">Экспорт настроек</string>
     <string name="main_import">Импорт настроек</string>
     <string name="export_done">Настройки экспортированы</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Жесты на клавиатуре</string>
     <string name="help_enable">Включает клавиатуру Антара в списке клавиатур Android. Нужно один раз после установки.</string>
     <string name="help_choose">Делает Антару клавиатурой для ввода. Сменить клавиатуру можно и значком клавиатуры на панели навигации.</string>
-    <string name="help_key_shape">Клавиши-шестиугольники, треугольники, круги или кубы. Ниже показан выбранный вид.</string>
+    <string name="help_key_shape">Клавиши-шестиугольники, треугольники, круги или кубы. Ниже показан выбранный вид. Классическая и Классическая + цифры — клавиатура как на телефоне с постоянными 4 или 5 рядами.</string>
     <string name="help_rows">3, 4 или 5 рядов клавиш. Раскладки, боковые кнопки и символы долгого нажатия следуют числу рядов.</string>
     <string name="help_key_height">Делает клавиши выше или ниже. Меняется только высота, никогда не ширина и не промежутки между клавишами.</string>
     <string name="help_row_spacing">Добавляет или убирает промежуток между рядами клавиш. Больше ничего не меняется.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Один цвет для всех клавиш, или нажмите на клавишу, чтобы задать ей свой цвет.</string>
     <string name="help_colors_background">Фон клавиатуры: по теме, тёмный, светлый или свой цвет.</string>
     <string name="help_colors_theme_defaults">Цвета светлой и тёмной темы, которые используются везде, где включены цвета темы.</string>
-    <string name="help_language">Язык приложения и букв клавиатуры (латиница, кириллица или греческий). На клавиатуре его можно сменить, удерживая оба пробела 4 секунды.</string>
+    <string name="help_language">Язык приложения и букв клавиатуры (латиница, кириллица или греческий). На клавиатуре его можно сменить, удерживая оба пробела 4 секунды. В классической форме удерживайте пробел.</string>
     <string name="help_theme">Светлая или тёмная, прозрачный фон, Своя (ваши сохранённые раскладки) или анимированные RGB Smooth и RGB Wild.</string>
     <string name="help_rgb">Скорость, насыщенность и яркость RGB-анимации.</string>
     <string name="help_vibration">Короткая вибрация при каждом нажатии клавиши.</string>
     <string name="help_suggestions">До трёх слов над клавишами; нажмите на слово, чтобы вставить его. Без автозамены, ничего из набранного не сохраняется.</string>
     <string name="help_double_space_period">Два пробела после слова ставят точку и пробел. Не в паролях, адресах эл. почты и ссылках.</string>
+    <string name="help_number_row">Только Классическая + цифры: показывает или скрывает ряд цифр над буквами.</string>
     <string name="help_reset">Цвета, раскладка или всё сразу по умолчанию. Текущее состояние сначала сохраняется в Сохранённых раскладках; символы долгого нажатия и форма клавиш остаются.</string>
     <string name="help_export">Сохраняет все настройки в файл, например для переноса на новый телефон. Недавние эмодзи не включаются.</string>
     <string name="help_import">Загружает настройки из экспортированного файла. Текущие настройки остаются резервной копией в Сохранённых раскладках.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Треугольник</string>
     <string name="shape_circle">Круг</string>
     <string name="shape_cube">Куб</string>
+    <string name="shape_classic">Классическая</string>
+    <string name="shape_classic_numbers">Классическая + цифры</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_transparent">Прозрачная</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 ряда: слева, справа, слева</string>
     <string name="side_hint_4">4 ряда: ряд 1 справа, 2 слева, 3 справа, 4 слева</string>
     <string name="side_hint_5">5 рядов: 3 левые + 3 правые боковые клавиши</string>
+    <string name="side_hint_classic">Ряды букв: по одной левой и правой боковой клавише, внутри ряда</string>
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Раскладка букв</string>
     <string name="layout_section_numeric">Цифровая раскладка</string>

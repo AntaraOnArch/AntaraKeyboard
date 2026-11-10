@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibrācija</string>
     <string name="main_suggestions">Vārdu ieteikumi</string>
     <string name="main_double_space_period">Dubultatstarpe – punkts</string>
+    <string name="main_number_row">Ciparu rinda</string>
     <string name="main_export">Eksportēt iestatījumus</string>
     <string name="main_import">Importēt iestatījumus</string>
     <string name="export_done">Iestatījumi eksportēti</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Žesti uz tastatūras</string>
     <string name="help_enable">Ieslēdz Antara tastatūru Android tastatūru sarakstā. Vajadzīgs vienreiz pēc instalēšanas.</string>
     <string name="help_choose">Padara Antara par tastatūru, ar kuru rakstāt. Tastatūru var mainīt arī ar tastatūras ikonu navigācijas joslā.</string>
-    <string name="help_key_shape">Sešstūra, trīsstūra, apļa vai kuba formas taustiņi. Priekšskatījums zemāk rāda izvēlēto formu.</string>
+    <string name="help_key_shape">Sešstūra, trīsstūra, apļa vai kuba formas taustiņi. Priekšskatījums zemāk rāda izvēlēto formu. Klasiskā un Klasiskā + cipari ir tālruņa tastatūra ar nemainīgām 4 vai 5 rindām.</string>
     <string name="help_rows">3, 4 vai 5 taustiņu rindas. Izkārtojumi, sānu pogas un ilgās nospiešanas rakstzīmes seko rindu skaitam.</string>
     <string name="help_key_height">Padara taustiņus augstākus vai zemākus. Mainās tikai augstums, nekad platums vai atstarpes starp taustiņiem.</string>
     <string name="help_row_spacing">Palielina vai samazina atstarpi starp taustiņu rindām. Nekas cits nemainās.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Viena krāsa visiem taustiņiem, vai pieskarieties taustiņam, lai piešķirtu tam savu krāsu.</string>
     <string name="help_colors_background">Tastatūras fons: pēc motīva, tumšs, gaišs vai jūsu krāsa.</string>
     <string name="help_colors_theme_defaults">Krāsas, ko gaišais un tumšais motīvs izmanto visur, kur ieslēgtas motīva krāsas.</string>
-    <string name="help_language">Lietotnes un tastatūras burtu valoda (latīņu, kirilica vai grieķu). Uz tastatūras to maina, 4 sekundes turot abus atstarpes taustiņus.</string>
+    <string name="help_language">Lietotnes un tastatūras burtu valoda (latīņu, kirilica vai grieķu). Uz tastatūras to maina, 4 sekundes turot abus atstarpes taustiņus. Klasiskajā formā turiet atstarpes taustiņu.</string>
     <string name="help_theme">Gaišs vai tumšs, caurspīdīgs fons, Pielāgots (saglabātie izkārtojumi) vai animētie RGB Smooth un RGB Wild.</string>
     <string name="help_rgb">RGB animācijas ātrums, piesātinājums un spilgtums.</string>
     <string name="help_vibration">Īsa vibrācija katrā taustiņa nospiešanā.</string>
     <string name="help_suggestions">Līdz trim vārdiem virs taustiņiem; pieskarieties vārdam, lai to izmantotu. Bez automātiskās labošanas, un nekas rakstītais netiek saglabāts.</string>
     <string name="help_double_space_period">Divas atstarpes pēc vārda ieraksta punktu un atstarpi. Ne parolēs, e-pasta adresēs vai saitēs.</string>
+    <string name="help_number_row">Tikai Klasiskā + cipari: rāda vai paslēpj ciparu rindu virs burtiem.</string>
     <string name="help_reset">Krāsas, izkārtojums vai abi uz noklusējumu. Pašreizējais stāvoklis vispirms tiek saglabāts Saglabātajos izkārtojumos; ilgās nospiešanas rakstzīmes un taustiņu forma paliek.</string>
     <string name="help_export">Saglabā visus iestatījumus failā, piem., lai pārnestu uz jaunu tālruni. Nesenās emocijzīmes netiek iekļautas.</string>
     <string name="help_import">Ielādē iestatījumus no eksportēta faila. Pašreizējie iestatījumi paliek kā rezerves kopija Saglabātajos izkārtojumos.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trijstūris</string>
     <string name="shape_circle">Aplis</string>
     <string name="shape_cube">Kubs</string>
+    <string name="shape_classic">Klasiskā</string>
+    <string name="shape_classic_numbers">Klasiskā + cipari</string>
     <string name="theme_light">Gaišs</string>
     <string name="theme_dark">Tumšs</string>
     <string name="theme_transparent">Caurspīdīgs</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rindas: pa kreisi, pa labi, pa kreisi</string>
     <string name="side_hint_4">4 rindas: 1. pa labi, 2. pa kreisi, 3. pa labi, 4. pa kreisi</string>
     <string name="side_hint_5">5 rindas: 3 kreisie + 3 labie sānu taustiņi</string>
+    <string name="side_hint_classic">Burtu rindas: katrā viena kreisā un viena labā sānu poga, rindas iekšpusē</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Burtu izkārtojums</string>
     <string name="layout_section_numeric">Ciparu izkārtojums</string>

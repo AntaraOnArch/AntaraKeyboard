@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Ordforslag</string>
     <string name="main_double_space_period">Dobbelt mellemrum giver punktum</string>
+    <string name="main_number_row">Talrække</string>
     <string name="main_export">Eksportér indstillinger</string>
     <string name="main_import">Importér indstillinger</string>
     <string name="export_done">Indstillinger eksporteret</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Bevægelser på tastaturet</string>
     <string name="help_enable">Slår Antara-tastaturet til på Androids liste over tastaturer. Kun nødvendigt én gang efter installationen.</string>
     <string name="help_choose">Gør Antara til det tastatur, du skriver med. Du kan også skifte tastatur med tastaturikonet i navigationslinjen.</string>
-    <string name="help_key_shape">Sekskantede, trekantede, runde eller terningformede taster. Eksemplet nedenfor viser den valgte form.</string>
+    <string name="help_key_shape">Sekskantede, trekantede, runde eller terningformede taster. Eksemplet nedenfor viser den valgte form. Klassisk og Klassisk + tal er et telefontastatur med faste 4 eller 5 rækker.</string>
     <string name="help_rows">3, 4 eller 5 rækker taster. Layouts, sideknapper og tegn ved langt tryk følger antallet af rækker.</string>
     <string name="help_key_height">Gør tasterne højere eller lavere. Kun højden ændres, aldrig bredden eller afstanden mellem tasterne.</string>
     <string name="help_row_spacing">Tilføjer eller fjerner plads mellem tasterækkerne. Intet andet ændres.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Én farve til alle taster, eller tryk på en tast for at give den sin egen farve.</string>
     <string name="help_colors_background">Tastaturbaggrund: efter tema, mørk, lys eller din egen farve.</string>
     <string name="help_colors_theme_defaults">Farverne, som det lyse og mørke tema bruger overalt, hvor temafarver er slået til.</string>
-    <string name="help_language">Sproget i appen og tastaturets bogstaver (latinsk, kyrillisk eller græsk). På tastaturet skifter du det ved at holde begge mellemrumstaster i 4 sekunder.</string>
+    <string name="help_language">Sproget i appen og tastaturets bogstaver (latinsk, kyrillisk eller græsk). På tastaturet skifter du det ved at holde begge mellemrumstaster i 4 sekunder. Med en klassisk form holder du mellemrumstasten nede.</string>
     <string name="help_theme">Lys eller Mørk, gennemsigtig baggrund, Tilpasset (dine gemte layouts) eller de animerede RGB Smooth og RGB Wild.</string>
     <string name="help_rgb">Hastighed, mætning og lysstyrke for RGB-animationen.</string>
     <string name="help_vibration">En kort vibration ved hvert tastetryk.</string>
     <string name="help_suggestions">Op til tre ord over tasterne; tryk på et for at bruge det. Ingen autokorrektur, og intet du skriver gemmes.</string>
     <string name="help_double_space_period">To mellemrum efter et ord skriver punktum og mellemrum. Ikke i adgangskoder, e-mailadresser eller links.</string>
+    <string name="help_number_row">Kun Klassisk + tal: viser eller skjuler talrækken over bogstaverne.</string>
     <string name="help_reset">Farver, layout eller begge til standard. Den nuværende tilstand gemmes først i Gemte layouts; tegn ved langt tryk og tasteformen bevares.</string>
     <string name="help_export">Gemmer alle indstillinger i en fil, f.eks. til en ny telefon. Seneste emoji er ikke med.</string>
     <string name="help_import">Indlæser indstillinger fra en eksporteret fil. Dine nuværende indstillinger gemmes som sikkerhedskopi i Gemte layouts.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trekant</string>
     <string name="shape_circle">Cirkel</string>
     <string name="shape_cube">Terning</string>
+    <string name="shape_classic">Klassisk</string>
+    <string name="shape_classic_numbers">Klassisk + tal</string>
     <string name="theme_light">Lyst</string>
     <string name="theme_dark">Mørkt</string>
     <string name="theme_transparent">Gennemsigtigt</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rækker: venstre, højre, venstre</string>
     <string name="side_hint_4">4 rækker: række 1 højre, 2 venstre, 3 højre, 4 venstre</string>
     <string name="side_hint_5">5 rækker: 3 venstre + 3 højre sideknapper</string>
+    <string name="side_hint_classic">Bogstavrækker: hver en venstre og en højre sideknap, i rækken</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Bogstavlayout</string>
     <string name="layout_section_numeric">Tallayout</string>

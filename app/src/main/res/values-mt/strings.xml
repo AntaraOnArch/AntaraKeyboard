@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibrazzjoni</string>
     <string name="main_suggestions">Suġġerimenti tal-kliem</string>
     <string name="main_double_space_period">Spazju doppju għal punt</string>
+    <string name="main_number_row">Ringiela tan-numri</string>
     <string name="main_export">Esporta s-settings</string>
     <string name="main_import">Importa s-settings</string>
     <string name="export_done">Is-settings ġew esportati</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Ġesti fuq it-tastiera</string>
     <string name="help_enable">Tixgħel it-Tastiera Antara fil-lista tat-tastieri ta\' Android. Meħtieġ darba wara l-installazzjoni.</string>
     <string name="help_choose">Tagħmel lil Antara t-tastiera li tikteb biha. Tista\' wkoll taqleb it-tastiera mill-ikona tat-tastiera fil-bar tan-navigazzjoni.</string>
-    <string name="help_key_shape">Tasti eżagonali, trijangolari, tondi jew kubi. Il-preview t\'isfel turi l-forma magħżula.</string>
+    <string name="help_key_shape">Tasti eżagonali, trijangolari, tondi jew kubi. Il-preview t\'isfel turi l-forma magħżula. Klassiku u Klassiku + numri huma tastiera tat-telefon b\'4 jew 5 ringieli fissi.</string>
     <string name="help_rows">3, 4 jew 5 ringieli ta\' tasti. It-tqassimiet, il-buttuni tal-ġenb u l-karattri ta\' għafsa twila jsegwu n-numru ta\' ringieli.</string>
     <string name="help_key_height">Tagħmel it-tasti ogħla jew iqsar. Tinbidel biss l-għoli, qatt il-wisa\' jew l-ispazji bejn it-tasti.</string>
     <string name="help_row_spacing">Iżżid jew tnaqqas l-ispazju bejn ir-ringieli tat-tasti. Xejn iżjed ma jinbidel.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Kulur wieħed għat-tasti kollha, jew ittappja tast biex tagħtih kulur tiegħu.</string>
     <string name="help_colors_background">Sfond tat-tastiera: skont it-tema, skur, ċar jew kulur tiegħek.</string>
     <string name="help_colors_theme_defaults">Il-kuluri li t-temi Ċar u Skur jużaw kullimkien fejn il-kuluri tat-tema huma mixgħula.</string>
-    <string name="help_language">Il-lingwa tal-app u tal-ittri tat-tastiera (Latin, Ċirilliku jew Grieg). Fuq it-tastiera tbiddilha billi żżomm iż-żewġ tasti tal-ispazju għal 4 sekondi.</string>
+    <string name="help_language">Il-lingwa tal-app u tal-ittri tat-tastiera (Latin, Ċirilliku jew Grieg). Fuq it-tastiera tbiddilha billi żżomm iż-żewġ tasti tal-ispazju għal 4 sekondi. B\'forma klassika, żomm il-buttuna tal-ispazju.</string>
     <string name="help_theme">Ċar jew Skur, sfond trasparenti, Personalizzat (it-tqassimiet salvati tiegħek) jew l-animati RGB Smooth u RGB Wild.</string>
     <string name="help_rgb">Il-veloċità, is-saturazzjoni u d-dawl tal-animazzjoni RGB.</string>
     <string name="help_vibration">Vibrazzjoni qasira ma\' kull għafsa ta\' tast.</string>
     <string name="help_suggestions">Sa tliet kelmiet fuq it-tasti; ittappja waħda biex tużaha. L-ebda korrezzjoni awtomatika, u xejn minn dak li tikteb ma jiġi salvat.</string>
     <string name="help_double_space_period">Żewġ spazji wara kelma jiktbu punt u spazju. Mhux fil-passwords, fl-indirizzi tal-email jew fil-links.</string>
+    <string name="help_number_row">Klassiku + numri biss: turi jew taħbi r-ringiela tan-numri fuq l-ittri.</string>
     <string name="help_reset">Kuluri, tqassim jew it-tnejn lura għall-default. L-istat attwali l-ewwel jiġi salvat fit-Tqassimiet salvati; il-karattri ta\' għafsa twila u l-forma tat-tasti jibqgħu.</string>
     <string name="help_export">Issalva s-settings kollha f\'fajl, eż. biex tgħaddihom lil telefon ġdid. L-emoji riċenti mhumiex inklużi.</string>
     <string name="help_import">Ittella\' s-settings minn fajl esportat. Is-settings attwali tiegħek jinżammu bħala backup fit-Tqassimiet salvati.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trijangolu</string>
     <string name="shape_circle">Ċirku</string>
     <string name="shape_cube">Kubu</string>
+    <string name="shape_classic">Klassiku</string>
+    <string name="shape_classic_numbers">Klassiku + numri</string>
     <string name="theme_light">Ċar</string>
     <string name="theme_dark">Skur</string>
     <string name="theme_transparent">Trasparenti</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 ringieli: xellug, lemin, xellug</string>
     <string name="side_hint_4">4 ringieli: ringiela 1 lemin, 2 xellug, 3 lemin, 4 xellug</string>
     <string name="side_hint_5">5 ringieli: 3 ċwievet fuq ix-xellug + 3 fuq il-lemin</string>
+    <string name="side_hint_classic">Ringieli tal-ittri: buttuna tal-ġenb waħda xellug u waħda lemin kull waħda, ġewwa r-ringiela</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Tqassim tal-ittri</string>
     <string name="layout_section_numeric">Tqassim numeriku</string>

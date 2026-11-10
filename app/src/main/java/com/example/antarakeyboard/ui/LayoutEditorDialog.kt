@@ -19,6 +19,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.example.antarakeyboard.R
 import com.example.antarakeyboard.SpecialChars
+import com.example.antarakeyboard.data.ClassicLayouts
+import com.example.antarakeyboard.data.EdgeSlotsStorage
 import com.example.antarakeyboard.data.EmojiPickerStorage
 import com.example.antarakeyboard.data.GlobalLongPressStorage
 import com.example.antarakeyboard.data.KeyboardPrefs
@@ -59,7 +61,16 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
             R.string.layout_section_horizontal,
             R.string.layout_section_emoji
         ).map { activity.getString(it) }
-        val sectionAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, sectionOptions).apply {
+        // Classic layouts have no landscape island; the one with the number row has no side buttons
+        val rowCount = KeyboardPrefs.getLayoutId(activity)
+        val sections = listOf(SECTION_KEYS, SECTION_SIDE, SECTION_HORIZONTAL, SECTION_EMOJI).filter {
+            when (it) {
+                SECTION_SIDE -> EdgeSlotsStorage.slotCountForRowCount(rowCount) > 0
+                SECTION_HORIZONTAL -> !ClassicLayouts.isClassic(rowCount)
+                else -> true
+            }
+        }
+        val sectionAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, sections.map { sectionOptions[it] }).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
         spinnerSection.adapter = sectionAdapter
@@ -76,7 +87,6 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
         val numericEditorContainer = dialog.findViewById<FrameLayout>(R.id.numericEditorContainer)
         val horizontalEditorContainer = dialog.findViewById<FrameLayout>(R.id.horizontalEditorContainer)
 
-        val rowCount = KeyboardPrefs.getRowCount(activity)
         var currentPage = 0
 
         fun markDirty() {
@@ -308,13 +318,15 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
             if (page == 3) setupEmojiPickerPage()
         }
 
-        spinnerSection.setSelection(initialSection, false)
+        val firstSection = initialSection.takeIf { it in sections } ?: SECTION_KEYS
+        spinnerSection.setSelection(sections.indexOf(firstSection), false)
         spinnerSection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 // The first callback reports the section already shown
-                if (position == currentPage) return
+                val section = sections[position]
+                if (section == currentPage) return
                 host.flushSavedToast()
-                showPage(position)
+                showPage(section)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -328,7 +340,7 @@ class LayoutEditorDialog(private val activity: Activity, private val host: Host)
             (activity.resources.displayMetrics.widthPixels * 0.94f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        showPage(initialSection)
+        showPage(firstSection)
     }
 
     /**

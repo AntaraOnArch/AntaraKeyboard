@@ -51,7 +51,7 @@ internal object KeySizing {
 
                         KeyShape.TRIANGLE -> (usableForKeys / 3.35f).toInt().coerceAtLeast(48.dp(spec))
                         KeyShape.CIRCLE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(spec))
-                        KeyShape.CUBE -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(spec))
+                        KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> (usableForKeys / 3.30f).toInt().coerceAtLeast(50.dp(spec))
                     }
                 }
 
@@ -64,7 +64,7 @@ internal object KeySizing {
 
                         KeyShape.TRIANGLE -> (usableForKeys / 4.25f).toInt().coerceAtLeast(42.dp(spec))
                         KeyShape.CIRCLE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(spec))
-                        KeyShape.CUBE -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(spec))
+                        KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> (usableForKeys / 4.20f).toInt().coerceAtLeast(43.dp(spec))
                     }
                 }
             }
@@ -78,7 +78,7 @@ internal object KeySizing {
 
             KeyShape.TRIANGLE -> rows.toFloat()
             KeyShape.CIRCLE -> rows.toFloat()
-            KeyShape.CUBE -> rows.toFloat()
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> rows.toFloat()
         }
 
         val baseH = (usableForKeys / denominator).toInt().coerceAtLeast(
@@ -103,7 +103,7 @@ internal object KeySizing {
                 (baseH * 0.96f).toInt()
             }
 
-            KeyShape.CUBE -> if (spec.landscape) {
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> if (spec.landscape) {
                 (baseH * 0.88f).toInt()
             } else {
                 (baseH * 0.96f).toInt()
@@ -218,7 +218,7 @@ internal object KeySizing {
                     else -> 4.dp(spec)
                 }
             }
-            KeyShape.CUBE -> {
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> {
                 when {
                     spec.landscape -> 2.dp(spec)
 
@@ -260,7 +260,7 @@ internal object KeySizing {
                     else -> (availW * 0.92f).toInt()
                 }
             }
-            KeyShape.CUBE -> {
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> {
                 when {
                     spec.landscape -> availW
 

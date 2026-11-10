@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibrazione</string>
     <string name="main_suggestions">Suggerimenti di parole</string>
     <string name="main_double_space_period">Doppio spazio per il punto</string>
+    <string name="main_number_row">Riga dei numeri</string>
     <string name="main_export">Esporta impostazioni</string>
     <string name="main_import">Importa impostazioni</string>
     <string name="export_done">Impostazioni esportate</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gesti sulla tastiera</string>
     <string name="help_enable">Attiva Tastiera Antara nell\'elenco delle tastiere di Android. Serve una volta dopo l\'installazione.</string>
     <string name="help_choose">Rende Antara la tastiera con cui scrivi. Puoi cambiare tastiera anche dall\'icona della tastiera nella barra di navigazione.</string>
-    <string name="help_key_shape">Tasti esagonali, triangolari, rotondi o a cubo. L\'anteprima sotto mostra la forma scelta.</string>
+    <string name="help_key_shape">Tasti esagonali, triangolari, rotondi o a cubo. L\'anteprima sotto mostra la forma scelta. Classica e Classica + numeri sono una tastiera da telefono con 4 o 5 righe fisse.</string>
     <string name="help_rows">3, 4 o 5 file di tasti. Layout, pulsanti laterali e caratteri a pressione prolungata seguono il numero di file.</string>
     <string name="help_key_height">Rende i tasti più alti o più bassi. Cambia solo l\'altezza, mai la larghezza o lo spazio tra i tasti.</string>
     <string name="help_row_spacing">Aggiunge o toglie spazio tra le file di tasti. Nient\'altro cambia.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Un colore per tutti i tasti, oppure tocca un tasto per dargli un colore suo.</string>
     <string name="help_colors_background">Sfondo della tastiera: secondo il tema, scuro, chiaro o un colore tuo.</string>
     <string name="help_colors_theme_defaults">I colori che i temi Chiaro e Scuro usano ovunque siano attivi i colori del tema.</string>
-    <string name="help_language">Lingua dell\'app e delle lettere della tastiera (latino, cirillico o greco). Sulla tastiera la cambi tenendo premuti entrambi i tasti spazio per 4 secondi.</string>
+    <string name="help_language">Lingua dell\'app e delle lettere della tastiera (latino, cirillico o greco). Sulla tastiera la cambi tenendo premuti entrambi i tasti spazio per 4 secondi. Con una forma classica tieni premuta la barra spaziatrice.</string>
     <string name="help_theme">Chiaro o Scuro, sfondo trasparente, Personalizzato (i tuoi layout salvati) o gli animati RGB Smooth e RGB Wild.</string>
     <string name="help_rgb">Velocità, saturazione e luminosità dell\'animazione RGB.</string>
     <string name="help_vibration">Una breve vibrazione a ogni pressione di tasto.</string>
     <string name="help_suggestions">Fino a tre parole sopra i tasti; toccane una per usarla. Nessuna correzione automatica e niente di ciò che scrivi viene salvato.</string>
     <string name="help_double_space_period">Due spazi dopo una parola inseriscono un punto e uno spazio. Non nelle password, negli indirizzi email o nei link.</string>
+    <string name="help_number_row">Solo Classica + numeri: mostra o nasconde la riga dei numeri sopra le lettere.</string>
     <string name="help_reset">Colori, layout o entrambi ai valori predefiniti. Lo stato attuale viene prima salvato in Layout salvati; i caratteri a pressione prolungata e la forma dei tasti restano.</string>
     <string name="help_export">Salva tutte le impostazioni in un file, ad es. per spostarle su un nuovo telefono. Le emoji recenti non sono incluse.</string>
     <string name="help_import">Carica le impostazioni da un file esportato. Le impostazioni attuali restano come backup in Layout salvati.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triangolo</string>
     <string name="shape_circle">Cerchio</string>
     <string name="shape_cube">Cubo</string>
+    <string name="shape_classic">Classica</string>
+    <string name="shape_classic_numbers">Classica + numeri</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="theme_transparent">Trasparente</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 righe: sinistra, destra, sinistra</string>
     <string name="side_hint_4">4 righe: riga 1 destra, 2 sinistra, 3 destra, 4 sinistra</string>
     <string name="side_hint_5">5 righe: 3 tasti a sinistra + 3 a destra</string>
+    <string name="side_hint_classic">Righe di lettere: un tasto laterale sinistro e uno destro ciascuna, nella riga</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Layout lettere</string>
     <string name="layout_section_numeric">Layout numerico</string>

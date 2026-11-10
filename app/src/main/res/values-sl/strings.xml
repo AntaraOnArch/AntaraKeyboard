@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibriranje</string>
     <string name="main_suggestions">Predlogi besed</string>
     <string name="main_double_space_period">Dvojni presledek za piko</string>
+    <string name="main_number_row">Vrstica s številkami</string>
     <string name="main_export">Izvozi nastavitve</string>
     <string name="main_import">Uvozi nastavitve</string>
     <string name="export_done">Nastavitve izvožene</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Kretnje na tipkovnici</string>
     <string name="help_enable">Vklopi tipkovnico Antara na Androidovem seznamu tipkovnic. Potrebno enkrat po namestitvi.</string>
     <string name="help_choose">Nastavi Antaro kot tipkovnico, s katero tipkate. Tipkovnico lahko zamenjate tudi z ikono tipkovnice v vrstici za krmarjenje.</string>
-    <string name="help_key_shape">Tipke v obliki šestkotnika, trikotnika, kroga ali kocke. Predogled spodaj pokaže izbrano obliko.</string>
+    <string name="help_key_shape">Tipke v obliki šestkotnika, trikotnika, kroga ali kocke. Predogled spodaj pokaže izbrano obliko. Klasična in Klasična + številke sta tipkovnica kot na telefonu s stalnimi 4 ali 5 vrsticami.</string>
     <string name="help_rows">3, 4 ali 5 vrstic tipk. Postavitve, stranski gumbi in znaki dolgega pritiska sledijo številu vrstic.</string>
     <string name="help_key_height">Naredi tipke višje ali nižje. Spremeni se samo višina, nikoli širina ali razmiki med tipkami.</string>
     <string name="help_row_spacing">Doda ali zmanjša prostor med vrsticami tipk. Nič drugega se ne spremeni.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Ena barva za vse tipke, ali tapnite tipko, da ji daste lastno barvo.</string>
     <string name="help_colors_background">Ozadje tipkovnice: po temi, temno, svetlo ali lastna barva.</string>
     <string name="help_colors_theme_defaults">Barve svetle in temne teme, ki se uporabljajo povsod, kjer so vklopljene barve teme.</string>
-    <string name="help_language">Jezik aplikacije in črk tipkovnice (latinica, cirilica ali grščina). Na tipkovnici ga zamenjate tako, da 4 sekunde držite obe preslednici.</string>
+    <string name="help_language">Jezik aplikacije in črk tipkovnice (latinica, cirilica ali grščina). Na tipkovnici ga zamenjate tako, da 4 sekunde držite obe preslednici. Pri klasični obliki pridržite preslednico.</string>
     <string name="help_theme">Svetla ali temna, prosojno ozadje, Po meri (vaše shranjene postavitve) ali animirani RGB Smooth in RGB Wild.</string>
     <string name="help_rgb">Hitrost, nasičenost in svetlost animacije RGB.</string>
     <string name="help_vibration">Kratek tresljaj ob vsakem pritisku tipke.</string>
     <string name="help_suggestions">Do tri besede nad tipkami; tapnite eno, da jo uporabite. Brez samodejnega popravljanja, nič natipkanega se ne shrani.</string>
     <string name="help_double_space_period">Dva presledka za besedo vpišeta piko in presledek. Ne v geslih, e-poštnih naslovih ali povezavah.</string>
+    <string name="help_number_row">Samo Klasična + številke: prikaže ali skrije vrstico s številkami nad črkami.</string>
     <string name="help_reset">Barve, postavitev ali oboje na privzeto. Trenutno stanje se najprej shrani v Shranjene postavitve; znaki dolgega pritiska in oblika tipk ostanejo.</string>
     <string name="help_export">Shrani vse nastavitve v datoteko, npr. za prenos na nov telefon. Nedavni emojiji niso vključeni.</string>
     <string name="help_import">Naloži nastavitve iz izvožene datoteke. Trenutne nastavitve ostanejo kot varnostna kopija v Shranjenih postavitvah.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trikotnik</string>
     <string name="shape_circle">Krog</string>
     <string name="shape_cube">Kocka</string>
+    <string name="shape_classic">Klasična</string>
+    <string name="shape_classic_numbers">Klasična + številke</string>
     <string name="theme_light">Svetla</string>
     <string name="theme_dark">Temna</string>
     <string name="theme_transparent">Prosojna</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 vrstice: levo, desno, levo</string>
     <string name="side_hint_4">4 vrstice: 1. desno, 2. levo, 3. desno, 4. levo</string>
     <string name="side_hint_5">5 vrstic: 3 leve + 3 desne stranske tipke</string>
+    <string name="side_hint_classic">Vrstice črk: v vsaki en levi in en desni stranski gumb, znotraj vrstice</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Postavitev črk</string>
     <string name="layout_section_numeric">Postavitev številk</string>

@@ -87,6 +87,8 @@ object SavedLayoutStorage {
      */
     fun saveCurrentLayout(context: Context, name: String, includeColors: Boolean = true): SavedLayout {
         val rowCount = KeyboardPrefs.getRowCount(context)
+        // A classic shape keeps its layouts under its own id (the row count stays the other shapes')
+        val layoutId = KeyboardPrefs.getLayoutId(context)
         // Store the colors as they are drawn (theme or custom), so a restore looks the same
         val isDark = PrefsManager.isDarkMode(context)
         val (keyFill, keyText) = KeyboardPrefs.resolveKeyColors(context, isDark)
@@ -96,9 +98,9 @@ object SavedLayoutStorage {
             name = name,
             rowCount = rowCount,
             keyShape = KeyboardPrefs.getShape(context).name,
-            alphabetLayoutJson = gson.toJson(KeyboardPrefs.loadAlphabetLayoutForRowCount(context, rowCount)),
-            numericLayoutJson = gson.toJson(KeyboardPrefs.loadNumericLayoutForRowCount(context, rowCount)),
-            horizontalCenterLayoutJson = gson.toJson(KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(context, rowCount)),
+            alphabetLayoutJson = gson.toJson(KeyboardPrefs.loadAlphabetLayoutForRowCount(context, layoutId)),
+            numericLayoutJson = gson.toJson(KeyboardPrefs.loadNumericLayoutForRowCount(context, layoutId)),
+            horizontalCenterLayoutJson = gson.toJson(KeyboardPrefs.loadHorizontalCenterLayoutForRowCount(context, layoutId)),
             edgeSlotsJson = gson.toJson(EdgeSlotsStorage.load(context)),
             keyFill = keyFill,
             keyText = keyText,
@@ -148,7 +150,10 @@ object SavedLayoutStorage {
     fun restoreLayout(context: Context, savedLayout: SavedLayout, withColors: Boolean) {
         // Restore row count and shape
         KeyboardPrefs.setRowCount(context, savedLayout.rowCount)
-        KeyboardPrefs.setShape(context, KeyShape.valueOf(savedLayout.keyShape))
+        val shape = KeyShape.valueOf(savedLayout.keyShape)
+        KeyboardPrefs.setShape(context, shape)
+        val layoutId = ClassicLayouts.layoutId(shape, savedLayout.rowCount)
+        if (shape.isClassic) KeyboardPrefs.ensureClassicPunctuation(context)
 
         // Restore layouts
         val alphabetLayout: KeyboardConfig = gson.fromJson(
@@ -164,9 +169,9 @@ object SavedLayoutStorage {
             KeyboardConfig::class.java
         )
 
-        KeyboardPrefs.saveAlphabetLayoutForRowCount(context, savedLayout.rowCount, alphabetLayout)
-        KeyboardPrefs.saveNumericLayoutForRowCount(context, savedLayout.rowCount, numericLayout)
-        KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(context, savedLayout.rowCount, horizontalCenterLayout)
+        KeyboardPrefs.saveAlphabetLayoutForRowCount(context, layoutId, alphabetLayout)
+        KeyboardPrefs.saveNumericLayoutForRowCount(context, layoutId, numericLayout)
+        KeyboardPrefs.saveHorizontalCenterLayoutForRowCount(context, layoutId, horizontalCenterLayout)
 
         // Key height and row spacing sliders (absent in layouts saved before they existed)
         savedLayout.keyScale?.let { KeyboardPrefs.setKeyScale(context, it) }

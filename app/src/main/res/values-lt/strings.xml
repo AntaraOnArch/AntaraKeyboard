@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibravimas</string>
     <string name="main_suggestions">Žodžių pasiūlymai</string>
     <string name="main_double_space_period">Dvigubas tarpas – taškas</string>
+    <string name="main_number_row">Skaičių eilė</string>
     <string name="main_export">Eksportuoti nustatymus</string>
     <string name="main_import">Importuoti nustatymus</string>
     <string name="export_done">Nustatymai eksportuoti</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gestai klaviatūroje</string>
     <string name="help_enable">Įjungia Antara klaviatūrą Android klaviatūrų sąraše. Reikia kartą po įdiegimo.</string>
     <string name="help_choose">Padaro Antara klaviatūra, kuria rašote. Klaviatūrą taip pat galite pakeisti klaviatūros piktograma naršymo juostoje.</string>
-    <string name="help_key_shape">Šešiakampiai, trikampiai, apskriti ar kubo formos klavišai. Peržiūra žemiau rodo pasirinktą formą.</string>
+    <string name="help_key_shape">Šešiakampiai, trikampiai, apskriti ar kubo formos klavišai. Peržiūra žemiau rodo pasirinktą formą. Klasikinė ir Klasikinė + skaičiai – telefono klaviatūra su pastoviomis 4 arba 5 eilėmis.</string>
     <string name="help_rows">3, 4 arba 5 klavišų eilės. Išdėstymai, šoniniai mygtukai ir ilgo paspaudimo simboliai seka eilių skaičių.</string>
     <string name="help_key_height">Padaro klavišus aukštesnius ar žemesnius. Keičiasi tik aukštis, niekada plotis ar tarpai tarp klavišų.</string>
     <string name="help_row_spacing">Padidina ar sumažina tarpą tarp klavišų eilių. Daugiau niekas nesikeičia.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Viena spalva visiems klavišams arba palieskite klavišą, kad suteiktumėte jam savo spalvą.</string>
     <string name="help_colors_background">Klaviatūros fonas: pagal temą, tamsus, šviesus ar jūsų spalva.</string>
     <string name="help_colors_theme_defaults">Spalvos, kurias šviesi ir tamsi temos naudoja visur, kur įjungtos temos spalvos.</string>
-    <string name="help_language">Programos ir klaviatūros raidžių kalba (lotynų, kirilica ar graikų). Klaviatūroje ją pakeisite 4 sekundes laikydami abu tarpo klavišus.</string>
+    <string name="help_language">Programos ir klaviatūros raidžių kalba (lotynų, kirilica ar graikų). Klaviatūroje ją pakeisite 4 sekundes laikydami abu tarpo klavišus. Klasikinėje formoje laikykite tarpo klavišą.</string>
     <string name="help_theme">Šviesi ar tamsi, permatomas fonas, Tinkinta (išsaugoti išdėstymai) arba animuotos RGB Smooth ir RGB Wild.</string>
     <string name="help_rgb">RGB animacijos greitis, sodrumas ir ryškumas.</string>
     <string name="help_vibration">Trumpa vibracija paspaudus kiekvieną klavišą.</string>
     <string name="help_suggestions">Iki trijų žodžių virš klavišų; palieskite žodį, kad jį panaudotumėte. Jokio automatinio taisymo ir niekas, ką rašote, neišsaugoma.</string>
     <string name="help_double_space_period">Du tarpai po žodžio įrašo tašką ir tarpą. Ne slaptažodžiuose, el. pašto adresuose ar nuorodose.</string>
+    <string name="help_number_row">Tik Klasikinė + skaičiai: rodo arba paslepia skaičių eilę virš raidžių.</string>
     <string name="help_reset">Spalvos, išdėstymas ar abu į numatytuosius. Dabartinė būsena pirmiausia išsaugoma Išsaugotuose išdėstymuose; ilgo paspaudimo simboliai ir klavišų forma lieka.</string>
     <string name="help_export">Įrašo visus nustatymus į failą, pvz., perkelti į naują telefoną. Naujausi jaustukai neįtraukiami.</string>
     <string name="help_import">Įkelia nustatymus iš eksportuoto failo. Dabartiniai nustatymai lieka kaip atsarginė kopija Išsaugotuose išdėstymuose.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trikampis</string>
     <string name="shape_circle">Apskritimas</string>
     <string name="shape_cube">Kubas</string>
+    <string name="shape_classic">Klasikinė</string>
+    <string name="shape_classic_numbers">Klasikinė + skaičiai</string>
     <string name="theme_light">Šviesi</string>
     <string name="theme_dark">Tamsi</string>
     <string name="theme_transparent">Permatoma</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 eilutės: kairė, dešinė, kairė</string>
     <string name="side_hint_4">4 eilutės: 1 dešinė, 2 kairė, 3 dešinė, 4 kairė</string>
     <string name="side_hint_5">5 eilutės: 3 kairieji + 3 dešinieji šoniniai klavišai</string>
+    <string name="side_hint_classic">Raidžių eilės: kiekvienoje po vieną kairįjį ir dešinįjį šoninį mygtuką, eilės viduje</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Raidžių išdėstymas</string>
     <string name="layout_section_numeric">Skaitmenų išdėstymas</string>

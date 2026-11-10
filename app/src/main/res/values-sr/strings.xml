@@ -20,6 +20,7 @@
     <string name="main_vibration">Вибрација</string>
     <string name="main_suggestions">Предлози речи</string>
     <string name="main_double_space_period">Двоструки размак за тачку</string>
+    <string name="main_number_row">Ред са бројевима</string>
     <string name="main_export">Извези подешавања</string>
     <string name="main_import">Увези подешавања</string>
     <string name="export_done">Подешавања су извезена</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Покрети на тастатури</string>
     <string name="help_enable">Укључује Антара тастатуру на Андроидовој листи тастатура. Потребно једном после инсталације.</string>
     <string name="help_choose">Поставља Антару као тастатуру којом куцате. Тастатуру можете променити и иконом тастатуре на навигационој траци.</string>
-    <string name="help_key_shape">Тастери у облику шестоугла, троугла, круга или коцке. Преглед испод приказује изабрани облик.</string>
+    <string name="help_key_shape">Тастери у облику шестоугла, троугла, круга или коцке. Преглед испод приказује изабрани облик. Класична и Класична + бројеви су тастатура као на телефону са сталних 4 или 5 редова.</string>
     <string name="help_rows">3, 4 или 5 редова тастера. Распореди, бочни тастери и знакови дугог притиска прате број редова.</string>
     <string name="help_key_height">Тастери постају виши или нижи. Мења се само висина, никад ширина ни размаци између тастера.</string>
     <string name="help_row_spacing">Додаје или смањује размак између редова тастера. Ништа друго се не мења.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Једна боја за све тастере или додирните тастер да му дате сопствену боју.</string>
     <string name="help_colors_background">Позадина тастатуре: према теми, тамна, светла или ваша боја.</string>
     <string name="help_colors_theme_defaults">Боје које светла и тамна тема користе где год су укључене боје теме.</string>
-    <string name="help_language">Језик апликације и слова тастатуре (латиница, ћирилица или грчки). На тастатури га промените држањем обе размакнице 4 секунде.</string>
+    <string name="help_language">Језик апликације и слова тастатуре (латиница, ћирилица или грчки). На тастатури га промените држањем обе размакнице 4 секунде. Са класичним обликом држите размакницу.</string>
     <string name="help_theme">Светла или тамна, провидна позадина, Прилагођена (ваши сачувани распореди) или анимиране RGB Smooth и RGB Wild.</string>
     <string name="help_rgb">Брзина, засићеност и осветљеност RGB анимације.</string>
     <string name="help_vibration">Кратка вибрација при сваком притиску тастера.</string>
     <string name="help_suggestions">До три речи изнад тастера; додирните једну да је употребите. Нема аутокорекције и ништа што куцате се не чува.</string>
     <string name="help_double_space_period">Два размака после речи уписују тачку и размак. Не у лозинкама, имејл адресама ни линковима.</string>
+    <string name="help_number_row">Само Класична + бројеви: приказује или скрива ред бројева изнад слова.</string>
     <string name="help_reset">Боје, распоред или обоје на подразумевано. Тренутно стање се прво чува у Сачуваним распоредима; знакови дугог притиска и облик тастера остају.</string>
     <string name="help_export">Чува сва подешавања у датотеку, нпр. за пренос на нови телефон. Недавни емоџији нису укључени.</string>
     <string name="help_import">Учитава подешавања из извезене датотеке. Тренутна подешавања остају као резервна копија у Сачуваним распоредима.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Троугао</string>
     <string name="shape_circle">Круг</string>
     <string name="shape_cube">Коцка</string>
+    <string name="shape_classic">Класична</string>
+    <string name="shape_classic_numbers">Класична + бројеви</string>
     <string name="theme_light">Светла</string>
     <string name="theme_dark">Тамна</string>
     <string name="theme_transparent">Провидна</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 реда: лево, десно, лево</string>
     <string name="side_hint_4">4 реда: 1. десно, 2. лево, 3. десно, 4. лево</string>
     <string name="side_hint_5">5 редова: 3 лева + 3 десна бочна тастера</string>
+    <string name="side_hint_classic">Редови слова: по један леви и десни бочни тастер, унутар реда</string>
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Распоред слова</string>
     <string name="layout_section_numeric">Распоред бројева</string>

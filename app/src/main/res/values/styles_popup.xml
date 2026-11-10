@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Every popup of the app (Dialog and AlertDialog, set in Theme.AntaraKeyboard.Base):
+         the tutorial card's frame (popup_frame) and a dimmed screen behind it, so the popup's
+         edge is always visible. values-v31 adds a blur. -->
+    <style name="AntaraPopup" parent="ThemeOverlay.Material3.Dialog">
+        <item name="android:windowBackground">@drawable/popup_frame</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
+
+    <style name="AntaraAlertPopup" parent="ThemeOverlay.Material3.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/popup_frame</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+    </style>
+</resources>

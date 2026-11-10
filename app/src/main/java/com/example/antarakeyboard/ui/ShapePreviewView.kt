@@ -8,6 +8,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 import android.graphics.RectF
+import com.example.antarakeyboard.data.ClassicLayouts
 import com.example.antarakeyboard.model.KeyShape
 import kotlin.math.PI
 import kotlin.math.cos
@@ -19,6 +20,13 @@ class ShapePreviewView @JvmOverloads constructor(
 ) : View(ctx, attrs) {
 
     var shape: KeyShape = KeyShape.HEX
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /** Classic + numbers: whether the preview shows the number row. */
+    var numberRow: Boolean = true
         set(value) {
             field = value
             invalidate()
@@ -41,6 +49,30 @@ class ShapePreviewView @JvmOverloads constructor(
             KeyShape.TRIANGLE -> drawTriangle(canvas)
             KeyShape.CIRCLE -> drawCircle(canvas)
             KeyShape.CUBE -> drawCube(canvas)
+            KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> drawClassic(canvas, shape)
+        }
+    }
+
+    /** A small classic keyboard: its default rows with the real key widths. */
+    private fun drawClassic(c: Canvas, shape: KeyShape) {
+        val layout = ClassicLayouts.defaultAlphabet(ClassicLayouts.layoutId(shape, 0))
+        if (shape == KeyShape.CLASSIC_NUMBERS && !numberRow) layout.rows.removeAt(0)
+        val w = width.toFloat()
+        val unit = w / ClassicLayouts.ROW_UNITS
+        val rowH = unit * 1.3f
+        val gap = unit * 0.08f
+        var top = (height - rowH * layout.rows.size) / 2f
+        val rect = RectF()
+        layout.rows.forEach { row ->
+            val labels = row.keys.map { it.label }
+            val widths = ClassicLayouts.keyWidths(shape, labels)
+            var left = (w - widths.sum() * unit) / 2f
+            widths.forEach { units ->
+                rect.set(left + gap, top + gap, left + units * unit - gap, top + rowH - gap)
+                c.drawRoundRect(rect, unit * 0.15f, unit * 0.15f, paint)
+                left += units * unit
+            }
+            top += rowH
         }
     }
 

@@ -105,7 +105,7 @@ class LayoutEditorBinder(
     }
 
     private fun buildKeyboardUI() {
-        val userShape = KeyboardPrefs.getShape(context)
+        val userShape = KeyboardPrefs.getShape(context).drawShape
 
         val container = keyboardContainer ?: return
 
@@ -142,6 +142,8 @@ class LayoutEditorBinder(
             includeFontPadding = false
             isAllCaps = false
             shape = userShape
+            // Classic shapes: wide keys (space, Shift …) fill their box
+            forceSquare = !KeyboardPrefs.getShape(context).isClassic
             isSpecial = (key.label == "↵")
             setTextColor(0xFFFFFFFF.toInt())
             customBgColor = 0xFF111111.toInt()

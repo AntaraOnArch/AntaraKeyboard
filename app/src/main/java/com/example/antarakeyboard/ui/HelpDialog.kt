@@ -4,6 +4,7 @@ import android.animation.LayoutTransition
 import android.app.Activity
 import android.app.Dialog
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.graphics.Typeface
 import android.os.Build
 import android.view.Gravity
@@ -56,7 +57,6 @@ object HelpDialog {
         val root = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, pad, pad, pad)
-            setBackgroundColor(ContextCompat.getColor(activity, R.color.main_app_bg))
             // Opening an answer slides the entries below it down
             layoutTransition = LayoutTransition().apply { enableTransitionType(LayoutTransition.CHANGING) }
         }
@@ -114,6 +114,15 @@ object HelpDialog {
         // navigation bar (then it scrolls)
         val card = ScrollView(activity).apply {
             addView(root)
+            // Framed like every popup (tutorial card look)
+            background = GradientDrawable().apply {
+                cornerRadius = 16.dp(activity).toFloat()
+                setColor(ContextCompat.getColor(activity, R.color.main_app_bg))
+                setStroke(2.dp(activity), ContextCompat.getColor(activity, R.color.special_fill))
+            }
+            val stroke = 2.dp(activity)
+            setPadding(stroke, stroke, stroke, stroke)
+            clipToOutline = true
             // Taps on the card itself never reach the scrim
             isClickable = true
         }

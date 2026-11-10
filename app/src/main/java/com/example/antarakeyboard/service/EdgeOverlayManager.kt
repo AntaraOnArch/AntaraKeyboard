@@ -569,18 +569,7 @@ class EdgeOverlayManager(
 
         // 2. Colors
         val useThemeBg = KeyboardPrefs.getSideButtonsUseThemeBg(context)
-        val sideBg = if (useThemeBg) {
-            Color.TRANSPARENT
-        } else {
-            KeyboardPrefs.getSideButtonsBg(context)
-        }
-        val sideTextColor = if (useThemeBg) {
-            KeyboardPrefs.themeSideIconColor(
-                context, PrefsManager.isDarkMode(context), themeColor(themedCtx, R.attr.edgeIconText, Color.WHITE)
-            )
-        } else {
-            KeyboardPrefs.getSideButtonsTextColor(context)
-        }
+        val (sideBg, sideTextColor) = sideButtonColors()
 
         // 3. FrameLayout
         val box = FrameLayout(context).apply {
@@ -682,6 +671,31 @@ class EdgeOverlayManager(
 
         return box
     }
+
+    /**
+     * Fill and icon color of the side buttons (Colors → Side buttons): no fill and the theme icon
+     * color (contrasting with the keyboard background) with "Use theme colors", else the custom ones.
+     */
+    fun sideButtonColors(): Pair<Int, Int> {
+        if (!KeyboardPrefs.getSideButtonsUseThemeBg(context)) {
+            return KeyboardPrefs.getSideButtonsBg(context) to KeyboardPrefs.getSideButtonsTextColor(context)
+        }
+        val icon = KeyboardPrefs.themeSideIconColor(
+            context, PrefsManager.isDarkMode(context), themeColor(themedCtxProvider(), R.attr.edgeIconText, Color.WHITE)
+        )
+        return Color.TRANSPARENT to icon
+    }
+
+    /**
+     * A side button beside a classic layout row (ClassicLayoutBuilder puts it at the row's end):
+     * the same look and touch handling as every other side button.
+     */
+    fun createRowSideButton(slot: EdgeSlot, landscape: Boolean): View = createSideButtonView(
+        tagName = "classic_side_${slot.index}",
+        slot = slot,
+        tuning = SideButtonTuning(),
+        isLandscapeMode = landscape
+    )
 
     /* ───────── HELPER FUNCTIONS ───────── */
 

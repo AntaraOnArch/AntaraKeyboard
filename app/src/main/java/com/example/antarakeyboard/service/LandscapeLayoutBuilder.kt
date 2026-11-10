@@ -332,7 +332,7 @@ internal class LandscapeLayoutBuilder(
                 }
             }
 
-            KeyShape.CUBE -> {
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> {
                 when (savedRowCount) {
                     3 -> 31.dp(context)
                     5 -> 33.dp(context)
@@ -363,7 +363,7 @@ internal class LandscapeLayoutBuilder(
             }
 
             KeyShape.CIRCLE -> if (savedRowCount == 5) 5.dp(context) else 4.dp(context)
-            KeyShape.CUBE -> {
+            KeyShape.CUBE, KeyShape.CLASSIC, KeyShape.CLASSIC_NUMBERS -> {
                 when (savedRowCount) {
                     3 -> -(2.dp(context))
                     5 -> 5.dp(context)

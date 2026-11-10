@@ -20,6 +20,7 @@
     <string name="main_vibration">Вибрация</string>
     <string name="main_suggestions">Предложения за думи</string>
     <string name="main_double_space_period">Двоен интервал за точка</string>
+    <string name="main_number_row">Ред с цифри</string>
     <string name="main_export">Експорт на настройките</string>
     <string name="main_import">Импорт на настройките</string>
     <string name="export_done">Настройките са експортирани</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Жестове на клавиатурата</string>
     <string name="help_enable">Включва клавиатурата Антара в списъка с клавиатури на Android. Нужно е веднъж след инсталиране.</string>
     <string name="help_choose">Прави Антара клавиатурата, с която пишете. Можете да смените клавиатурата и от иконата на клавиатура в навигационната лента.</string>
-    <string name="help_key_shape">Клавиши шестоъгълници, триъгълници, кръгове или кубове. Прегледът отдолу показва избраната форма.</string>
+    <string name="help_key_shape">Клавиши шестоъгълници, триъгълници, кръгове или кубове. Прегледът отдолу показва избраната форма. Класическа и Класическа + цифри са клавиатура като на телефон с фиксирани 4 или 5 реда.</string>
     <string name="help_rows">3, 4 или 5 реда клавиши. Подредбите, страничните бутони и знаците при задържане следват броя редове.</string>
     <string name="help_key_height">Прави клавишите по-високи или по-ниски. Променя се само височината, никога ширината или разстоянията между клавишите.</string>
     <string name="help_row_spacing">Добавя или намалява разстоянието между редовете клавиши. Нищо друго не се променя.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Един цвят за всички клавиши, или докоснете клавиш, за да му дадете собствен цвят.</string>
     <string name="help_colors_background">Фон на клавиатурата: според темата, тъмен, светъл или ваш цвят.</string>
     <string name="help_colors_theme_defaults">Цветовете на светлата и тъмната тема, използвани навсякъде, където са включени цветовете на темата.</string>
-    <string name="help_language">Език на приложението и буквите на клавиатурата (латиница, кирилица или гръцки). На клавиатурата го сменете, като задържите двата интервала 4 секунди.</string>
+    <string name="help_language">Език на приложението и буквите на клавиатурата (латиница, кирилица или гръцки). На клавиатурата го сменете, като задържите двата интервала 4 секунди. С класическа форма задръжте интервала.</string>
     <string name="help_theme">Светла или тъмна, прозрачен фон, Персонална (запазените ви подредби) или анимираните RGB Smooth и RGB Wild.</string>
     <string name="help_rgb">Скорост, наситеност и яркост на RGB анимацията.</string>
     <string name="help_vibration">Кратка вибрация при всяко натискане на клавиш.</string>
     <string name="help_suggestions">До три думи над клавишите; докоснете дума, за да я използвате. Без автокорекция и нищо написано не се запазва.</string>
     <string name="help_double_space_period">Два интервала след дума въвеждат точка и интервал. Не в пароли, имейл адреси или връзки.</string>
+    <string name="help_number_row">Само Класическа + цифри: показва или скрива реда с цифри над буквите.</string>
     <string name="help_reset">Цветове, подредба или и двете по подразбиране. Текущото състояние първо се запазва в Запазени подредби; знаците при задържане и формата на клавишите остават.</string>
     <string name="help_export">Записва всички настройки във файл, напр. за пренос на нов телефон. Последните емоджи не са включени.</string>
     <string name="help_import">Зарежда настройки от експортиран файл. Текущите настройки остават като резервно копие в Запазени подредби.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Триъгълник</string>
     <string name="shape_circle">Кръг</string>
     <string name="shape_cube">Куб</string>
+    <string name="shape_classic">Класическа</string>
+    <string name="shape_classic_numbers">Класическа + цифри</string>
     <string name="theme_light">Светла</string>
     <string name="theme_dark">Тъмна</string>
     <string name="theme_transparent">Прозрачна</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 реда: ляво, дясно, ляво</string>
     <string name="side_hint_4">4 реда: ред 1 дясно, 2 ляво, 3 дясно, 4 ляво</string>
     <string name="side_hint_5">5 реда: 3 леви + 3 десни странични клавиша</string>
+    <string name="side_hint_classic">Редове с букви: по един ляв и десен страничен бутон, в реда</string>
     <string name="side_row_label">Р%1$d</string>
     <string name="layout_section_alphabet">Подредба на буквите</string>
     <string name="layout_section_numeric">Цифрова подредба</string>

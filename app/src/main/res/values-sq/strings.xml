@@ -20,6 +20,7 @@
     <string name="main_vibration">Dridhja</string>
     <string name="main_suggestions">Sugjerime fjalësh</string>
     <string name="main_double_space_period">Hapësirë e dyfishtë për pikë</string>
+    <string name="main_number_row">Rreshti i numrave</string>
     <string name="main_export">Eksporto cilësimet</string>
     <string name="main_import">Importo cilësimet</string>
     <string name="export_done">Cilësimet u eksportuan</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gjeste në tastierë</string>
     <string name="help_enable">Aktivizon Tastierën Antara në listën e tastierave të Android. Nevojitet një herë pas instalimit.</string>
     <string name="help_choose">E bën Antarën tastierën me të cilën shkruan. Tastierën mund ta ndërrosh edhe nga ikona e tastierës në shiritin e navigimit.</string>
-    <string name="help_key_shape">Taste gjashtëkëndore, trekëndore, të rrumbullakëta ose kub. Pamja paraprake më poshtë tregon formën e zgjedhur.</string>
+    <string name="help_key_shape">Taste gjashtëkëndore, trekëndore, të rrumbullakëta ose kub. Pamja paraprake më poshtë tregon formën e zgjedhur. Klasike dhe Klasike + numra janë tastierë si në telefon me 4 ose 5 rreshta të fiksuar.</string>
     <string name="help_rows">3, 4 ose 5 rreshta tastesh. Paraqitjet, butonat anësorë dhe karakteret me shtypje të gjatë ndjekin numrin e rreshtave.</string>
     <string name="help_key_height">I bën tastet më të larta ose më të ulëta. Ndryshon vetëm lartësia, kurrë gjerësia apo hapësirat mes tasteve.</string>
     <string name="help_row_spacing">Shton ose heq hapësirë mes rreshtave të tasteve. Asgjë tjetër nuk ndryshon.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Një ngjyrë për të gjitha tastet, ose prek një tast për t\'i dhënë ngjyrën e vet.</string>
     <string name="help_colors_background">Sfondi i tastierës: sipas temës, i errët, i çelët ose një ngjyrë e jotja.</string>
     <string name="help_colors_theme_defaults">Ngjyrat që temat e Çelët dhe e Errët përdorin kudo ku ngjyrat e temës janë aktive.</string>
-    <string name="help_language">Gjuha e aplikacionit dhe e shkronjave të tastierës (latine, cirilike ose greke). Në tastierë e ndërron duke mbajtur të dy tastet e hapësirës për 4 sekonda.</string>
+    <string name="help_language">Gjuha e aplikacionit dhe e shkronjave të tastierës (latine, cirilike ose greke). Në tastierë e ndërron duke mbajtur të dy tastet e hapësirës për 4 sekonda. Me një formë klasike, mbani shtypur tastin e hapësirës.</string>
     <string name="help_theme">E çelët ose e errët, sfond transparent, E personalizuar (paraqitjet e ruajtura) ose RGB Smooth dhe RGB Wild të animuara.</string>
     <string name="help_rgb">Shpejtësia, ngopja dhe ndriçimi i animacionit RGB.</string>
     <string name="help_vibration">Një dridhje e shkurtër në çdo shtypje tasti.</string>
     <string name="help_suggestions">Deri në tri fjalë mbi tastet; prek njërën për ta përdorur. Pa korrigjim automatik, dhe asgjë që shkruan nuk ruhet.</string>
     <string name="help_double_space_period">Dy hapësira pas një fjale shkruajnë pikë dhe hapësirë. Jo në fjalëkalime, adresa email ose lidhje.</string>
+    <string name="help_number_row">Vetëm Klasike + numra: shfaq ose fsheh rreshtin e numrave mbi shkronjat.</string>
     <string name="help_reset">Ngjyrat, paraqitja ose të dyja te parazgjedhjet. Gjendja aktuale ruhet fillimisht te Paraqitjet e ruajtura; karakteret me shtypje të gjatë dhe forma e tasteve mbeten.</string>
     <string name="help_export">Ruan të gjitha cilësimet në një skedar, p.sh. për t\'i kaluar në një telefon të ri. Emoji-t e fundit nuk përfshihen.</string>
     <string name="help_import">Ngarkon cilësimet nga një skedar i eksportuar. Cilësimet aktuale mbahen si kopje rezervë te Paraqitjet e ruajtura.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Trekëndësh</string>
     <string name="shape_circle">Rreth</string>
     <string name="shape_cube">Kub</string>
+    <string name="shape_classic">Klasike</string>
+    <string name="shape_classic_numbers">Klasike + numra</string>
     <string name="theme_light">E çelur</string>
     <string name="theme_dark">E errët</string>
     <string name="theme_transparent">E tejdukshme</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rreshta: majtas, djathtas, majtas</string>
     <string name="side_hint_4">4 rreshta: rreshti 1 djathtas, 2 majtas, 3 djathtas, 4 majtas</string>
     <string name="side_hint_5">5 rreshta: 3 taste majtas + 3 djathtas</string>
+    <string name="side_hint_classic">Rreshtat e shkronjave: secili me një buton anësor majtas dhe një djathtas, brenda rreshtit</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Paraqitja e shkronjave</string>
     <string name="layout_section_numeric">Paraqitja numerike</string>

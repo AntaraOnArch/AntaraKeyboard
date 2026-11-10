@@ -20,6 +20,7 @@
     <string name="main_vibration">Creathadh</string>
     <string name="main_suggestions">Moltaí focal</string>
     <string name="main_double_space_period">Spás dúbailte le haghaidh lánstad</string>
+    <string name="main_number_row">Sraith uimhreacha</string>
     <string name="main_export">Easpórtáil socruithe</string>
     <string name="main_import">Iompórtáil socruithe</string>
     <string name="export_done">Socruithe easpórtáilte</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gothaí ar an méarchlár</string>
     <string name="help_enable">Cuireann sé Méarchlár Antara ar siúl i liosta méarchlár Android. Ní gá ach uair amháin tar éis suiteála.</string>
     <string name="help_choose">Déanann sé Antara an méarchlár a scríobhann tú leis. Is féidir méarchlár a athrú freisin leis an deilbhín méarchláir sa bharra nascleanúna.</string>
-    <string name="help_key_shape">Eochracha heicseagánacha, triantánacha, cruinne nó ciúbacha. Taispeánann an réamhamharc thíos an cruth roghnaithe.</string>
+    <string name="help_key_shape">Eochracha heicseagánacha, triantánacha, cruinne nó ciúbacha. Taispeánann an réamhamharc thíos an cruth roghnaithe. Is méarchlár fóin é Clasaiceach agus Clasaiceach + uimhreacha le 4 nó 5 shraith sheasta.</string>
     <string name="help_rows">3, 4 nó 5 shraith eochracha. Leanann leaganacha amach, cnaipí taoibh agus carachtair brú fada líon na sraitheanna.</string>
     <string name="help_key_height">Déanann sé na heochracha níos airde nó níos ísle. Ní athraíonn ach an airde, riamh an leithead ná na bearnaí idir eochracha.</string>
     <string name="help_row_spacing">Cuireann sé spás leis nó baineann sé spás idir na sraitheanna eochracha. Ní athraíonn aon rud eile.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Dath amháin do gach eochair, nó tapáil eochair chun a dath féin a thabhairt di.</string>
     <string name="help_colors_background">Cúlra an mhéarchláir: de réir téama, dorcha, geal nó dath de do chuid féin.</string>
     <string name="help_colors_theme_defaults">Na dathanna a úsáideann na téamaí Geal agus Dorcha áit ar bith a bhfuil dathanna an téama ar siúl.</string>
-    <string name="help_language">Teanga na haipe agus litreacha an mhéarchláir (Laidineach, Coireallach nó Gréagach). Ar an méarchlár athraigh í tríd an dá eochair spáis a choinneáil síos ar feadh 4 soicind.</string>
+    <string name="help_language">Teanga na haipe agus litreacha an mhéarchláir (Laidineach, Coireallach nó Gréagach). Ar an méarchlár athraigh í tríd an dá eochair spáis a choinneáil síos ar feadh 4 soicind. Le cruth clasaiceach, coinnigh an spásbharra síos.</string>
     <string name="help_theme">Geal nó Dorcha, cúlra trédhearcach, Saincheaptha (do leaganacha amach sábháilte) nó RGB Smooth agus RGB Wild beoite.</string>
     <string name="help_rgb">Luas, sáithiúchán agus gile bheochan RGB.</string>
     <string name="help_vibration">Crith gearr le gach brú eochrach.</string>
     <string name="help_suggestions">Suas le trí fhocal os cionn na n-eochracha; tapáil ceann chun é a úsáid. Gan uathcheartú, agus ní shábháiltear aon rud a chlóscríobhann tú.</string>
     <string name="help_double_space_period">Clóscríobhann dhá spás i ndiaidh focail lánstad agus spás. Ní i bpasfhocail, i seoltaí ríomhphoist ná i naisc.</string>
+    <string name="help_number_row">Clasaiceach + uimhreacha amháin: taispeánann nó folaíonn sé an tsraith uimhreacha os cionn na litreacha.</string>
     <string name="help_reset">Dathanna, leagan amach nó an dá cheann ar ais go réamhshocrú. Sábháiltear an staid reatha ar dtús i Leaganacha amach sábháilte; fanann carachtair brú fada agus cruth na n-eochracha.</string>
     <string name="help_export">Sábháiltear gach socrú i gcomhad, m.sh. chun iad a aistriú chuig fón nua. Níl emoji le déanaí san áireamh.</string>
     <string name="help_import">Lódáiltear socruithe ó chomhad easpórtáilte. Coinnítear do shocruithe reatha mar chúltaca i Leaganacha amach sábháilte.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triantán</string>
     <string name="shape_circle">Ciorcal</string>
     <string name="shape_cube">Ciúb</string>
+    <string name="shape_classic">Clasaiceach</string>
+    <string name="shape_classic_numbers">Clasaiceach + uimhreacha</string>
     <string name="theme_light">Geal</string>
     <string name="theme_dark">Dorcha</string>
     <string name="theme_transparent">Trédhearcach</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 shraith: clé, deas, clé</string>
     <string name="side_hint_4">4 shraith: sraith 1 deas, 2 clé, 3 deas, 4 clé</string>
     <string name="side_hint_5">5 shraith: 3 eochair chlé + 3 eochair dheasa</string>
+    <string name="side_hint_classic">Sraitheanna litreacha: cnaipe taoibh clé agus deas i ngach ceann, laistigh den tsraith</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Leagan amach litreacha</string>
     <string name="layout_section_numeric">Leagan amach uimhreacha</string>

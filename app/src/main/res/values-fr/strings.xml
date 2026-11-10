@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibration</string>
     <string name="main_suggestions">Suggestions de mots</string>
     <string name="main_double_space_period">Double espace pour un point</string>
+    <string name="main_number_row">Rangée de chiffres</string>
     <string name="main_export">Exporter les réglages</string>
     <string name="main_import">Importer les réglages</string>
     <string name="export_done">Réglages exportés</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gestes sur le clavier</string>
     <string name="help_enable">Active le Clavier Antara dans la liste des claviers d\'Android. Nécessaire une fois après l\'installation.</string>
     <string name="help_choose">Fait d\'Antara le clavier avec lequel vous écrivez. Vous pouvez aussi changer de clavier avec l\'icône de clavier de la barre de navigation.</string>
-    <string name="help_key_shape">Touches hexagonales, triangulaires, rondes ou en cube. L\'aperçu ci-dessous montre la forme choisie.</string>
+    <string name="help_key_shape">Touches hexagonales, triangulaires, rondes ou en cube. L\'aperçu ci-dessous montre la forme choisie. Classique et Classique + chiffres sont un clavier de téléphone avec 4 ou 5 rangées fixes.</string>
     <string name="help_rows">3, 4 ou 5 rangées de touches. Les dispositions, les boutons latéraux et les caractères à appui long suivent le nombre de rangées.</string>
     <string name="help_key_height">Rend les touches plus hautes ou plus basses. Seule la hauteur change, jamais la largeur ni l\'espace entre les touches.</string>
     <string name="help_row_spacing">Ajoute ou retire de l\'espace entre les rangées de touches. Rien d\'autre ne change.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Une couleur pour toutes les touches, ou touchez une touche pour lui donner sa propre couleur.</string>
     <string name="help_colors_background">Fond du clavier : selon le thème, sombre, clair ou une couleur à vous.</string>
     <string name="help_colors_theme_defaults">Les couleurs que les thèmes Clair et Sombre utilisent partout où les couleurs du thème sont activées.</string>
-    <string name="help_language">Langue de l\'application et des lettres du clavier (latin, cyrillique ou grec). Sur le clavier, changez-la en maintenant les deux touches espace pendant 4 secondes.</string>
+    <string name="help_language">Langue de l\'application et des lettres du clavier (latin, cyrillique ou grec). Sur le clavier, changez-la en maintenant les deux touches espace pendant 4 secondes. Avec une forme classique, maintenez la barre d\'espace.</string>
     <string name="help_theme">Clair ou Sombre, fond transparent, Personnalisé (vos dispositions enregistrées) ou les animés RGB Smooth et RGB Wild.</string>
     <string name="help_rgb">Vitesse, saturation et luminosité de l\'animation RGB.</string>
     <string name="help_vibration">Une courte vibration à chaque appui sur une touche.</string>
     <string name="help_suggestions">Jusqu\'à trois mots au-dessus des touches ; touchez-en un pour l\'utiliser. Pas de correction automatique, et rien de ce que vous tapez n\'est enregistré.</string>
     <string name="help_double_space_period">Deux espaces après un mot tapent un point et une espace. Pas dans les mots de passe, adresses e-mail ou liens.</string>
+    <string name="help_number_row">Classique + chiffres uniquement : affiche ou masque la rangée de chiffres au-dessus des lettres.</string>
     <string name="help_reset">Couleurs, disposition ou les deux par défaut. L\'état actuel est d\'abord enregistré dans Dispositions enregistrées ; les caractères à appui long et la forme des touches restent.</string>
     <string name="help_export">Enregistre tous les réglages dans un fichier, p. ex. pour les transférer sur un nouveau téléphone. Les emoji récents ne sont pas inclus.</string>
     <string name="help_import">Charge les réglages depuis un fichier exporté. Vos réglages actuels sont gardés comme sauvegarde dans Dispositions enregistrées.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triangle</string>
     <string name="shape_circle">Cercle</string>
     <string name="shape_cube">Cube</string>
+    <string name="shape_classic">Classique</string>
+    <string name="shape_classic_numbers">Classique + chiffres</string>
     <string name="theme_light">Clair</string>
     <string name="theme_dark">Sombre</string>
     <string name="theme_transparent">Transparent</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rangées : gauche, droite, gauche</string>
     <string name="side_hint_4">4 rangées : rangée 1 droite, 2 gauche, 3 droite, 4 gauche</string>
     <string name="side_hint_5">5 rangées : 3 touches à gauche + 3 à droite</string>
+    <string name="side_hint_classic">Rangées de lettres : un bouton latéral gauche et un droit chacune, dans la rangée</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Disposition des lettres</string>
     <string name="layout_section_numeric">Disposition des chiffres</string>

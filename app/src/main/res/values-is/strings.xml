@@ -20,6 +20,7 @@
     <string name="main_vibration">Titringur</string>
     <string name="main_suggestions">Orðatillögur</string>
     <string name="main_double_space_period">Tvöfalt bil fyrir punkt</string>
+    <string name="main_number_row">Talnaröð</string>
     <string name="main_export">Flytja út stillingar</string>
     <string name="main_import">Flytja inn stillingar</string>
     <string name="export_done">Stillingar fluttar út</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Bendingar á lyklaborðinu</string>
     <string name="help_enable">Kveikir á Antara-lyklaborðinu í lyklaborðalista Android. Þarf einu sinni eftir uppsetningu.</string>
     <string name="help_choose">Gerir Antara að lyklaborðinu sem þú skrifar með. Þú getur líka skipt um lyklaborð með lyklaborðstákninu á yfirlitsstikunni.</string>
-    <string name="help_key_shape">Sexhyrndir, þríhyrndir, kringlóttir eða teningslaga lyklar. Forskoðunin fyrir neðan sýnir valið form.</string>
+    <string name="help_key_shape">Sexhyrndir, þríhyrndir, kringlóttir eða teningslaga lyklar. Forskoðunin fyrir neðan sýnir valið form. Klassískt og Klassískt + tölur eru símalyklaborð með föstum 4 eða 5 röðum.</string>
     <string name="help_rows">3, 4 eða 5 lyklaraðir. Uppsetningar, hliðarhnappar og stafir við langt ýt fylgja fjölda raða.</string>
     <string name="help_key_height">Gerir lyklana hærri eða lægri. Aðeins hæðin breytist, aldrei breiddin eða bilið milli lykla.</string>
     <string name="help_row_spacing">Bætir við eða minnkar bilið milli lyklaraða. Ekkert annað breytist.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Einn litur fyrir alla lykla, eða ýttu á lykil til að gefa honum eigin lit.</string>
     <string name="help_colors_background">Bakgrunnur lyklaborðs: eftir þema, dökkur, ljós eða þinn eigin litur.</string>
     <string name="help_colors_theme_defaults">Litirnir sem ljósa og dökka þemað nota alls staðar þar sem kveikt er á litum þemans.</string>
-    <string name="help_language">Tungumál forritsins og stafa lyklaborðsins (latneskt, kyrillískt eða grískt). Á lyklaborðinu skiptirðu um það með því að halda báðum bilstöngunum í 4 sekúndur.</string>
+    <string name="help_language">Tungumál forritsins og stafa lyklaborðsins (latneskt, kyrillískt eða grískt). Á lyklaborðinu skiptirðu um það með því að halda báðum bilstöngunum í 4 sekúndur. Með klassísku formi heldurðu bilslánni inni.</string>
     <string name="help_theme">Ljóst eða Dökkt, gegnsær bakgrunnur, Sérsniðið (vistaðar uppsetningar) eða hreyfðu RGB Smooth og RGB Wild.</string>
     <string name="help_rgb">Hraði, mettun og birta RGB-hreyfimyndarinnar.</string>
     <string name="help_vibration">Stuttur titringur við hvert lyklaýt.</string>
     <string name="help_suggestions">Allt að þrjú orð fyrir ofan lyklana; ýttu á eitt til að nota það. Engin sjálfvirk leiðrétting og ekkert sem þú skrifar er vistað.</string>
     <string name="help_double_space_period">Tvö bil á eftir orði skrifa punkt og bil. Ekki í lykilorðum, netföngum eða tenglum.</string>
+    <string name="help_number_row">Aðeins Klassískt + tölur: sýnir eða felur talnaröðina fyrir ofan stafina.</string>
     <string name="help_reset">Litir, uppsetning eða hvort tveggja í sjálfgefið. Núverandi staða er fyrst vistuð í Vistaðar uppsetningar; stafir við langt ýt og lögun lykla haldast.</string>
     <string name="help_export">Vistar allar stillingar í skrá, t.d. til að flytja þær í nýjan síma. Nýleg emoji fylgja ekki.</string>
     <string name="help_import">Hleður stillingum úr útfluttri skrá. Núverandi stillingar eru geymdar sem afrit í Vistaðar uppsetningar.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Þríhyrningur</string>
     <string name="shape_circle">Hringur</string>
     <string name="shape_cube">Teningur</string>
+    <string name="shape_classic">Klassískt</string>
+    <string name="shape_classic_numbers">Klassískt + tölur</string>
     <string name="theme_light">Ljóst</string>
     <string name="theme_dark">Dökkt</string>
     <string name="theme_transparent">Gegnsætt</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 raðir: vinstri, hægri, vinstri</string>
     <string name="side_hint_4">4 raðir: röð 1 hægri, 2 vinstri, 3 hægri, 4 vinstri</string>
     <string name="side_hint_5">5 raðir: 3 vinstri + 3 hægri hliðarlyklar</string>
+    <string name="side_hint_classic">Stafaraðir: einn vinstri og einn hægri hliðarhnappur hver, inni í röðinni</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Uppsetning stafa</string>
     <string name="layout_section_numeric">Uppsetning talna</string>

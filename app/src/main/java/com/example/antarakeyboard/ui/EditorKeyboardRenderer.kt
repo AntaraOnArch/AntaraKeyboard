@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import com.example.antarakeyboard.data.ClassicLayouts
 import com.example.antarakeyboard.data.KeyboardPrefs
 import com.example.antarakeyboard.extensions.dp
 import com.example.antarakeyboard.model.KeyConfig
@@ -30,6 +31,7 @@ class EditorKeyboardRenderer(private val context: Context) {
         container.removeAllViews()
 
         val rowCount = KeyboardPrefs.getRowCount(context)
+        val shape = KeyboardPrefs.getShape(context)
 
         fun addKeyToRow(
             row: LinearLayout,
@@ -212,7 +214,33 @@ class EditorKeyboardRenderer(private val context: Context) {
             container.addView(row)
         }
 
+        // Classic shapes: full rows, every key as wide as on the keyboard
+        fun buildClassicRow(rowIndex: Int, keys: MutableList<KeyConfig>) {
+            if (keys.isEmpty()) return
+            val widths = ClassicLayouts.keyWidths(shape, keys.map { it.label })
+            val row = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                weightSum = maxOf(ClassicLayouts.ROW_UNITS, widths.sum())
+                setPadding(0, 2.dp(context), 0, 2.dp(context))
+            }
+            keys.forEachIndexed { keyIndex, key ->
+                row.addView(
+                    createKey(key, rowIndex, keyIndex),
+                    LinearLayout.LayoutParams(0, 44.dp(context), widths[keyIndex])
+                )
+            }
+            container.addView(
+                row,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            )
+        }
+
         cfg.rows.forEachIndexed { rowIndex, rowCfg ->
+            if (shape.isClassic) {
+                buildClassicRow(rowIndex, rowCfg.keys)
+                return@forEachIndexed
+            }
             when (rowCount) {
                 3 -> buildThreeRowEditorRow(rowIndex, rowCfg.keys)
                 5 -> buildFiveRowEditorRow(rowIndex, rowCfg.keys)

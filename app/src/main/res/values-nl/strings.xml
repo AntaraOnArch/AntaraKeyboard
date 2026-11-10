@@ -20,6 +20,7 @@
     <string name="main_vibration">Trillen</string>
     <string name="main_suggestions">Woordsuggesties</string>
     <string name="main_double_space_period">Dubbele spatie voor punt</string>
+    <string name="main_number_row">Cijferrij</string>
     <string name="main_export">Instellingen exporteren</string>
     <string name="main_import">Instellingen importeren</string>
     <string name="export_done">Instellingen geëxporteerd</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gebaren op het toetsenbord</string>
     <string name="help_enable">Zet Antara-toetsenbord aan in de lijst met toetsenborden van Android. Eenmalig nodig na installatie.</string>
     <string name="help_choose">Maakt Antara het toetsenbord waarmee je typt. Je kunt ook wisselen via het toetsenbordpictogram in de navigatiebalk.</string>
-    <string name="help_key_shape">Zeshoekige, driehoekige, ronde of kubusvormige toetsen. Het voorbeeld eronder toont de gekozen vorm.</string>
+    <string name="help_key_shape">Zeshoekige, driehoekige, ronde of kubusvormige toetsen. Het voorbeeld eronder toont de gekozen vorm. Klassiek en Klassiek + cijfers zijn een telefoontoetsenbord met vaste 4 of 5 rijen.</string>
     <string name="help_rows">3, 4 of 5 rijen toetsen. Indelingen, zijknoppen en tekens voor lang indrukken volgen het aantal rijen.</string>
     <string name="help_key_height">Maakt de toetsen hoger of lager. Alleen de hoogte verandert, nooit de breedte of de ruimte tussen toetsen.</string>
     <string name="help_row_spacing">Voegt ruimte toe tussen de toetsenrijen of haalt die weg. Verder verandert er niets.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Eén kleur voor alle toetsen, of tik op een toets om hem een eigen kleur te geven.</string>
     <string name="help_colors_background">Toetsenbordachtergrond: volgens thema, donker, licht of een eigen kleur.</string>
     <string name="help_colors_theme_defaults">De kleuren die het lichte en donkere thema gebruiken waar themakleuren aan staan.</string>
-    <string name="help_language">Taal van de app en van de letters op het toetsenbord (Latijns, Cyrillisch of Grieks). Op het toetsenbord wijzig je die door beide spatietoetsen 4 seconden vast te houden.</string>
+    <string name="help_language">Taal van de app en van de letters op het toetsenbord (Latijns, Cyrillisch of Grieks). Op het toetsenbord wijzig je die door beide spatietoetsen 4 seconden vast te houden. Houd bij een klassieke vorm de spatiebalk ingedrukt.</string>
     <string name="help_theme">Licht of Donker, een transparante achtergrond, Aangepast (je opgeslagen indelingen) of het geanimeerde RGB Smooth en RGB Wild.</string>
     <string name="help_rgb">Snelheid, verzadiging en helderheid van de RGB-animatie.</string>
     <string name="help_vibration">Een korte trilling bij elke toetsaanslag.</string>
     <string name="help_suggestions">Tot drie woorden boven de toetsen; tik op een woord om het te gebruiken. Geen autocorrectie en niets wat je typt wordt opgeslagen.</string>
     <string name="help_double_space_period">Twee spaties na een woord typen een punt en een spatie. Niet in wachtwoorden, e-mailadressen of links.</string>
+    <string name="help_number_row">Alleen Klassiek + cijfers: toont of verbergt de cijferrij boven de letters.</string>
     <string name="help_reset">Kleuren, indeling of beide terug naar standaard. De huidige staat wordt eerst bewaard in Opgeslagen indelingen; tekens voor lang indrukken en de toetsvorm blijven.</string>
     <string name="help_export">Slaat alle instellingen op in een bestand, bijv. voor een nieuwe telefoon. Recente emoji worden niet meegenomen.</string>
     <string name="help_import">Laadt instellingen uit een geëxporteerd bestand. Je huidige instellingen blijven als back-up in Opgeslagen indelingen.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Driehoek</string>
     <string name="shape_circle">Cirkel</string>
     <string name="shape_cube">Kubus</string>
+    <string name="shape_classic">Klassiek</string>
+    <string name="shape_classic_numbers">Klassiek + cijfers</string>
     <string name="theme_light">Licht</string>
     <string name="theme_dark">Donker</string>
     <string name="theme_transparent">Transparant</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 rijen: links, rechts, links</string>
     <string name="side_hint_4">4 rijen: rij 1 rechts, 2 links, 3 rechts, 4 links</string>
     <string name="side_hint_5">5 rijen: 3 linker + 3 rechter zijtoetsen</string>
+    <string name="side_hint_classic">Letterrijen: elk een linker- en rechterzijknop, in de rij</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Letterindeling</string>
     <string name="layout_section_numeric">Cijferindeling</string>

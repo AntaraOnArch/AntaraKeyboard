@@ -162,6 +162,17 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="5dp"/>
 
+        <!-- Classic + numbers only: show / hide the number row -->
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchNumberRow"
+            android:saveEnabled="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/main_number_row"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
         <!-- Key height (keyboard height follows) -->
         <TextView
             android:id="@+id/tvKeySize"

@@ -62,7 +62,7 @@ class LongPressEditorDialog(
         val pageCustomText = dialog.findViewById<ScrollView>(R.id.pageCustomTextLp)
         val customTextContainer = dialog.findViewById<LinearLayout>(R.id.customTextContainer)
 
-        val currentRowCount = KeyboardPrefs.getRowCount(activity)
+        val currentRowCount = KeyboardPrefs.getLayoutId(activity)
         var currentPage = 0
 
         // Load with the global binds; every change is saved immediately

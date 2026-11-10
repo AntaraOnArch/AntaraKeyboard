@@ -20,6 +20,7 @@
     <string name="main_vibration">Vibración</string>
     <string name="main_suggestions">Sugerencias de palabras</string>
     <string name="main_double_space_period">Doble espacio para punto</string>
+    <string name="main_number_row">Fila de números</string>
     <string name="main_export">Exportar ajustes</string>
     <string name="main_import">Importar ajustes</string>
     <string name="export_done">Ajustes exportados</string>
@@ -73,7 +74,7 @@
     <string name="help_group_gestures">Gestos en el teclado</string>
     <string name="help_enable">Activa el Teclado Antara en la lista de teclados de Android. Hace falta una vez tras instalarlo.</string>
     <string name="help_choose">Hace de Antara el teclado con el que escribes. También puedes cambiar de teclado con el icono de teclado de la barra de navegación.</string>
-    <string name="help_key_shape">Teclas hexagonales, triangulares, redondas o de cubo. La vista previa de abajo muestra la forma elegida.</string>
+    <string name="help_key_shape">Teclas hexagonales, triangulares, redondas o de cubo. La vista previa de abajo muestra la forma elegida. Clásico y Clásico + números son un teclado de móvil con 4 o 5 filas fijas.</string>
     <string name="help_rows">3, 4 o 5 filas de teclas. Las distribuciones, los botones laterales y los caracteres de pulsación larga siguen el número de filas.</string>
     <string name="help_key_height">Hace las teclas más altas o más bajas. Solo cambia la altura, nunca el ancho ni el espacio entre teclas.</string>
     <string name="help_row_spacing">Añade o quita espacio entre las filas de teclas. Nada más cambia.</string>
@@ -93,12 +94,13 @@
     <string name="help_colors_keys">Un color para todas las teclas, o toca una tecla para darle su propio color.</string>
     <string name="help_colors_background">Fondo del teclado: según el tema, oscuro, claro o un color tuyo.</string>
     <string name="help_colors_theme_defaults">Los colores que los temas Claro y Oscuro usan donde estén activados los colores del tema.</string>
-    <string name="help_language">Idioma de la aplicación y de las letras del teclado (latino, cirílico o griego). En el teclado se cambia manteniendo pulsadas las dos teclas de espacio 4 segundos.</string>
+    <string name="help_language">Idioma de la aplicación y de las letras del teclado (latino, cirílico o griego). En el teclado se cambia manteniendo pulsadas las dos teclas de espacio 4 segundos. Con una forma clásica, mantén pulsada la barra espaciadora.</string>
     <string name="help_theme">Claro u Oscuro, fondo transparente, Personalizado (tus distribuciones guardadas) o los animados RGB Smooth y RGB Wild.</string>
     <string name="help_rgb">Velocidad, saturación y brillo de la animación RGB.</string>
     <string name="help_vibration">Una vibración corta en cada pulsación.</string>
     <string name="help_suggestions">Hasta tres palabras sobre las teclas; toca una para usarla. Sin autocorrección, y no se guarda nada de lo que escribes.</string>
     <string name="help_double_space_period">Dos espacios después de una palabra escriben un punto y un espacio. No en contraseñas, correos ni enlaces.</string>
+    <string name="help_number_row">Solo Clásico + números: muestra u oculta la fila de números sobre las letras.</string>
     <string name="help_reset">Colores, distribución o ambos a los valores predeterminados. El estado actual se guarda antes en Distribuciones guardadas; los caracteres de pulsación larga y la forma de las teclas se mantienen.</string>
     <string name="help_export">Guarda todos los ajustes en un archivo, p. ej. para pasarlos a un móvil nuevo. Los emoji recientes no se incluyen.</string>
     <string name="help_import">Carga los ajustes de un archivo exportado. Tus ajustes actuales quedan como copia de seguridad en Distribuciones guardadas.</string>
@@ -124,6 +126,8 @@
     <string name="shape_triangle">Triángulo</string>
     <string name="shape_circle">Círculo</string>
     <string name="shape_cube">Cubo</string>
+    <string name="shape_classic">Clásico</string>
+    <string name="shape_classic_numbers">Clásico + números</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="theme_transparent">Transparente</string>
@@ -229,6 +233,7 @@
     <string name="side_hint_3">3 filas: izquierda, derecha, izquierda</string>
     <string name="side_hint_4">4 filas: fila 1 derecha, 2 izquierda, 3 derecha, 4 izquierda</string>
     <string name="side_hint_5">5 filas: 3 teclas a la izquierda + 3 a la derecha</string>
+    <string name="side_hint_classic">Filas de letras: un botón lateral izquierdo y uno derecho cada una, dentro de la fila</string>
     <string name="side_row_label">R%1$d</string>
     <string name="layout_section_alphabet">Distribución de letras</string>
     <string name="layout_section_numeric">Distribución numérica</string>

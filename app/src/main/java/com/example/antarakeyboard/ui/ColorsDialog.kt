@@ -308,8 +308,7 @@ class ColorsDialog(
         // Per-key colors: tap a key to edit it
         val individualContainer = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
         val grid = GridLayout(activity).apply { columnCount = 5 }
-        val rowCount = KeyboardPrefs.getRowCount(activity)
-        val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(activity, rowCount)
+        val layout = KeyboardPrefs.loadAlphabetLayoutForRowCount(activity, KeyboardPrefs.getLayoutId(activity))
         val labels = layout.rows.asSequence().flatMap { it.keys }
             .map { it.label }
             .filter { it.isNotBlank() && it !in setOf(" ", "↵", "⇧", "⌫", "😊") }
