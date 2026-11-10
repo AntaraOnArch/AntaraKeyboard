@@ -191,7 +191,7 @@ Same structure as Bind long press (`res/layout/dialog_colors.xml`): a section dr
 
 ### Keyboard gestures (on the keyboard)
 - Swipe up on a letter → capital letter.
-- Swipe up on `.` → `,` and on `?` → `!` (shown as a small second label on the key).
+- Swipe up on `.` → `,` and on `?` → `!` (shown as a small second label on the key; thin marks `.` `,` `!` are drawn larger (`!` also bold), `123` smaller with a bigger 😊 – `KeyView.SPLIT_LABEL_SCALES`).
 - Swipe up on `123` → emoji picker (alphabet layout, 4 and 5 rows only). The `😊` key also opens it.
 - Swipe left → delete text; swipe right → restore deleted text – on keys **and on the background between/around keys** (`BackgroundSwipeListener` on `overlayLayer`). Speed grows with swipe distance. The restore buffer is cleared when any other text is typed. A running swipe blocks the swipe-up shortcuts (`.`, `?`, `123`→emoji), and opening the emoji picker or any early end of a key gesture stops it (`stopSwipeGestures()`), so deletion can never run on unattended.
 - Hold backspace → repeated delete after the system long-press timeout. Deleted text can be restored with swipe right.

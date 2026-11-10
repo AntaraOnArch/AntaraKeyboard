@@ -153,6 +153,8 @@ class KeyView @JvmOverloads constructor(
         isFakeBoldText = false
     }
 
+    private val splitBounds = android.graphics.Rect()
+
     // Cached paint for overlay to avoid allocation in onDraw
     private val overlayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -410,22 +412,27 @@ class KeyView @JvmOverloads constructor(
         splitMainPaint.textAlign = Paint.Align.CENTER
         splitSmallPaint.textAlign = Paint.Align.CENTER
 
-        splitMainPaint.textSize = spToPx(manualLabelSizeSp ?: 14f)
-        splitSmallPaint.textSize = splitMainPaint.textSize * 0.52f
+        val mainText = mainLabel.ifBlank { text?.toString().orEmpty() }
+        val baseSize = spToPx(manualLabelSizeSp ?: 14f)
+        splitMainPaint.textSize = baseSize * splitScale(mainText, SPLIT_MAIN_SCALE)
+        splitSmallPaint.textSize = baseSize * splitScale(swipeUpLabel.orEmpty(), SPLIT_SMALL_SCALE)
+        splitMainPaint.isFakeBoldText = mainText in SPLIT_BOLD_LABELS
+        splitSmallPaint.isFakeBoldText = swipeUpLabel in SPLIT_BOLD_LABELS
 
+        // Centered on the glyph itself, so tiny marks like . and , sit where they are expected
         swipeUpLabel?.takeIf { it.isNotBlank() }?.let { txt ->
-            val fm = splitSmallPaint.fontMetrics
-            val baseline = (t + h * 0.24f) - (fm.ascent + fm.descent) / 2f
-            canvas.drawText(txt, cx, baseline, splitSmallPaint)
+            splitSmallPaint.getTextBounds(txt, 0, txt.length, splitBounds)
+            canvas.drawText(txt, cx, t + h * 0.26f - splitBounds.exactCenterY(), splitSmallPaint)
         }
 
-        val mainText = mainLabel.ifBlank { text?.toString().orEmpty() }
         if (mainText.isNotBlank()) {
-            val fm = splitMainPaint.fontMetrics
-            val baseline = (t + h * 0.70f) - (fm.ascent + fm.descent) / 2f
-            canvas.drawText(mainText, cx, baseline, splitMainPaint)
+            splitMainPaint.getTextBounds(mainText, 0, mainText.length, splitBounds)
+            canvas.drawText(mainText, cx, t + h * 0.66f - splitBounds.exactCenterY(), splitMainPaint)
         }
     }
+
+    /** Size of a split label relative to the key's label size; thin marks are drawn bigger to stay visible. */
+    private fun splitScale(label: String, default: Float): Float = SPLIT_LABEL_SCALES[label] ?: default
 
     private fun drawDefaultLabel(canvas: Canvas, l: Float, t: Float, r: Float, b: Float) {
         val label = text?.toString().orEmpty()
@@ -631,6 +638,19 @@ class KeyView @JvmOverloads constructor(
     companion object {
         // Smallest size a long label shrinks to before it is ellipsized
         private const val MIN_LABEL_SP = 8f
+
+        private const val SPLIT_MAIN_SCALE = 1f
+        private const val SPLIT_SMALL_SCALE = 0.52f
+        /** Split labels (main and swipe-up) that differ from the defaults above. */
+        private val SPLIT_LABEL_SCALES = mapOf(
+            "." to 2.0f,
+            "," to 1.45f,
+            "!" to 1.1f,
+            "123" to 0.85f,
+            "😊" to 0.8f
+        )
+        /** Thin marks that are also drawn bold. */
+        private val SPLIT_BOLD_LABELS = setOf("!")
 
         /** Height of the drawn [shape] inside a w×h box at 100 % (see the build* functions). */
         fun shapeHeight(shape: KeyShape, w: Float, h: Float): Float = when (shape) {
